@@ -25,8 +25,8 @@ PraxisNote bridges the gap between free-form note-taking and structured task man
 ```
 src/
 ├── PraxisNote.Domain/           # Pure domain model
-│   ├── Aggregates/              # User, Label (Note, Task coming soon)
-│   ├── ValueObjects/            # Email, ExternalIdentity
+│   ├── Aggregates/              # User, Label, TaskItem (Note coming soon)
+│   ├── ValueObjects/            # Email, ExternalIdentity, TaskStatus, DueDate, CheckboxRef
 │   ├── Common/                  # Entity, AggregateRoot, ValueObject
 │   └── Events/                  # IDomainEvent, DomainEventBase
 └── PraxisNote.Domain.Tests/     # Unit tests
