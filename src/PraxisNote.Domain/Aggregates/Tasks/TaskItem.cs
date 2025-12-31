@@ -17,7 +17,7 @@ namespace PraxisNote.Domain.Aggregates.Tasks;
 /// </remarks>
 public sealed class TaskItem : AggregateRoot
 {
-    private readonly List<Guid> _labelIds = [];
+    private readonly HashSet<Guid> _labelIds = [];
 
     /// <summary>
     /// The user who owns this task.
@@ -72,7 +72,7 @@ public sealed class TaskItem : AggregateRoot
     /// Stored as IDs only - aggregates don't hold references to other aggregates.
     /// The application layer joins with Label entities for display.
     /// </remarks>
-    public IReadOnlyCollection<Guid> LabelIds => _labelIds.AsReadOnly();
+    public IReadOnlyCollection<Guid> LabelIds => _labelIds;
 
     /// <summary>
     /// Required for EF Core.
@@ -207,11 +207,10 @@ public sealed class TaskItem : AggregateRoot
     {
         ArgumentOutOfRangeException.ThrowIfEqual(labelId, Guid.Empty, nameof(labelId));
 
-        if (_labelIds.Contains(labelId))
-            return;
-
-        _labelIds.Add(labelId);
-        UpdatedAt = DateTimeOffset.UtcNow;
+        if (_labelIds.Add(labelId))
+        {
+            UpdatedAt = DateTimeOffset.UtcNow;
+        }
     }
 
     /// <summary>
