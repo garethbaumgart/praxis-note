@@ -1,0 +1,83 @@
+using PraxisNote.Domain.Common;
+using PraxisNote.Domain.ValueObjects;
+
+namespace PraxisNote.Domain.Aggregates.Users;
+
+/// <summary>
+/// User aggregate - represents an authenticated user who owns
+/// all notes, tasks, and labels in the system.
+/// </summary>
+public sealed class User : AggregateRoot
+{
+    /// <summary>
+    /// The external OAuth provider identity. Immutable after creation.
+    /// </summary>
+    public ExternalIdentity ExternalIdentity { get; private init; } = null!;
+
+    /// <summary>
+    /// The user's email address.
+    /// </summary>
+    public Email Email { get; private init; } = null!;
+
+    /// <summary>
+    /// The user's display name.
+    /// </summary>
+    public string Name { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// URL to the user's avatar image from the external OAuth provider. May be null.
+    /// </summary>
+    public string? AvatarUrl { get; private set; }
+
+    /// <summary>
+    /// When this user account was created.
+    /// </summary>
+    public DateTimeOffset CreatedAt { get; private init; }
+
+    /// <summary>
+    /// When the user last logged in.
+    /// </summary>
+    public DateTimeOffset LastLoginAt { get; private set; }
+
+    /// <summary>
+    /// Required for EF Core.
+    /// </summary>
+    private User() { }
+
+    private User(Guid id, ExternalIdentity externalIdentity, Email email, string name, string? avatarUrl) : base(id)
+    {
+        ArgumentNullException.ThrowIfNull(externalIdentity);
+        ArgumentNullException.ThrowIfNull(email);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        var now = DateTimeOffset.UtcNow;
+
+        ExternalIdentity = externalIdentity;
+        Email = email;
+        Name = name;
+        AvatarUrl = string.IsNullOrWhiteSpace(avatarUrl) ? null : avatarUrl;
+        CreatedAt = now;
+        LastLoginAt = now;
+    }
+
+    /// <summary>
+    /// Registers a new user from an external OAuth provider.
+    /// </summary>
+    /// <param name="externalIdentity">The external OAuth provider identity.</param>
+    /// <param name="email">The user's email address.</param>
+    /// <param name="name">The user's display name.</param>
+    /// <param name="avatarUrl">Optional URL to the user's avatar.</param>
+    /// <returns>A new User instance.</returns>
+    public static User Register(ExternalIdentity externalIdentity, Email email, string name, string? avatarUrl = null)
+    {
+        return new User(Guid.NewGuid(), externalIdentity, email, name, avatarUrl);
+    }
+
+    /// <summary>
+    /// Records that the user has logged in, updating the last login timestamp.
+    /// </summary>
+    public void RecordLogin()
+    {
+        LastLoginAt = DateTimeOffset.UtcNow;
+    }
+}
