@@ -303,6 +303,126 @@ public class TaskItemTests
 
     #endregion
 
+    #region Label Tests
+
+    [Fact]
+    public void AddLabel_WithValidLabelId_AddsToLabelIds()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var labelId = Guid.NewGuid();
+
+        // Act
+        task.AddLabel(labelId);
+
+        // Assert
+        Assert.Contains(labelId, task.LabelIds);
+        Assert.Single(task.LabelIds);
+    }
+
+    [Fact]
+    public void AddLabel_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => task.AddLabel(Guid.Empty));
+    }
+
+    [Fact]
+    public void AddLabel_SameLabelTwice_OnlyAddsOnce()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var labelId = Guid.NewGuid();
+
+        // Act
+        task.AddLabel(labelId);
+        task.AddLabel(labelId);
+
+        // Assert
+        Assert.Single(task.LabelIds);
+    }
+
+    [Fact]
+    public void AddLabel_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var originalUpdatedAt = task.UpdatedAt;
+
+        // Act
+        task.AddLabel(Guid.NewGuid());
+
+        // Assert
+        Assert.True(task.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void RemoveLabel_ExistingLabel_RemovesFromLabelIds()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var labelId = Guid.NewGuid();
+        task.AddLabel(labelId);
+
+        // Act
+        task.RemoveLabel(labelId);
+
+        // Assert
+        Assert.DoesNotContain(labelId, task.LabelIds);
+        Assert.Empty(task.LabelIds);
+    }
+
+    [Fact]
+    public void RemoveLabel_NonExistentLabel_DoesNotThrow()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var originalUpdatedAt = task.UpdatedAt;
+
+        // Act - should not throw
+        task.RemoveLabel(Guid.NewGuid());
+
+        // Assert - UpdatedAt should not change since nothing was removed
+        Assert.Equal(originalUpdatedAt, task.UpdatedAt);
+    }
+
+    [Fact]
+    public void HasLabel_WhenLabelExists_ReturnsTrue()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var labelId = Guid.NewGuid();
+        task.AddLabel(labelId);
+
+        // Act & Assert
+        Assert.True(task.HasLabel(labelId));
+    }
+
+    [Fact]
+    public void HasLabel_WhenLabelDoesNotExist_ReturnsFalse()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Act & Assert
+        Assert.False(task.HasLabel(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void CreateStandalone_HasEmptyLabelIds()
+    {
+        // Act
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Assert
+        Assert.Empty(task.LabelIds);
+    }
+
+    #endregion
+
     #region Timestamp Tests
 
     [Fact]

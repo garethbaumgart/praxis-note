@@ -13,10 +13,12 @@ namespace PraxisNote.Domain.Aggregates.Tasks;
 /// Key design decisions:
 /// - Status changes update relevant timestamps (StartedAt, CompletedAt)
 /// - UpdatedAt is modified on any state change
-/// - Labels are not implemented here (would require Label aggregate reference)
+/// - Labels stored as IDs only (aggregates don't reference other aggregates)
 /// </remarks>
 public sealed class TaskItem : AggregateRoot
 {
+    private readonly List<Guid> _labelIds = [];
+
     /// <summary>
     /// The user who owns this task.
     /// </summary>
@@ -62,6 +64,15 @@ public sealed class TaskItem : AggregateRoot
     /// When the task was completed. Null if not done.
     /// </summary>
     public DateTimeOffset? CompletedAt { get; private set; }
+
+    /// <summary>
+    /// IDs of labels assigned to this task.
+    /// </summary>
+    /// <remarks>
+    /// Stored as IDs only - aggregates don't hold references to other aggregates.
+    /// The application layer joins with Label entities for display.
+    /// </remarks>
+    public IReadOnlyCollection<Guid> LabelIds => _labelIds.AsReadOnly();
 
     /// <summary>
     /// Required for EF Core.
@@ -182,6 +193,46 @@ public sealed class TaskItem : AggregateRoot
         DueDate = null;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
+
+    /// <summary>
+    /// Adds a label to this task.
+    /// </summary>
+    /// <param name="labelId">The ID of the label to add.</param>
+    /// <remarks>
+    /// Idempotent - adding the same label twice has no effect.
+    /// Does not validate that the label exists or belongs to the same user.
+    /// That validation should happen in the application layer.
+    /// </remarks>
+    public void AddLabel(Guid labelId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(labelId, Guid.Empty, nameof(labelId));
+
+        if (_labelIds.Contains(labelId))
+            return;
+
+        _labelIds.Add(labelId);
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a label from this task.
+    /// </summary>
+    /// <param name="labelId">The ID of the label to remove.</param>
+    /// <remarks>
+    /// Idempotent - removing a non-existent label has no effect.
+    /// </remarks>
+    public void RemoveLabel(Guid labelId)
+    {
+        if (_labelIds.Remove(labelId))
+        {
+            UpdatedAt = DateTimeOffset.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Returns true if this task has the specified label.
+    /// </summary>
+    public bool HasLabel(Guid labelId) => _labelIds.Contains(labelId);
 
     /// <summary>
     /// Returns true if this task was created from a note checkbox.
