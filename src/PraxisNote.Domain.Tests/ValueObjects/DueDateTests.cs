@@ -151,6 +151,34 @@ public class DueDateTests
         Assert.Equal("Overdue by 2d", dueDate.ToDisplayString());
     }
 
+    [Theory]
+    [InlineData(2, "In 2d")]
+    [InlineData(5, "In 5d")]
+    [InlineData(7, "In 7d")]
+    public void ToDisplayString_WhenDueWithinWeek_ReturnsInXdFormat(int daysFromNow, string expected)
+    {
+        // Arrange
+        var futureDate = DateOnly.FromDateTime(DateTime.Today.AddDays(daysFromNow));
+        var dueDate = new DueDate(futureDate);
+
+        // Act & Assert
+        Assert.Equal(expected, dueDate.ToDisplayString());
+    }
+
+    [Fact]
+    public void ToDisplayString_WhenDueBeyondWeek_ReturnsMonthDayFormat()
+    {
+        // Arrange
+        var farFuture = DateOnly.FromDateTime(DateTime.Today.AddDays(30));
+        var dueDate = new DueDate(farFuture);
+
+        // Act
+        var result = dueDate.ToDisplayString();
+
+        // Assert - should be format like "Jan 30" or "Feb 15"
+        Assert.Equal(farFuture.ToString("MMM d"), result);
+    }
+
     [Fact]
     public void Equality_SameDate_AreEqual()
     {

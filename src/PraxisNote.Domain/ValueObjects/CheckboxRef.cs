@@ -20,7 +20,7 @@ namespace PraxisNote.Domain.ValueObjects;
 public sealed record CheckboxRef(Guid NoteId, string CheckboxId) : ValueObject
 {
     /// <summary>
-    /// Returns true if this reference points to a valid note.
+    /// Returns true if this reference is valid (has a non-empty note ID and checkbox ID).
     /// </summary>
     public bool IsLinked => NoteId != Guid.Empty && !string.IsNullOrWhiteSpace(CheckboxId);
 

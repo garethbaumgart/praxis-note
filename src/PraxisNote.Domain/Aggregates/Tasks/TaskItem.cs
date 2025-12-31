@@ -132,7 +132,7 @@ public sealed class TaskItem : AggregateRoot
 
         Status = TaskStatus.Done;
         StartedAt ??= now;  // If completing from Todo, mark as started too
-        CompletedAt = now;
+        CompletedAt ??= now;  // Preserve first completion time
         UpdatedAt = now;
     }
 

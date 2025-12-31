@@ -159,6 +159,21 @@ public class TaskItemTests
     }
 
     [Fact]
+    public void Complete_WhenAlreadyCompleted_PreservesOriginalCompletedAt()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        task.Complete();
+        var originalCompletedAt = task.CompletedAt;
+
+        // Act
+        task.Complete();
+
+        // Assert
+        Assert.Equal(originalCompletedAt, task.CompletedAt);
+    }
+
+    [Fact]
     public void Reopen_FromDone_SetsStatusToTodoAndClearsTimestamps()
     {
         // Arrange
