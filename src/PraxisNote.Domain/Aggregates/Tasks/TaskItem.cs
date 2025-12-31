@@ -13,7 +13,7 @@ namespace PraxisNote.Domain.Aggregates.Tasks;
 /// Key design decisions:
 /// - Status changes update relevant timestamps (StartedAt, CompletedAt)
 /// - UpdatedAt is modified on any state change
-/// - Labels stored as IDs only (aggregates don't reference other aggregates)
+/// - Labels stored as IDs only via LabelIds property (aggregates don't reference other aggregates)
 /// </remarks>
 public sealed class TaskItem : AggregateRoot
 {
@@ -143,7 +143,7 @@ public sealed class TaskItem : AggregateRoot
 
         Status = TaskStatus.Done;
         StartedAt ??= now;  // If completing from Todo, mark as started too
-        CompletedAt ??= now;  // Preserve first completion time
+        CompletedAt ??= now;  // Only set if not already completed in this cycle
         UpdatedAt = now;
     }
 

@@ -27,20 +27,20 @@ public sealed record DueDate : ValueObject
         new(DateOnly.FromDateTime(dateTime));
 
     /// <summary>
-    /// Returns true if the due date has passed.
+    /// Returns true if the due date has passed (UTC-based comparison).
     /// </summary>
-    public bool IsOverdue() => Date < DateOnly.FromDateTime(DateTime.Today);
+    public bool IsOverdue() => Date < DateOnly.FromDateTime(DateTime.UtcNow);
 
     /// <summary>
-    /// Returns true if the due date is within the specified number of days.
+    /// Returns true if the due date is within the specified number of days (UTC-based).
     /// </summary>
     public bool IsDueSoon(int days = 3) =>
-        Date <= DateOnly.FromDateTime(DateTime.Today.AddDays(days)) && !IsOverdue();
+        Date <= DateOnly.FromDateTime(DateTime.UtcNow.AddDays(days)) && !IsOverdue();
 
     /// <summary>
-    /// Returns the number of days until (positive) or since (negative) the due date.
+    /// Returns the number of days until (positive) or since (negative) the due date (UTC-based).
     /// </summary>
-    public int DaysUntilDue() => Date.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber;
+    public int DaysUntilDue() => Date.DayNumber - DateOnly.FromDateTime(DateTime.UtcNow).DayNumber;
 
     /// <summary>
     /// Returns a human-readable string like "Today", "Tomorrow", "Overdue by 2d", etc.
