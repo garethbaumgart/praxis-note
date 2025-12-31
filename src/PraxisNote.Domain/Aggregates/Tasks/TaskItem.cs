@@ -72,7 +72,7 @@ public sealed class TaskItem : AggregateRoot
     /// Stored as IDs only - aggregates don't hold references to other aggregates.
     /// The application layer joins with Label entities for display.
     /// </remarks>
-    public IReadOnlyCollection<Guid> LabelIds => _labelIds;
+    public IReadOnlyCollection<Guid> LabelIds => _labelIds.AsReadOnly();
 
     /// <summary>
     /// Required for EF Core.
