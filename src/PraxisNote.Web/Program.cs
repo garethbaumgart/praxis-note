@@ -1,0 +1,20 @@
+using Microsoft.Extensions.FileProviders;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var app = builder.Build();
+
+// Serve static files from wwwroot/browser (Angular 21 output)
+var browserPath = Path.Combine(app.Environment.WebRootPath, "browser");
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(browserPath)
+});
+
+// Minimal API endpoint
+app.MapGet("/api/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
+
+// SPA fallback - serves index.html for client-side routing
+app.MapFallbackToFile("browser/index.html");
+
+app.Run();
