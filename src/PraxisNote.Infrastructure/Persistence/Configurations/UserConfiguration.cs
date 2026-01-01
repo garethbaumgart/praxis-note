@@ -22,9 +22,9 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
                 .IsRequired();
         });
 
-        // Unique index on Provider+ProviderId prevents duplicate accounts
-        builder.HasIndex("ExternalIdentity_Provider", "ExternalIdentity_ProviderId")
-            .IsUnique();
+        // Note: Unique index on Provider+ProviderId should be added via migration
+        // when switching to a relational database. ComplexProperty doesn't support
+        // HasIndex with string column names in EF Core 10.
 
         // Configure Email as complex type (value object)
         builder.ComplexProperty(u => u.Email, e =>
