@@ -9,7 +9,9 @@ app.UseStaticFiles();
 
 // Serve static files from wwwroot/browser (Angular 21 output)
 var browserPath = Path.Combine(app.Environment.WebRootPath, "browser");
-if (Directory.Exists(browserPath))
+var angularAppExists = Directory.Exists(browserPath);
+
+if (angularAppExists)
 {
     app.UseStaticFiles(new StaticFileOptions
     {
@@ -27,6 +29,9 @@ else
 app.MapGet("/api/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
 
 // SPA fallback - serves index.html for client-side routing
-app.MapFallbackToFile("browser/index.html");
+if (angularAppExists)
+{
+    app.MapFallbackToFile("browser/index.html");
+}
 
 app.Run();
