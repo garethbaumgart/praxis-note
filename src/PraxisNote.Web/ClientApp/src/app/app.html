@@ -6,6 +6,29 @@
         <p-tag [value]="apiStatus()" [severity]="apiSeverity()" />
       </div>
     </ng-template>
-    <p class="text-surface-600">App is running.</p>
+
+    @if (auth.loading()) {
+      <p class="text-surface-600">Loading...</p>
+    } @else if (auth.isAuthenticated()) {
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          @if (auth.user()?.avatarUrl) {
+            <p-avatar [image]="auth.user()!.avatarUrl!" shape="circle" size="large" />
+          } @else {
+            <p-avatar [label]="auth.user()!.name.charAt(0)" shape="circle" size="large" />
+          }
+          <div>
+            <p class="font-medium text-surface-900">{{ auth.user()?.name }}</p>
+            <p class="text-sm text-surface-500">{{ auth.user()?.email }}</p>
+          </div>
+        </div>
+        <p-button label="Logout" severity="secondary" (onClick)="logout()" [fluid]="true" />
+      </div>
+    } @else {
+      <div class="flex flex-col gap-4">
+        <p class="text-surface-600">Sign in to get started.</p>
+        <p-button label="Login with Google" icon="pi pi-google" (onClick)="login()" [fluid]="true" />
+      </div>
+    }
   </p-card>
 </main>
