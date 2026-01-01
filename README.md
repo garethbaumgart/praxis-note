@@ -38,3 +38,7 @@ src/
 dotnet build src/PraxisNote.slnx
 dotnet test src/PraxisNote.slnx
 ```
+
+## CI
+
+Unit tests run automatically via GitHub Actions on every push to `main` and on pull requests. PRs require passing tests before merge.
