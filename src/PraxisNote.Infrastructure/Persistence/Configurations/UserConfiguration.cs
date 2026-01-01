@@ -22,6 +22,10 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
                 .IsRequired();
         });
 
+        // Unique index on Provider+ProviderId prevents duplicate accounts
+        builder.HasIndex("ExternalIdentity_Provider", "ExternalIdentity_ProviderId")
+            .IsUnique();
+
         // Configure Email as complex type (value object)
         builder.ComplexProperty(u => u.Email, e =>
         {
