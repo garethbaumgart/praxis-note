@@ -108,6 +108,20 @@ public class NoteTests
         Assert.True(note.UpdatedAt >= originalUpdatedAt);
     }
 
+    [Fact]
+    public void UpdateContent_WithSameContent_DoesNotUpdateUpdatedAt()
+    {
+        // Arrange
+        var note = Note.Create(_validUserId, _validContent);
+        var originalUpdatedAt = note.UpdatedAt;
+
+        // Act
+        note.UpdateContent(_validContent);
+
+        // Assert
+        Assert.Equal(originalUpdatedAt, note.UpdatedAt);
+    }
+
     #endregion
 
     #region AddCheckbox Tests
@@ -365,6 +379,28 @@ public class NoteTests
 
         // Assert
         Assert.Equal(originalUpdatedAt, note.UpdatedAt);
+    }
+
+    [Fact]
+    public void RemoveCheckbox_WithNullId_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var note = Note.Create(_validUserId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => note.RemoveCheckbox(null!));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void RemoveCheckbox_WithEmptyOrWhitespaceId_ThrowsArgumentException(string invalidId)
+    {
+        // Arrange
+        var note = Note.Create(_validUserId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => note.RemoveCheckbox(invalidId));
     }
 
     #endregion

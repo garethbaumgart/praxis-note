@@ -95,7 +95,12 @@ public sealed class Note : AggregateRoot
     /// </remarks>
     public void UpdateContent(string content)
     {
-        Content = content ?? string.Empty;
+        var newContent = content ?? string.Empty;
+
+        if (string.Equals(Content, newContent, StringComparison.Ordinal))
+            return;
+
+        Content = newContent;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -147,6 +152,8 @@ public sealed class Note : AggregateRoot
     /// <returns>True if the checkbox was found and removed, false otherwise.</returns>
     public bool RemoveCheckbox(string checkboxId)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkboxId);
+
         var removed = _checkboxes.RemoveAll(c => c.Id == checkboxId) > 0;
         if (removed)
         {
