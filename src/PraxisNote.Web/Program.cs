@@ -4,12 +4,24 @@ var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
+// Serve static files from wwwroot (for favicon, etc.)
+app.UseStaticFiles();
+
 // Serve static files from wwwroot/browser (Angular 21 output)
 var browserPath = Path.Combine(app.Environment.WebRootPath, "browser");
-app.UseStaticFiles(new StaticFileOptions
+if (Directory.Exists(browserPath))
 {
-    FileProvider = new PhysicalFileProvider(browserPath)
-});
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(browserPath)
+    });
+}
+else
+{
+    app.Logger.LogWarning(
+        "Angular app not found at '{BrowserPath}'. Run 'npm run build' in ClientApp first.",
+        browserPath);
+}
 
 // Minimal API endpoint
 app.MapGet("/api/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
