@@ -14,7 +14,7 @@
 }
 
 .animate-slide-in {
-  animation: slide-in 0.2s ease-out;
+  animation: slide-in 0.15s ease-out;
 }
 
 /* Fade-in animations with staggered delays */

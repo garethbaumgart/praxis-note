@@ -24,31 +24,30 @@
 
       <!-- Search -->
       <div class="px-3 py-3">
-        <button class="w-full h-9 flex items-center gap-2 px-3 text-sm text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-150">
+        <button class="w-full h-9 flex items-center gap-2 px-3 text-sm text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-150" aria-label="Search">
           <i class="pi pi-search text-xs"></i>
           <span>Search</span>
-          <span class="ml-auto text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">⌘K</span>
         </button>
       </div>
 
       <!-- Main navigation -->
-      <nav class="flex-1 px-3 py-1 space-y-0.5 overflow-y-auto">
-        <a href="#" class="group flex items-center gap-3 h-9 px-3 text-sm font-medium text-gray-900 bg-violet-100 rounded-lg">
+      <nav class="flex-1 px-3 py-1 space-y-0.5 overflow-y-auto" role="navigation" aria-label="Main navigation">
+        <button type="button" class="w-full group flex items-center gap-3 h-9 px-3 text-sm font-medium text-gray-900 bg-violet-100 rounded-lg text-left">
           <i class="pi pi-home text-violet-600"></i>
           <span>Home</span>
-        </a>
-        <a href="#" class="group flex items-center gap-3 h-9 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150">
+        </button>
+        <button type="button" class="w-full group flex items-center gap-3 h-9 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150 text-left">
           <i class="pi pi-file-edit text-gray-400 group-hover:text-gray-600"></i>
           <span>Notes</span>
-        </a>
-        <a href="#" class="group flex items-center gap-3 h-9 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150">
+        </button>
+        <button type="button" class="w-full group flex items-center gap-3 h-9 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150 text-left">
           <i class="pi pi-check-square text-gray-400 group-hover:text-gray-600"></i>
           <span>Tasks</span>
-        </a>
-        <a href="#" class="group flex items-center gap-3 h-9 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150">
+        </button>
+        <button type="button" class="w-full group flex items-center gap-3 h-9 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150 text-left">
           <i class="pi pi-tags text-gray-400 group-hover:text-gray-600"></i>
           <span>Labels</span>
-        </a>
+        </button>
 
         <!-- Divider -->
         <div class="py-3">
@@ -56,24 +55,12 @@
         </div>
 
         <!-- Recent section -->
-        <div class="flex items-center justify-between px-3 h-8">
+        <div class="px-3 h-8 flex items-center">
           <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Recent</span>
-          <button class="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center hover:bg-gray-200 rounded">
-            <i class="pi pi-plus text-xs text-gray-400"></i>
-          </button>
         </div>
-        <a href="#" class="group flex items-center gap-3 h-8 px-3 text-sm text-gray-500 hover:bg-gray-100 rounded-lg transition-colors duration-150">
-          <i class="pi pi-file text-gray-300"></i>
-          <span class="truncate">Meeting Notes</span>
-        </a>
-        <a href="#" class="group flex items-center gap-3 h-8 px-3 text-sm text-gray-500 hover:bg-gray-100 rounded-lg transition-colors duration-150">
-          <i class="pi pi-file text-gray-300"></i>
-          <span class="truncate">Project Ideas</span>
-        </a>
-        <a href="#" class="group flex items-center gap-3 h-8 px-3 text-sm text-gray-500 hover:bg-gray-100 rounded-lg transition-colors duration-150">
-          <i class="pi pi-file text-gray-300"></i>
-          <span class="truncate">Weekly Goals</span>
-        </a>
+        <div class="px-3 py-2">
+          <p class="text-xs text-gray-400">No recent notes yet</p>
+        </div>
       </nav>
 
       <!-- User section -->
@@ -81,9 +68,10 @@
         <button
           class="w-full flex items-center gap-3 h-10 px-2 hover:bg-gray-100 rounded-lg transition-colors duration-150"
           (click)="logout()"
+          aria-label="Sign out"
         >
           @if (auth.user()?.avatarUrl) {
-            <img [src]="auth.user()!.avatarUrl!" class="w-7 h-7 rounded-full ring-2 ring-white shadow-sm" alt="" />
+            <img [src]="auth.user()!.avatarUrl!" class="w-7 h-7 rounded-full ring-2 ring-white shadow-sm" [alt]="auth.user()?.name" />
           } @else {
             <div class="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center ring-2 ring-white shadow-sm">
               <span class="text-white text-xs font-medium">{{ auth.user()!.name.charAt(0) }}</span>
@@ -92,7 +80,7 @@
           <div class="flex-1 min-w-0 text-left">
             <p class="text-sm font-medium text-gray-900 truncate">{{ auth.user()?.name }}</p>
           </div>
-          <i class="pi pi-sign-out text-gray-400 text-sm"></i>
+          <i class="pi pi-sign-out text-gray-400 text-sm" aria-hidden="true"></i>
         </button>
       </div>
     </aside>
@@ -100,46 +88,46 @@
     <!-- Mobile drawer overlay -->
     @if (sidebarOpen()) {
       <div class="fixed inset-0 z-40 lg:hidden">
-        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" (click)="toggleSidebar()"></div>
-        <aside class="absolute inset-y-0 left-0 w-72 bg-white shadow-2xl flex flex-col animate-slide-in">
+        <div class="absolute inset-0 bg-gray-900/60" (click)="toggleSidebar()" aria-hidden="true"></div>
+        <aside class="absolute inset-y-0 left-0 w-72 bg-white shadow-2xl flex flex-col animate-slide-in" role="dialog" aria-label="Navigation menu">
           <!-- Mobile sidebar header -->
           <div class="h-14 flex items-center justify-between px-4 border-b border-gray-200">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
-                <i class="pi pi-check-square text-white text-sm"></i>
+                <i class="pi pi-check-square text-white text-sm" aria-hidden="true"></i>
               </div>
               <span class="font-semibold text-gray-900">PraxisNote</span>
             </div>
-            <button class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg" (click)="toggleSidebar()">
-              <i class="pi pi-times text-gray-500"></i>
+            <button class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg" (click)="toggleSidebar()" aria-label="Close navigation menu">
+              <i class="pi pi-times text-gray-500" aria-hidden="true"></i>
             </button>
           </div>
 
-          <!-- Mobile nav (same as desktop) -->
-          <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-            <a href="#" class="flex items-center gap-3 h-11 px-3 text-sm font-medium text-gray-900 bg-violet-100 rounded-lg">
-              <i class="pi pi-home text-violet-600"></i>
+          <!-- Mobile nav -->
+          <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" role="navigation" aria-label="Mobile navigation">
+            <button type="button" class="w-full flex items-center gap-3 h-11 px-3 text-sm font-medium text-gray-900 bg-violet-100 rounded-lg text-left">
+              <i class="pi pi-home text-violet-600" aria-hidden="true"></i>
               <span>Home</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 h-11 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
-              <i class="pi pi-file-edit text-gray-400"></i>
+            </button>
+            <button type="button" class="w-full flex items-center gap-3 h-11 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg text-left">
+              <i class="pi pi-file-edit text-gray-400" aria-hidden="true"></i>
               <span>Notes</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 h-11 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
-              <i class="pi pi-check-square text-gray-400"></i>
+            </button>
+            <button type="button" class="w-full flex items-center gap-3 h-11 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg text-left">
+              <i class="pi pi-check-square text-gray-400" aria-hidden="true"></i>
               <span>Tasks</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 h-11 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
-              <i class="pi pi-tags text-gray-400"></i>
+            </button>
+            <button type="button" class="w-full flex items-center gap-3 h-11 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg text-left">
+              <i class="pi pi-tags text-gray-400" aria-hidden="true"></i>
               <span>Labels</span>
-            </a>
+            </button>
           </nav>
 
           <!-- Mobile user section -->
           <div class="p-3 border-t border-gray-200">
-            <button class="w-full flex items-center gap-3 h-12 px-3 hover:bg-gray-100 rounded-lg" (click)="logout()">
+            <button class="w-full flex items-center gap-3 h-12 px-3 hover:bg-gray-100 rounded-lg" (click)="logout()" aria-label="Sign out">
               @if (auth.user()?.avatarUrl) {
-                <img [src]="auth.user()!.avatarUrl!" class="w-8 h-8 rounded-full" alt="" />
+                <img [src]="auth.user()!.avatarUrl!" class="w-8 h-8 rounded-full" [alt]="auth.user()?.name" />
               } @else {
                 <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                   <span class="text-white text-sm font-medium">{{ auth.user()!.name.charAt(0) }}</span>
@@ -160,19 +148,19 @@
       <!-- Top bar -->
       <header class="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div class="flex items-center gap-3">
-          <button class="lg:hidden w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg" (click)="toggleSidebar()">
-            <i class="pi pi-bars text-gray-600"></i>
+          <button class="lg:hidden w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg" (click)="toggleSidebar()" aria-label="Open navigation menu">
+            <i class="pi pi-bars text-gray-600" aria-hidden="true"></i>
           </button>
-          <nav class="flex items-center gap-1 text-sm">
+          <nav class="flex items-center gap-1 text-sm" aria-label="Breadcrumb">
             <span class="text-gray-400">Home</span>
           </nav>
         </div>
         <div class="flex items-center gap-2">
-          <button class="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg">
-            <i class="pi pi-bell text-gray-500"></i>
+          <button class="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg" aria-label="Notifications">
+            <i class="pi pi-bell text-gray-500" aria-hidden="true"></i>
           </button>
-          <button class="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg">
-            <i class="pi pi-cog text-gray-500"></i>
+          <button class="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg" aria-label="Settings">
+            <i class="pi pi-cog text-gray-500" aria-hidden="true"></i>
           </button>
         </div>
       </header>
@@ -190,23 +178,23 @@
 
           <!-- Quick actions -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            <button class="group p-4 bg-white border border-gray-200 rounded-xl hover:border-violet-300 hover:shadow-md transition-all duration-200 text-left">
+            <button class="group p-4 bg-white border border-gray-200 rounded-xl hover:border-violet-300 hover:shadow-md transition-all duration-200 text-left" aria-label="Create new note">
               <div class="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center mb-3 group-hover:bg-violet-200 transition-colors">
-                <i class="pi pi-plus text-violet-600"></i>
+                <i class="pi pi-plus text-violet-600" aria-hidden="true"></i>
               </div>
               <p class="font-medium text-gray-900 mb-1">New Note</p>
               <p class="text-sm text-gray-500">Start writing</p>
             </button>
-            <button class="group p-4 bg-white border border-gray-200 rounded-xl hover:border-violet-300 hover:shadow-md transition-all duration-200 text-left">
+            <button class="group p-4 bg-white border border-gray-200 rounded-xl hover:border-violet-300 hover:shadow-md transition-all duration-200 text-left" aria-label="Create new task">
               <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center mb-3 group-hover:bg-emerald-200 transition-colors">
-                <i class="pi pi-check-square text-emerald-600"></i>
+                <i class="pi pi-check-square text-emerald-600" aria-hidden="true"></i>
               </div>
               <p class="font-medium text-gray-900 mb-1">New Task</p>
               <p class="text-sm text-gray-500">Add a to-do</p>
             </button>
-            <button class="group p-4 bg-white border border-gray-200 rounded-xl hover:border-violet-300 hover:shadow-md transition-all duration-200 text-left">
+            <button class="group p-4 bg-white border border-gray-200 rounded-xl hover:border-violet-300 hover:shadow-md transition-all duration-200 text-left" aria-label="Search">
               <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-3 group-hover:bg-amber-200 transition-colors">
-                <i class="pi pi-search text-amber-600"></i>
+                <i class="pi pi-search text-amber-600" aria-hidden="true"></i>
               </div>
               <p class="font-medium text-gray-900 mb-1">Search</p>
               <p class="text-sm text-gray-500">Find anything</p>
