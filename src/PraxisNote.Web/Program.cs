@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.FileProviders;
 using PraxisNote.Infrastructure;
 using PraxisNote.Infrastructure.Persistence;
@@ -8,7 +9,7 @@ using PraxisNote.Web.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Infrastructure services (DbContext, repositories, use cases)
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // Add CORS for development (ng serve on port 4200)
 builder.Services.AddCors(options =>
@@ -57,7 +58,8 @@ builder.Services.AddAuthentication(options =>
     // Force account selection on each login (useful after logout)
     options.Events.OnRedirectToAuthorizationEndpoint = context =>
     {
-        context.Response.Redirect(context.RedirectUri + "&prompt=select_account");
+        var uri = QueryHelpers.AddQueryString(context.RedirectUri, "prompt", "select_account");
+        context.Response.Redirect(uri);
         return Task.CompletedTask;
     };
 });

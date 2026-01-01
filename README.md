@@ -83,6 +83,7 @@ PraxisNote uses Google OAuth for authentication. Secrets are stored using .NET U
 4. Click **Create Credentials > OAuth client ID**
 5. Select **Web application**
 6. Add authorized redirect URI: `http://localhost:5002/signin-google`
+   - Note: `/signin-google` is the default callback path used by ASP.NET Core's Google authentication middleware
 7. Copy the Client ID and Client Secret
 
 ### 2. Configure User Secrets
