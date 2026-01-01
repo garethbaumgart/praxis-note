@@ -307,9 +307,21 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
-# Angular
+# Angular / Node.js
 .angular/
 **/wwwroot/
+dist/
+tmp/
+out-tsc/
+bazel-out/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+coverage/
+*.tsbuildinfo
+.npm/
+.eslintcache
+.stylelintcache
 
 # Visual Studio 6 build log
 *.plg
