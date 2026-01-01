@@ -25,8 +25,8 @@ PraxisNote bridges the gap between free-form note-taking and structured task man
 ```
 src/
 ├── PraxisNote.Domain/           # Pure domain model
-│   ├── Aggregates/              # User, Label, TaskItem (Note coming soon)
-│   ├── ValueObjects/            # Email, ExternalIdentity, TaskStatus, DueDate, CheckboxRef
+│   ├── Aggregates/              # User, Label, TaskItem, Note
+│   ├── ValueObjects/            # Email, ExternalIdentity, TaskStatus, DueDate, CheckboxRef, Checkbox
 │   ├── Common/                  # Entity, AggregateRoot, ValueObject
 │   └── Events/                  # IDomainEvent, DomainEventBase
 └── PraxisNote.Domain.Tests/     # Unit tests
@@ -38,3 +38,7 @@ src/
 dotnet build src/PraxisNote.slnx
 dotnet test src/PraxisNote.slnx
 ```
+
+## CI
+
+Unit tests run automatically via GitHub Actions on every push to `main` and on pull requests. PRs require passing tests before merge.
