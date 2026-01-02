@@ -54,6 +54,15 @@ readonly editing = signal(false);
 - **Consistency**: Maintain consistent patterns across the entire application
 - **Accessibility**: Include proper aria-labels and semantic HTML
 
+### UI Design Resources
+
+When designing UI components, reference these official documentation sites:
+
+- **PrimeNG v21**: https://primeng.org - Component API, examples, theming
+- **PrimeNG Showcase**: https://primeng.org/installation - Live demos of every component
+- **Tailwind CSS v4**: https://tailwindcss.com/docs - Utility class reference
+- **Tailwind Cheat Sheet**: https://tailwindcomponents.com/cheatsheet - Quick class lookup
+
 ## Project Structure
 
 ```
