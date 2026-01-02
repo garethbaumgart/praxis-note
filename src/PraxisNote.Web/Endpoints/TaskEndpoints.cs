@@ -138,7 +138,7 @@ public static class TaskEndpoints
 
         if (string.IsNullOrWhiteSpace(request.Status) || request.TaskIds is null || request.TaskIds.Count == 0)
         {
-            return Results.BadRequest(new { error = "Status and TaskIds are required" });
+            return Results.BadRequest(new { error = "Status is required and at least one task ID must be provided" });
         }
 
         var command = new ReorderTasks.Command(userId.Value, request.Status, request.TaskIds);
