@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PraxisNote.Application\PraxisNote.Application.csproj" />
     <ProjectReference Include="..\PraxisNote.Domain\PraxisNote.Domain.csproj" />
   </ItemGroup>
 
