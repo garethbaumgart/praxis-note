@@ -75,6 +75,7 @@ export class TaskService {
           status: 'Todo',
           position: 0,
           createdAt: new Date().toISOString(),
+          startedAt: null,
           completedAt: null,
         };
         // Push down existing Todo tasks and add new one at position 0
@@ -102,6 +103,7 @@ export class TaskService {
   changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done'): void {
     this.http.put(`/api/tasks/${id}/status`, { status }).subscribe({
       next: () => {
+        const now = new Date().toISOString();
         this._tasks.update(tasks => {
           // Push down tasks in target column
           const updated = tasks.map(t => {
@@ -110,7 +112,8 @@ export class TaskService {
                 ...t,
                 status,
                 position: 0,
-                completedAt: status === 'Done' ? new Date().toISOString() : null,
+                startedAt: status === 'InProgress' ? now : (status === 'Todo' ? null : t.startedAt ?? now),
+                completedAt: status === 'Done' ? now : null,
               };
             }
             if (t.status === status) {

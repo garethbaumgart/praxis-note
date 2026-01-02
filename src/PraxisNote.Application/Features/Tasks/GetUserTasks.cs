@@ -18,6 +18,7 @@ public sealed class GetUserTasks(ITaskRepository taskRepository)
                 t.Status.ToString(),
                 t.Position,
                 t.CreatedAt,
+                t.StartedAt,
                 t.CompletedAt))
             .ToList();
     }

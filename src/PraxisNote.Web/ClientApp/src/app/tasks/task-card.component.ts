@@ -61,8 +61,12 @@ import { Task } from './task.model';
             >
               {{ task().title }}
             </p>
-            @if (relativeTime()) {
-              <span class="text-xs text-done-foreground-muted">{{ relativeTime() }}</span>
+            @if (relativeTime(); as time) {
+              <span
+                class="text-xs"
+                [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
+                [class.text-done-foreground-muted]="task().status === 'Done'"
+              >{{ time }}</span>
             }
           </div>
           <!-- Hover actions -->
@@ -102,9 +106,41 @@ export class TaskCardComponent {
 
   readonly relativeTime = computed(() => {
     const task = this.task();
-    if (task.status !== 'Done' || !task.completedAt) return null;
-    return this.formatRelativeTime(task.completedAt);
+    if (task.status === 'InProgress' && task.startedAt) {
+      return this.formatElapsedTime(task.startedAt);
+    }
+    if (task.status === 'Done' && task.completedAt) {
+      return this.formatRelativeTime(task.completedAt);
+    }
+    return null;
   });
+
+  private formatElapsedTime(dateStr: string): string {
+    const date = new Date(dateStr);
+
+    // Handle invalid dates
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+
+    // Handle future dates (e.g., clock skew or timezone issues)
+    if (diffMs < 0) {
+      return 'just started';
+    }
+
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'just started';
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    return date.toLocaleDateString();
+  }
 
   private formatRelativeTime(dateStr: string): string {
     const date = new Date(dateStr);

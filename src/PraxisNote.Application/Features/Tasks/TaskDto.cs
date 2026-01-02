@@ -6,4 +6,5 @@ public record TaskDto(
     string Status,
     int Position,
     DateTimeOffset CreatedAt,
+    DateTimeOffset? StartedAt,
     DateTimeOffset? CompletedAt);
