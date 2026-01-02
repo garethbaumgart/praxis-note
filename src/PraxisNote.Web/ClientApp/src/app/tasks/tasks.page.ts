@@ -280,7 +280,11 @@ export class TasksPage implements OnInit {
       this.taskService.reorderTasks(targetStatus, taskIds);
     } else {
       // Cross-column move to specific position
+      const taskIds = tasksInColumn.map(t => t.id);
+      taskIds.splice(targetIndex, 0, task.id); // Insert dragged task at target position
+
       this.taskService.changeStatus(task.id, targetStatus);
+      this.taskService.reorderTasks(targetStatus, taskIds);
     }
 
     this.draggedTask.set(null);
