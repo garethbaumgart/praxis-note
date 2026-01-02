@@ -35,8 +35,8 @@ import { Task } from './task.model';
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Todo Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all"
-            [class.bg-gray-50]="dragOverColumn() === 'Todo'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-gray-50/50"
+            [class.bg-gray-100]="dragOverColumn() === 'Todo'"
             pDroppable="tasks"
             (onDrop)="onDrop('Todo')"
             (onDragEnter)="dragOverColumn.set('Todo')"
@@ -70,8 +70,8 @@ import { Task } from './task.model';
 
           <!-- In Progress Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all"
-            [class.bg-blue-50]="dragOverColumn() === 'InProgress'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-blue-50/50"
+            [class.bg-blue-100]="dragOverColumn() === 'InProgress'"
             pDroppable="tasks"
             (onDrop)="onDrop('InProgress')"
             (onDragEnter)="dragOverColumn.set('InProgress')"
@@ -105,8 +105,8 @@ import { Task } from './task.model';
 
           <!-- Done Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all"
-            [class.bg-green-50]="dragOverColumn() === 'Done'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-green-50/50"
+            [class.bg-green-100]="dragOverColumn() === 'Done'"
             pDroppable="tasks"
             (onDrop)="onDrop('Done')"
             (onDragEnter)="dragOverColumn.set('Done')"
