@@ -45,9 +45,11 @@ export class TaskService {
       .filter(t => t.status === 'Done')
       .sort((a, b) => {
         // Sort by completedAt descending (most recent first)
-        const aTime = a.completedAt ? new Date(a.completedAt).getTime() : 0;
-        const bTime = b.completedAt ? new Date(b.completedAt).getTime() : 0;
-        return bTime - aTime;
+        // Tasks without completedAt are placed at the end
+        if (!a.completedAt && !b.completedAt) return 0;
+        if (!a.completedAt) return 1;
+        if (!b.completedAt) return -1;
+        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
       })
   );
 
@@ -124,6 +126,11 @@ export class TaskService {
   }
 
   reorderTasks(status: 'Todo' | 'InProgress' | 'Done', taskIds: string[]): void {
+    // Done tasks are sorted by completion time, not position - reject reorder requests
+    if (status === 'Done') {
+      return;
+    }
+
     // Update positions locally immediately (optimistic update)
     this._tasks.update(tasks =>
       tasks.map(t => {

@@ -32,8 +32,9 @@ public sealed class ChangeTaskStatus(ITaskRepository taskRepository, IUnitOfWork
             {
                 t.SetPosition(t.Position + 1);
             }
-            task.SetPosition(0);
         }
+        // Always set position for data consistency, even for Done tasks
+        task.SetPosition(0);
         switch (targetStatus)
         {
             case TaskStatus.Todo:
