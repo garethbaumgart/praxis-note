@@ -38,10 +38,8 @@ export class TaskService {
   }
 
   createTask(title: string): void {
-    console.log('TaskService.createTask - making HTTP POST with title:', title);
     this.http.post<{ id: string }>('/api/tasks', { title }).subscribe({
       next: (result) => {
-        console.log('Task created successfully:', result);
         const newTask: Task = {
           id: result.id,
           title,
@@ -50,9 +48,6 @@ export class TaskService {
           completedAt: null,
         };
         this._tasks.update(tasks => [newTask, ...tasks]);
-      },
-      error: (err) => {
-        console.error('Failed to create task:', err);
       },
     });
   }
@@ -64,6 +59,7 @@ export class TaskService {
           tasks.map(t => (t.id === id ? { ...t, title } : t))
         );
       },
+      error: () => this.loadTasks(), // Reload to restore consistent state
     });
   }
 
@@ -82,6 +78,7 @@ export class TaskService {
           )
         );
       },
+      error: () => this.loadTasks(), // Reload to restore consistent state
     });
   }
 
@@ -90,6 +87,7 @@ export class TaskService {
       next: () => {
         this._tasks.update(tasks => tasks.filter(t => t.id !== id));
       },
+      error: () => this.loadTasks(), // Reload to restore consistent state
     });
   }
 }

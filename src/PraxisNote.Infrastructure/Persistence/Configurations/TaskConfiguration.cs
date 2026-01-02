@@ -53,8 +53,8 @@ public sealed class TaskConfiguration : IEntityTypeConfiguration<TaskItem>
         builder.Property<HashSet<Guid>>("_labelIds")
             .HasColumnName("LabelIds")
             .HasConversion(
-                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
-                v => System.Text.Json.JsonSerializer.Deserialize<HashSet<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new HashSet<Guid>());
+                v => System.Text.Json.JsonSerializer.Serialize(v, System.Text.Json.JsonSerializerOptions.Default),
+                v => System.Text.Json.JsonSerializer.Deserialize<HashSet<Guid>>(v, System.Text.Json.JsonSerializerOptions.Default) ?? new HashSet<Guid>());
 
         builder.Ignore(t => t.LabelIds);
 

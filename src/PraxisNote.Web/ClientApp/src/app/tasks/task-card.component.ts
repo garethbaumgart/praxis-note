@@ -2,12 +2,13 @@ import { Component, input, output, signal } from '@angular/core';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
+import { Tooltip } from 'primeng/tooltip';
 import { Task } from './task.model';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
-  imports: [Card, Button, InputText],
+  imports: [Card, Button, InputText, Tooltip],
   template: `
     <p-card class="block">
       @if (editing()) {

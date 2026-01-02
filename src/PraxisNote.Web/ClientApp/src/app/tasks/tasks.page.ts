@@ -162,14 +162,10 @@ export class TasksPage implements OnInit {
   }
 
   createTask(title: string): void {
-    console.log('createTask called with:', title);
     if (title.trim()) {
-      console.log('Calling taskService.createTask');
       this.taskService.createTask(title.trim());
       this.newTaskTitle.set('');
       this.showDialog.set(false);
-    } else {
-      console.log('Title was empty or whitespace');
     }
   }
 
