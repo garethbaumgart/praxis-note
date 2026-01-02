@@ -8,7 +8,12 @@ import { Task } from './task.model';
   standalone: true,
   imports: [Button, InputText],
   template: `
-    <div class="bg-white rounded-md py-2 px-3 border border-gray-200/60 hover:border-gray-300 transition-colors group">
+    <div
+      class="bg-white rounded-md py-2 px-3 border transition-colors group"
+      [class.border-gray-300]="task().status === 'Todo'"
+      [class.border-blue-300]="task().status === 'InProgress'"
+      [class.border-green-300]="task().status === 'Done'"
+    >
       @if (editing()) {
         <div class="flex gap-2">
           <input
