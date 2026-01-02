@@ -20,7 +20,7 @@ import { Task } from './task.model';
         >
           <i class="pi pi-plus text-accent-foreground"></i>
           <span>Add Task</span>
-          <kbd class="ml-1 px-1.5 py-0.5 text-xs text-accent-foreground bg-accent rounded font-sans">&#8963;N</kbd>
+          <kbd class="ml-1 px-1.5 py-0.5 text-xs text-accent-foreground bg-accent rounded font-sans">&#8984;&#8679;N</kbd>
         </button>
       </div>
 
@@ -214,8 +214,8 @@ export class TasksPage implements OnInit {
       return;
     }
 
-    // Ctrl+N to open add task dialog
-    if (event.key.toLowerCase() === 'n' && event.ctrlKey && !this.showDialog()) {
+    // Cmd+Shift+N to open add task dialog
+    if (event.key.toLowerCase() === 'n' && event.metaKey && event.shiftKey && !this.showDialog()) {
       event.preventDefault();
       this.showDialog.set(true);
     }
