@@ -1,4 +1,4 @@
-namespace PraxisNote.Infrastructure.Application.Abstractions;
+namespace PraxisNote.Application.Common;
 
 public interface IUnitOfWork
 {

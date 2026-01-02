@@ -1,7 +1,6 @@
-using PraxisNote.Domain.Aggregates.Users;
 using PraxisNote.Domain.ValueObjects;
 
-namespace PraxisNote.Infrastructure.Application.Abstractions;
+namespace PraxisNote.Domain.Aggregates.Users;
 
 public interface IUserRepository
 {

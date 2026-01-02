@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PraxisNote.Infrastructure.Application.Abstractions;
+using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.Tasks;
+using PraxisNote.Domain.Aggregates.Users;
 using PraxisNote.Infrastructure.Application.Users;
 using PraxisNote.Infrastructure.Persistence;
 using PraxisNote.Infrastructure.Persistence.Repositories;
@@ -23,6 +25,7 @@ public static class DependencyInjection
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
 
         // Use cases
         services.AddScoped<LoginOrRegisterUser>();

@@ -1,6 +1,6 @@
+using PraxisNote.Application.Common;
 using PraxisNote.Domain.Aggregates.Users;
 using PraxisNote.Domain.ValueObjects;
-using PraxisNote.Infrastructure.Application.Abstractions;
 
 namespace PraxisNote.Infrastructure.Application.Users;
 

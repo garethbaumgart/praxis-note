@@ -2,13 +2,17 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.FileProviders;
+using PraxisNote.Application;
 using PraxisNote.Infrastructure;
 using PraxisNote.Infrastructure.Persistence;
 using PraxisNote.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Infrastructure services (DbContext, repositories, use cases)
+// Add Application services (use cases)
+builder.Services.AddApplication();
+
+// Add Infrastructure services (DbContext, repositories)
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // Add CORS for development (ng serve on port 4200)
@@ -113,6 +117,7 @@ app.UseAuthorization();
 // Minimal API endpoints
 app.MapGet("/api/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
 app.MapAuthEndpoints();
+app.MapTaskEndpoints();
 
 // SPA fallback - serves index.html for client-side routing
 if (angularAppExists)
