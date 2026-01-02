@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, signal, viewChild } from '@angular/core';
 import { Dialog } from 'primeng/dialog';
 import { Draggable, Droppable } from 'primeng/dragdrop';
 import { TaskService } from './task.service';
@@ -147,6 +147,7 @@ import { Task } from './task.model';
     <p-dialog
       [visible]="showDialog()"
       (visibleChange)="showDialog.set($event)"
+      (onShow)="onDialogShow()"
       [modal]="true"
       [style]="{ width: '420px' }"
       [draggable]="false"
@@ -155,6 +156,7 @@ import { Task } from './task.model';
     >
       <div class="p-5">
         <input
+          #taskInput
           type="text"
           [value]="newTaskTitle()"
           (input)="newTaskTitle.set($any($event.target).value)"
@@ -196,8 +198,15 @@ export class TasksPage implements OnInit {
   readonly draggedTask = signal<Task | null>(null);
   readonly dragOverColumn = signal<'Todo' | 'InProgress' | 'Done' | null>(null);
 
+  readonly taskInput = viewChild<ElementRef<HTMLInputElement>>('taskInput');
+
   ngOnInit(): void {
     this.taskService.loadTasks();
+  }
+
+  onDialogShow(): void {
+    // Focus the input after a brief delay to ensure the dialog is fully rendered
+    setTimeout(() => this.taskInput()?.nativeElement.focus(), 0);
   }
 
   @HostListener('document:keydown', ['$event'])

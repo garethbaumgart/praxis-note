@@ -1,13 +1,29 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
+import { Subject, debounceTime } from 'rxjs';
 import { Task } from './task.model';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
   private readonly http = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private readonly reorderSubject = new Subject<{ status: string; taskIds: string[] }>();
 
   private readonly _tasks = signal<Task[]>([]);
   private readonly _loading = signal(false);
+
+  constructor() {
+    // Debounce reorder API calls to avoid excessive requests during rapid drag operations
+    this.reorderSubject
+      .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ status, taskIds }) => {
+        this.http.put('/api/tasks/reorder', { status, taskIds }).subscribe({
+          error: () => this.loadTasks(),
+        });
+      });
+  }
 
   readonly tasks = this._tasks.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -102,21 +118,19 @@ export class TaskService {
   }
 
   reorderTasks(status: 'Todo' | 'InProgress' | 'Done', taskIds: string[]): void {
-    this.http.put('/api/tasks/reorder', { status, taskIds }).subscribe({
-      next: () => {
-        // Update positions locally
-        this._tasks.update(tasks =>
-          tasks.map(t => {
-            if (t.status === status) {
-              const newPosition = taskIds.indexOf(t.id);
-              return newPosition >= 0 ? { ...t, position: newPosition } : t;
-            }
-            return t;
-          })
-        );
-      },
-      error: () => this.loadTasks(),
-    });
+    // Update positions locally immediately (optimistic update)
+    this._tasks.update(tasks =>
+      tasks.map(t => {
+        if (t.status === status) {
+          const newPosition = taskIds.indexOf(t.id);
+          return newPosition >= 0 ? { ...t, position: newPosition } : t;
+        }
+        return t;
+      })
+    );
+
+    // Debounce the API call
+    this.reorderSubject.next({ status, taskIds });
   }
 
   deleteTask(id: string): void {
