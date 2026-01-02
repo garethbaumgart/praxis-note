@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Task } from './task.model';
@@ -53,13 +53,22 @@ import { Task } from './task.model';
             [class.pi-check-circle]="task().status === 'Done'"
             [class.text-done-foreground-muted]="task().status === 'Done'"
           ></i>
-          <p
-            class="text-sm text-foreground flex-1"
-            [class.line-through]="task().status === 'Done'"
-            [class.text-foreground-muted]="task().status === 'Done'"
-          >
-            {{ task().title }}
-          </p>
+          <div class="flex-1 min-w-0">
+            <p
+              class="text-sm text-foreground"
+              [class.line-through]="task().status === 'Done'"
+              [class.text-foreground-muted]="task().status === 'Done'"
+            >
+              {{ task().title }}
+            </p>
+            @if (relativeTime(); as time) {
+              <span
+                class="text-xs"
+                [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
+                [class.text-done-foreground-muted]="task().status === 'Done'"
+              >{{ time }}</span>
+            }
+          </div>
           <!-- Hover actions -->
           <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
             <p-button
@@ -94,6 +103,71 @@ export class TaskCardComponent {
 
   readonly editing = signal(false);
   readonly editTitle = signal('');
+
+  readonly relativeTime = computed(() => {
+    const task = this.task();
+    if (task.status === 'InProgress' && task.startedAt) {
+      return this.formatElapsedTime(task.startedAt);
+    }
+    if (task.status === 'Done' && task.completedAt) {
+      return this.formatRelativeTime(task.completedAt);
+    }
+    return null;
+  });
+
+  private formatElapsedTime(dateStr: string): string {
+    const date = new Date(dateStr);
+
+    // Handle invalid dates
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+
+    // Handle future dates (e.g., clock skew or timezone issues)
+    if (diffMs < 0) {
+      return 'just started';
+    }
+
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'just started';
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    return date.toLocaleDateString();
+  }
+
+  private formatRelativeTime(dateStr: string): string {
+    const date = new Date(dateStr);
+
+    // Handle invalid dates
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+
+    // Handle future dates (e.g., clock skew or timezone issues)
+    if (diffMs < 0) {
+      return 'just now';
+    }
+
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  }
 
   startEdit(): void {
     this.editTitle.set(this.task().title);

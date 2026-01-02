@@ -4,5 +4,6 @@ export interface Task {
   status: 'Todo' | 'InProgress' | 'Done';
   position: number;
   createdAt: string;
+  startedAt: string | null;
   completedAt: string | null;
 }

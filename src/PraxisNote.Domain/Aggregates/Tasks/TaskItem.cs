@@ -127,14 +127,15 @@ public sealed class TaskItem : AggregateRoot
     /// Moves the task to InProgress status.
     /// </summary>
     /// <remarks>
-    /// Sets StartedAt if not already set.
+    /// Sets StartedAt only if not already set, to track when work first began.
     /// </remarks>
     public void Start()
     {
         var now = DateTimeOffset.UtcNow;
 
         Status = TaskStatus.InProgress;
-        StartedAt ??= now;  // Only set if not already started before
+        StartedAt ??= now;  // Only set if not already started
+        CompletedAt = null;  // Clear any previous completion
         UpdatedAt = now;
     }
 
@@ -151,7 +152,7 @@ public sealed class TaskItem : AggregateRoot
 
         Status = TaskStatus.Done;
         StartedAt ??= now;  // If completing from Todo, mark as started too
-        CompletedAt ??= now;  // Only set if not already completed in this cycle
+        CompletedAt = now;  // Always set to track most recent completion
         UpdatedAt = now;
     }
 

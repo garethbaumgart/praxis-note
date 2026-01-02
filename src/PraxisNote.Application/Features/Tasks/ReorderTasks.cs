@@ -17,6 +17,12 @@ public sealed class ReorderTasks(ITaskRepository taskRepository, IUnitOfWork uni
             return new Result(false, $"Invalid status: {command.Status}");
         }
 
+        // Done tasks are sorted by completion time, not position
+        if (status == TaskStatus.Done)
+        {
+            return new Result(false, "Cannot reorder tasks in Done status. Done tasks are sorted by completion time.");
+        }
+
         var tasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
         var tasksInStatus = tasks
             .Where(t => t.Status == status)

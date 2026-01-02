@@ -43,7 +43,14 @@ export class TaskService {
   readonly doneTasks = computed(() =>
     this._tasks()
       .filter(t => t.status === 'Done')
-      .sort((a, b) => a.position - b.position)
+      .sort((a, b) => {
+        // Sort by completedAt descending (most recent first)
+        // Tasks without completedAt are placed at the end
+        if (!a.completedAt && !b.completedAt) return 0;
+        if (!a.completedAt) return 1;
+        if (!b.completedAt) return -1;
+        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
+      })
   );
 
   loadTasks(): void {
@@ -68,6 +75,7 @@ export class TaskService {
           status: 'Todo',
           position: 0,
           createdAt: new Date().toISOString(),
+          startedAt: null,
           completedAt: null,
         };
         // Push down existing Todo tasks and add new one at position 0
@@ -95,6 +103,7 @@ export class TaskService {
   changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done'): void {
     this.http.put(`/api/tasks/${id}/status`, { status }).subscribe({
       next: () => {
+        const now = new Date().toISOString();
         this._tasks.update(tasks => {
           // Push down tasks in target column
           const updated = tasks.map(t => {
@@ -103,7 +112,8 @@ export class TaskService {
                 ...t,
                 status,
                 position: 0,
-                completedAt: status === 'Done' ? new Date().toISOString() : null,
+                startedAt: status === 'Todo' ? null : (t.startedAt ?? now),
+                completedAt: status === 'Done' ? now : null,
               };
             }
             if (t.status === status) {
@@ -119,6 +129,11 @@ export class TaskService {
   }
 
   reorderTasks(status: 'Todo' | 'InProgress' | 'Done', taskIds: string[]): void {
+    // Done tasks are sorted by completion time, not position - reject reorder requests
+    if (status === 'Done') {
+      return;
+    }
+
     // Update positions locally immediately (optimistic update)
     this._tasks.update(tasks =>
       tasks.map(t => {

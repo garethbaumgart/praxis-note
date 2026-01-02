@@ -112,17 +112,20 @@ public class TaskItemTests
     }
 
     [Fact]
-    public void Start_WhenAlreadyStarted_DoesNotUpdateStartedAt()
+    public void Start_WhenAlreadyStarted_PreservesOriginalStartedAt()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
         task.Start();
         var originalStartedAt = task.StartedAt;
 
+        // Small delay to ensure time difference
+        Thread.Sleep(1);
+
         // Act
         task.Start();
 
-        // Assert
+        // Assert - StartedAt should be preserved to track when work first began
         Assert.Equal(originalStartedAt, task.StartedAt);
     }
 
@@ -159,18 +162,22 @@ public class TaskItemTests
     }
 
     [Fact]
-    public void Complete_WhenAlreadyCompleted_PreservesOriginalCompletedAt()
+    public void Complete_WhenCalledAgain_UpdatesCompletedAtToMostRecentTime()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
         task.Complete();
         var originalCompletedAt = task.CompletedAt;
 
+        // Small delay to ensure time difference
+        Thread.Sleep(1);
+
         // Act
         task.Complete();
 
-        // Assert
-        Assert.Equal(originalCompletedAt, task.CompletedAt);
+        // Assert - CompletedAt should be updated to the most recent completion time
+        Assert.NotNull(task.CompletedAt);
+        Assert.True(task.CompletedAt > originalCompletedAt);
     }
 
     [Fact]

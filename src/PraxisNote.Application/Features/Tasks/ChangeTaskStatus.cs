@@ -23,15 +23,17 @@ public sealed class ChangeTaskStatus(ITaskRepository taskRepository, IUnitOfWork
             return false;
         }
 
-        // Push down tasks in target column
-        var allTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
-        var tasksInTargetColumn = allTasks.Where(t => t.Status == targetStatus && t.Id != task.Id);
-        foreach (var t in tasksInTargetColumn)
+        // Push down tasks in target column (only for Todo and InProgress, Done is sorted by completion time)
+        if (targetStatus != TaskStatus.Done)
         {
-            t.SetPosition(t.Position + 1);
+            var allTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
+            var tasksInTargetColumn = allTasks.Where(t => t.Status == targetStatus && t.Id != task.Id);
+            foreach (var t in tasksInTargetColumn)
+            {
+                t.SetPosition(t.Position + 1);
+            }
         }
-
-        // Move task to new column at position 0
+        // Always set position for data consistency, even for Done tasks
         task.SetPosition(0);
         switch (targetStatus)
         {
