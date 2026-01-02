@@ -37,7 +37,7 @@ import { AuthService } from '../auth';
           <p class="font-medium text-foreground mb-1">Tasks</p>
           <p class="text-sm text-foreground-secondary">View your board</p>
         </button>
-        <button class="group p-4 bg-surface border border-border rounded-xl hover:border-amber-400 hover:shadow-md transition-all duration-200 text-left" aria-label="Search">
+        <button class="group p-4 bg-surface border border-border rounded-xl hover:border-accent-foreground hover:shadow-md transition-all duration-200 text-left" aria-label="Search">
           <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-3 group-hover:bg-amber-200 transition-colors">
             <i class="pi pi-search text-amber-600" aria-hidden="true"></i>
           </div>

@@ -19,7 +19,7 @@
 
   /* Borders */
   --color-border-default: var(--color-gray-200);
-  --color-border-muted: var(--color-gray-100);
+  --color-border-muted-base: var(--color-gray-100);
 
   /* Primary accent (violet) */
   --color-primary-bg: var(--color-violet-100);
@@ -61,7 +61,7 @@
   --color-text-muted: var(--color-gray-500);
 
   --color-border-default: var(--color-gray-700);
-  --color-border-muted: var(--color-gray-800);
+  --color-border-muted-base: var(--color-gray-800);
 
   --color-primary-bg: var(--color-violet-900);
   --color-primary-bg-hover: var(--color-violet-800);
@@ -104,7 +104,7 @@
 
   /* Borders */
   --color-border: var(--color-border-default);
-  --color-border-muted: var(--color-border-muted);
+  --color-border-muted: var(--color-border-muted-base);
 
   /* Primary */
   --color-accent: var(--color-primary-bg);
