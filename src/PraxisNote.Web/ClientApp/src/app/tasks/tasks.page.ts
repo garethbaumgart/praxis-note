@@ -13,14 +13,14 @@ import { Task } from './task.model';
     <div class="max-w-7xl mx-auto px-6 py-8">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-semibold text-gray-800">Tasks</h1>
+        <h1 class="text-xl font-semibold text-foreground">Tasks</h1>
         <button
-          class="flex items-center gap-2 h-9 px-3 text-sm font-medium text-gray-900 bg-violet-100 hover:bg-violet-200 rounded-lg transition-colors"
+          class="flex items-center gap-2 h-9 px-3 text-sm font-medium text-foreground bg-accent hover:bg-accent-hover rounded-lg transition-colors"
           (click)="showDialog.set(true)"
         >
-          <i class="pi pi-plus text-violet-600"></i>
+          <i class="pi pi-plus text-accent-foreground"></i>
           <span>Add Task</span>
-          <kbd class="ml-1 px-1.5 py-0.5 text-xs text-violet-500 bg-violet-50 rounded font-sans">&#8963;N</kbd>
+          <kbd class="ml-1 px-1.5 py-0.5 text-xs text-accent-foreground bg-accent rounded font-sans">&#8984;&#8679;N</kbd>
         </button>
       </div>
 
@@ -34,16 +34,16 @@ import { Task } from './task.model';
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Todo Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-slate-100"
-            [class.bg-slate-200]="dragOverColumn() === 'Todo'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-todo"
+            [class.bg-todo-hover]="dragOverColumn() === 'Todo'"
             pDroppable="tasks"
             (onDrop)="onDrop('Todo')"
             (onDragEnter)="dragOverColumn.set('Todo')"
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs font-medium text-slate-600 uppercase tracking-wide">Todo</span>
-              <span class="text-xs text-slate-400">{{ taskService.todoTasks().length }}</span>
+              <span class="text-xs font-medium text-todo-foreground uppercase tracking-wide">Todo</span>
+              <span class="text-xs text-todo-foreground-muted">{{ taskService.todoTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.todoTasks(); track task.id; let idx = $index) {
@@ -62,23 +62,23 @@ import { Task } from './task.model';
                   />
                 </div>
               } @empty {
-                <p class="text-sm text-gray-400 text-center py-8">No tasks yet</p>
+                <p class="text-sm text-foreground-muted text-center py-8">No tasks yet</p>
               }
             </div>
           </div>
 
           <!-- In Progress Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-sky-100"
-            [class.bg-sky-200]="dragOverColumn() === 'InProgress'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-inprogress"
+            [class.bg-inprogress-hover]="dragOverColumn() === 'InProgress'"
             pDroppable="tasks"
             (onDrop)="onDrop('InProgress')"
             (onDragEnter)="dragOverColumn.set('InProgress')"
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs font-medium text-sky-700 uppercase tracking-wide">In Progress</span>
-              <span class="text-xs text-sky-500">{{ taskService.inProgressTasks().length }}</span>
+              <span class="text-xs font-medium text-inprogress-foreground uppercase tracking-wide">In Progress</span>
+              <span class="text-xs text-inprogress-foreground-muted">{{ taskService.inProgressTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.inProgressTasks(); track task.id; let idx = $index) {
@@ -97,23 +97,23 @@ import { Task } from './task.model';
                   />
                 </div>
               } @empty {
-                <p class="text-sm text-gray-400 text-center py-8">Nothing in progress</p>
+                <p class="text-sm text-foreground-muted text-center py-8">Nothing in progress</p>
               }
             </div>
           </div>
 
           <!-- Done Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-emerald-100"
-            [class.bg-emerald-200]="dragOverColumn() === 'Done'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-done"
+            [class.bg-done-hover]="dragOverColumn() === 'Done'"
             pDroppable="tasks"
             (onDrop)="onDrop('Done')"
             (onDragEnter)="dragOverColumn.set('Done')"
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs font-medium text-emerald-700 uppercase tracking-wide">Done</span>
-              <span class="text-xs text-emerald-500">{{ taskService.doneTasks().length }}</span>
+              <span class="text-xs font-medium text-done-foreground uppercase tracking-wide">Done</span>
+              <span class="text-xs text-done-foreground-muted">{{ taskService.doneTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.doneTasks(); track task.id; let idx = $index) {
@@ -132,7 +132,7 @@ import { Task } from './task.model';
                   />
                 </div>
               } @empty {
-                <p class="text-sm text-gray-400 text-center py-8">Complete some tasks!</p>
+                <p class="text-sm text-foreground-muted text-center py-8">Complete some tasks!</p>
               }
             </div>
           </div>
@@ -158,26 +158,26 @@ import { Task } from './task.model';
           [value]="newTaskTitle()"
           (input)="newTaskTitle.set($any($event.target).value)"
           placeholder="Task name..."
-          class="w-full text-lg font-medium text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-0 p-0 bg-transparent"
+          class="w-full text-lg font-medium text-foreground placeholder-foreground-muted border-0 focus:outline-none focus:ring-0 p-0 bg-transparent"
           (keydown.enter)="createTask(newTaskTitle())"
           (keydown.escape)="showDialog.set(false)"
         />
-        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <div class="flex items-center gap-2 text-sm text-gray-500">
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-border-muted">
+          <div class="flex items-center gap-2 text-sm text-foreground-secondary">
             <i class="pi pi-inbox"></i>
             <span>Todo</span>
           </div>
           <div class="flex gap-2">
             <button
               type="button"
-              class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+              class="px-3 py-1.5 text-sm text-foreground-secondary hover:bg-surface-muted rounded-md transition-colors"
               (click)="showDialog.set(false)"
             >
               Cancel
             </button>
             <button
               type="button"
-              class="px-3 py-1.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-md transition-colors"
+              class="px-3 py-1.5 text-sm font-medium text-white bg-accent-solid hover:bg-accent-solid-hover rounded-md transition-colors"
               (click)="createTask(newTaskTitle())"
             >
               Add Task
@@ -214,8 +214,8 @@ export class TasksPage implements OnInit {
       return;
     }
 
-    // Ctrl+N to open add task dialog
-    if (event.key.toLowerCase() === 'n' && event.ctrlKey && !this.showDialog()) {
+    // Cmd+Shift+N to open add task dialog
+    if (event.key.toLowerCase() === 'n' && event.metaKey && event.shiftKey && !this.showDialog()) {
       event.preventDefault();
       this.showDialog.set(true);
     }

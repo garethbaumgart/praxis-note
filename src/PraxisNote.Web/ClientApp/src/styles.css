@@ -3,6 +3,136 @@
 @import "tailwindcss/utilities" layer(utilities);
 @import "primeicons/primeicons.css";
 
+/* ========================================
+   Semantic Color Tokens - Light Mode
+   ======================================== */
+:root {
+  /* Backgrounds */
+  --color-bg-base: var(--color-white);
+  --color-bg-subtle: var(--color-gray-50);
+  --color-bg-muted: var(--color-gray-100);
+
+  /* Text */
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
+  --color-text-muted: var(--color-gray-400);
+
+  /* Borders */
+  --color-border-default: var(--color-gray-200);
+  --color-border-muted-base: var(--color-gray-100);
+
+  /* Primary accent (violet) */
+  --color-primary-bg: var(--color-violet-100);
+  --color-primary-bg-hover: var(--color-violet-200);
+  --color-primary-text: var(--color-violet-600);
+  --color-primary-solid: var(--color-violet-600);
+  --color-primary-solid-hover: var(--color-violet-700);
+
+  /* Status columns */
+  --color-todo-bg: var(--color-slate-100);
+  --color-todo-bg-hover: var(--color-slate-200);
+  --color-todo-text: var(--color-slate-600);
+  --color-todo-text-muted: var(--color-slate-400);
+  --color-todo-border: var(--color-slate-200);
+
+  --color-inprogress-bg: var(--color-sky-100);
+  --color-inprogress-bg-hover: var(--color-sky-200);
+  --color-inprogress-text: var(--color-sky-700);
+  --color-inprogress-text-muted: var(--color-sky-500);
+  --color-inprogress-border: var(--color-sky-200);
+
+  --color-done-bg: var(--color-emerald-100);
+  --color-done-bg-hover: var(--color-emerald-200);
+  --color-done-text: var(--color-emerald-700);
+  --color-done-text-muted: var(--color-emerald-500);
+  --color-done-border: var(--color-emerald-200);
+}
+
+/* ========================================
+   Dark Mode Overrides
+   ======================================== */
+.dark-mode {
+  --color-bg-base: var(--color-gray-900);
+  --color-bg-subtle: var(--color-gray-800);
+  --color-bg-muted: var(--color-gray-700);
+
+  --color-text-primary: var(--color-gray-100);
+  --color-text-secondary: var(--color-gray-400);
+  --color-text-muted: var(--color-gray-500);
+
+  --color-border-default: var(--color-gray-700);
+  --color-border-muted-base: var(--color-gray-800);
+
+  --color-primary-bg: var(--color-violet-900);
+  --color-primary-bg-hover: var(--color-violet-800);
+  --color-primary-text: var(--color-violet-400);
+  --color-primary-solid: var(--color-violet-600);
+  --color-primary-solid-hover: var(--color-violet-500);
+
+  --color-todo-bg: var(--color-slate-800);
+  --color-todo-bg-hover: var(--color-slate-700);
+  --color-todo-text: var(--color-slate-400);
+  --color-todo-text-muted: var(--color-slate-500);
+  --color-todo-border: var(--color-slate-700);
+
+  --color-inprogress-bg: var(--color-sky-900);
+  --color-inprogress-bg-hover: var(--color-sky-800);
+  --color-inprogress-text: var(--color-sky-400);
+  --color-inprogress-text-muted: var(--color-sky-500);
+  --color-inprogress-border: var(--color-sky-800);
+
+  --color-done-bg: var(--color-emerald-900);
+  --color-done-bg-hover: var(--color-emerald-800);
+  --color-done-text: var(--color-emerald-400);
+  --color-done-text-muted: var(--color-emerald-500);
+  --color-done-border: var(--color-emerald-800);
+}
+
+/* ========================================
+   Extend Tailwind Theme
+   ======================================== */
+@theme {
+  /* Backgrounds */
+  --color-surface: var(--color-bg-base);
+  --color-surface-subtle: var(--color-bg-subtle);
+  --color-surface-muted: var(--color-bg-muted);
+
+  /* Text */
+  --color-foreground: var(--color-text-primary);
+  --color-foreground-secondary: var(--color-text-secondary);
+  --color-foreground-muted: var(--color-text-muted);
+
+  /* Borders */
+  --color-border: var(--color-border-default);
+  --color-border-muted: var(--color-border-muted-base);
+
+  /* Primary */
+  --color-accent: var(--color-primary-bg);
+  --color-accent-hover: var(--color-primary-bg-hover);
+  --color-accent-foreground: var(--color-primary-text);
+  --color-accent-solid: var(--color-primary-solid);
+  --color-accent-solid-hover: var(--color-primary-solid-hover);
+
+  /* Status */
+  --color-todo: var(--color-todo-bg);
+  --color-todo-hover: var(--color-todo-bg-hover);
+  --color-todo-foreground: var(--color-todo-text);
+  --color-todo-foreground-muted: var(--color-todo-text-muted);
+  --color-todo-border: var(--color-todo-border);
+
+  --color-inprogress: var(--color-inprogress-bg);
+  --color-inprogress-hover: var(--color-inprogress-bg-hover);
+  --color-inprogress-foreground: var(--color-inprogress-text);
+  --color-inprogress-foreground-muted: var(--color-inprogress-text-muted);
+  --color-inprogress-border: var(--color-inprogress-border);
+
+  --color-done: var(--color-done-bg);
+  --color-done-hover: var(--color-done-bg-hover);
+  --color-done-foreground: var(--color-done-text);
+  --color-done-foreground-muted: var(--color-done-text-muted);
+  --color-done-border: var(--color-done-border);
+}
+
 /* Custom animations */
 @keyframes slide-in {
   from {
