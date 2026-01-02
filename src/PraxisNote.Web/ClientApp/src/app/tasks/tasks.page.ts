@@ -16,11 +16,13 @@ import { Task } from './task.model';
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-xl font-semibold text-gray-800">Tasks</h1>
-        <p-button
-          label="Add Task"
-          icon="pi pi-plus"
-          (onClick)="showDialog.set(true)"
-        />
+        <button
+          class="flex items-center gap-2 h-9 px-3 text-sm font-medium text-gray-900 bg-violet-100 hover:bg-violet-200 rounded-lg transition-colors"
+          (click)="showDialog.set(true)"
+        >
+          <i class="pi pi-plus text-violet-600"></i>
+          <span>Add Task</span>
+        </button>
       </div>
 
       <!-- Loading state -->
@@ -33,8 +35,8 @@ import { Task } from './task.model';
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Todo Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-slate-50/50"
-            [class.bg-slate-100]="dragOverColumn() === 'Todo'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-slate-100"
+            [class.bg-slate-200]="dragOverColumn() === 'Todo'"
             pDroppable="tasks"
             (onDrop)="onDrop('Todo')"
             (onDragEnter)="dragOverColumn.set('Todo')"
@@ -69,8 +71,8 @@ import { Task } from './task.model';
 
           <!-- In Progress Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-sky-50/50"
-            [class.bg-sky-100]="dragOverColumn() === 'InProgress'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-sky-100"
+            [class.bg-sky-200]="dragOverColumn() === 'InProgress'"
             pDroppable="tasks"
             (onDrop)="onDrop('InProgress')"
             (onDragEnter)="dragOverColumn.set('InProgress')"
@@ -105,8 +107,8 @@ import { Task } from './task.model';
 
           <!-- Done Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-teal-50/50"
-            [class.bg-teal-100]="dragOverColumn() === 'Done'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-teal-100"
+            [class.bg-teal-200]="dragOverColumn() === 'Done'"
             pDroppable="tasks"
             (onDrop)="onDrop('Done')"
             (onDragEnter)="dragOverColumn.set('Done')"
