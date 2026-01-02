@@ -43,8 +43,8 @@ import { Task } from './task.model';
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-2 h-2 rounded-full bg-slate-400"></div>
-              <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Todo</span>
+              <div class="w-2 h-2 rounded-full bg-slate-500"></div>
+              <span class="text-xs font-medium text-slate-600 uppercase tracking-wide">Todo</span>
               <span class="text-xs text-slate-400">{{ taskService.todoTasks().length }}</span>
             </div>
             <div class="space-y-2">
@@ -78,9 +78,9 @@ import { Task } from './task.model';
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-2 h-2 rounded-full bg-sky-400"></div>
-              <span class="text-xs font-medium text-sky-600 uppercase tracking-wide">In Progress</span>
-              <span class="text-xs text-sky-400">{{ taskService.inProgressTasks().length }}</span>
+              <div class="w-2 h-2 rounded-full bg-sky-600"></div>
+              <span class="text-xs font-medium text-sky-700 uppercase tracking-wide">In Progress</span>
+              <span class="text-xs text-sky-500">{{ taskService.inProgressTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.inProgressTasks(); track task.id) {
@@ -113,9 +113,9 @@ import { Task } from './task.model';
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-2 h-2 rounded-full bg-teal-400"></div>
-              <span class="text-xs font-medium text-teal-600 uppercase tracking-wide">Done</span>
-              <span class="text-xs text-teal-400">{{ taskService.doneTasks().length }}</span>
+              <div class="w-2 h-2 rounded-full bg-teal-600"></div>
+              <span class="text-xs font-medium text-teal-700 uppercase tracking-wide">Done</span>
+              <span class="text-xs text-teal-500">{{ taskService.doneTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.doneTasks(); track task.id) {
