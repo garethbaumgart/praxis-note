@@ -8,7 +8,7 @@ import { Task } from './task.model';
   standalone: true,
   imports: [Button, InputText],
   template: `
-    <div class="bg-white rounded-md py-2 px-3 hover:bg-gray-50 transition-colors group">
+    <div class="bg-white rounded-md py-2 px-3 border border-gray-200/60 hover:border-gray-300 transition-colors group">
       @if (editing()) {
         <div class="flex gap-2">
           <input
