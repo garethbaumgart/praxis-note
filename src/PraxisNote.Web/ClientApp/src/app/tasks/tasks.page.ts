@@ -57,7 +57,6 @@ import { Task } from './task.model';
                 >
                   <app-task-card
                     [task]="task"
-                    (onStatusChange)="changeStatus(task.id, $event)"
                     (onEdit)="updateTask(task.id, $event)"
                     (onDelete)="deleteTask(task.id)"
                   />
@@ -92,7 +91,6 @@ import { Task } from './task.model';
                 >
                   <app-task-card
                     [task]="task"
-                    (onStatusChange)="changeStatus(task.id, $event)"
                     (onEdit)="updateTask(task.id, $event)"
                     (onDelete)="deleteTask(task.id)"
                   />
@@ -127,7 +125,6 @@ import { Task } from './task.model';
                 >
                   <app-task-card
                     [task]="task"
-                    (onStatusChange)="changeStatus(task.id, $event)"
                     (onEdit)="updateTask(task.id, $event)"
                     (onDelete)="deleteTask(task.id)"
                   />
@@ -216,10 +213,6 @@ export class TasksPage implements OnInit {
 
   updateTask(id: string, title: string): void {
     this.taskService.updateTask(id, title);
-  }
-
-  changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done'): void {
-    this.taskService.changeStatus(id, status);
   }
 
   deleteTask(id: string): void {

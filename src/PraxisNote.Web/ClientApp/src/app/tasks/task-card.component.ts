@@ -81,7 +81,6 @@ import { Task } from './task.model';
 export class TaskCardComponent {
   readonly task = input.required<Task>();
 
-  readonly onStatusChange = output<'Todo' | 'InProgress' | 'Done'>();
   readonly onEdit = output<string>();
   readonly onDelete = output<void>();
 
