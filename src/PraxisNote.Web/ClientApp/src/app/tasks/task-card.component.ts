@@ -2,15 +2,14 @@ import { Component, input, output, signal } from '@angular/core';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
-import { Tooltip } from 'primeng/tooltip';
 import { Task } from './task.model';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
-  imports: [Card, Button, InputText, Tooltip],
+  imports: [Card, Button, InputText],
   template: `
-    <p-card class="block">
+    <p-card class="block group">
       @if (editing()) {
         <div class="flex gap-2">
           <input
@@ -43,46 +42,7 @@ import { Task } from './task.model';
           <p class="text-sm text-gray-900 flex-1" [class.line-through]="task().status === 'Done'" [class.text-gray-400]="task().status === 'Done'">
             {{ task().title }}
           </p>
-          <div class="flex items-center gap-1 shrink-0">
-            @if (task().status === 'Todo') {
-              <p-button
-                icon="pi pi-play"
-                [rounded]="true"
-                [text]="true"
-                size="small"
-                severity="info"
-                (onClick)="onStatusChange.emit('InProgress')"
-                pTooltip="Start"
-                tooltipPosition="top"
-                aria-label="Start task"
-              />
-            }
-            @if (task().status === 'InProgress') {
-              <p-button
-                icon="pi pi-check"
-                [rounded]="true"
-                [text]="true"
-                size="small"
-                severity="success"
-                (onClick)="onStatusChange.emit('Done')"
-                pTooltip="Complete"
-                tooltipPosition="top"
-                aria-label="Complete task"
-              />
-            }
-            @if (task().status === 'Done') {
-              <p-button
-                icon="pi pi-replay"
-                [rounded]="true"
-                [text]="true"
-                size="small"
-                severity="secondary"
-                (onClick)="onStatusChange.emit('Todo')"
-                pTooltip="Reopen"
-                tooltipPosition="top"
-                aria-label="Reopen task"
-              />
-            }
+          <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <p-button
               icon="pi pi-pencil"
               [rounded]="true"

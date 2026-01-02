@@ -2,13 +2,15 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
+import { Draggable, Droppable } from 'primeng/dragdrop';
 import { TaskService } from './task.service';
 import { TaskCardComponent } from './task-card.component';
+import { Task } from './task.model';
 
 @Component({
   selector: 'app-tasks-page',
   standalone: true,
-  imports: [Button, Dialog, InputText, TaskCardComponent],
+  imports: [Button, Dialog, InputText, TaskCardComponent, Draggable, Droppable],
   template: `
     <div class="max-w-7xl mx-auto px-6 py-8">
       <!-- Header -->
@@ -33,7 +35,15 @@ import { TaskCardComponent } from './task-card.component';
         <!-- Kanban Board -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Todo Column -->
-          <div class="bg-gray-50 rounded-xl p-4">
+          <div
+            class="bg-gray-50 rounded-xl p-4 min-h-48 transition-all"
+            [class.ring-2]="dragOverColumn() === 'Todo'"
+            [class.ring-gray-400]="dragOverColumn() === 'Todo'"
+            pDroppable="tasks"
+            (onDrop)="onDrop('Todo')"
+            (onDragEnter)="dragOverColumn.set('Todo')"
+            (onDragLeave)="dragOverColumn.set(null)"
+          >
             <div class="flex items-center gap-2 mb-4">
               <div class="w-3 h-3 rounded-full bg-gray-400"></div>
               <h2 class="font-semibold text-gray-700">Todo</h2>
@@ -41,12 +51,19 @@ import { TaskCardComponent } from './task-card.component';
             </div>
             <div class="space-y-3">
               @for (task of taskService.todoTasks(); track task.id) {
-                <app-task-card
-                  [task]="task"
-                  (onStatusChange)="changeStatus(task.id, $event)"
-                  (onEdit)="updateTask(task.id, $event)"
-                  (onDelete)="deleteTask(task.id)"
-                />
+                <div
+                  pDraggable="tasks"
+                  (onDragStart)="onDragStart(task)"
+                  (onDragEnd)="onDragEnd()"
+                  class="cursor-grab active:cursor-grabbing"
+                >
+                  <app-task-card
+                    [task]="task"
+                    (onStatusChange)="changeStatus(task.id, $event)"
+                    (onEdit)="updateTask(task.id, $event)"
+                    (onDelete)="deleteTask(task.id)"
+                  />
+                </div>
               } @empty {
                 <p class="text-sm text-gray-400 text-center py-8">No tasks yet</p>
               }
@@ -54,7 +71,15 @@ import { TaskCardComponent } from './task-card.component';
           </div>
 
           <!-- In Progress Column -->
-          <div class="bg-blue-50 rounded-xl p-4">
+          <div
+            class="bg-blue-50 rounded-xl p-4 min-h-48 transition-all"
+            [class.ring-2]="dragOverColumn() === 'InProgress'"
+            [class.ring-blue-400]="dragOverColumn() === 'InProgress'"
+            pDroppable="tasks"
+            (onDrop)="onDrop('InProgress')"
+            (onDragEnter)="dragOverColumn.set('InProgress')"
+            (onDragLeave)="dragOverColumn.set(null)"
+          >
             <div class="flex items-center gap-2 mb-4">
               <div class="w-3 h-3 rounded-full bg-blue-500"></div>
               <h2 class="font-semibold text-blue-700">In Progress</h2>
@@ -62,12 +87,19 @@ import { TaskCardComponent } from './task-card.component';
             </div>
             <div class="space-y-3">
               @for (task of taskService.inProgressTasks(); track task.id) {
-                <app-task-card
-                  [task]="task"
-                  (onStatusChange)="changeStatus(task.id, $event)"
-                  (onEdit)="updateTask(task.id, $event)"
-                  (onDelete)="deleteTask(task.id)"
-                />
+                <div
+                  pDraggable="tasks"
+                  (onDragStart)="onDragStart(task)"
+                  (onDragEnd)="onDragEnd()"
+                  class="cursor-grab active:cursor-grabbing"
+                >
+                  <app-task-card
+                    [task]="task"
+                    (onStatusChange)="changeStatus(task.id, $event)"
+                    (onEdit)="updateTask(task.id, $event)"
+                    (onDelete)="deleteTask(task.id)"
+                  />
+                </div>
               } @empty {
                 <p class="text-sm text-blue-400 text-center py-8">Nothing in progress</p>
               }
@@ -75,7 +107,15 @@ import { TaskCardComponent } from './task-card.component';
           </div>
 
           <!-- Done Column -->
-          <div class="bg-green-50 rounded-xl p-4">
+          <div
+            class="bg-green-50 rounded-xl p-4 min-h-48 transition-all"
+            [class.ring-2]="dragOverColumn() === 'Done'"
+            [class.ring-green-400]="dragOverColumn() === 'Done'"
+            pDroppable="tasks"
+            (onDrop)="onDrop('Done')"
+            (onDragEnter)="dragOverColumn.set('Done')"
+            (onDragLeave)="dragOverColumn.set(null)"
+          >
             <div class="flex items-center gap-2 mb-4">
               <div class="w-3 h-3 rounded-full bg-green-500"></div>
               <h2 class="font-semibold text-green-700">Done</h2>
@@ -83,12 +123,19 @@ import { TaskCardComponent } from './task-card.component';
             </div>
             <div class="space-y-3">
               @for (task of taskService.doneTasks(); track task.id) {
-                <app-task-card
-                  [task]="task"
-                  (onStatusChange)="changeStatus(task.id, $event)"
-                  (onEdit)="updateTask(task.id, $event)"
-                  (onDelete)="deleteTask(task.id)"
-                />
+                <div
+                  pDraggable="tasks"
+                  (onDragStart)="onDragStart(task)"
+                  (onDragEnd)="onDragEnd()"
+                  class="cursor-grab active:cursor-grabbing"
+                >
+                  <app-task-card
+                    [task]="task"
+                    (onStatusChange)="changeStatus(task.id, $event)"
+                    (onEdit)="updateTask(task.id, $event)"
+                    (onDelete)="deleteTask(task.id)"
+                  />
+                </div>
               } @empty {
                 <p class="text-sm text-green-400 text-center py-8">Complete some tasks!</p>
               }
@@ -156,6 +203,8 @@ export class TasksPage implements OnInit {
   readonly taskService = inject(TaskService);
   readonly showDialog = signal(false);
   readonly newTaskTitle = signal('');
+  readonly draggedTask = signal<Task | null>(null);
+  readonly dragOverColumn = signal<'Todo' | 'InProgress' | 'Done' | null>(null);
 
   ngOnInit(): void {
     this.taskService.loadTasks();
@@ -179,5 +228,23 @@ export class TasksPage implements OnInit {
 
   deleteTask(id: string): void {
     this.taskService.deleteTask(id);
+  }
+
+  onDragStart(task: Task): void {
+    this.draggedTask.set(task);
+  }
+
+  onDragEnd(): void {
+    this.draggedTask.set(null);
+    this.dragOverColumn.set(null);
+  }
+
+  onDrop(targetStatus: 'Todo' | 'InProgress' | 'Done'): void {
+    const task = this.draggedTask();
+    if (task && task.status !== targetStatus) {
+      this.taskService.changeStatus(task.id, targetStatus);
+    }
+    this.draggedTask.set(null);
+    this.dragOverColumn.set(null);
   }
 }
