@@ -1,5 +1,4 @@
-import { Component, computed, input, output, signal } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { Component, input, output, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Task } from './task.model';
@@ -7,9 +6,9 @@ import { Task } from './task.model';
 @Component({
   selector: 'app-task-card',
   standalone: true,
-  imports: [NgClass, Button, InputText],
+  imports: [Button, InputText],
   template: `
-    <div class="bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md transition-shadow group">
+    <div class="bg-white rounded-md py-2 px-3 hover:bg-gray-50 transition-colors group">
       @if (editing()) {
         <div class="flex gap-2">
           <input
@@ -38,16 +37,6 @@ import { Task } from './task.model';
           />
         </div>
       } @else {
-        <!-- Status badge -->
-        <div class="mb-2">
-          <span
-            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-            [ngClass]="statusBadgeClass()"
-          >
-            {{ statusLabel() }}
-          </span>
-        </div>
-
         <!-- Task content with document icon -->
         <div class="flex items-start gap-2">
           <i class="pi pi-file text-gray-400 text-sm mt-0.5"></i>
@@ -58,28 +47,27 @@ import { Task } from './task.model';
           >
             {{ task().title }}
           </p>
-        </div>
-
-        <!-- Hover actions -->
-        <div class="flex justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <p-button
-            icon="pi pi-pencil"
-            [rounded]="true"
-            [text]="true"
-            size="small"
-            severity="secondary"
-            (onClick)="startEdit()"
-            aria-label="Edit task"
-          />
-          <p-button
-            icon="pi pi-trash"
-            [rounded]="true"
-            [text]="true"
-            size="small"
-            severity="danger"
-            (onClick)="onDelete.emit()"
-            aria-label="Delete task"
-          />
+          <!-- Hover actions -->
+          <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            <p-button
+              icon="pi pi-pencil"
+              [rounded]="true"
+              [text]="true"
+              size="small"
+              severity="secondary"
+              (onClick)="startEdit()"
+              aria-label="Edit task"
+            />
+            <p-button
+              icon="pi pi-trash"
+              [rounded]="true"
+              [text]="true"
+              size="small"
+              severity="danger"
+              (onClick)="onDelete.emit()"
+              aria-label="Delete task"
+            />
+          </div>
         </div>
       }
     </div>
@@ -94,22 +82,6 @@ export class TaskCardComponent {
 
   readonly editing = signal(false);
   readonly editTitle = signal('');
-
-  readonly statusLabel = computed(() => {
-    switch (this.task().status) {
-      case 'Todo': return 'Todo';
-      case 'InProgress': return 'In Progress';
-      case 'Done': return 'Done';
-    }
-  });
-
-  readonly statusBadgeClass = computed(() => {
-    switch (this.task().status) {
-      case 'Todo': return 'bg-gray-100 text-gray-600';
-      case 'InProgress': return 'bg-blue-50 text-blue-600';
-      case 'Done': return 'bg-green-50 text-green-600';
-    }
-  });
 
   startEdit(): void {
     this.editTitle.set(this.task().title);
