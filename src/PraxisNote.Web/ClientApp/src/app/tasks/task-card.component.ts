@@ -106,8 +106,10 @@ export class TaskCardComponent {
 
   readonly relativeTime = computed(() => {
     const task = this.task();
-    if (task.status === 'InProgress' && task.startedAt) {
-      return this.formatElapsedTime(task.startedAt);
+    if (task.status === 'InProgress') {
+      // Use startedAt if available, fall back to createdAt for older tasks
+      const startTime = task.startedAt ?? task.createdAt;
+      return this.formatElapsedTime(startTime);
     }
     if (task.status === 'Done' && task.completedAt) {
       return this.formatRelativeTime(task.completedAt);
