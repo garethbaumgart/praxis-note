@@ -17,10 +17,8 @@ import { Task } from './task.model';
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-xl font-semibold text-gray-800">Tasks</h1>
         <p-button
-          label="New"
+          label="Add Task"
           icon="pi pi-plus"
-          [text]="true"
-          severity="secondary"
           (onClick)="showDialog.set(true)"
         />
       </div>
@@ -48,11 +46,13 @@ import { Task } from './task.model';
               <span class="text-xs text-slate-400">{{ taskService.todoTasks().length }}</span>
             </div>
             <div class="space-y-2">
-              @for (task of taskService.todoTasks(); track task.id) {
+              @for (task of taskService.todoTasks(); track task.id; let idx = $index) {
                 <div
                   pDraggable="tasks"
+                  pDroppable="tasks"
                   (onDragStart)="onDragStart(task)"
                   (onDragEnd)="onDragEnd()"
+                  (onDrop)="onDropOnTask('Todo', idx)"
                   class="cursor-grab active:cursor-grabbing"
                 >
                   <app-task-card
@@ -82,11 +82,13 @@ import { Task } from './task.model';
               <span class="text-xs text-sky-500">{{ taskService.inProgressTasks().length }}</span>
             </div>
             <div class="space-y-2">
-              @for (task of taskService.inProgressTasks(); track task.id) {
+              @for (task of taskService.inProgressTasks(); track task.id; let idx = $index) {
                 <div
                   pDraggable="tasks"
+                  pDroppable="tasks"
                   (onDragStart)="onDragStart(task)"
                   (onDragEnd)="onDragEnd()"
+                  (onDrop)="onDropOnTask('InProgress', idx)"
                   class="cursor-grab active:cursor-grabbing"
                 >
                   <app-task-card
@@ -116,11 +118,13 @@ import { Task } from './task.model';
               <span class="text-xs text-teal-500">{{ taskService.doneTasks().length }}</span>
             </div>
             <div class="space-y-2">
-              @for (task of taskService.doneTasks(); track task.id) {
+              @for (task of taskService.doneTasks(); track task.id; let idx = $index) {
                 <div
                   pDraggable="tasks"
+                  pDroppable="tasks"
                   (onDragStart)="onDragStart(task)"
                   (onDragEnd)="onDragEnd()"
+                  (onDrop)="onDropOnTask('Done', idx)"
                   class="cursor-grab active:cursor-grabbing"
                 >
                   <app-task-card
@@ -233,6 +237,38 @@ export class TasksPage implements OnInit {
     if (task && task.status !== targetStatus) {
       this.taskService.changeStatus(task.id, targetStatus);
     }
+    this.draggedTask.set(null);
+    this.dragOverColumn.set(null);
+  }
+
+  onDropOnTask(targetStatus: 'Todo' | 'InProgress' | 'Done', targetIndex: number): void {
+    const task = this.draggedTask();
+    if (!task) return;
+
+    // Get tasks in target column
+    const tasksInColumn =
+      targetStatus === 'Todo'
+        ? this.taskService.todoTasks()
+        : targetStatus === 'InProgress'
+          ? this.taskService.inProgressTasks()
+          : this.taskService.doneTasks();
+
+    if (task.status === targetStatus) {
+      // Same column reorder
+      const currentIndex = tasksInColumn.findIndex(t => t.id === task.id);
+      if (currentIndex === targetIndex) return; // No change
+
+      // Build new order
+      const taskIds = tasksInColumn.map(t => t.id);
+      taskIds.splice(currentIndex, 1); // Remove from current position
+      taskIds.splice(targetIndex, 0, task.id); // Insert at target position
+
+      this.taskService.reorderTasks(targetStatus, taskIds);
+    } else {
+      // Cross-column move to specific position
+      this.taskService.changeStatus(task.id, targetStatus);
+    }
+
     this.draggedTask.set(null);
     this.dragOverColumn.set(null);
   }

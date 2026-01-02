@@ -13,15 +13,21 @@ export class TaskService {
   readonly loading = this._loading.asReadonly();
 
   readonly todoTasks = computed(() =>
-    this._tasks().filter(t => t.status === 'Todo')
+    this._tasks()
+      .filter(t => t.status === 'Todo')
+      .sort((a, b) => a.position - b.position)
   );
 
   readonly inProgressTasks = computed(() =>
-    this._tasks().filter(t => t.status === 'InProgress')
+    this._tasks()
+      .filter(t => t.status === 'InProgress')
+      .sort((a, b) => a.position - b.position)
   );
 
   readonly doneTasks = computed(() =>
-    this._tasks().filter(t => t.status === 'Done')
+    this._tasks()
+      .filter(t => t.status === 'Done')
+      .sort((a, b) => a.position - b.position)
   );
 
   loadTasks(): void {
@@ -44,10 +50,16 @@ export class TaskService {
           id: result.id,
           title,
           status: 'Todo',
+          position: 0,
           createdAt: new Date().toISOString(),
           completedAt: null,
         };
-        this._tasks.update(tasks => [newTask, ...tasks]);
+        // Push down existing Todo tasks and add new one at position 0
+        this._tasks.update(tasks =>
+          tasks.map(t =>
+            t.status === 'Todo' ? { ...t, position: t.position + 1 } : t
+          ).concat(newTask)
+        );
       },
     });
   }
@@ -66,19 +78,44 @@ export class TaskService {
   changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done'): void {
     this.http.put(`/api/tasks/${id}/status`, { status }).subscribe({
       next: () => {
+        this._tasks.update(tasks => {
+          // Push down tasks in target column
+          const updated = tasks.map(t => {
+            if (t.id === id) {
+              return {
+                ...t,
+                status,
+                position: 0,
+                completedAt: status === 'Done' ? new Date().toISOString() : null,
+              };
+            }
+            if (t.status === status) {
+              return { ...t, position: t.position + 1 };
+            }
+            return t;
+          });
+          return updated;
+        });
+      },
+      error: () => this.loadTasks(),
+    });
+  }
+
+  reorderTasks(status: 'Todo' | 'InProgress' | 'Done', taskIds: string[]): void {
+    this.http.put('/api/tasks/reorder', { status, taskIds }).subscribe({
+      next: () => {
+        // Update positions locally
         this._tasks.update(tasks =>
-          tasks.map(t =>
-            t.id === id
-              ? {
-                  ...t,
-                  status,
-                  completedAt: status === 'Done' ? new Date().toISOString() : null,
-                }
-              : t
-          )
+          tasks.map(t => {
+            if (t.status === status) {
+              const newPosition = taskIds.indexOf(t.id);
+              return newPosition >= 0 ? { ...t, position: newPosition } : t;
+            }
+            return t;
+          })
         );
       },
-      error: () => this.loadTasks(), // Reload to restore consistent state
+      error: () => this.loadTasks(),
     });
   }
 
@@ -87,7 +124,7 @@ export class TaskService {
       next: () => {
         this._tasks.update(tasks => tasks.filter(t => t.id !== id));
       },
-      error: () => this.loadTasks(), // Reload to restore consistent state
+      error: () => this.loadTasks(),
     });
   }
 }

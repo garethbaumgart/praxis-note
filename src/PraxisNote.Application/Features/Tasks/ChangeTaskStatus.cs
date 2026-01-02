@@ -23,6 +23,16 @@ public sealed class ChangeTaskStatus(ITaskRepository taskRepository, IUnitOfWork
             return false;
         }
 
+        // Push down tasks in target column
+        var allTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
+        var tasksInTargetColumn = allTasks.Where(t => t.Status == targetStatus && t.Id != task.Id);
+        foreach (var t in tasksInTargetColumn)
+        {
+            t.SetPosition(t.Position + 1);
+        }
+
+        // Move task to new column at position 0
+        task.SetPosition(0);
         switch (targetStatus)
         {
             case TaskStatus.Todo:
