@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<UpdateTask>();
         services.AddScoped<ChangeTaskStatus>();
         services.AddScoped<DeleteTask>();
+        services.AddScoped<ReorderTasks>();
 
         return services;
     }

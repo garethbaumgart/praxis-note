@@ -9,10 +9,10 @@ import { Task } from './task.model';
   imports: [Button, InputText],
   template: `
     <div
-      class="bg-white rounded-md py-2 px-3 border-l-2 transition-colors group"
-      [class.border-l-slate-500]="task().status === 'Todo'"
-      [class.border-l-sky-600]="task().status === 'InProgress'"
-      [class.border-l-teal-600]="task().status === 'Done'"
+      class="bg-white rounded-md py-2 px-3 border transition-colors group"
+      [class.border-slate-200]="task().status === 'Todo'"
+      [class.border-sky-200]="task().status === 'InProgress'"
+      [class.border-emerald-200]="task().status === 'Done'"
     >
       @if (editing()) {
         <div class="flex gap-2">
@@ -44,7 +44,15 @@ import { Task } from './task.model';
       } @else {
         <!-- Task content with document icon -->
         <div class="flex items-start gap-2">
-          <i class="pi pi-file text-gray-400 text-sm mt-0.5"></i>
+          <i
+            class="pi text-sm mt-0.5"
+            [class.pi-circle]="task().status === 'Todo'"
+            [class.text-slate-400]="task().status === 'Todo'"
+            [class.pi-clock]="task().status === 'InProgress'"
+            [class.text-sky-500]="task().status === 'InProgress'"
+            [class.pi-check-circle]="task().status === 'Done'"
+            [class.text-emerald-500]="task().status === 'Done'"
+          ></i>
           <p
             class="text-sm text-gray-800 flex-1"
             [class.line-through]="task().status === 'Done'"

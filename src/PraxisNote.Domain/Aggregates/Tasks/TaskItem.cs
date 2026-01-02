@@ -35,6 +35,14 @@ public sealed class TaskItem : AggregateRoot
     public TaskStatus Status { get; private set; }
 
     /// <summary>
+    /// Position within the status column for ordering.
+    /// Lower values appear first. New tasks start at position 0;
+    /// existing tasks in the same status column have their positions
+    /// incremented to maintain relative ordering.
+    /// </summary>
+    public int Position { get; private set; } = 0;
+
+    /// <summary>
     /// Optional due date for the task.
     /// </summary>
     public DueDate? DueDate { get; private set; }
@@ -191,6 +199,16 @@ public sealed class TaskItem : AggregateRoot
     public void ClearDueDate()
     {
         DueDate = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the task's position within its status column.
+    /// </summary>
+    public void SetPosition(int position)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(position);
+        Position = position;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

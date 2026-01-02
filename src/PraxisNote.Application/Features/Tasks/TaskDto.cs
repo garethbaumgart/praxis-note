@@ -4,5 +4,6 @@ public record TaskDto(
     Guid Id,
     string Title,
     string Status,
+    int Position,
     DateTimeOffset CreatedAt,
     DateTimeOffset? CompletedAt);

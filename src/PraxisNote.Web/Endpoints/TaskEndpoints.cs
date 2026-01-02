@@ -15,6 +15,7 @@ public static class TaskEndpoints
         group.MapPut("/{id:guid}", (Delegate)HandleUpdateTask);
         group.MapPut("/{id:guid}/status", (Delegate)HandleChangeStatus);
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteTask);
+        group.MapPut("/reorder", (Delegate)HandleReorderTasks);
     }
 
     private static async Task<IResult> HandleGetTasks(
@@ -123,6 +124,31 @@ public static class TaskEndpoints
         return success ? Results.NoContent() : Results.NotFound();
     }
 
+    private static async Task<IResult> HandleReorderTasks(
+        ClaimsPrincipal user,
+        ReorderTasksRequest request,
+        ReorderTasks reorderTasks,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(user);
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Status) || request.TaskIds is null || request.TaskIds.Count == 0)
+        {
+            return Results.BadRequest(new { error = "Status is required and at least one task ID must be provided" });
+        }
+
+        var command = new ReorderTasks.Command(userId.Value, request.Status, request.TaskIds);
+        var result = await reorderTasks.ExecuteAsync(command, cancellationToken);
+
+        return result.Success
+            ? Results.NoContent()
+            : Results.BadRequest(new { error = result.Error });
+    }
+
     private static Guid? GetUserId(ClaimsPrincipal user)
     {
         var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -133,3 +159,4 @@ public static class TaskEndpoints
 public record CreateTaskRequest(string Title);
 public record UpdateTaskRequest(string Title);
 public record ChangeStatusRequest(string Status);
+public record ReorderTasksRequest(string Status, IReadOnlyList<Guid> TaskIds);
