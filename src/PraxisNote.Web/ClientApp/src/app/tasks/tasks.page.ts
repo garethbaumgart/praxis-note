@@ -1,7 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { Button } from 'primeng/button';
+import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
 import { Dialog } from 'primeng/dialog';
-import { InputText } from 'primeng/inputtext';
 import { Draggable, Droppable } from 'primeng/dragdrop';
 import { TaskService } from './task.service';
 import { TaskCardComponent } from './task-card.component';
@@ -10,7 +8,7 @@ import { Task } from './task.model';
 @Component({
   selector: 'app-tasks-page',
   standalone: true,
-  imports: [Button, Dialog, InputText, TaskCardComponent, Draggable, Droppable],
+  imports: [Dialog, TaskCardComponent, Draggable, Droppable],
   template: `
     <div class="max-w-7xl mx-auto px-6 py-8">
       <!-- Header -->
@@ -22,6 +20,7 @@ import { Task } from './task.model';
         >
           <i class="pi pi-plus text-violet-600"></i>
           <span>Add Task</span>
+          <kbd class="ml-1 px-1.5 py-0.5 text-xs text-violet-500 bg-violet-50 rounded font-sans">&#8963;N</kbd>
         </button>
       </div>
 
@@ -149,51 +148,43 @@ import { Task } from './task.model';
       [visible]="showDialog()"
       (visibleChange)="showDialog.set($event)"
       [modal]="true"
-      [style]="{ width: '450px' }"
+      [style]="{ width: '420px' }"
       [draggable]="false"
       [showHeader]="false"
       [contentStyle]="{ padding: 0 }"
     >
-      <div class="p-6">
-        <!-- Header with icon -->
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center">
-            <i class="pi pi-plus text-xl text-violet-600"></i>
+      <div class="p-5">
+        <input
+          type="text"
+          [value]="newTaskTitle()"
+          (input)="newTaskTitle.set($any($event.target).value)"
+          placeholder="Task name..."
+          class="w-full text-lg font-medium text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-0 p-0 bg-transparent"
+          (keydown.enter)="createTask(newTaskTitle())"
+          (keydown.escape)="showDialog.set(false)"
+        />
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+          <div class="flex items-center gap-2 text-sm text-gray-500">
+            <i class="pi pi-inbox"></i>
+            <span>Todo</span>
           </div>
-          <div>
-            <h2 class="text-xl font-semibold text-gray-900">New Task</h2>
-            <p class="text-sm text-gray-500">Add a task to your board</p>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+              (click)="showDialog.set(false)"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-md transition-colors"
+              (click)="createTask(newTaskTitle())"
+            >
+              Add Task
+            </button>
           </div>
         </div>
-
-        <!-- Input -->
-        <div class="flex flex-col gap-2">
-          <label for="taskTitle" class="text-sm font-medium text-gray-700">Task title</label>
-          <input
-            pInputText
-            id="taskTitle"
-            [value]="newTaskTitle()"
-            (input)="newTaskTitle.set($any($event.target).value)"
-            placeholder="e.g., Review pull request, Update documentation..."
-            class="w-full"
-            (keydown.enter)="createTask(newTaskTitle())"
-          />
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="flex justify-end gap-2 px-6 py-4 bg-gray-50 border-t border-gray-100">
-        <p-button
-          label="Cancel"
-          [text]="true"
-          severity="secondary"
-          (onClick)="showDialog.set(false)"
-        />
-        <p-button
-          label="Create Task"
-          icon="pi pi-check"
-          (onClick)="createTask(newTaskTitle())"
-        />
       </div>
     </p-dialog>
   `,
@@ -207,6 +198,15 @@ export class TasksPage implements OnInit {
 
   ngOnInit(): void {
     this.taskService.loadTasks();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    // Ctrl+N to open add task dialog
+    if (event.key.toLowerCase() === 'n' && event.ctrlKey && !this.showDialog()) {
+      event.preventDefault();
+      this.showDialog.set(true);
+    }
   }
 
   createTask(title: string): void {

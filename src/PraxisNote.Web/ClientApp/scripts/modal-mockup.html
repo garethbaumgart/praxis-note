@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Add Task Modal Designs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
+</head>
+<body class="bg-gray-900/50 flex items-center justify-center min-h-screen p-8">
+
+  <!-- Modal Container -->
+  <div id="modal" class="bg-white rounded-xl shadow-2xl w-[420px] overflow-hidden">
+    <!-- Content will be injected here -->
+  </div>
+
+  <script>
+    const modalDesigns = {
+      // Style 1: Minimal - Clean and simple like Notion
+      minimal: `
+        <div class="p-5">
+          <input
+            type="text"
+            placeholder="Task name..."
+            class="w-full text-lg font-medium text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-0 p-0"
+          />
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+              <i class="pi pi-inbox"></i>
+              <span>Todo</span>
+            </div>
+            <div class="flex gap-2">
+              <button class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Cancel</button>
+              <button class="px-3 py-1.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-md transition-colors">Add Task</button>
+            </div>
+          </div>
+        </div>
+      `,
+
+      // Style 2: Compact with violet accent
+      compact: `
+        <div class="p-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+              <i class="pi pi-plus text-violet-600 text-sm"></i>
+            </div>
+            <span class="text-base font-semibold text-gray-900">New Task</span>
+          </div>
+          <input
+            type="text"
+            placeholder="What needs to be done?"
+            class="w-full px-3 py-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+          />
+          <div class="flex justify-end gap-2 mt-4">
+            <button class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+            <button class="px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors">Create</button>
+          </div>
+        </div>
+      `,
+
+      // Style 3: Card style with header bar
+      cardHeader: `
+        <div class="border-b border-gray-100 px-5 py-3 flex items-center justify-between">
+          <h3 class="font-semibold text-gray-900">Add Task</h3>
+          <button class="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded-md transition-colors">
+            <i class="pi pi-times text-gray-400 text-sm"></i>
+          </button>
+        </div>
+        <div class="p-5">
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Title</label>
+          <input
+            type="text"
+            placeholder="Enter task title..."
+            class="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+          />
+        </div>
+        <div class="bg-gray-50 px-5 py-3 flex justify-end gap-2 border-t border-gray-100">
+          <button class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
+          <button class="px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors">Create Task</button>
+        </div>
+      `,
+
+      // Style 4: Inline style - looks like adding a card
+      inline: `
+        <div class="p-4 bg-slate-50">
+          <div class="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
+            <input
+              type="text"
+              placeholder="Enter a title for this task..."
+              class="w-full text-sm text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-0 p-0 bg-transparent"
+            />
+          </div>
+          <div class="flex items-center gap-2 mt-3">
+            <button class="px-3 py-1.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-md transition-colors">Add Task</button>
+            <button class="w-8 h-8 flex items-center justify-center hover:bg-slate-200 rounded-md transition-colors">
+              <i class="pi pi-times text-gray-500"></i>
+            </button>
+          </div>
+        </div>
+      `,
+
+      // Style 5: Floating label style
+      floating: `
+        <div class="p-6">
+          <div class="relative">
+            <input
+              type="text"
+              id="taskInput"
+              placeholder=" "
+              class="peer w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+            />
+            <label class="absolute left-3 -top-2.5 px-1 text-sm text-gray-600 bg-white peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-violet-600 transition-all">
+              Task title
+            </label>
+          </div>
+          <div class="flex justify-end gap-3 mt-5">
+            <button class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">Cancel</button>
+            <button class="px-5 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors shadow-sm">Create Task</button>
+          </div>
+        </div>
+      `,
+
+      // Style 6: Command palette style (like VS Code / Linear)
+      command: `
+        <div class="p-2">
+          <div class="flex items-center gap-3 px-3 py-2 border-b border-gray-100">
+            <i class="pi pi-plus text-violet-500"></i>
+            <input
+              type="text"
+              placeholder="New task..."
+              class="flex-1 text-sm text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-0 bg-transparent"
+            />
+            <kbd class="px-2 py-0.5 text-xs text-gray-400 bg-gray-100 rounded">Enter</kbd>
+          </div>
+          <div class="px-3 py-2 text-xs text-gray-400">
+            Press Enter to create, Esc to cancel
+          </div>
+        </div>
+      `,
+    };
+
+    window.designs = Object.keys(modalDesigns);
+
+    window.applyDesign = function(name) {
+      const modal = document.getElementById('modal');
+      modal.innerHTML = modalDesigns[name] || modalDesigns.minimal;
+
+      // Adjust modal styling based on design
+      modal.className = 'bg-white rounded-xl shadow-2xl w-[420px] overflow-hidden';
+      if (name === 'command') {
+        modal.className = 'bg-white rounded-lg shadow-2xl w-[480px] overflow-hidden border border-gray-200';
+      } else if (name === 'inline') {
+        modal.className = 'rounded-lg shadow-2xl w-[320px] overflow-hidden';
+      }
+    };
+
+    // Default
+    window.applyDesign('minimal');
+  </script>
+</body>
+</html>
