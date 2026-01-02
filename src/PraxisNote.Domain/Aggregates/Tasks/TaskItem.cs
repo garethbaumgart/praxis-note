@@ -127,14 +127,14 @@ public sealed class TaskItem : AggregateRoot
     /// Moves the task to InProgress status.
     /// </summary>
     /// <remarks>
-    /// Always resets StartedAt to track when this work session began.
+    /// Sets StartedAt only if not already set, to track when work first began.
     /// </remarks>
     public void Start()
     {
         var now = DateTimeOffset.UtcNow;
 
         Status = TaskStatus.InProgress;
-        StartedAt = now;  // Always reset to track current work session
+        StartedAt ??= now;  // Only set if not already started
         CompletedAt = null;  // Clear any previous completion
         UpdatedAt = now;
     }

@@ -112,7 +112,7 @@ public class TaskItemTests
     }
 
     [Fact]
-    public void Start_WhenCalledAgain_ResetsStartedAtToTrackNewWorkSession()
+    public void Start_WhenAlreadyStarted_PreservesOriginalStartedAt()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
@@ -125,9 +125,8 @@ public class TaskItemTests
         // Act
         task.Start();
 
-        // Assert - StartedAt should be updated to track the new work session
-        Assert.NotNull(task.StartedAt);
-        Assert.True(task.StartedAt > originalStartedAt);
+        // Assert - StartedAt should be preserved to track when work first began
+        Assert.Equal(originalStartedAt, task.StartedAt);
     }
 
     [Fact]

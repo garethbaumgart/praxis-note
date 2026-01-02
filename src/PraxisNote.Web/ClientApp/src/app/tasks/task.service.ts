@@ -112,7 +112,7 @@ export class TaskService {
                 ...t,
                 status,
                 position: 0,
-                startedAt: status === 'InProgress' ? now : (status === 'Todo' ? null : t.startedAt ?? now),
+                startedAt: status === 'Todo' ? null : (t.startedAt ?? now),
                 completedAt: status === 'Done' ? now : null,
               };
             }
