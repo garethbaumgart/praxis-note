@@ -43,7 +43,12 @@ export class TaskService {
   readonly doneTasks = computed(() =>
     this._tasks()
       .filter(t => t.status === 'Done')
-      .sort((a, b) => a.position - b.position)
+      .sort((a, b) => {
+        // Sort by completedAt descending (most recent first)
+        const aTime = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+        const bTime = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        return bTime - aTime;
+      })
   );
 
   loadTasks(): void {

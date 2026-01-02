@@ -116,13 +116,11 @@ import { Task } from './task.model';
               <span class="text-xs text-done-foreground-muted">{{ taskService.doneTasks().length }}</span>
             </div>
             <div class="space-y-2">
-              @for (task of taskService.doneTasks(); track task.id; let idx = $index) {
+              @for (task of taskService.doneTasks(); track task.id) {
                 <div
                   pDraggable="tasks"
-                  pDroppable="tasks"
                   (onDragStart)="onDragStart(task)"
                   (onDragEnd)="onDragEnd()"
-                  (onDrop)="onDropOnTask('Done', idx)"
                   class="cursor-grab active:cursor-grabbing"
                 >
                   <app-task-card
