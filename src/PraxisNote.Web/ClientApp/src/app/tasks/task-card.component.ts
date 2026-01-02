@@ -9,10 +9,10 @@ import { Task } from './task.model';
   imports: [Button, InputText],
   template: `
     <div
-      class="bg-white rounded-md py-2 px-3 border transition-colors group"
-      [class.border-slate-200]="task().status === 'Todo'"
-      [class.border-sky-200]="task().status === 'InProgress'"
-      [class.border-emerald-200]="task().status === 'Done'"
+      class="bg-surface rounded-md py-2 px-3 border transition-colors group"
+      [class.border-todo-border]="task().status === 'Todo'"
+      [class.border-inprogress-border]="task().status === 'InProgress'"
+      [class.border-done-border]="task().status === 'Done'"
     >
       @if (editing()) {
         <div class="flex gap-2">
@@ -47,16 +47,16 @@ import { Task } from './task.model';
           <i
             class="pi text-sm mt-0.5"
             [class.pi-circle]="task().status === 'Todo'"
-            [class.text-slate-400]="task().status === 'Todo'"
+            [class.text-todo-foreground-muted]="task().status === 'Todo'"
             [class.pi-clock]="task().status === 'InProgress'"
-            [class.text-sky-500]="task().status === 'InProgress'"
+            [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
             [class.pi-check-circle]="task().status === 'Done'"
-            [class.text-emerald-500]="task().status === 'Done'"
+            [class.text-done-foreground-muted]="task().status === 'Done'"
           ></i>
           <p
-            class="text-sm text-gray-800 flex-1"
+            class="text-sm text-foreground flex-1"
             [class.line-through]="task().status === 'Done'"
-            [class.text-gray-400]="task().status === 'Done'"
+            [class.text-foreground-muted]="task().status === 'Done'"
           >
             {{ task().title }}
           </p>

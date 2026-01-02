@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from './auth';
+import { ThemeService } from './shared/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,7 @@ import { AuthService } from './auth';
 export class App {
   protected readonly auth = inject(AuthService);
   protected readonly router = inject(Router);
+  protected readonly themeService = inject(ThemeService);
   protected readonly sidebarOpen = signal(false);
 
   toggleSidebar(): void {
