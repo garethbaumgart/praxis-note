@@ -107,17 +107,17 @@ import { Task } from './task.model';
 
           <!-- Done Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-teal-100"
-            [class.bg-teal-200]="dragOverColumn() === 'Done'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-emerald-100"
+            [class.bg-emerald-200]="dragOverColumn() === 'Done'"
             pDroppable="tasks"
             (onDrop)="onDrop('Done')"
             (onDragEnter)="dragOverColumn.set('Done')"
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-2 h-2 rounded-full bg-teal-600"></div>
-              <span class="text-xs font-medium text-teal-700 uppercase tracking-wide">Done</span>
-              <span class="text-xs text-teal-500">{{ taskService.doneTasks().length }}</span>
+              <div class="w-2 h-2 rounded-full bg-emerald-600"></div>
+              <span class="text-xs font-medium text-emerald-700 uppercase tracking-wide">Done</span>
+              <span class="text-xs text-emerald-500">{{ taskService.doneTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.doneTasks(); track task.id; let idx = $index) {
