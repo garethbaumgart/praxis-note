@@ -1,16 +1,19 @@
 import { Component, input, output, signal } from '@angular/core';
-import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
-import { Tooltip } from 'primeng/tooltip';
 import { Task } from './task.model';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
-  imports: [Card, Button, InputText, Tooltip],
+  imports: [Button, InputText],
   template: `
-    <p-card class="block">
+    <div
+      class="bg-white rounded-md py-2 px-3 border-l-2 transition-colors group"
+      [class.border-l-slate-500]="task().status === 'Todo'"
+      [class.border-l-sky-600]="task().status === 'InProgress'"
+      [class.border-l-teal-600]="task().status === 'Done'"
+    >
       @if (editing()) {
         <div class="flex gap-2">
           <input
@@ -39,50 +42,18 @@ import { Task } from './task.model';
           />
         </div>
       } @else {
-        <div class="flex items-start justify-between gap-3">
-          <p class="text-sm text-gray-900 flex-1" [class.line-through]="task().status === 'Done'" [class.text-gray-400]="task().status === 'Done'">
+        <!-- Task content with document icon -->
+        <div class="flex items-start gap-2">
+          <i class="pi pi-file text-gray-400 text-sm mt-0.5"></i>
+          <p
+            class="text-sm text-gray-800 flex-1"
+            [class.line-through]="task().status === 'Done'"
+            [class.text-gray-400]="task().status === 'Done'"
+          >
             {{ task().title }}
           </p>
-          <div class="flex items-center gap-1 shrink-0">
-            @if (task().status === 'Todo') {
-              <p-button
-                icon="pi pi-play"
-                [rounded]="true"
-                [text]="true"
-                size="small"
-                severity="info"
-                (onClick)="onStatusChange.emit('InProgress')"
-                pTooltip="Start"
-                tooltipPosition="top"
-                aria-label="Start task"
-              />
-            }
-            @if (task().status === 'InProgress') {
-              <p-button
-                icon="pi pi-check"
-                [rounded]="true"
-                [text]="true"
-                size="small"
-                severity="success"
-                (onClick)="onStatusChange.emit('Done')"
-                pTooltip="Complete"
-                tooltipPosition="top"
-                aria-label="Complete task"
-              />
-            }
-            @if (task().status === 'Done') {
-              <p-button
-                icon="pi pi-replay"
-                [rounded]="true"
-                [text]="true"
-                size="small"
-                severity="secondary"
-                (onClick)="onStatusChange.emit('Todo')"
-                pTooltip="Reopen"
-                tooltipPosition="top"
-                aria-label="Reopen task"
-              />
-            }
+          <!-- Hover actions -->
+          <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
             <p-button
               icon="pi pi-pencil"
               [rounded]="true"
@@ -104,13 +75,12 @@ import { Task } from './task.model';
           </div>
         </div>
       }
-    </p-card>
+    </div>
   `,
 })
 export class TaskCardComponent {
   readonly task = input.required<Task>();
 
-  readonly onStatusChange = output<'Todo' | 'InProgress' | 'Done'>();
   readonly onEdit = output<string>();
   readonly onDelete = output<void>();
 
