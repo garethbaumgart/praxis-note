@@ -9,10 +9,10 @@ import { Task } from './task.model';
   imports: [Button, InputText],
   template: `
     <div
-      class="bg-white rounded-md py-2 px-3 border transition-colors group"
-      [class.border-gray-200]="task().status === 'Todo'"
-      [class.border-blue-200]="task().status === 'InProgress'"
-      [class.border-green-200]="task().status === 'Done'"
+      class="bg-white rounded-md py-2 px-3 border-l-2 transition-colors group"
+      [class.border-l-slate-400]="task().status === 'Todo'"
+      [class.border-l-sky-400]="task().status === 'InProgress'"
+      [class.border-l-teal-400]="task().status === 'Done'"
     >
       @if (editing()) {
         <div class="flex gap-2">

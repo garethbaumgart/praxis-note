@@ -35,17 +35,17 @@ import { Task } from './task.model';
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Todo Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-gray-50/50"
-            [class.bg-gray-100]="dragOverColumn() === 'Todo'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-slate-50/50"
+            [class.bg-slate-100]="dragOverColumn() === 'Todo'"
             pDroppable="tasks"
             (onDrop)="onDrop('Todo')"
             (onDragEnter)="dragOverColumn.set('Todo')"
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-2 h-2 rounded-full bg-gray-400"></div>
-              <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Todo</span>
-              <span class="text-xs text-gray-400">{{ taskService.todoTasks().length }}</span>
+              <div class="w-2 h-2 rounded-full bg-slate-400"></div>
+              <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Todo</span>
+              <span class="text-xs text-slate-400">{{ taskService.todoTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.todoTasks(); track task.id) {
@@ -70,17 +70,17 @@ import { Task } from './task.model';
 
           <!-- In Progress Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-blue-50/50"
-            [class.bg-blue-100]="dragOverColumn() === 'InProgress'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-sky-50/50"
+            [class.bg-sky-100]="dragOverColumn() === 'InProgress'"
             pDroppable="tasks"
             (onDrop)="onDrop('InProgress')"
             (onDragEnter)="dragOverColumn.set('InProgress')"
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-              <span class="text-xs font-medium text-blue-600 uppercase tracking-wide">In Progress</span>
-              <span class="text-xs text-blue-400">{{ taskService.inProgressTasks().length }}</span>
+              <div class="w-2 h-2 rounded-full bg-sky-400"></div>
+              <span class="text-xs font-medium text-sky-600 uppercase tracking-wide">In Progress</span>
+              <span class="text-xs text-sky-400">{{ taskService.inProgressTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.inProgressTasks(); track task.id) {
@@ -105,17 +105,17 @@ import { Task } from './task.model';
 
           <!-- Done Column -->
           <div
-            class="rounded-lg p-3 min-h-48 transition-all bg-green-50/50"
-            [class.bg-green-100]="dragOverColumn() === 'Done'"
+            class="rounded-lg p-3 min-h-48 transition-all bg-teal-50/50"
+            [class.bg-teal-100]="dragOverColumn() === 'Done'"
             pDroppable="tasks"
             (onDrop)="onDrop('Done')"
             (onDragEnter)="dragOverColumn.set('Done')"
             (onDragLeave)="dragOverColumn.set(null)"
           >
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-2 h-2 rounded-full bg-green-500"></div>
-              <span class="text-xs font-medium text-green-600 uppercase tracking-wide">Done</span>
-              <span class="text-xs text-green-400">{{ taskService.doneTasks().length }}</span>
+              <div class="w-2 h-2 rounded-full bg-teal-400"></div>
+              <span class="text-xs font-medium text-teal-600 uppercase tracking-wide">Done</span>
+              <span class="text-xs text-teal-400">{{ taskService.doneTasks().length }}</span>
             </div>
             <div class="space-y-2">
               @for (task of taskService.doneTasks(); track task.id) {
