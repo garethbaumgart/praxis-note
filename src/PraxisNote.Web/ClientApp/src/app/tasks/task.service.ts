@@ -77,6 +77,7 @@ export class TaskService {
           ).concat(newTask)
         );
       },
+      error: () => this.loadTasks(), // Reload to restore consistent state
     });
   }
 

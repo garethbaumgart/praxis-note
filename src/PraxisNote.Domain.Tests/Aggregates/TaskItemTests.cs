@@ -423,6 +423,71 @@ public class TaskItemTests
 
     #endregion
 
+    #region Position Tests
+
+    [Fact]
+    public void SetPosition_WithValidPosition_UpdatesPosition()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Act
+        task.SetPosition(5);
+
+        // Assert
+        Assert.Equal(5, task.Position);
+    }
+
+    [Fact]
+    public void SetPosition_WithZero_SetsPositionToZero()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        task.SetPosition(10);
+
+        // Act
+        task.SetPosition(0);
+
+        // Assert
+        Assert.Equal(0, task.Position);
+    }
+
+    [Fact]
+    public void SetPosition_WithNegativeValue_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => task.SetPosition(-1));
+    }
+
+    [Fact]
+    public void SetPosition_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var originalUpdatedAt = task.UpdatedAt;
+
+        // Act
+        task.SetPosition(3);
+
+        // Assert
+        Assert.True(task.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void CreateStandalone_HasPositionZero()
+    {
+        // Act
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Assert
+        Assert.Equal(0, task.Position);
+    }
+
+    #endregion
+
     #region Timestamp Tests
 
     [Fact]

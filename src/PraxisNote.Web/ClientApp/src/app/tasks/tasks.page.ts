@@ -208,6 +208,12 @@ export class TasksPage implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
+    // Ignore if user is typing in an input field
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return;
+    }
+
     // Ctrl+N to open add task dialog
     if (event.key.toLowerCase() === 'n' && event.ctrlKey && !this.showDialog()) {
       event.preventDefault();

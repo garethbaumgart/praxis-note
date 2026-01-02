@@ -142,9 +142,11 @@ public static class TaskEndpoints
         }
 
         var command = new ReorderTasks.Command(userId.Value, request.Status, request.TaskIds);
-        await reorderTasks.ExecuteAsync(command, cancellationToken);
+        var result = await reorderTasks.ExecuteAsync(command, cancellationToken);
 
-        return Results.NoContent();
+        return result.Success
+            ? Results.NoContent()
+            : Results.BadRequest(new { error = result.Error });
     }
 
     private static Guid? GetUserId(ClaimsPrincipal user)

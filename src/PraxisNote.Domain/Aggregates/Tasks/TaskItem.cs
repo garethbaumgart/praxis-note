@@ -36,9 +36,11 @@ public sealed class TaskItem : AggregateRoot
 
     /// <summary>
     /// Position within the status column for ordering.
-    /// Lower values appear first. New tasks start at 0.
+    /// Lower values appear first. New tasks start at position 0;
+    /// existing tasks in the same status column have their positions
+    /// incremented to maintain relative ordering.
     /// </summary>
-    public int Position { get; private set; }
+    public int Position { get; private set; } = 0;
 
     /// <summary>
     /// Optional due date for the task.
