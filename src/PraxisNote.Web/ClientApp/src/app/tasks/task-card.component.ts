@@ -10,9 +10,9 @@ import { Task } from './task.model';
   template: `
     <div
       class="bg-white rounded-md py-2 px-3 border transition-colors group"
-      [class.border-gray-300]="task().status === 'Todo'"
-      [class.border-blue-300]="task().status === 'InProgress'"
-      [class.border-green-300]="task().status === 'Done'"
+      [class.border-gray-200]="task().status === 'Todo'"
+      [class.border-blue-200]="task().status === 'InProgress'"
+      [class.border-green-200]="task().status === 'Done'"
     >
       @if (editing()) {
         <div class="flex gap-2">
