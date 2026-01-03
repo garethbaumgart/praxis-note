@@ -39,6 +39,9 @@ RUN dotnet publish PraxisNote.Web/PraxisNote.Web.csproj -c Release -o /app/publi
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS runtime
 WORKDIR /app
 
+# Install Kerberos library required by Npgsql for some auth modes
+RUN apt-get update && apt-get install -y --no-install-recommends libkrb5-3 && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user for security (useradd works on CBL-Mariner/Debian)
 RUN useradd --create-home --shell /bin/bash appuser || adduser -D -s /bin/sh appuser
 
