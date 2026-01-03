@@ -6,6 +6,7 @@ using Microsoft.Extensions.FileProviders;
 using PraxisNote.Application;
 using PraxisNote.Infrastructure;
 using PraxisNote.Infrastructure.Persistence;
+using PraxisNote.Web.Auth;
 using PraxisNote.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,8 +32,11 @@ builder.Services.AddCors(options =>
 // Add Authorization
 builder.Services.AddAuthorization();
 
+// Check if mock auth should be enabled (Development or E2E only)
+var enableMockAuth = builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "E2E";
+
 // Add Authentication
-builder.Services.AddAuthentication(options =>
+var authBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -56,6 +60,19 @@ builder.Services.AddAuthentication(options =>
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
         return Task.CompletedTask;
     };
+
+    // Forward to mock auth if header is present (Dev/E2E only)
+    if (enableMockAuth)
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            if (context.Request.Headers.ContainsKey(MockAuthenticationOptions.HeaderName))
+            {
+                return MockAuthenticationOptions.SchemeName;
+            }
+            return null; // Use default (cookie) scheme
+        };
+    }
 })
 .AddGoogle(options =>
 {
@@ -74,6 +91,12 @@ builder.Services.AddAuthentication(options =>
         return Task.CompletedTask;
     };
 });
+
+// Add mock authentication scheme (Development/E2E only)
+if (enableMockAuth)
+{
+    authBuilder.AddMockAuthentication();
+}
 
 var app = builder.Build();
 
