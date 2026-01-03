@@ -1,7 +1,8 @@
 import { execSync } from 'child_process';
 import { Client } from 'pg';
+import path from 'path';
 
-const projectRoot = process.cwd().replace('/tests/PraxisNote.E2E.Tests', '');
+const projectRoot = path.resolve(__dirname, '../..');
 
 export default async function globalSetup() {
   console.log('Starting E2E test infrastructure...');
@@ -20,20 +21,24 @@ export default async function globalSetup() {
   // Wait for database to be ready
   await waitForDatabase();
 
-  // Run migrations
-  console.log('Running database migrations...');
-  execSync(
-    'dotnet ef database update -p src/PraxisNote.Infrastructure -s src/PraxisNote.Web',
-    {
-      cwd: projectRoot,
-      stdio: 'inherit',
-      env: {
-        ...process.env,
-        ConnectionStrings__DefaultConnection:
-          'Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword',
-      },
-    }
-  );
+  // Run migrations (skip in CI - handled by workflow)
+  if (!process.env.CI) {
+    console.log('Running database migrations...');
+    execSync(
+      'dotnet ef database update -p src/PraxisNote.Infrastructure -s src/PraxisNote.Web',
+      {
+        cwd: projectRoot,
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          ConnectionStrings__DefaultConnection:
+            'Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword',
+        },
+      }
+    );
+  } else {
+    console.log('Skipping migrations in CI (handled by workflow)');
+  }
 
   console.log('E2E infrastructure ready');
 }

@@ -1,4 +1,4 @@
-namespace PraxisNote.Infrastructure.Application.Users;
+namespace PraxisNote.Application.Features.Users;
 
 public record UserDto(
     Guid Id,

@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using PraxisNote.Infrastructure.Application.Users;
+using PraxisNote.Application.Features.Users;
 
 namespace PraxisNote.Web.Endpoints;
 
@@ -154,6 +154,12 @@ public static class AuthEndpoints
         LoginOrRegisterUser loginOrRegister,
         CancellationToken cancellationToken)
     {
+        // Extra safeguard: verify E2E environment at runtime
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "E2E")
+        {
+            return Results.NotFound();
+        }
+
         // Create or get the test user
         var command = new LoginOrRegisterCommand(
             Provider: "E2ETest",

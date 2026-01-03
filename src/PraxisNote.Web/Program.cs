@@ -71,9 +71,10 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Apply database migrations
-using (var scope = app.Services.CreateScope())
+// Apply database migrations (Development and E2E only)
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "E2E")
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<PraxisNoteDbContext>();
     db.Database.Migrate();
 }

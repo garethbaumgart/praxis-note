@@ -2,7 +2,7 @@ using PraxisNote.Application.Common;
 using PraxisNote.Domain.Aggregates.Users;
 using PraxisNote.Domain.ValueObjects;
 
-namespace PraxisNote.Infrastructure.Application.Users;
+namespace PraxisNote.Application.Features.Users;
 
 public record LoginOrRegisterCommand(
     string Provider,

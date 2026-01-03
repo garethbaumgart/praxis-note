@@ -75,7 +75,14 @@ jobs:
       - name: Start backend server
         run: |
           dotnet run --project src/PraxisNote.Web --no-build &
-          npx wait-on http://localhost:5002/api/health --timeout 60000
+          for i in {1..60}; do
+            if curl -s http://localhost:5002/api/health > /dev/null; then
+              echo "Server is ready"
+              break
+            fi
+            echo "Waiting for server... ($i/60)"
+            sleep 1
+          done
         env:
           ASPNETCORE_ENVIRONMENT: E2E
           ASPNETCORE_URLS: "http://localhost:5002"
