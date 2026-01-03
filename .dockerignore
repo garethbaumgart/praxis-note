@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# .NET
+**/bin
+**/obj
+**/*.user
+**/*.suo
+
+# Node
+**/node_modules
+**/npm-debug.log
+
+# Angular build output (we build fresh in Docker)
+src/PraxisNote.Web/wwwroot
+
+# Tests
+tests
+
+# Documentation
+*.md
+!README.md
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# CI/CD
+.github
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (should never be in repo anyway)
+**/*.pfx
+**/secrets.json
