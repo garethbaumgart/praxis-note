@@ -14,11 +14,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // EF Core with SQLite Database
+        // EF Core with PostgreSQL Database
         var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Data Source=praxisnote.db";
+            ?? "Host=localhost;Port=5432;Database=praxisnote;Username=praxisnote;Password=devpassword";
         services.AddDbContext<PraxisNoteDbContext>(options =>
-            options.UseSqlite(connectionString));
+            options.UseNpgsql(connectionString));
 
         // Unit of Work
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<PraxisNoteDbContext>());

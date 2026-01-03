@@ -28,6 +28,13 @@ public static class AuthEndpoints
 
         group.MapPost("/logout", (Delegate)HandleLogout)
             .RequireAuthorization();
+
+        // Test-only endpoint for E2E tests - only available in E2E environment
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "E2E")
+        {
+            group.MapPost("/test-login", (Delegate)HandleTestLogin)
+                .AllowAnonymous();
+        }
     }
 
     private static IResult HandleGoogleLogin(HttpContext context)
@@ -140,4 +147,44 @@ public static class AuthEndpoints
         await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return Results.Ok(new { message = "Logged out successfully" });
     }
+
+    private static async Task<IResult> HandleTestLogin(
+        HttpContext context,
+        TestLoginRequest request,
+        LoginOrRegisterUser loginOrRegister,
+        CancellationToken cancellationToken)
+    {
+        // Create or get the test user
+        var command = new LoginOrRegisterCommand(
+            Provider: "E2ETest",
+            ProviderId: request.UserId.ToString(),
+            Email: request.Email,
+            Name: request.Name,
+            AvatarUrl: null);
+
+        var result = await loginOrRegister.ExecuteAsync(command, cancellationToken);
+
+        var identity = new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.NameIdentifier, result.UserId.ToString()),
+            new Claim(ClaimTypes.Email, request.Email),
+            new Claim(ClaimTypes.Name, request.Name),
+            new Claim(ProviderClaim, "E2ETest")
+        ], CookieAuthenticationDefaults.AuthenticationScheme);
+
+        var principal = new ClaimsPrincipal(identity);
+
+        await context.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+        return Results.Ok(new { message = "Test login successful", userId = result.UserId });
+    }
 }
+
+public record TestLoginRequest(Guid UserId, string Email, string Name);

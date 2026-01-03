@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using PraxisNote.Application;
 using PraxisNote.Infrastructure;
@@ -70,11 +71,11 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Ensure database is created
+// Apply database migrations
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PraxisNoteDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 // HTTPS redirection (production security)
