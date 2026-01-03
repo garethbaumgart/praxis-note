@@ -1,0 +1,108 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: praxisnote
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: praxisnote_e2e
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            src/PraxisNote.Web/ClientApp/package-lock.json
+            tests/PraxisNote.E2E.Tests/package-lock.json
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Restore .NET dependencies
+        run: dotnet restore src/PraxisNote.slnx
+
+      - name: Build backend
+        run: dotnet build src/PraxisNote.slnx --no-restore
+
+      - name: Run database migrations
+        run: dotnet ef database update -p src/PraxisNote.Infrastructure -s src/PraxisNote.Web
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword"
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: src/PraxisNote.Web/ClientApp
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: src/PraxisNote.Web/ClientApp
+
+      - name: Install E2E test dependencies
+        run: npm ci
+        working-directory: tests/PraxisNote.E2E.Tests
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: tests/PraxisNote.E2E.Tests
+
+      - name: Start backend server
+        run: |
+          dotnet run --project src/PraxisNote.Web --no-build --no-launch-profile &
+          for i in {1..60}; do
+            if curl -s http://localhost:5002/api/health > /dev/null; then
+              echo "Server is ready"
+              exit 0
+            fi
+            echo "Waiting for server... ($i/60)"
+            sleep 1
+          done
+          echo "Server failed to start within 60 seconds"
+          exit 1
+        env:
+          ASPNETCORE_ENVIRONMENT: E2E
+          ASPNETCORE_URLS: "http://localhost:5002"
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword"
+          Authentication__Google__ClientId: "dummy-for-e2e"
+          Authentication__Google__ClientSecret: "dummy-for-e2e"
+
+      - name: Run E2E tests
+        run: npm test -- --reporter=github
+        working-directory: tests/PraxisNote.E2E.Tests
+        env:
+          BASE_URL: "http://localhost:5002"
+          CI: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: tests/PraxisNote.E2E.Tests/playwright-report/
+          retention-days: 30

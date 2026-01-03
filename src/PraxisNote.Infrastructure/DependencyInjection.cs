@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Common;
 using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.Users;
-using PraxisNote.Infrastructure.Application.Users;
 using PraxisNote.Infrastructure.Persistence;
 using PraxisNote.Infrastructure.Persistence.Repositories;
 
@@ -14,11 +13,16 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // EF Core with SQLite Database
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Data Source=praxisnote.db";
+        // EF Core with PostgreSQL Database
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException(
+                "Database connection string 'DefaultConnection' is not configured. " +
+                "Set it via appsettings.json, environment variable, or user secrets.");
+        }
         services.AddDbContext<PraxisNoteDbContext>(options =>
-            options.UseSqlite(connectionString));
+            options.UseNpgsql(connectionString));
 
         // Unit of Work
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<PraxisNoteDbContext>());
@@ -26,9 +30,6 @@ public static class DependencyInjection
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
-
-        // Use cases
-        services.AddScoped<LoginOrRegisterUser>();
 
         return services;
     }

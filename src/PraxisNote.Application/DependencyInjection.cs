@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Features.Tasks;
+using PraxisNote.Application.Features.Users;
 
 namespace PraxisNote.Application;
 
@@ -14,6 +15,9 @@ public static class DependencyInjection
         services.AddScoped<ChangeTaskStatus>();
         services.AddScoped<DeleteTask>();
         services.AddScoped<ReorderTasks>();
+
+        // User use cases
+        services.AddScoped<LoginOrRegisterUser>();
 
         return services;
     }

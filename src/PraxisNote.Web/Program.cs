@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using PraxisNote.Application;
 using PraxisNote.Infrastructure;
@@ -34,7 +35,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
 .AddCookie(options =>
 {
@@ -47,6 +49,11 @@ builder.Services.AddAuthentication(options =>
     options.Events.OnRedirectToLogin = context =>
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
         return Task.CompletedTask;
     };
 })
@@ -70,11 +77,12 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Ensure database is created
-using (var scope = app.Services.CreateScope())
+// Apply database migrations (Development and E2E only)
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "E2E")
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<PraxisNoteDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 // HTTPS redirection (production security)

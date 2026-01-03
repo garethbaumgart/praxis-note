@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PraxisNote.Domain\PraxisNote.Domain.csproj" />
+    <ProjectReference Include="..\..\src\PraxisNote.Domain\PraxisNote.Domain.csproj" />
   </ItemGroup>
 
 </Project>

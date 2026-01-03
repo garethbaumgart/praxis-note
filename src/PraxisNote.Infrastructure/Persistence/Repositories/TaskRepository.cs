@@ -12,12 +12,10 @@ public sealed class TaskRepository(PraxisNoteDbContext context) : ITaskRepositor
 
     public async Task<IReadOnlyList<TaskItem>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var tasks = await context.Tasks
+        return await context.Tasks
             .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.CreatedAt)
             .ToListAsync(cancellationToken);
-
-        // Sort in memory - SQLite doesn't support DateTimeOffset in ORDER BY
-        return tasks.OrderByDescending(t => t.CreatedAt).ToList();
     }
 
     public async Task AddAsync(TaskItem task, CancellationToken cancellationToken = default)
