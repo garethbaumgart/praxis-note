@@ -74,7 +74,7 @@ jobs:
 
       - name: Start backend server
         run: |
-          dotnet run --project src/PraxisNote.Web --no-build &
+          dotnet run --project src/PraxisNote.Web --no-build --no-launch-profile &
           for i in {1..60}; do
             if curl -s http://localhost:5002/api/health > /dev/null; then
               echo "Server is ready"
