@@ -18,6 +18,7 @@ interface User {
   selector: 'app-sidebar',
   standalone: true,
   templateUrl: './sidebar.component.html',
+  host: { class: 'contents' },
 })
 export class SidebarComponent {
   private readonly router = inject(Router);
