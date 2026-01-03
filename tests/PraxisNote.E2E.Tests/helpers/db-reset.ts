@@ -51,9 +51,9 @@ export async function seedTestUser(): Promise<{ userId: string; email: string; n
           "CreatedAt",
           "LastLoginAt"
         )
-        VALUES ($1, 'E2ETest', 'e2e-test-id', $2, $3, NULL, NOW(), NOW())
+        VALUES ($1::uuid, 'MockAuth', $2, $3, $4, NULL, NOW(), NOW())
         `,
-        [userId, email, name]
+        [userId, userId, email, name]
       );
     }
 

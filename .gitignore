@@ -443,3 +443,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Playwright
+playwright-report/
+test-results/

@@ -86,6 +86,16 @@ Frontend (ClientApp)
 - **Components**: `*.component.ts` (e.g., `task-card.component.ts`)
 - **Services**: `*.service.ts` (e.g., `task.service.ts`)
 - **Models**: `*.model.ts` (e.g., `task.model.ts`)
+- **Clear naming is critical**: Function and variable names must be descriptive and unambiguous
+
+## Pre-PR Checklist
+
+Before creating or updating a PR, always run:
+
+1. **Unit tests**: `dotnet test` (all 185+ tests must pass)
+2. **E2E tests**: `cd tests/PraxisNote.E2E.Tests && npm test` (all 8 tests must pass)
+
+Never put up a PR with failing tests.
 
 ## Technical Debt / TODOs
 

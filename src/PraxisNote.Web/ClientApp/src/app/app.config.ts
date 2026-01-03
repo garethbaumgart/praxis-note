@@ -1,11 +1,12 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import { routes } from './app.routes';
+import { mockAuthInterceptor } from './auth/mock-auth.interceptor';
 
 const PraxisNoteTheme = definePreset(Aura, {
   semantic: {
@@ -30,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([mockAuthInterceptor])),
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {

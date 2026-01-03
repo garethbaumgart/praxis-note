@@ -1,5 +1,6 @@
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { resetDatabase, seedTestUser } from '../helpers/db-reset';
+import { getMockAuthHeaders } from '../helpers/mock-auth';
 
 test.describe('Authentication', () => {
   test.beforeEach(async () => {
@@ -18,25 +19,15 @@ test.describe('Authentication', () => {
     expect(response.status()).toBe(401);
   });
 
-  test('test login endpoint creates session', async ({ request }) => {
+  test('mock auth header provides user info via /api/auth/me', async ({ request }) => {
     // Seed test user in database
     const testUser = await seedTestUser();
 
-    // Use test login endpoint
-    const loginResponse = await request.post('/api/auth/test-login', {
-      data: {
-        userId: testUser.userId,
-        email: testUser.email,
-        name: testUser.name,
-      },
+    // Make authenticated request with mock header
+    const meResponse = await request.get('/api/auth/me', {
+      headers: getMockAuthHeaders(testUser),
     });
 
-    expect(loginResponse.ok()).toBeTruthy();
-    const loginBody = await loginResponse.json();
-    expect(loginBody.message).toBe('Test login successful');
-
-    // Verify session is established - /api/auth/me should work
-    const meResponse = await request.get('/api/auth/me');
     expect(meResponse.ok()).toBeTruthy();
 
     const meBody = await meResponse.json();
@@ -45,45 +36,24 @@ test.describe('Authentication', () => {
   });
 
   test('authenticated user can access tasks API', async ({ request }) => {
-    // Seed and login
+    // Seed test user
     const testUser = await seedTestUser();
-    await request.post('/api/auth/test-login', {
-      data: {
-        userId: testUser.userId,
-        email: testUser.email,
-        name: testUser.name,
-      },
-    });
+    const headers = getMockAuthHeaders(testUser);
 
-    // Now tasks endpoint should work
-    const response = await request.get('/api/tasks');
+    // Tasks endpoint should work with mock auth header
+    const response = await request.get('/api/tasks', { headers });
     expect(response.ok()).toBeTruthy();
 
     const tasks = await response.json();
     expect(Array.isArray(tasks)).toBeTruthy();
   });
 
-  test('logout clears session', async ({ request }) => {
-    // Seed and login
-    const testUser = await seedTestUser();
-    await request.post('/api/auth/test-login', {
-      data: {
-        userId: testUser.userId,
-        email: testUser.email,
-        name: testUser.name,
-      },
-    });
+  test('request without mock header is unauthenticated', async ({ request }) => {
+    // Seed test user (but don't include header)
+    await seedTestUser();
 
-    // Verify logged in
-    let meResponse = await request.get('/api/auth/me');
-    expect(meResponse.ok()).toBeTruthy();
-
-    // Logout
-    const logoutResponse = await request.post('/api/auth/logout');
-    expect(logoutResponse.ok()).toBeTruthy();
-
-    // Should be logged out now
-    meResponse = await request.get('/api/auth/me');
-    expect(meResponse.status()).toBe(401);
+    // Without the header, should get 401
+    const response = await request.get('/api/auth/me');
+    expect(response.status()).toBe(401);
   });
 });
