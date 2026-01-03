@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import { Client } from 'pg';
 
-const projectRoot = process.cwd().replace('/Tests/PraxisNote.E2E', '');
+const projectRoot = process.cwd().replace('/tests/PraxisNote.E2E', '');
 
 export default async function globalSetup() {
   console.log('Starting E2E test infrastructure...');

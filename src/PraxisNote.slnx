@@ -1,7 +1,7 @@
 <Solution>
   <Project Path="PraxisNote.Domain/PraxisNote.Domain.csproj" />
   <Project Path="PraxisNote.Application/PraxisNote.Application.csproj" />
-  <Project Path="PraxisNote.Domain.Tests/PraxisNote.Domain.Tests.csproj" />
+  <Project Path="../tests/PraxisNote.Domain.Tests/PraxisNote.Domain.Tests.csproj" />
   <Project Path="PraxisNote.Infrastructure/PraxisNote.Infrastructure.csproj" />
   <Project Path="PraxisNote.Web/PraxisNote.Web.csproj" />
 </Solution>

@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 
-const projectRoot = process.cwd().replace('/Tests/PraxisNote.E2E', '');
+const projectRoot = process.cwd().replace('/tests/PraxisNote.E2E', '');
 
 export default async function globalTeardown() {
   if (!process.env.KEEP_CONTAINERS) {
