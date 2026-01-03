@@ -18,7 +18,7 @@ test.describe('Authentication', () => {
     expect(response.status()).toBe(401);
   });
 
-  test('test login endpoint creates session', async ({ request, page }) => {
+  test('test login endpoint creates session', async ({ request }) => {
     // Seed test user in database
     const testUser = await seedTestUser();
 
