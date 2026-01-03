@@ -2,6 +2,8 @@
 
 A note-first task management system. Write notes with checkboxes that automatically become tasks on a board, with bidirectional sync.
 
+**Live:** https://praxisnote-kv77ni5hzq-ts.a.run.app
+
 ## Overview
 
 PraxisNote bridges the gap between free-form note-taking and structured task management. Write naturally in rich text notes, and any checkbox you create automatically becomes a trackable task on your board.
@@ -197,148 +199,45 @@ PRs require all tests to pass before merge.
 
 ## Production Deployment
 
-PraxisNote is configured for deployment to **Google Cloud Run** with **Neon PostgreSQL**.
+Deployed to **Google Cloud Run** (Sydney) + **Neon PostgreSQL** (Sydney).
 
-### Architecture
+| Component | Service | Region |
+|-----------|---------|--------|
+| App | Cloud Run | australia-southeast1 |
+| Database | Neon PostgreSQL | ap-southeast-2 |
+| Secrets | GCP Secret Manager | - |
+| Images | Artifact Registry | australia-southeast1 |
 
-```
-┌─────────────────┐     ┌─────────────────┐
-│  Cloud Run      │────▶│  Neon PostgreSQL│
-│  (Serverless)   │     │  (Serverless)   │
-└─────────────────┘     └─────────────────┘
-        │
-        ▼
-   Google OAuth
-```
+### Auto-Deploy
 
-**Why this stack:**
-- Cloud Run scales to zero (no idle costs)
-- Neon has a generous free tier (0.5GB storage)
-- Google OAuth stays in-ecosystem
-- Auto-deploys on push to main
+Push to `main` triggers GitHub Actions workflow:
+1. Builds Docker image
+2. Pushes to Artifact Registry
+3. Deploys to Cloud Run
 
-### 1. Set Up Neon Database
+### Required GitHub Secrets
 
-1. Create account at [neon.tech](https://neon.tech)
-2. Create a new project and database
-3. Copy the connection string (looks like: `postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/dbname?sslmode=require`)
+| Secret | Description |
+|--------|-------------|
+| `GCP_PROJECT_ID` | GCP project ID |
+| `GCP_SERVICE_ACCOUNT` | Service account email |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | Workload Identity provider path |
 
-### 2. Set Up Google Cloud
+### Required GCP Secrets
 
-```bash
-# Install gcloud CLI, then:
-gcloud auth login
-gcloud projects create YOUR_PROJECT_ID
-gcloud config set project YOUR_PROJECT_ID
-
-# Enable required APIs
-gcloud services enable run.googleapis.com
-gcloud services enable artifactregistry.googleapis.com
-gcloud services enable secretmanager.googleapis.com
-gcloud services enable iamcredentials.googleapis.com
-
-# Create Artifact Registry repository (Sydney region)
-gcloud artifacts repositories create praxisnote \
-  --repository-format=docker \
-  --location=australia-southeast1
-```
-
-### 3. Create Secrets in Secret Manager
-
-```bash
-# Store your secrets
-echo -n "your-neon-connection-string" | \
-  gcloud secrets create CONNECTION_STRING --data-file=-
-
-echo -n "your-google-client-id" | \
-  gcloud secrets create GOOGLE_CLIENT_ID --data-file=-
-
-echo -n "your-google-client-secret" | \
-  gcloud secrets create GOOGLE_CLIENT_SECRET --data-file=-
-```
-
-### 4. Set Up Workload Identity Federation
-
-This allows GitHub Actions to deploy without storing GCP credentials:
-
-```bash
-# Create service account
-gcloud iam service-accounts create github-actions \
-  --display-name="GitHub Actions"
-
-# Grant permissions
-PROJECT_ID=$(gcloud config get-value project)
-SA_EMAIL="github-actions@${PROJECT_ID}.iam.gserviceaccount.com"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:${SA_EMAIL}" \
-  --role="roles/run.admin"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:${SA_EMAIL}" \
-  --role="roles/artifactregistry.writer"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:${SA_EMAIL}" \
-  --role="roles/secretmanager.secretAccessor"
-
-gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
-  --member="serviceAccount:${SA_EMAIL}" \
-  --role="roles/iam.serviceAccountUser"
-
-# Create Workload Identity Pool
-gcloud iam workload-identity-pools create "github-pool" \
-  --location="global" \
-  --display-name="GitHub Actions Pool"
-
-# Create Provider
-gcloud iam workload-identity-pools providers create-oidc "github-provider" \
-  --location="global" \
-  --workload-identity-pool="github-pool" \
-  --display-name="GitHub Provider" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
-  --issuer-uri="https://token.actions.githubusercontent.com"
-
-# Allow GitHub repo to impersonate service account
-gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
-  --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/attribute.repository/YOUR_GITHUB_USERNAME/praxis-note"
-```
-
-### 5. Configure GitHub Secrets
-
-Add these secrets to your GitHub repository (Settings > Secrets > Actions):
-
-| Secret | Value |
-|--------|-------|
-| `GCP_PROJECT_ID` | Your GCP project ID |
-| `GCP_SERVICE_ACCOUNT` | `github-actions@PROJECT_ID.iam.gserviceaccount.com` |
-| `GCP_WORKLOAD_IDENTITY_PROVIDER` | `projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider` |
-
-### 6. Update Google OAuth Redirect URI
-
-Add your Cloud Run URL to Google OAuth authorized redirect URIs:
-- `https://praxisnote-HASH-uc.a.run.app/signin-google`
-
-### 7. Deploy
-
-Push to main and the GitHub Action will automatically:
-1. Build the Docker image
-2. Push to Artifact Registry
-3. Deploy to Cloud Run
-
-Or trigger manually: Actions > Deploy to Cloud Run > Run workflow
+| Secret | Description |
+|--------|-------------|
+| `CONNECTION_STRING` | Neon PostgreSQL connection string |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 
 ### Local Docker Testing
 
 ```bash
-# Build locally
 docker build -t praxisnote .
-
-# Run locally (with local postgres)
 docker run -p 8080:8080 \
-  -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;Port=5432;Database=praxisnote;Username=praxisnote;Password=devpassword" \
-  -e Authentication__Google__ClientId="your-client-id" \
-  -e Authentication__Google__ClientSecret="your-secret" \
+  -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;Port=5432;..." \
+  -e Authentication__Google__ClientId="..." \
+  -e Authentication__Google__ClientSecret="..." \
   praxisnote
 ```
