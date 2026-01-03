@@ -39,7 +39,7 @@ export class MockAuthService {
     const mockUser: MockUser = {
       email,
       name,
-      userId: `mock-${Date.now()}`,
+      userId: `mock-${email}`,
     };
     localStorage.setItem(this.USER_KEY, JSON.stringify(mockUser));
     this._user.set(mockUser);

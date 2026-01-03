@@ -1,7 +1,6 @@
-import { Component, inject, signal, isDevMode } from '@angular/core';
+import { Component, inject, isDevMode } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MockAuthService } from './mock-auth.service';
-import { AuthService } from './auth.service';
 
 @Component({
   selector: 'app-mock-auth-toolbar',
@@ -172,12 +171,11 @@ import { AuthService } from './auth.service';
 })
 export class MockAuthToolbarComponent {
   protected readonly mockAuth = inject(MockAuthService);
-  private readonly auth = inject(AuthService);
 
   protected readonly isDevMode = isDevMode();
 
-  protected email = signal('dev@test.com');
-  protected name = signal('Dev User');
+  protected email = 'dev@test.com';
+  protected name = 'Dev User';
 
   toggleMockMode(): void {
     if (this.mockAuth.enabled()) {
@@ -190,7 +188,7 @@ export class MockAuthToolbarComponent {
   }
 
   mockLogin(): void {
-    this.mockAuth.login(this.email(), this.name());
+    this.mockAuth.login(this.email, this.name);
     // Reload to trigger auth check with new mock user
     window.location.reload();
   }
