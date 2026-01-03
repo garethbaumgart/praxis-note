@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -10,6 +11,14 @@ using PraxisNote.Web.Auth;
 using PraxisNote.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure forwarded headers for Cloud Run (SSL termination at load balancer)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Add Application services (use cases)
 builder.Services.AddApplication();
@@ -99,6 +108,9 @@ if (enableMockAuth)
 }
 
 var app = builder.Build();
+
+// Use forwarded headers (must be first - for Cloud Run / load balancers)
+app.UseForwardedHeaders();
 
 // Apply database migrations (Development and E2E only)
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "E2E")
