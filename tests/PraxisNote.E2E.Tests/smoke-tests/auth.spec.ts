@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { resetDatabase, seedTestUser } from '../helpers/db-reset';
-import { getMockAuthHeader } from '../helpers/mock-auth';
+import { getMockAuthHeaderss } from '../helpers/mock-auth';
 
 test.describe('Authentication', () => {
   test.beforeEach(async () => {
@@ -19,13 +19,13 @@ test.describe('Authentication', () => {
     expect(response.status()).toBe(401);
   });
 
-  test('mock auth header authenticates user', async ({ request }) => {
+  test('mock auth header provides user info via /api/auth/me', async ({ request }) => {
     // Seed test user in database
     const testUser = await seedTestUser();
 
     // Make authenticated request with mock header
     const meResponse = await request.get('/api/auth/me', {
-      headers: getMockAuthHeader(testUser),
+      headers: getMockAuthHeaders(testUser),
     });
 
     expect(meResponse.ok()).toBeTruthy();
@@ -38,7 +38,7 @@ test.describe('Authentication', () => {
   test('authenticated user can access tasks API', async ({ request }) => {
     // Seed test user
     const testUser = await seedTestUser();
-    const headers = getMockAuthHeader(testUser);
+    const headers = getMockAuthHeaders(testUser);
 
     // Tasks endpoint should work with mock auth header
     const response = await request.get('/api/tasks', { headers });

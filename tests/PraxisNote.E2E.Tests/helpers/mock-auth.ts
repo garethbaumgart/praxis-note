@@ -4,7 +4,7 @@ export interface MockUser {
   name: string;
 }
 
-export function getMockAuthHeader(user: MockUser): Record<string, string> {
+export function getMockAuthHeaders(user: MockUser): Record<string, string> {
   return {
     'X-Mock-User': `${user.email}|${user.name}|${user.userId}`,
   };
