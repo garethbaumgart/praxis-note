@@ -143,9 +143,27 @@ dotnet user-secrets remove "Authentication:Google:ClientId"
 dotnet user-secrets clear
 ```
 
+## Development Tools
+
+### Mock Authentication
+
+For local development and E2E testing, PraxisNote includes a mock authentication system that bypasses Google OAuth.
+
+**How it works:**
+- A dev toolbar appears at the bottom of the screen in Development/E2E environments
+- Click "Enable Mock Auth" to activate, then enter any email/name and click "Login"
+- The Angular app sends an `X-Mock-User` header with API requests
+- The backend `MockAuthenticationHandler` processes this header and creates/authenticates users
+- Mock auth is completely disabled in Production builds
+
+**When to use:**
+- Local development without Google OAuth credentials
+- E2E tests that need authenticated API access
+- Testing user-specific features quickly
+
 ## E2E Tests
 
-End-to-end tests use Playwright with a separate PostgreSQL instance.
+End-to-end tests use Playwright with a separate PostgreSQL instance (port 5433).
 
 ```bash
 # Run E2E tests (starts its own database container)
@@ -154,10 +172,25 @@ npm install
 npm test
 ```
 
-## CI
+E2E tests use the mock authentication system via the `X-Mock-User` header to authenticate API requests without requiring Google OAuth.
+
+## CI/CD Pipeline
 
 GitHub Actions runs automatically on every push to `main` and on pull requests:
-- **Unit tests** - Domain model tests
-- **E2E tests** - Playwright smoke tests with PostgreSQL
 
-PRs require passing tests before merge.
+| Workflow | Trigger | What it does |
+|----------|---------|--------------|
+| **Unit Tests** | Push/PR | Runs `dotnet test` on Domain tests (185+ tests) |
+| **E2E Tests** | Push/PR | Spins up PostgreSQL, runs migrations, starts the app, runs Playwright tests |
+| **Copilot Review** | PR only | AI-powered code review with suggestions |
+
+### E2E Test Pipeline Details
+
+The E2E workflow:
+1. Starts a PostgreSQL service container (port 5432)
+2. Applies EF Core migrations to create the schema
+3. Builds and starts the .NET application in E2E mode
+4. Runs 8 Playwright smoke tests (auth, health, API access)
+5. Uploads HTML test reports as artifacts on failure
+
+PRs require all tests to pass before merge.
