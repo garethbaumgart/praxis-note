@@ -7,15 +7,19 @@ const projectRoot = path.resolve(__dirname, '../..');
 export default async function globalSetup() {
   console.log('Starting E2E test infrastructure...');
 
-  // Start PostgreSQL E2E container
-  try {
-    execSync('docker compose -f docker-compose.e2e.yml up -d --wait', {
-      cwd: projectRoot,
-      stdio: 'inherit',
-    });
-  } catch (error) {
-    console.error('Failed to start Docker container. Is Docker running?');
-    throw error;
+  // In CI, database is provided by GitHub Actions services - skip Docker
+  if (!process.env.CI) {
+    try {
+      execSync('docker compose -f docker-compose.e2e.yml up -d --wait', {
+        cwd: projectRoot,
+        stdio: 'inherit',
+      });
+    } catch (error) {
+      console.error('Failed to start Docker container. Is Docker running?');
+      throw error;
+    }
+  } else {
+    console.log('Skipping Docker in CI (using GitHub Actions service)');
   }
 
   // Wait for database to be ready
