@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { resetDatabase, seedTestUser } from '../helpers/db-reset';
-import { getMockAuthHeaderss } from '../helpers/mock-auth';
+import { getMockAuthHeaders } from '../helpers/mock-auth';
 
 test.describe('Authentication', () => {
   test.beforeEach(async () => {
