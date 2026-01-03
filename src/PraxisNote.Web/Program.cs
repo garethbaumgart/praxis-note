@@ -112,10 +112,9 @@ var app = builder.Build();
 // Use forwarded headers (must be first - for Cloud Run / load balancers)
 app.UseForwardedHeaders();
 
-// Apply database migrations (Development and E2E only)
-if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "E2E")
+// Apply database migrations on startup (safe for single-instance Cloud Run)
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<PraxisNoteDbContext>();
     db.Database.Migrate();
 }
