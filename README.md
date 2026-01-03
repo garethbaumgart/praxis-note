@@ -237,10 +237,10 @@ gcloud services enable artifactregistry.googleapis.com
 gcloud services enable secretmanager.googleapis.com
 gcloud services enable iamcredentials.googleapis.com
 
-# Create Artifact Registry repository
+# Create Artifact Registry repository (Sydney region)
 gcloud artifacts repositories create praxisnote \
   --repository-format=docker \
-  --location=us-central1
+  --location=australia-southeast1
 ```
 
 ### 3. Create Secrets in Secret Manager
