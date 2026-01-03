@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { resetDatabase, seedTestUser } from '../../helpers/db-reset';
+import { resetDatabase, seedTestUser } from '../helpers/db-reset';
 
 test.describe('Authentication', () => {
   test.beforeEach(async () => {
