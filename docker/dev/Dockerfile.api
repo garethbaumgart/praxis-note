@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /src
+
+# Copy project files for restore
+COPY src/PraxisNote.Domain/*.csproj ./PraxisNote.Domain/
+COPY src/PraxisNote.Application/*.csproj ./PraxisNote.Application/
+COPY src/PraxisNote.Infrastructure/*.csproj ./PraxisNote.Infrastructure/
+COPY src/PraxisNote.Web/*.csproj ./PraxisNote.Web/
+
+# Restore dependencies
+RUN dotnet restore PraxisNote.Web/PraxisNote.Web.csproj
+
+# Source files are mounted as volume at runtime
+WORKDIR /src/PraxisNote.Web
+
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
