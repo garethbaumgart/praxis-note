@@ -182,6 +182,8 @@ dotnet user-secrets clear
 
 For local development and E2E testing, PraxisNote includes a mock authentication system that bypasses Google OAuth.
 
+![Mock Auth Toolbar](docs/images/mock-auth-toolbar.png)
+
 **How it works:**
 - A dev toolbar appears at the bottom of the screen in Development/E2E environments
 - Click "Enable Mock Auth" to activate, then enter any email/name and click "Login"
