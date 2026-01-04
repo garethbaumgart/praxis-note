@@ -94,7 +94,17 @@ export class TaskService {
         // If not Todo, also call the status change API
         if (status !== 'Todo') {
           this.http.put(`/api/tasks/${result.id}/status`, { status }).subscribe({
-            error: () => this.loadTasks(),
+            error: () => {
+              // Revert optimistic status/timestamps before reloading
+              this._tasks.update(tasks =>
+                tasks.map(t =>
+                  t.id === result.id
+                    ? { ...t, status: 'Todo', startedAt: null, completedAt: null, position: 0 }
+                    : t
+                )
+              );
+              this.loadTasks();
+            },
           });
         }
       },

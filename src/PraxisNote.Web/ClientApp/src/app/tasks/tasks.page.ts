@@ -304,12 +304,18 @@ export class TasksPage implements OnInit, AfterViewChecked {
   }
 
   onInlineBlur(): void {
+    // Capture current column before the delay
+    const column = this.inlineCreatingColumn();
+
     // Small delay to allow click events to fire first
     setTimeout(() => {
-      if (this.inlineTaskTitle().trim()) {
-        this.submitInlineCreate();
-      } else {
-        this.cancelInlineCreate();
+      // Only proceed if we're still in the same column (prevents race conditions)
+      if (this.inlineCreatingColumn() === column && column !== null) {
+        if (this.inlineTaskTitle().trim()) {
+          this.submitInlineCreate();
+        } else {
+          this.cancelInlineCreate();
+        }
       }
     }, 100);
   }
