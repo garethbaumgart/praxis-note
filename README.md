@@ -1,12 +1,12 @@
 # PraxisNote
 
-A note-first task management system. Write notes with checkboxes that automatically become tasks on a board, with bidirectional sync.
+A task management system with a kanban board. Currently features drag-and-drop task management with three-state workflow (Todo → In Progress → Done).
 
 **Live:** https://praxisnote-kv77ni5hzq-ts.a.run.app
 
 ## Overview
 
-PraxisNote bridges the gap between free-form note-taking and structured task management. Write naturally in rich text notes, and any checkbox you create automatically becomes a trackable task on your board.
+PraxisNote is evolving into a note-first task management system. The vision: write naturally in rich text notes, and any checkbox you create automatically becomes a trackable task on your board with bidirectional sync.
 
 ### Key Features
 
@@ -71,10 +71,11 @@ dotnet test tests/PraxisNote.Domain.Tests
 
 ### Running Locally (Recommended)
 
-The easiest way to run the full stack locally with hot reload. From the project root:
+The easiest way to run the full stack locally with hot reload. No secrets or configuration required.
+
+From the project root:
 
 ```bash
-cd /path/to/praxis-note
 docker compose -f docker-compose.dev.yml up
 ```
 
@@ -185,8 +186,8 @@ For local development and E2E testing, PraxisNote includes a mock authentication
 ![Mock Auth Toolbar](docs/images/mock-auth-toolbar.png)
 
 **How it works:**
-- A dev toolbar appears at the bottom of the screen in Development/E2E environments
-- Click "Enable Mock Auth" to activate, then enter any email/name and click "Login"
+- A dev toolbar appears in the bottom-right corner in Development/E2E environments
+- Toggle "Mock: ON" to enable, enter any email and click "Login"
 - The Angular app sends an `X-Mock-User` header with API requests
 - The backend `MockAuthenticationHandler` processes this header and creates/authenticates users
 - Mock auth is completely disabled in Production builds
@@ -195,6 +196,14 @@ For local development and E2E testing, PraxisNote includes a mock authentication
 - Local development without Google OAuth credentials
 - E2E tests that need authenticated API access
 - Testing user-specific features quickly
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `N` | Open "Add Task" dialog |
+| `Enter` | Submit task (when in dialog or inline input) |
+| `Escape` | Cancel/close dialog |
 
 ## E2E Tests
 
