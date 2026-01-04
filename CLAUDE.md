@@ -93,9 +93,22 @@ Frontend (ClientApp)
 Before creating or updating a PR, always run:
 
 1. **Unit tests**: `dotnet test` (all 185+ tests must pass)
-2. **E2E tests**: `cd tests/PraxisNote.E2E.Tests && npm test` (all 8 tests must pass)
+2. **E2E tests**: `cd tests/PraxisNote.E2E.Tests && npm test` (all tests must pass)
 
 Never put up a PR with failing tests.
+
+## Post-PR Workflow
+
+After creating a PR, follow this workflow:
+
+1. **Self code review**: Review the PR diff and add comments for any issues found
+2. **Wait for CI**: Monitor GitHub Actions for completion
+3. **Check for warnings**: Review action logs for any warnings (not just failures)
+4. **Wait for Copilot**: Allow Copilot to complete its review
+5. **Address all comments**: Fix any issues raised by Copilot or other reviewers
+6. **Verify CI passes**: Ensure all checks pass after fixes
+
+Only request merge approval once all comments are addressed and CI is green.
 
 ## Technical Debt / TODOs
 
