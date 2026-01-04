@@ -103,12 +103,15 @@ After creating a PR, follow this workflow:
 
 1. **Self code review**: Review the PR diff and add comments for any issues found
 2. **Wait for CI**: Monitor GitHub Actions for completion
-3. **Check for warnings**: Review action logs for any warnings (not just failures)
+3. **Check for warnings**: Review action logs AND annotations for any warnings (not just failures)
+   - Click into each action run and check the "Annotations" section
+   - Common warnings: deprecation notices, bundle size budgets, EF Core model validation
+   - Fix all warnings before requesting merge
 4. **Wait for Copilot**: Allow Copilot to complete its review
 5. **Address all comments**: Fix any issues raised by Copilot or other reviewers
-6. **Verify CI passes**: Ensure all checks pass after fixes
+6. **Verify CI passes**: Ensure all checks pass after fixes (no warnings in annotations)
 
-Only request merge approval once all comments are addressed and CI is green.
+Only request merge approval once all comments are addressed, CI is green, and there are no warnings.
 
 ## Technical Debt / TODOs
 
