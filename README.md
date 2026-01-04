@@ -10,11 +10,15 @@ PraxisNote bridges the gap between free-form note-taking and structured task man
 
 ### Key Features
 
-- **Note-First Workflow** - Capture thoughts in rich text notes
-- **Automatic Task Extraction** - Checkboxes in notes become tasks on your board
-- **Bidirectional Sync** - Complete a task on the board, and the checkbox in your note is checked (and vice versa)
-- **Three-State Tasks** - Todo → In Progress → Done lifecycle with timestamps
-- **Label Organization** - Tag notes and tasks; tasks inherit labels from their source note
+- ✅ **Three-State Tasks** - Todo → In Progress → Done lifecycle with timestamps
+- ✅ **Kanban Board** - Drag-and-drop task management with inline creation
+- ✅ **Google OAuth** - Secure authentication with user accounts
+- 🚧 **Note-First Workflow** - Capture thoughts in rich text notes
+- 🚧 **Automatic Task Extraction** - Checkboxes in notes become tasks on your board
+- 🚧 **Bidirectional Sync** - Complete a task on the board, and the checkbox in your note is checked (and vice versa)
+- 🚧 **Label Organization** - Tag notes and tasks; tasks inherit labels from their source note
+
+✅ = Implemented | 🚧 = Planned
 
 ## Tech Stack
 
