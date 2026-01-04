@@ -8,4 +8,6 @@ RUN npm ci
 
 # Source files are mounted as volume at runtime
 # Using poll for file watching in Docker
+EXPOSE 4200
+
 ENTRYPOINT ["npm", "run", "start", "--", "--host", "0.0.0.0", "--poll", "1000", "--proxy-config", "proxy.conf.docker.json"]

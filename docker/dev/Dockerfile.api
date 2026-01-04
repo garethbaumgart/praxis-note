@@ -14,4 +14,6 @@ RUN dotnet restore PraxisNote.Web/PraxisNote.Web.csproj
 # Source files are mounted as volume at runtime
 WORKDIR /src/PraxisNote.Web
 
+EXPOSE 5002
+
 ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]

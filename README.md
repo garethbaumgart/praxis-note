@@ -81,6 +81,8 @@ This starts:
 
 Open http://localhost:4200 and start developing. Changes to both frontend and backend code will automatically reload.
 
+**Note:** The dev environment uses mock authentication - no Google OAuth setup required. Use the mock auth toolbar at the bottom of the screen to log in.
+
 To stop:
 ```bash
 docker compose -f docker-compose.dev.yml down
