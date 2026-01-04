@@ -239,6 +239,14 @@ export class TasksPage implements OnInit {
       if (event.currentIndex !== event.container.data.length) {
         const targetTasks = event.container.data;
         const taskIds = targetTasks.map(t => t.id);
+
+        // Remove existing occurrence if present (avoids duplicates)
+        const existingIndex = taskIds.indexOf(task.id);
+        if (existingIndex !== -1) {
+          taskIds.splice(existingIndex, 1);
+        }
+
+        // Insert at the desired drop index
         taskIds.splice(event.currentIndex, 0, task.id);
         this.taskService.reorderTasks(targetStatus, taskIds);
       }
