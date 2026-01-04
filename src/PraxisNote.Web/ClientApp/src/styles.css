@@ -187,3 +187,42 @@
   opacity: 0;
   animation: fade-in 0.5s ease-out 0.5s forwards;
 }
+
+/* ========================================
+   Angular CDK Drag and Drop
+   ======================================== */
+
+/* Smooth animation when item is being dragged */
+.cdk-drag-preview {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 0.375rem;
+  opacity: 0.95;
+  transform: scale(1.02);
+}
+
+/* Animation while dragging */
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Style for the drop list when an item is being dragged over it */
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Placeholder shown where item will drop */
+.cdk-drag-placeholder {
+  opacity: 0.5;
+}
+
+/* Disable text selection while dragging */
+.cdk-drag-preview,
+.cdk-drag-placeholder {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Better touch handling */
+.touch-manipulation {
+  touch-action: manipulation;
+}

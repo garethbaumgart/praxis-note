@@ -69,15 +69,15 @@ import { Task } from './task.model';
               >{{ time }}</span>
             }
           </div>
-          <!-- Hover actions -->
-          <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+          <!-- Actions: always visible on mobile, hover to reveal on desktop -->
+          <div class="flex items-center gap-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
             <p-button
               icon="pi pi-pencil"
               [rounded]="true"
               [text]="true"
               size="small"
               severity="secondary"
-              (onClick)="startEdit()"
+              (onClick)="startEdit(); $event.stopPropagation()"
               aria-label="Edit task"
             />
             <p-button
@@ -86,7 +86,7 @@ import { Task } from './task.model';
               [text]="true"
               size="small"
               severity="danger"
-              (onClick)="onDelete.emit()"
+              (onClick)="onDelete.emit(); $event.stopPropagation()"
               aria-label="Delete task"
             />
           </div>
