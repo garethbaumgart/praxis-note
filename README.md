@@ -65,7 +65,32 @@ dotnet build src/PraxisNote.slnx
 dotnet test tests/PraxisNote.Domain.Tests
 ```
 
-### Running Locally
+### Running Locally (Recommended)
+
+The easiest way to run the full stack locally with hot reload. From the project root:
+
+```bash
+cd /path/to/praxis-note
+docker compose -f docker-compose.dev.yml up
+```
+
+This starts:
+- **PostgreSQL** on port 5432
+- **.NET API** on port 5002 (with hot reload via `dotnet watch`)
+- **Angular** on port 4200 (with hot reload)
+
+Open http://localhost:4200 and start developing. Changes to both frontend and backend code will automatically reload.
+
+**Note:** The dev environment uses mock authentication - no Google OAuth setup required. Use the mock auth toolbar at the bottom of the screen to log in.
+
+To stop:
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+### Running Locally (Manual)
+
+If you prefer to run services individually:
 
 1. Start PostgreSQL:
    ```bash
@@ -74,17 +99,17 @@ dotnet test tests/PraxisNote.Domain.Tests
 
 2. Configure secrets (see Database and Authentication sections below)
 
-3. Build the Angular frontend:
+3. Run the .NET backend:
+   ```bash
+   cd src/PraxisNote.Web
+   dotnet watch run
+   ```
+
+4. In a separate terminal, run the Angular frontend:
    ```bash
    cd src/PraxisNote.Web/ClientApp
    npm install
-   npm run build
-   ```
-
-4. Run the application:
-   ```bash
-   cd src/PraxisNote.Web
-   dotnet run
+   npm start
    ```
 
 ## Database Setup
