@@ -133,6 +133,8 @@ The `docker-compose.yml` creates a PostgreSQL container with these default crede
 
 ## Authentication Setup
 
+> **Note:** For local development, you can skip this section entirely and use the **Mock Authentication** toolbar instead (see Development Tools below). Only set up Google OAuth if you specifically need to test the production auth flow.
+
 PraxisNote uses Google OAuth for authentication. Secrets are stored using .NET User Secrets to keep them out of source control.
 
 ### 1. Create Google OAuth Credentials
@@ -179,6 +181,8 @@ dotnet user-secrets clear
 ### Mock Authentication
 
 For local development and E2E testing, PraxisNote includes a mock authentication system that bypasses Google OAuth.
+
+![Mock Auth Toolbar](docs/images/mock-auth-toolbar.png)
 
 **How it works:**
 - A dev toolbar appears at the bottom of the screen in Development/E2E environments

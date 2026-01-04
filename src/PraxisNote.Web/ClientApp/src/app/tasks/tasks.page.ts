@@ -22,7 +22,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
         >
           <i class="pi pi-plus text-accent-foreground"></i>
           <span>Add Task</span>
-          <kbd class="hidden md:inline ml-1 px-1.5 py-0.5 text-xs text-accent-foreground bg-accent rounded font-sans">&#8984;&#8679;N</kbd>
+          <kbd class="hidden md:inline ml-1 px-1.5 py-0.5 text-xs text-accent-foreground bg-accent rounded font-sans">N</kbd>
         </button>
       </div>
 
@@ -312,8 +312,8 @@ export class TasksPage implements OnInit, AfterViewChecked {
       return;
     }
 
-    // Cmd+Shift+N to open add task dialog
-    if (event.key.toLowerCase() === 'n' && event.metaKey && event.shiftKey && !this.showDialog()) {
+    // N to open add task dialog
+    if (event.key.toLowerCase() === 'n' && !event.metaKey && !event.ctrlKey && !this.showDialog()) {
       event.preventDefault();
       this.showDialog.set(true);
     }
