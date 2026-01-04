@@ -67,23 +67,46 @@ export class TaskService {
   }
 
   createTask(title: string): void {
+    this.createTaskInColumn(title, 'Todo');
+  }
+
+  createTaskInColumn(title: string, status: 'Todo' | 'InProgress' | 'Done'): void {
     this.http.post<{ id: string }>('/api/tasks', { title }).subscribe({
       next: (result) => {
+        const now = new Date().toISOString();
         const newTask: Task = {
           id: result.id,
           title,
-          status: 'Todo',
+          status: status,
           position: 0,
-          createdAt: new Date().toISOString(),
-          startedAt: null,
-          completedAt: null,
+          createdAt: now,
+          startedAt: status === 'Todo' ? null : now,
+          completedAt: status === 'Done' ? now : null,
         };
-        // Push down existing Todo tasks and add new one at position 0
+
+        // Push down existing tasks in target column and add new one at position 0
         this._tasks.update(tasks =>
           tasks.map(t =>
-            t.status === 'Todo' ? { ...t, position: t.position + 1 } : t
+            t.status === status ? { ...t, position: t.position + 1 } : t
           ).concat(newTask)
         );
+
+        // If not Todo, also call the status change API
+        if (status !== 'Todo') {
+          this.http.put(`/api/tasks/${result.id}/status`, { status }).subscribe({
+            error: () => {
+              // Revert optimistic status/timestamps before reloading
+              this._tasks.update(tasks =>
+                tasks.map(t =>
+                  t.id === result.id
+                    ? { ...t, status: 'Todo', startedAt: null, completedAt: null, position: 0 }
+                    : t
+                )
+              );
+              this.loadTasks();
+            },
+          });
+        }
       },
       error: () => this.loadTasks(), // Reload to restore consistent state
     });

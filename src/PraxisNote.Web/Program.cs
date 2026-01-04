@@ -26,12 +26,12 @@ builder.Services.AddApplication();
 // Add Infrastructure services (DbContext, repositories)
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Add CORS for development (ng serve on port 4200)
+// Add CORS for development (ng serve)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Development", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "http://localhost:5200")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
