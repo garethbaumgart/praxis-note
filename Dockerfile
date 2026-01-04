@@ -11,7 +11,7 @@ COPY src/PraxisNote.Web/ClientApp/ ./
 RUN npm run build
 
 # Stage 2: Build .NET application
-FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS backend-build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS backend-build
 WORKDIR /src
 
 # Copy project files for restore
@@ -36,7 +36,7 @@ COPY --from=frontend-build /app/wwwroot ./PraxisNote.Web/wwwroot/
 RUN dotnet publish PraxisNote.Web/PraxisNote.Web.csproj -c Release -o /app/publish --no-restore
 
 # Stage 3: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 # Install Kerberos library required by Npgsql for some auth modes
