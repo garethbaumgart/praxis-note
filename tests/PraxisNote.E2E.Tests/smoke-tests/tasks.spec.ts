@@ -69,6 +69,41 @@ test.describe('Tasks', () => {
     await expect(page.getByText('Delete Me')).not.toBeVisible();
   });
 
+  test('task moves through kanban states: Todo -> InProgress -> Done', async ({ page, request }) => {
+    // Create a new task
+    const createRes = await request.post('/api/tasks', {
+      headers: getMockAuthHeaders(testUser),
+      data: { title: 'Workflow Task' },
+    });
+    const task = await createRes.json();
+
+    await setupAuth(page, testUser);
+    await page.goto('/tasks');
+
+    // Verify task starts in Todo column
+    await expect(page.locator('.bg-todo').getByText('Workflow Task')).toBeVisible();
+
+    // Move to InProgress via API
+    await request.put(`/api/tasks/${task.id}/status`, {
+      headers: getMockAuthHeaders(testUser),
+      data: { status: 'InProgress' },
+    });
+
+    // Navigate to refresh data (setupAuth persists across navigation)
+    await page.goto('/tasks');
+    await expect(page.locator('.bg-inprogress').getByText('Workflow Task')).toBeVisible();
+
+    // Move to Done via API
+    await request.put(`/api/tasks/${task.id}/status`, {
+      headers: getMockAuthHeaders(testUser),
+      data: { status: 'Done' },
+    });
+
+    // Navigate to refresh data
+    await page.goto('/tasks');
+    await expect(page.locator('.bg-done').getByText('Workflow Task')).toBeVisible();
+  });
+
 });
 
 async function setupAuth(page: any, user: MockUser): Promise<void> {
