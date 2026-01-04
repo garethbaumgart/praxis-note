@@ -1,0 +1,128 @@
+================================================================================
+                    TASKS PAGE UX ANALYSIS REPORT
+                       Desktop vs Mobile Comparison
+================================================================================
+
+CRITICAL ISSUES
+================================================================================
+
+ISSUE #1: Edit/Delete Actions Not Accessible on Mobile
+--------------------------------------------------------------------------------
+Location: task-card.component.ts lines 73-91
+Current:  Actions use `opacity-0 group-hover:opacity-100`
+Problem:  Touch devices don't trigger hover states
+Impact:   Users CANNOT edit or delete tasks on mobile
+
+Recommendations:
+  A. Add always-visible action icons on mobile
+  B. Implement long-press context menu
+  C. Add swipe-to-reveal actions (like iOS mail)
+  D. Show actions on tap (toggle visibility)
+
+--------------------------------------------------------------------------------
+
+ISSUE #2: Drag-and-Drop Unavailable on Touch Devices
+--------------------------------------------------------------------------------
+Location: tasks.page.ts (PrimeNG Draggable/Droppable)
+Current:  Uses mouse events (mousedown, mousemove, mouseup)
+Problem:  Touch events not handled
+Impact:   Users CANNOT change task status on mobile
+
+Recommendations:
+  A. Add tap-to-change-status UI (status dropdown or buttons)
+  B. Implement touch-based drag (many libraries support this)
+  C. Add swipe gestures (swipe left = In Progress, right = Done)
+
+--------------------------------------------------------------------------------
+
+MEDIUM ISSUES
+================================================================================
+
+ISSUE #3: Stacked Columns Require Excessive Scrolling
+--------------------------------------------------------------------------------
+Location: tasks.page.ts line 34 (grid-cols-1 md:grid-cols-3)
+Current:  All three columns stack vertically on mobile
+Problem:  Must scroll through entire Todo and In Progress to see Done
+Impact:   Reduced overview, harder to see task status distribution
+
+Recommendations:
+  A. Horizontal swipe carousel for columns
+  B. Collapsible accordion sections
+  C. Tab-based navigation (Todo | In Progress | Done tabs)
+  D. Floating column selector
+
+--------------------------------------------------------------------------------
+
+LOW PRIORITY ISSUES
+================================================================================
+
+ISSUE #4: Keyboard Shortcut Indicator on Mobile
+--------------------------------------------------------------------------------
+Location: tasks.page.ts line 23
+Current:  `<kbd>⌘⇧N</kbd>` shown on Add Task button
+Problem:  Irrelevant for touch-only users
+Impact:   Minor - wastes small amount of button space
+
+Fix: Hide with `hidden md:inline`
+
+--------------------------------------------------------------------------------
+
+ISSUE #5: Fixed Dialog Width
+--------------------------------------------------------------------------------
+Location: tasks.page.ts line 147 (style: { width: '420px' })
+Current:  Dialog has fixed 420px width
+Problem:  May overflow on screens < 420px (iPhone SE = 375px)
+Impact:   Minor - PrimeNG may handle this automatically
+
+Fix: Use `max-width: min(420px, calc(100vw - 32px))`
+
+--------------------------------------------------------------------------------
+
+MISSING MOBILE FEATURES
+================================================================================
+
+1. No pull-to-refresh
+2. No haptic feedback on interactions
+3. No gesture-based task management
+4. No quick-add via floating action button (FAB)
+5. No bulk selection/actions
+
+================================================================================
+                         PRIORITY IMPLEMENTATION ORDER
+================================================================================
+
+Phase 1 - Critical (Must Fix)
+-----------------------------
+1. Make edit/delete accessible on mobile (tap or visible icons)
+2. Add alternative to drag-drop for status changes
+
+Phase 2 - Important
+-------------------
+3. Improve mobile column navigation
+
+Phase 3 - Polish
+----------------
+4. Hide keyboard shortcut on mobile
+5. Responsive dialog width
+6. Add mobile-specific enhancements
+
+================================================================================
+                              SCREENSHOTS CAPTURED
+================================================================================
+
+Desktop:
+  01-desktop-kanban-layout.png    - Full Kanban board view
+  02-desktop-add-button.png       - Add Task button with kbd shortcut
+  03-desktop-hover-actions.png    - Task card with hover actions visible
+  04-desktop-add-dialog.png       - Add Task dialog
+
+Mobile:
+  05-mobile-stacked-top.png       - Top of stacked layout
+  06-mobile-stacked-fullpage.png  - Full page showing all columns
+  07-mobile-add-button-with-kbd.png - Add button (still shows ⌘⇧N)
+  08-mobile-task-no-actions.png   - Task card (no visible actions)
+  09-mobile-task-after-tap.png    - Task card after tap (still no actions)
+  10-mobile-scrolled-bottom.png   - Bottom of page (Done column)
+  11-mobile-add-dialog.png        - Add dialog on mobile
+
+================================================================================
