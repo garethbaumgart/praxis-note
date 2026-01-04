@@ -67,9 +67,10 @@ dotnet test tests/PraxisNote.Domain.Tests
 
 ### Running Locally (Recommended)
 
-The easiest way to run the full stack locally with hot reload:
+The easiest way to run the full stack locally with hot reload. From the project root:
 
 ```bash
+cd /path/to/praxis-note
 docker compose -f docker-compose.dev.yml up
 ```
 
