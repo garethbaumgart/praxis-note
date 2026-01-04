@@ -153,20 +153,9 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 
           <!-- Done Column -->
           <div class="rounded-lg p-3 min-h-48 transition-all bg-done">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-medium text-done-foreground uppercase tracking-wide">Done</span>
-                <span class="text-xs text-done-foreground-muted">{{ taskService.doneTasks().length }}</span>
-              </div>
-              @if (inlineCreatingColumn() !== 'Done') {
-                <button
-                  class="flex items-center justify-center w-6 h-6 text-done-foreground-muted hover:text-done-foreground hover:bg-done-hover rounded transition-colors"
-                  (click)="startInlineCreate('Done')"
-                  aria-label="Add task to Done"
-                >
-                  <i class="pi pi-plus text-xs"></i>
-                </button>
-              }
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs font-medium text-done-foreground uppercase tracking-wide">Done</span>
+              <span class="text-xs text-done-foreground-muted">{{ taskService.doneTasks().length }}</span>
             </div>
             <div
               cdkDropList
@@ -176,22 +165,6 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               (cdkDropListDropped)="drop($event, 'Done')"
               class="space-y-2 min-h-12"
             >
-              <!-- Inline task creation -->
-              @if (inlineCreatingColumn() === 'Done') {
-                <div class="bg-surface border border-done-border rounded-md p-3 shadow-sm">
-                  <input
-                    #inlineInput
-                    type="text"
-                    [value]="inlineTaskTitle()"
-                    (input)="inlineTaskTitle.set($any($event.target).value)"
-                    (keydown.enter)="submitInlineCreate()"
-                    (keydown.escape)="cancelInlineCreate()"
-                    (blur)="onInlineBlur()"
-                    placeholder="Task name..."
-                    class="w-full text-sm font-medium text-foreground placeholder-foreground-muted border-0 focus:outline-none focus:ring-0 p-0 bg-transparent"
-                  />
-                </div>
-              }
               @for (task of taskService.doneTasks(); track task.id) {
                 <div cdkDrag [cdkDragData]="task" class="cursor-grab active:cursor-grabbing touch-manipulation">
                   <app-task-card
@@ -202,9 +175,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
                   <div *cdkDragPlaceholder class="bg-done-hover border-2 border-dashed border-done-border rounded-md h-16"></div>
                 </div>
               } @empty {
-                @if (inlineCreatingColumn() !== 'Done') {
-                  <p class="text-sm text-foreground-muted text-center py-8">Complete some tasks!</p>
-                }
+                <p class="text-sm text-foreground-muted text-center py-8">Complete some tasks!</p>
               }
             </div>
           </div>
@@ -236,7 +207,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
         />
         <div class="flex items-center justify-between mt-4 pt-4 border-t border-border-muted">
           <div class="flex items-center gap-2 text-sm text-foreground-secondary">
-            <i class="pi pi-inbox"></i>
+            <i class="pi pi-lightbulb"></i>
             <span>Todo</span>
           </div>
           <div class="flex gap-2">

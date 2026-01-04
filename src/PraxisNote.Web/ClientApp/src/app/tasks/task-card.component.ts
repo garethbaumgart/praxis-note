@@ -46,7 +46,7 @@ import { Task } from './task.model';
         <div class="flex items-start gap-2">
           <i
             class="pi text-sm mt-0.5"
-            [class.pi-circle]="task().status === 'Todo'"
+            [class.pi-lightbulb]="task().status === 'Todo'"
             [class.text-todo-foreground-muted]="task().status === 'Todo'"
             [class.pi-clock]="task().status === 'InProgress'"
             [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
