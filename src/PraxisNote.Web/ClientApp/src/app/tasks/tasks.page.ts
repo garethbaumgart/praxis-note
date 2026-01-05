@@ -41,7 +41,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
                   >
                     <i class="pi pi-plus text-xs"></i>
                   </button>
-                  <kbd class="hidden md:inline px-1.5 py-0.5 text-[10px] text-todo-foreground-muted bg-todo-hover rounded font-sans">N</kbd>
+                  <kbd class="hidden md:inline px-1.5 py-0.5 text-xs text-todo-foreground-muted bg-todo-hover rounded font-sans">N</kbd>
                 </div>
               }
             </div>
