@@ -1,12 +1,11 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, ElementRef, input, output, signal, viewChild } from '@angular/core';
 import { Button } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
 import { Task } from './task.model';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
-  imports: [Button, InputText],
+  imports: [Button],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -15,31 +14,36 @@ import { Task } from './task.model';
       [class.border-done-border]="task().status === 'Done'"
     >
       @if (editing()) {
-        <div class="flex gap-2">
-          <input
-            pInputText
+        <div class="flex items-start gap-2">
+          <textarea
+            #editInput
             [value]="editTitle()"
-            (input)="editTitle.set($any($event.target).value)"
-            class="flex-1"
-            (keydown.enter)="saveEdit()"
+            (input)="onInput($event)"
+            (keydown.enter)="$event.preventDefault(); saveEdit()"
             (keydown.escape)="cancelEdit()"
-          />
-          <p-button
-            icon="pi pi-check"
-            [rounded]="true"
-            [text]="true"
-            severity="success"
-            (onClick)="saveEdit()"
-            aria-label="Save"
-          />
-          <p-button
-            icon="pi pi-times"
-            [rounded]="true"
-            [text]="true"
-            severity="secondary"
-            (onClick)="cancelEdit()"
-            aria-label="Cancel"
-          />
+            rows="1"
+            class="flex-1 text-sm text-foreground bg-transparent border-0 outline-none resize-none p-0 leading-normal"
+          ></textarea>
+          <div class="flex items-center gap-1 shrink-0">
+            <p-button
+              icon="pi pi-check"
+              [rounded]="true"
+              [text]="true"
+              size="small"
+              severity="success"
+              (onClick)="saveEdit()"
+              aria-label="Save"
+            />
+            <p-button
+              icon="pi pi-times"
+              [rounded]="true"
+              [text]="true"
+              size="small"
+              severity="secondary"
+              (onClick)="cancelEdit()"
+              aria-label="Cancel"
+            />
+          </div>
         </div>
       } @else {
         <!-- Task content with document icon -->
@@ -103,6 +107,7 @@ export class TaskCardComponent {
 
   readonly editing = signal(false);
   readonly editTitle = signal('');
+  readonly editInput = viewChild<ElementRef<HTMLTextAreaElement>>('editInput');
 
   readonly relativeTime = computed(() => {
     const task = this.task();
@@ -172,6 +177,26 @@ export class TaskCardComponent {
   startEdit(): void {
     this.editTitle.set(this.task().title);
     this.editing.set(true);
+    // Focus and auto-resize after view updates
+    setTimeout(() => {
+      const textarea = this.editInput()?.nativeElement;
+      if (textarea) {
+        this.autoResize(textarea);
+        textarea.focus();
+        textarea.select();
+      }
+    }, 0);
+  }
+
+  onInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    this.editTitle.set(textarea.value);
+    this.autoResize(textarea);
+  }
+
+  private autoResize(textarea: HTMLTextAreaElement): void {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
   saveEdit(): void {
