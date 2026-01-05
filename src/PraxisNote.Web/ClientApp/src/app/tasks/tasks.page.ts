@@ -277,30 +277,13 @@ export class TasksPage implements OnInit, AfterViewChecked {
       if (event.previousIndex !== event.currentIndex) {
         const tasks = event.container.data;
         const taskIds = tasks.map(t => t.id);
-        // Simulate the move to get new order
         taskIds.splice(event.previousIndex, 1);
         taskIds.splice(event.currentIndex, 0, task.id);
         this.taskService.reorderTasks(targetStatus, taskIds);
       }
     } else {
-      // Cross-column move
-      this.taskService.changeStatus(task.id, targetStatus);
-
-      // If dropping at a specific position, also reorder
-      if (event.currentIndex !== event.container.data.length) {
-        const targetTasks = event.container.data;
-        const taskIds = targetTasks.map(t => t.id);
-
-        // Remove existing occurrence if present (avoids duplicates)
-        const existingIndex = taskIds.indexOf(task.id);
-        if (existingIndex !== -1) {
-          taskIds.splice(existingIndex, 1);
-        }
-
-        // Insert at the desired drop index
-        taskIds.splice(event.currentIndex, 0, task.id);
-        this.taskService.reorderTasks(targetStatus, taskIds);
-      }
+      // Cross-column move - pass target position
+      this.taskService.changeStatus(task.id, targetStatus, event.currentIndex);
     }
   }
 }

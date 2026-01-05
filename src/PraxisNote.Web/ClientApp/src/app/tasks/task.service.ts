@@ -43,14 +43,7 @@ export class TaskService {
   readonly doneTasks = computed(() =>
     this._tasks()
       .filter(t => t.status === 'Done')
-      .sort((a, b) => {
-        // Sort by completedAt descending (most recent first)
-        // Tasks without completedAt are placed at the end
-        if (!a.completedAt && !b.completedAt) return 0;
-        if (!a.completedAt) return 1;
-        if (!b.completedAt) return -1;
-        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
-      })
+      .sort((a, b) => a.position - b.position)
   );
 
   loadTasks(): void {
@@ -123,28 +116,45 @@ export class TaskService {
     });
   }
 
-  changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done'): void {
+  changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done', targetPosition?: number): void {
     this.http.put(`/api/tasks/${id}/status`, { status }).subscribe({
       next: () => {
         const now = new Date().toISOString();
+        const position = targetPosition ?? 0;
+
         this._tasks.update(tasks => {
-          // Push down tasks in target column
-          const updated = tasks.map(t => {
+          // Get tasks in target column (excluding the moved task)
+          const targetColumnTasks = tasks
+            .filter(t => t.status === status && t.id !== id)
+            .sort((a, b) => a.position - b.position);
+
+          // Build new positions for target column
+          const newPositions = new Map<string, number>();
+          let pos = 0;
+          for (let i = 0; i <= targetColumnTasks.length; i++) {
+            if (i === position) {
+              newPositions.set(id, pos++);
+            }
+            if (i < targetColumnTasks.length) {
+              newPositions.set(targetColumnTasks[i].id, pos++);
+            }
+          }
+
+          return tasks.map(t => {
             if (t.id === id) {
               return {
                 ...t,
                 status,
-                position: 0,
+                position: newPositions.get(id) ?? 0,
                 startedAt: status === 'Todo' ? null : (t.startedAt ?? now),
                 completedAt: status === 'Done' ? now : null,
               };
             }
-            if (t.status === status) {
-              return { ...t, position: t.position + 1 };
+            if (t.status === status && newPositions.has(t.id)) {
+              return { ...t, position: newPositions.get(t.id)! };
             }
             return t;
           });
-          return updated;
         });
       },
       error: () => this.loadTasks(),
@@ -152,11 +162,6 @@ export class TaskService {
   }
 
   reorderTasks(status: 'Todo' | 'InProgress' | 'Done', taskIds: string[]): void {
-    // Done tasks are sorted by completion time, not position - reject reorder requests
-    if (status === 'Done') {
-      return;
-    }
-
     // Update positions locally immediately (optimistic update)
     this._tasks.update(tasks =>
       tasks.map(t => {
