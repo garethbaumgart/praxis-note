@@ -7,6 +7,7 @@ import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import { routes } from './app.routes';
 import { mockAuthInterceptor } from './auth/mock-auth.interceptor';
+import { authInterceptor } from './auth/auth.interceptor';
 
 const PraxisNoteTheme = definePreset(Aura, {
   semantic: {
@@ -31,7 +32,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([mockAuthInterceptor])),
+    provideHttpClient(withInterceptors([mockAuthInterceptor, authInterceptor])),
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {

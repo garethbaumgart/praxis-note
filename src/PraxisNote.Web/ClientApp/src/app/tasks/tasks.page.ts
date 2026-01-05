@@ -35,7 +35,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
         <!-- Kanban Board -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           <!-- Todo Column -->
-          <div class="rounded-lg p-3 min-h-48 transition-all bg-todo">
+          <div class="flex flex-col rounded-lg p-3 min-h-48 transition-all bg-todo">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
                 <span class="text-xs font-medium text-todo-foreground uppercase tracking-wide">Todo</span>
@@ -57,7 +57,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               [cdkDropListData]="taskService.todoTasks()"
               [cdkDropListConnectedTo]="[inProgressList, doneList]"
               (cdkDropListDropped)="drop($event, 'Todo')"
-              class="space-y-2 min-h-12"
+              class="flex-1 space-y-2 min-h-12"
             >
               <!-- Inline task creation -->
               @if (inlineCreatingColumn() === 'Todo') {
@@ -94,7 +94,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           </div>
 
           <!-- In Progress Column -->
-          <div class="rounded-lg p-3 min-h-48 transition-all bg-inprogress">
+          <div class="flex flex-col rounded-lg p-3 min-h-48 transition-all bg-inprogress">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
                 <span class="text-xs font-medium text-inprogress-foreground uppercase tracking-wide">In Progress</span>
@@ -116,7 +116,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               [cdkDropListData]="taskService.inProgressTasks()"
               [cdkDropListConnectedTo]="[todoList, doneList]"
               (cdkDropListDropped)="drop($event, 'InProgress')"
-              class="space-y-2 min-h-12"
+              class="flex-1 space-y-2 min-h-12"
             >
               <!-- Inline task creation -->
               @if (inlineCreatingColumn() === 'InProgress') {
@@ -152,7 +152,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           </div>
 
           <!-- Done Column -->
-          <div class="rounded-lg p-3 min-h-48 transition-all bg-done">
+          <div class="flex flex-col rounded-lg p-3 min-h-48 transition-all bg-done">
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs font-medium text-done-foreground uppercase tracking-wide">Done</span>
               <span class="text-xs text-done-foreground-muted">{{ taskService.doneTasks().length }}</span>
@@ -163,7 +163,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               [cdkDropListData]="taskService.doneTasks()"
               [cdkDropListConnectedTo]="[todoList, inProgressList]"
               (cdkDropListDropped)="drop($event, 'Done')"
-              class="space-y-2 min-h-12"
+              class="flex-1 space-y-2 min-h-12"
             >
               @for (task of taskService.doneTasks(); track task.id) {
                 <div cdkDrag [cdkDragData]="task" class="cursor-grab active:cursor-grabbing touch-manipulation">
