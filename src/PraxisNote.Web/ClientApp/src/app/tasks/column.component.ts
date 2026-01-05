@@ -1,4 +1,4 @@
-import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, effect, inject, Injector, afterNextRender } from '@angular/core';
+import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
 import { TaskCardComponent } from './task-card.component';
@@ -144,19 +144,12 @@ export class ColumnComponent {
   readonly inlineInput = viewChild<ElementRef<HTMLInputElement>>('inlineInput');
   readonly dropList = viewChild.required<CdkDropList>('dropList');
 
-  constructor() {
-    effect(() => {
-      if (this.isCreating()) {
-        afterNextRender(() => {
-          this.inlineInput()?.nativeElement.focus();
-        }, { injector: this.injector });
-      }
-    });
-  }
-
   startCreate(): void {
     this.isCreating.set(true);
     this.inlineTitle.set('');
+    afterNextRender(() => {
+      this.inlineInput()?.nativeElement.focus();
+    }, { injector: this.injector });
   }
 
   cancelCreate(): void {
@@ -174,8 +167,9 @@ export class ColumnComponent {
 
   onBlur(event: FocusEvent): void {
     const relatedTarget = event.relatedTarget as HTMLElement | null;
-    // If focus is moving to a button within this component, don't cancel
-    if (relatedTarget?.closest('app-column') === (event.target as HTMLElement).closest('app-column')) {
+    // If focus is moving to an interactive element (button, input), don't auto-submit/cancel
+    // This prevents issues when clicking buttons or other inputs
+    if (relatedTarget?.matches('button, input, textarea, [tabindex]')) {
       return;
     }
 

@@ -1,5 +1,5 @@
 import { Component, HostListener, inject, OnInit, viewChild, ChangeDetectionStrategy, computed } from '@angular/core';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
 import { ColumnComponent } from './column.component';
 import { Task } from './task.model';
@@ -83,19 +83,19 @@ export class TasksPage implements OnInit {
   readonly todoConnectedTo = computed(() => {
     const inProgress = this.inProgressColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
-    return [inProgress, done].filter(Boolean) as any[];
+    return [inProgress, done].filter((list): list is CdkDropList => !!list);
   });
 
   readonly inProgressConnectedTo = computed(() => {
     const todo = this.todoColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
-    return [todo, done].filter(Boolean) as any[];
+    return [todo, done].filter((list): list is CdkDropList => !!list);
   });
 
   readonly doneConnectedTo = computed(() => {
     const todo = this.todoColumn()?.dropList();
     const inProgress = this.inProgressColumn()?.dropList();
-    return [todo, inProgress].filter(Boolean) as any[];
+    return [todo, inProgress].filter((list): list is CdkDropList => !!list);
   });
 
   ngOnInit(): void {
