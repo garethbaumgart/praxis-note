@@ -1,6 +1,5 @@
-import { Component, ElementRef, HostListener, inject, OnInit, signal, viewChild, viewChildren, AfterViewChecked } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, signal, viewChildren, AfterViewChecked } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
-import { Dialog } from 'primeng/dialog';
 import { TaskService } from './task.service';
 import { TaskCardComponent } from './task-card.component';
 import { Task } from './task.model';
@@ -10,20 +9,12 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 @Component({
   selector: 'app-tasks-page',
   standalone: true,
-  imports: [Dialog, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder],
+  imports: [TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-xl font-semibold text-foreground">Tasks</h1>
-        <button
-          class="flex items-center gap-2 h-9 px-3 text-sm font-medium text-foreground bg-accent hover:bg-accent-hover rounded-lg transition-colors"
-          (click)="showDialog.set(true)"
-        >
-          <i class="pi pi-plus text-accent-foreground"></i>
-          <span>Add Task</span>
-          <kbd class="hidden md:inline ml-1 px-1.5 py-0.5 text-xs text-accent-foreground bg-accent rounded font-sans">N</kbd>
-        </button>
       </div>
 
       <!-- Loading state -->
@@ -183,65 +174,16 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
       }
     </div>
 
-    <!-- Add Task Dialog -->
-    <p-dialog
-      [visible]="showDialog()"
-      (visibleChange)="showDialog.set($event)"
-      (onShow)="onDialogShow()"
-      [modal]="true"
-      [style]="{ width: '420px' }"
-      [draggable]="false"
-      [showHeader]="false"
-      [contentStyle]="{ padding: 0 }"
-    >
-      <div class="p-5">
-        <input
-          #taskInput
-          type="text"
-          [value]="newTaskTitle()"
-          (input)="newTaskTitle.set($any($event.target).value)"
-          placeholder="Task name..."
-          class="w-full text-lg font-medium text-foreground placeholder-foreground-muted border-0 focus:outline-none focus:ring-0 p-0 bg-transparent"
-          (keydown.enter)="createTask(newTaskTitle())"
-          (keydown.escape)="showDialog.set(false)"
-        />
-        <div class="flex items-center justify-between mt-4 pt-4 border-t border-border-muted">
-          <div class="flex items-center gap-2 text-sm text-foreground-secondary">
-            <i class="pi pi-lightbulb"></i>
-            <span>Todo</span>
-          </div>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="px-3 py-1.5 text-sm text-foreground-secondary hover:bg-surface-muted rounded-md transition-colors"
-              (click)="showDialog.set(false)"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="px-3 py-1.5 text-sm font-medium text-white bg-accent-solid hover:bg-accent-solid-hover rounded-md transition-colors"
-              (click)="createTask(newTaskTitle())"
-            >
-              Add Task
-            </button>
-          </div>
-        </div>
-      </div>
-    </p-dialog>
   `,
 })
 export class TasksPage implements OnInit, AfterViewChecked {
   readonly taskService = inject(TaskService);
-  readonly showDialog = signal(false);
-  readonly newTaskTitle = signal('');
 
   // Inline task creation state
   readonly inlineCreatingColumn = signal<TaskStatus | null>(null);
   readonly inlineTaskTitle = signal('');
   private shouldFocusInlineInput = false;
 
-  readonly taskInput = viewChild<ElementRef<HTMLInputElement>>('taskInput');
   readonly inlineInputs = viewChildren<ElementRef<HTMLInputElement>>('inlineInput');
 
   ngOnInit(): void {
@@ -256,11 +198,6 @@ export class TasksPage implements OnInit, AfterViewChecked {
         this.shouldFocusInlineInput = false;
       }
     }
-  }
-
-  onDialogShow(): void {
-    // Focus the input after a brief delay to ensure the dialog is fully rendered
-    setTimeout(() => this.taskInput()?.nativeElement.focus(), 0);
   }
 
   startInlineCreate(column: TaskStatus): void {
@@ -312,18 +249,10 @@ export class TasksPage implements OnInit, AfterViewChecked {
       return;
     }
 
-    // N to open add task dialog
-    if (event.key.toLowerCase() === 'n' && !event.metaKey && !event.ctrlKey && !this.showDialog()) {
+    // N to start inline task creation in Todo column
+    if (event.key.toLowerCase() === 'n' && !event.metaKey && !event.ctrlKey && !this.inlineCreatingColumn()) {
       event.preventDefault();
-      this.showDialog.set(true);
-    }
-  }
-
-  createTask(title: string): void {
-    if (title.trim()) {
-      this.taskService.createTask(title.trim());
-      this.newTaskTitle.set('');
-      this.showDialog.set(false);
+      this.startInlineCreate('Todo');
     }
   }
 

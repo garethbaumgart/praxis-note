@@ -201,9 +201,10 @@ For local development and E2E testing, PraxisNote includes a mock authentication
 
 | Key | Action |
 |-----|--------|
-| `N` | Open "Add Task" dialog |
-| `Enter` | Submit task (when in dialog or inline input) |
-| `Escape` | Cancel/close dialog |
+| `N` | Create new task in Todo column (inline) |
+| `Enter` | Submit task |
+| `Escape` | Cancel task creation |
+| `Shift+Enter` | Add newline when editing task title |
 
 ## E2E Tests
 
