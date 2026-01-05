@@ -41,6 +41,28 @@ jobs:
             src/PraxisNote.Web/ClientApp/package-lock.json
             tests/PraxisNote.E2E.Tests/package-lock.json
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('tests/PraxisNote.E2E.Tests/package-lock.json') }}
+
+      - name: Cache Angular build
+        id: angular-cache
+        uses: actions/cache@v4
+        with:
+          path: src/PraxisNote.Web/wwwroot
+          key: angular-${{ runner.os }}-${{ hashFiles('src/PraxisNote.Web/ClientApp/src/**', 'src/PraxisNote.Web/ClientApp/package-lock.json') }}
+
       - name: Install EF Core tools
         run: dotnet tool install --global dotnet-ef
 
@@ -56,10 +78,12 @@ jobs:
           ConnectionStrings__DefaultConnection: "Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword"
 
       - name: Install frontend dependencies
+        if: steps.angular-cache.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: src/PraxisNote.Web/ClientApp
 
       - name: Build frontend
+        if: steps.angular-cache.outputs.cache-hit != 'true'
         run: npm run build
         working-directory: src/PraxisNote.Web/ClientApp
 
@@ -68,6 +92,7 @@ jobs:
         working-directory: tests/PraxisNote.E2E.Tests
 
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
         working-directory: tests/PraxisNote.E2E.Tests
 
