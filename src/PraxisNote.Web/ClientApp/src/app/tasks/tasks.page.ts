@@ -33,13 +33,16 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
                 <span class="text-xs text-todo-foreground-muted">{{ taskService.todoTasks().length }}</span>
               </div>
               @if (inlineCreatingColumn() !== 'Todo') {
-                <button
-                  class="flex items-center justify-center w-6 h-6 text-todo-foreground-muted hover:text-todo-foreground hover:bg-todo-hover rounded transition-colors"
-                  (click)="startInlineCreate('Todo')"
-                  aria-label="Add task to Todo"
-                >
-                  <i class="pi pi-plus text-xs"></i>
-                </button>
+                <div class="flex items-center gap-1">
+                  <button
+                    class="flex items-center justify-center w-6 h-6 text-todo-foreground-muted hover:text-todo-foreground hover:bg-todo-hover rounded transition-colors"
+                    (click)="startInlineCreate('Todo')"
+                    aria-label="Add task to Todo (N)"
+                  >
+                    <i class="pi pi-plus text-xs"></i>
+                  </button>
+                  <kbd class="hidden md:inline px-1.5 py-0.5 text-xs text-todo-foreground-muted bg-todo-hover rounded font-sans">N</kbd>
+                </div>
               }
             </div>
             <div
@@ -78,7 +81,9 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
                 </div>
               } @empty {
                 @if (inlineCreatingColumn() !== 'Todo') {
-                  <p class="text-sm text-foreground-muted text-center py-8">No tasks yet</p>
+                  <p class="text-sm text-foreground-muted text-center py-8">
+                    Press <kbd class="px-1.5 py-0.5 text-xs bg-todo-hover rounded font-sans">N</kbd> to add your first task
+                  </p>
                 }
               }
             </div>
