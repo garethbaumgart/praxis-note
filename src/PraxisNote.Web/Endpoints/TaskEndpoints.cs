@@ -100,7 +100,7 @@ public static class TaskEndpoints
             return Results.BadRequest(new { error = "Status is required" });
         }
 
-        var command = new ChangeTaskStatus.Command(id, userId.Value, request.Status);
+        var command = new ChangeTaskStatus.Command(id, userId.Value, request.Status, request.Position);
         var success = await changeStatus.ExecuteAsync(command, cancellationToken);
 
         return success ? Results.NoContent() : Results.NotFound();
@@ -158,5 +158,5 @@ public static class TaskEndpoints
 
 public record CreateTaskRequest(string Title);
 public record UpdateTaskRequest(string Title);
-public record ChangeStatusRequest(string Status);
+public record ChangeStatusRequest(string Status, int? Position = null);
 public record ReorderTasksRequest(string Status, IReadOnlyList<Guid> TaskIds);

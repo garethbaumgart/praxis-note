@@ -117,10 +117,11 @@ export class TaskService {
   }
 
   changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done', targetPosition?: number): void {
-    this.http.put(`/api/tasks/${id}/status`, { status }).subscribe({
+    const position = targetPosition ?? 0;
+
+    this.http.put(`/api/tasks/${id}/status`, { status, position }).subscribe({
       next: () => {
         const now = new Date().toISOString();
-        const position = targetPosition ?? 0;
 
         this._tasks.update(tasks => {
           // Get tasks in target column (excluding the moved task)
@@ -128,16 +129,15 @@ export class TaskService {
             .filter(t => t.status === status && t.id !== id)
             .sort((a, b) => a.position - b.position);
 
+          // Clamp position to valid range
+          const clampedPosition = Math.max(0, Math.min(position, targetColumnTasks.length));
+
           // Build new positions for target column
           const newPositions = new Map<string, number>();
-          let pos = 0;
-          for (let i = 0; i <= targetColumnTasks.length; i++) {
-            if (i === position) {
-              newPositions.set(id, pos++);
-            }
-            if (i < targetColumnTasks.length) {
-              newPositions.set(targetColumnTasks[i].id, pos++);
-            }
+          newPositions.set(id, clampedPosition);
+          for (let i = 0; i < targetColumnTasks.length; i++) {
+            const newPos = i >= clampedPosition ? i + 1 : i;
+            newPositions.set(targetColumnTasks[i].id, newPos);
           }
 
           return tasks.map(t => {
@@ -145,7 +145,7 @@ export class TaskService {
               return {
                 ...t,
                 status,
-                position: newPositions.get(id) ?? 0,
+                position: clampedPosition,
                 startedAt: status === 'Todo' ? null : (t.startedAt ?? now),
                 completedAt: status === 'Done' ? now : null,
               };

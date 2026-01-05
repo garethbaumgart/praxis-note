@@ -7,7 +7,7 @@ namespace PraxisNote.Application.Features.Tasks;
 
 public sealed class ChangeTaskStatus(ITaskRepository taskRepository, IUnitOfWork unitOfWork)
 {
-    public record Command(Guid TaskId, Guid UserId, string TargetStatus);
+    public record Command(Guid TaskId, Guid UserId, string TargetStatus, int? Position = null);
 
     public async Task<bool> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
@@ -23,18 +23,24 @@ public sealed class ChangeTaskStatus(ITaskRepository taskRepository, IUnitOfWork
             return false;
         }
 
-        // Push down tasks in target column (only for Todo and InProgress, Done is sorted by completion time)
-        if (targetStatus != TaskStatus.Done)
+        var allTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
+        var tasksInTargetColumn = allTasks
+            .Where(t => t.Status == targetStatus && t.Id != task.Id)
+            .OrderBy(t => t.Position)
+            .ToList();
+
+        // Calculate target position (clamp to valid range)
+        var targetPosition = command.Position ?? 0;
+        targetPosition = Math.Max(0, Math.Min(targetPosition, tasksInTargetColumn.Count));
+
+        // Rebuild positions: insert moved task at targetPosition, shift others
+        for (var i = 0; i < tasksInTargetColumn.Count; i++)
         {
-            var allTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
-            var tasksInTargetColumn = allTasks.Where(t => t.Status == targetStatus && t.Id != task.Id);
-            foreach (var t in tasksInTargetColumn)
-            {
-                t.SetPosition(t.Position + 1);
-            }
+            var newPosition = i >= targetPosition ? i + 1 : i;
+            tasksInTargetColumn[i].SetPosition(newPosition);
         }
-        // Always set position for data consistency, even for Done tasks
-        task.SetPosition(0);
+        task.SetPosition(targetPosition);
+
         switch (targetStatus)
         {
             case TaskStatus.Todo:
