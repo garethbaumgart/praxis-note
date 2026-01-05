@@ -1,10 +1,11 @@
-import { Component, computed, ElementRef, input, output, signal, viewChild } from '@angular/core';
+import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Task } from './task.model';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Button],
   template: `
     <div
@@ -100,6 +101,9 @@ import { Task } from './task.model';
   `,
 })
 export class TaskCardComponent {
+  private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly task = input.required<Task>();
 
   readonly onEdit = output<string>();
@@ -109,68 +113,44 @@ export class TaskCardComponent {
   readonly editTitle = signal('');
   readonly editInput = viewChild<ElementRef<HTMLTextAreaElement>>('editInput');
 
+  // Tick signal for auto-updating relative times (updates every minute)
+  private readonly tick = signal(Date.now());
+
   readonly relativeTime = computed(() => {
+    // Include tick in dependency to trigger updates
+    this.tick();
     const task = this.task();
     if (task.status === 'InProgress' && task.startedAt) {
-      return this.formatElapsedTime(task.startedAt);
+      return this.formatTime(task.startedAt, 'elapsed');
     }
     if (task.status === 'Done' && task.completedAt) {
-      return this.formatRelativeTime(task.completedAt);
+      return this.formatTime(task.completedAt, 'completed');
     }
     return null;
   });
 
-  private formatElapsedTime(dateStr: string): string {
-    const date = new Date(dateStr);
-
-    // Handle invalid dates
-    if (isNaN(date.getTime())) {
-      return '';
-    }
-
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-
-    // Handle future dates (e.g., clock skew or timezone issues)
-    if (diffMs < 0) {
-      return 'just started';
-    }
-
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'just started';
-    if (diffMins < 60) return `${diffMins}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}d`;
-    return date.toLocaleDateString();
+  constructor() {
+    // Update tick every minute for auto-updating relative times
+    const intervalId = setInterval(() => this.tick.set(Date.now()), 60000);
+    this.destroyRef.onDestroy(() => clearInterval(intervalId));
   }
 
-  private formatRelativeTime(dateStr: string): string {
+  private formatTime(dateStr: string, type: 'elapsed' | 'completed'): string {
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
 
-    // Handle invalid dates
-    if (isNaN(date.getTime())) {
-      return '';
-    }
-
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-
-    // Handle future dates (e.g., clock skew or timezone issues)
-    if (diffMs < 0) {
-      return 'just now';
-    }
-
+    const diffMs = Math.max(0, Date.now() - date.getTime());
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    const suffix = type === 'completed' ? ' ago' : '';
+    const justNow = type === 'completed' ? 'just now' : 'just started';
+
+    if (diffMins < 1) return justNow;
+    if (diffMins < 60) return `${diffMins}m${suffix}`;
+    if (diffHours < 24) return `${diffHours}h${suffix}`;
+    if (diffDays < 7) return `${diffDays}d${suffix}`;
     return date.toLocaleDateString();
   }
 
@@ -178,14 +158,14 @@ export class TaskCardComponent {
     this.editTitle.set(this.task().title);
     this.editing.set(true);
     // Focus and auto-resize after view updates
-    setTimeout(() => {
+    afterNextRender(() => {
       const textarea = this.editInput()?.nativeElement;
       if (textarea) {
         this.autoResize(textarea);
         textarea.focus();
         textarea.select();
       }
-    }, 0);
+    }, { injector: this.injector });
   }
 
   onInput(event: Event): void {
