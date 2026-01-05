@@ -19,7 +19,7 @@ import { Task } from './task.model';
             #editInput
             [value]="editTitle()"
             (input)="onInput($event)"
-            (keydown.enter)="$event.preventDefault(); saveEdit()"
+            (keydown.enter)="onEnterKey($any($event))"
             (keydown.escape)="cancelEdit()"
             rows="1"
             class="flex-1 text-sm text-foreground bg-transparent border-0 outline-none resize-none p-0 leading-normal"
@@ -192,6 +192,15 @@ export class TaskCardComponent {
     const textarea = event.target as HTMLTextAreaElement;
     this.editTitle.set(textarea.value);
     this.autoResize(textarea);
+  }
+
+  onEnterKey(event: KeyboardEvent): void {
+    if (event.shiftKey) {
+      // Allow Shift+Enter for multi-line input
+      return;
+    }
+    event.preventDefault();
+    this.saveEdit();
   }
 
   private autoResize(textarea: HTMLTextAreaElement): void {
