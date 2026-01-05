@@ -60,12 +60,10 @@ import { Task } from './task.model';
           ></i>
           <div class="flex-1 min-w-0">
             <p
-              class="text-sm text-foreground"
+              class="text-sm text-foreground whitespace-pre-wrap"
               [class.line-through]="task().status === 'Done'"
               [class.text-foreground-muted]="task().status === 'Done'"
-            >
-              {{ task().title }}
-            </p>
+            >{{ task().title }}</p>
             @if (relativeTime(); as time) {
               <span
                 class="text-xs"
