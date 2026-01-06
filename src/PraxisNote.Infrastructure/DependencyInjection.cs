@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,12 @@ public static class DependencyInjection
         }
         services.AddDbContext<PraxisNoteDbContext>(options =>
             options.UseNpgsql(connectionString));
+
+        // Data Protection - persist keys to database
+        // This ensures auth cookies remain valid across app restarts/deployments
+        services.AddDataProtection()
+            .SetApplicationName("PraxisNote")
+            .PersistKeysToDbContext<PraxisNoteDbContext>();
 
         // Unit of Work
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<PraxisNoteDbContext>());
