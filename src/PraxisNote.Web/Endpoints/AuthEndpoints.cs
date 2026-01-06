@@ -107,7 +107,7 @@ public static class AuthEndpoints
             new AuthenticationProperties
             {
                 IsPersistent = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
             });
 
         return Results.Redirect("/");
