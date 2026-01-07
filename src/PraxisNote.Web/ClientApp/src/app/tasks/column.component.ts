@@ -83,17 +83,17 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               'border-done-border': status() === 'Done'
             }"
           >
-            <input
+            <textarea
               #inlineInput
-              type="text"
               [value]="inlineTitle()"
-              (input)="inlineTitle.set($any($event.target).value)"
-              (keydown.enter)="submitCreate()"
+              (input)="onInput($event)"
+              (keydown.enter)="onEnterKey($any($event))"
               (keydown.escape)="cancelCreate()"
               (blur)="onBlur($event)"
               placeholder="Task name..."
-              class="w-full text-sm font-medium text-foreground placeholder-foreground-muted border-0 focus:outline-none focus:ring-0 p-0 bg-transparent"
-            />
+              rows="1"
+              class="w-full text-sm font-medium text-foreground placeholder-foreground-muted border-0 focus:outline-none focus:ring-0 p-0 bg-transparent resize-none leading-normal"
+            ></textarea>
           </div>
         }
         @for (task of tasks(); track task.id) {
@@ -141,7 +141,7 @@ export class ColumnComponent {
   readonly isCreating = signal(false);
   readonly inlineTitle = signal('');
 
-  readonly inlineInput = viewChild<ElementRef<HTMLInputElement>>('inlineInput');
+  readonly inlineInput = viewChild<ElementRef<HTMLTextAreaElement>>('inlineInput');
   readonly dropList = viewChild.required<CdkDropList>('dropList');
 
   startCreate(): void {
@@ -155,6 +155,25 @@ export class ColumnComponent {
   cancelCreate(): void {
     this.isCreating.set(false);
     this.inlineTitle.set('');
+  }
+
+  onInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    this.inlineTitle.set(textarea.value);
+    this.autoResize(textarea);
+  }
+
+  onEnterKey(event: KeyboardEvent): void {
+    if (event.shiftKey) {
+      return; // Allow Shift+Enter for new line
+    }
+    event.preventDefault();
+    this.submitCreate();
+  }
+
+  private autoResize(textarea: HTMLTextAreaElement): void {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
   submitCreate(): void {
