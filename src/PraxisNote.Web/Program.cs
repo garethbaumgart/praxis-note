@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,11 @@ builder.Services.AddApplication();
 
 // Add Infrastructure services (DbContext, repositories)
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Configure Data Protection to persist keys to database (survives cold starts)
+builder.Services.AddDataProtection()
+    .SetApplicationName("PraxisNote")
+    .PersistKeysToDbContext<PraxisNoteDbContext>();
 
 // Add CORS for development (ng serve)
 builder.Services.AddCors(options =>
