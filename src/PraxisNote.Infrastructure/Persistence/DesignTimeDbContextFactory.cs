@@ -1,32 +1,23 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 
 namespace PraxisNote.Infrastructure.Persistence;
 
 /// <summary>
 /// Factory for creating <see cref="PraxisNoteDbContext"/> at design time (EF migrations, scaffolding).
-/// Uses the same configuration sources as runtime: user secrets, environment variables, appsettings.json.
+/// Reads connection string from ConnectionStrings__DefaultConnection environment variable.
 /// </summary>
 public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<PraxisNoteDbContext>
 {
     public PraxisNoteDbContext CreateDbContext(string[] args)
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true)
-            .AddUserSecrets<PraxisNoteDbContext>(optional: true)
-            .AddEnvironmentVariables()
-            .Build();
-
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
         if (string.IsNullOrEmpty(connectionString))
         {
             throw new InvalidOperationException(
-                "Connection string 'DefaultConnection' not found. " +
-                "Configure via: dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"<your-connection-string>\" " +
-                "or set ConnectionStrings__DefaultConnection environment variable.");
+                "Environment variable 'ConnectionStrings__DefaultConnection' not set. " +
+                "Run migrations inside Docker (docker compose exec api ...) or set the variable manually.");
         }
 
         var optionsBuilder = new DbContextOptionsBuilder<PraxisNoteDbContext>();
