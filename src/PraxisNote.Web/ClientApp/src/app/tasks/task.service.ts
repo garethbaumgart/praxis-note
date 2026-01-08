@@ -118,45 +118,45 @@ export class TaskService {
 
   changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done', targetPosition?: number): void {
     const position = targetPosition ?? 0;
+    const now = new Date().toISOString();
 
+    // Optimistic update - update UI immediately
+    this._tasks.update(tasks => {
+      // Get tasks in target column (excluding the moved task)
+      const targetColumnTasks = tasks
+        .filter(t => t.status === status && t.id !== id)
+        .sort((a, b) => a.position - b.position);
+
+      // Clamp position to valid range
+      const clampedPosition = Math.max(0, Math.min(position, targetColumnTasks.length));
+
+      // Build new positions for target column
+      const newPositions = new Map<string, number>();
+      newPositions.set(id, clampedPosition);
+      for (let i = 0; i < targetColumnTasks.length; i++) {
+        const newPos = i >= clampedPosition ? i + 1 : i;
+        newPositions.set(targetColumnTasks[i].id, newPos);
+      }
+
+      return tasks.map(t => {
+        if (t.id === id) {
+          return {
+            ...t,
+            status,
+            position: clampedPosition,
+            startedAt: status === 'Todo' ? null : (t.startedAt ?? now),
+            completedAt: status === 'Done' ? now : null,
+          };
+        }
+        if (t.status === status && newPositions.has(t.id)) {
+          return { ...t, position: newPositions.get(t.id)! };
+        }
+        return t;
+      });
+    });
+
+    // Then make API call - reload on error to revert
     this.http.put(`/api/tasks/${id}/status`, { status, position }).subscribe({
-      next: () => {
-        const now = new Date().toISOString();
-
-        this._tasks.update(tasks => {
-          // Get tasks in target column (excluding the moved task)
-          const targetColumnTasks = tasks
-            .filter(t => t.status === status && t.id !== id)
-            .sort((a, b) => a.position - b.position);
-
-          // Clamp position to valid range
-          const clampedPosition = Math.max(0, Math.min(position, targetColumnTasks.length));
-
-          // Build new positions for target column
-          const newPositions = new Map<string, number>();
-          newPositions.set(id, clampedPosition);
-          for (let i = 0; i < targetColumnTasks.length; i++) {
-            const newPos = i >= clampedPosition ? i + 1 : i;
-            newPositions.set(targetColumnTasks[i].id, newPos);
-          }
-
-          return tasks.map(t => {
-            if (t.id === id) {
-              return {
-                ...t,
-                status,
-                position: clampedPosition,
-                startedAt: status === 'Todo' ? null : (t.startedAt ?? now),
-                completedAt: status === 'Done' ? now : null,
-              };
-            }
-            if (t.status === status && newPositions.has(t.id)) {
-              return { ...t, position: newPositions.get(t.id)! };
-            }
-            return t;
-          });
-        });
-      },
       error: () => this.loadTasks(),
     });
   }
