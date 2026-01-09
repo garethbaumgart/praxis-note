@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PraxisNote.Domain.Aggregates.Tasks;
 
 /// <summary>
@@ -11,11 +13,7 @@ public sealed record Comment
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset UpdatedAt { get; init; }
 
-    /// <summary>
-    /// Required for JSON deserialization.
-    /// </summary>
-    private Comment() { }
-
+    [JsonConstructor]
     private Comment(Guid id, string content, DateTimeOffset createdAt, DateTimeOffset updatedAt)
     {
         Id = id;

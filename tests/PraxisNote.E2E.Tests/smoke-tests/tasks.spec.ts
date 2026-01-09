@@ -68,7 +68,13 @@ test.describe('Tasks', () => {
     await expect(page.getByText('Delete Me')).toBeVisible();
 
     const taskCard = page.locator('.group').filter({ hasText: 'Delete Me' });
+
+    // Hover to reveal delete button, then click to show confirmation
+    await taskCard.hover();
     await taskCard.getByLabel('Delete task').click();
+
+    // Click confirm to delete
+    await taskCard.getByLabel('Confirm delete task').click();
 
     await expect(page.getByText('Delete Me')).not.toBeVisible();
   });
