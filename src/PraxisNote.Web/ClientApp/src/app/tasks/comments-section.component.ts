@@ -123,5 +123,10 @@ export class CommentsSectionComponent {
 
   clearInput(): void {
     this.newComment.set('');
+    // Reset textarea height
+    const textarea = this.addInput()?.nativeElement;
+    if (textarea) {
+      textarea.style.height = 'auto';
+    }
   }
 }

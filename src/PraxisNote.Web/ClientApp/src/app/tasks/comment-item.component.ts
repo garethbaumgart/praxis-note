@@ -1,4 +1,4 @@
-import { Component, input, output, signal, viewChild, ElementRef, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, input, output, signal, viewChild, ElementRef, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, OnInit, OnChanges } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Comment } from './task.model';
 
@@ -64,7 +64,7 @@ import { Comment } from './task.model';
     }
   `,
 })
-export class CommentItemComponent {
+export class CommentItemComponent implements OnInit, OnChanges {
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
 
