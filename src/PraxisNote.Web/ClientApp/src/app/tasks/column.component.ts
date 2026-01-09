@@ -16,7 +16,11 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
   template: `
     <div
       class="flex flex-col rounded-lg p-3 min-h-48 transition-all"
-      [ngClass]="status() | statusColor:'bg'"
+      [ngClass]="{
+        'bg-todo': status() === 'Todo',
+        'bg-inprogress': status() === 'InProgress',
+        'bg-done': status() === 'Done'
+      }"
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
