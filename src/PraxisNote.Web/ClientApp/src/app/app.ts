@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './auth';
 import { MockAuthToolbarComponent } from './auth/mock-auth-toolbar.component';
@@ -7,6 +7,8 @@ import { SidebarComponent } from './shared/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, SidebarComponent, LoginComponent, MockAuthToolbarComponent],
   templateUrl: './app.html',
 })
