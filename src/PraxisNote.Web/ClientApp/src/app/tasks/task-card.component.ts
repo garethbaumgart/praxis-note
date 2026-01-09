@@ -178,6 +178,8 @@ export class TaskCardComponent {
   // Delete confirmation state
   readonly confirmingTaskDelete = signal(false);
   readonly confirmingCommentDeleteId = signal<string | null>(null);
+  private deleteConfirmTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private deleteConfirmClickHandler: (() => void) | null = null;
 
   // Tick signal for auto-updating relative times (updates every minute)
   private readonly tick = signal(Date.now());
@@ -198,7 +200,22 @@ export class TaskCardComponent {
   constructor() {
     // Update tick every minute for auto-updating relative times
     const intervalId = setInterval(() => this.tick.set(Date.now()), 60000);
-    this.destroyRef.onDestroy(() => clearInterval(intervalId));
+    this.destroyRef.onDestroy(() => {
+      clearInterval(intervalId);
+      // Clean up delete confirmation timeouts
+      this.clearDeleteConfirmation();
+    });
+  }
+
+  private clearDeleteConfirmation(): void {
+    if (this.deleteConfirmTimeoutId) {
+      clearTimeout(this.deleteConfirmTimeoutId);
+      this.deleteConfirmTimeoutId = null;
+    }
+    if (this.deleteConfirmClickHandler) {
+      document.removeEventListener('click', this.deleteConfirmClickHandler);
+      this.deleteConfirmClickHandler = null;
+    }
   }
 
   private formatTime(dateStr: string, type: 'elapsed' | 'completed'): string {
@@ -346,52 +363,60 @@ export class TaskCardComponent {
 
   // Task delete confirmation methods
   startTaskDeleteConfirm(): void {
+    this.clearDeleteConfirmation();
     this.confirmingTaskDelete.set(true);
 
     // Auto-cancel after 3 seconds
-    const timeoutId = setTimeout(() => this.confirmingTaskDelete.set(false), 3000);
+    this.deleteConfirmTimeoutId = setTimeout(() => {
+      this.confirmingTaskDelete.set(false);
+      this.clearDeleteConfirmation();
+    }, 3000);
 
     // Cancel on any click outside (after current event completes)
     setTimeout(() => {
-      const onClick = () => {
+      this.deleteConfirmClickHandler = () => {
         if (this.confirmingTaskDelete()) {
           this.confirmingTaskDelete.set(false);
         }
-        clearTimeout(timeoutId);
+        this.clearDeleteConfirmation();
       };
-      document.addEventListener('click', onClick, { once: true });
+      document.addEventListener('click', this.deleteConfirmClickHandler, { once: true });
     }, 0);
   }
 
   confirmTaskDelete(): void {
+    this.clearDeleteConfirmation();
     this.confirmingTaskDelete.set(false);
     this.onDelete.emit();
   }
 
   // Comment delete confirmation methods
   startCommentDeleteConfirm(commentId: string): void {
+    this.clearDeleteConfirmation();
     this.confirmingCommentDeleteId.set(commentId);
 
     // Auto-cancel after 3 seconds
-    const timeoutId = setTimeout(() => {
+    this.deleteConfirmTimeoutId = setTimeout(() => {
       if (this.confirmingCommentDeleteId() === commentId) {
         this.confirmingCommentDeleteId.set(null);
       }
+      this.clearDeleteConfirmation();
     }, 3000);
 
     // Cancel on any click outside (after current event completes)
     setTimeout(() => {
-      const onClick = () => {
+      this.deleteConfirmClickHandler = () => {
         if (this.confirmingCommentDeleteId() === commentId) {
           this.confirmingCommentDeleteId.set(null);
         }
-        clearTimeout(timeoutId);
+        this.clearDeleteConfirmation();
       };
-      document.addEventListener('click', onClick, { once: true });
+      document.addEventListener('click', this.deleteConfirmClickHandler, { once: true });
     }, 0);
   }
 
   confirmCommentDelete(commentId: string): void {
+    this.clearDeleteConfirmation();
     this.confirmingCommentDeleteId.set(null);
     this.onDeleteComment.emit(commentId);
   }
