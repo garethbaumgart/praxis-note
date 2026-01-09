@@ -73,18 +73,18 @@ import { Task, Comment } from './task.model';
         </div>
 
         <!-- Add comment input -->
-        <div class="mt-2 flex items-center gap-1.5">
-          <i class="pi pi-plus text-[10px] text-foreground-muted/30 shrink-0"></i>
-          <input
-            type="text"
+        <div class="mt-2 flex items-start gap-1.5">
+          <i class="pi pi-plus text-[10px] text-foreground-muted/30 shrink-0 mt-0.5"></i>
+          <textarea
             [value]="newCommentText()"
-            (input)="newCommentText.set($any($event.target).value)"
-            (keydown.enter)="submitNewComment(); $event.stopPropagation()"
+            (input)="onNewCommentInput($event)"
+            (keydown.enter)="onNewCommentEnterKey($any($event))"
             (keydown.escape)="newCommentText.set('')"
             placeholder="Add comment..."
             aria-label="Add comment"
-            class="flex-1 text-xs bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/30"
-          />
+            rows="1"
+            class="flex-1 text-xs bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/30 resize-none leading-normal"
+          ></textarea>
         </div>
 
         <!-- Comments (Linear - Minimal Activity) -->
@@ -317,11 +317,30 @@ export class TaskCardComponent {
     this.editCommentContent.set('');
   }
 
-  submitNewComment(): void {
+  onNewCommentInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    this.newCommentText.set(textarea.value);
+    this.autoResize(textarea);
+  }
+
+  onNewCommentEnterKey(event: KeyboardEvent): void {
+    if (event.shiftKey) {
+      return; // Allow Shift+Enter for new line
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    this.submitNewComment(event.target as HTMLTextAreaElement);
+  }
+
+  submitNewComment(textarea?: HTMLTextAreaElement): void {
     const content = this.newCommentText().trim();
     if (content) {
       this.onAddComment.emit(content);
       this.newCommentText.set('');
+      // Reset textarea height
+      if (textarea) {
+        textarea.style.height = 'auto';
+      }
     }
   }
 
