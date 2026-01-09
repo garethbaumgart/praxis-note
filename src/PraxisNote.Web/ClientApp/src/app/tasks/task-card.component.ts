@@ -1,12 +1,13 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Task } from './task.model';
+import { CommentsSectionComponent } from './comments-section.component';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button],
+  imports: [Button, CommentsSectionComponent],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -59,10 +60,12 @@ import { Task } from './task.model';
             [class.text-done-foreground-muted]="task().status === 'Done'"
           ></i>
           <div class="flex-1 min-w-0">
+            <!-- Clickable title for inline editing -->
             <p
-              class="text-sm text-foreground whitespace-pre-wrap"
+              class="text-sm text-foreground whitespace-pre-wrap cursor-pointer hover:bg-surface-hover rounded px-1 -mx-1 transition-colors"
               [class.line-through]="task().status === 'Done'"
               [class.text-foreground-muted]="task().status === 'Done'"
+              (click)="startEdit(); $event.stopPropagation()"
             >{{ task().title }}</p>
             @if (relativeTime(); as time) {
               <span
@@ -72,17 +75,8 @@ import { Task } from './task.model';
               >{{ time }}</span>
             }
           </div>
-          <!-- Actions: always visible on mobile, hover to reveal on desktop -->
+          <!-- Delete button only - edit via clicking title -->
           <div class="flex items-center gap-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-            <p-button
-              icon="pi pi-pencil"
-              [rounded]="true"
-              [text]="true"
-              size="small"
-              severity="secondary"
-              (onClick)="startEdit(); $event.stopPropagation()"
-              aria-label="Edit task"
-            />
             <p-button
               icon="pi pi-trash"
               [rounded]="true"
@@ -94,6 +88,14 @@ import { Task } from './task.model';
             />
           </div>
         </div>
+
+        <!-- Comments section -->
+        <app-comments-section
+          [comments]="task().comments"
+          (onAddComment)="onAddComment.emit($event)"
+          (onEditComment)="onEditComment.emit($event)"
+          (onDeleteComment)="onDeleteComment.emit($event)"
+        />
       }
     </div>
   `,
@@ -106,6 +108,9 @@ export class TaskCardComponent {
 
   readonly onEdit = output<string>();
   readonly onDelete = output<void>();
+  readonly onAddComment = output<string>();
+  readonly onEditComment = output<{ commentId: string; content: string }>();
+  readonly onDeleteComment = output<string>();
 
   readonly editing = signal(false);
   readonly editTitle = signal('');

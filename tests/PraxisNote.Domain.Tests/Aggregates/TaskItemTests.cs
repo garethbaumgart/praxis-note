@@ -522,4 +522,221 @@ public class TaskItemTests
     }
 
     #endregion
+
+    #region Comment Tests
+
+    [Fact]
+    public void CreateStandalone_HasEmptyComments()
+    {
+        // Act
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Assert
+        Assert.Empty(task.Comments);
+    }
+
+    [Fact]
+    public void AddComment_WithValidContent_AddsCommentAndReturnsIt()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var content = "This is a comment";
+
+        // Act
+        var comment = task.AddComment(content);
+
+        // Assert
+        Assert.NotNull(comment);
+        Assert.NotEqual(Guid.Empty, comment.Id);
+        Assert.Equal(content, comment.Content);
+        Assert.Single(task.Comments);
+        Assert.Contains(comment, task.Comments);
+    }
+
+    [Fact]
+    public void AddComment_TrimsContent()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Act
+        var comment = task.AddComment("  Trimmed content  ");
+
+        // Assert
+        Assert.Equal("Trimmed content", comment.Content);
+    }
+
+    [Fact]
+    public void AddComment_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var originalUpdatedAt = task.UpdatedAt;
+
+        // Act
+        task.AddComment("New comment");
+
+        // Assert
+        Assert.True(task.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void AddComment_WithInvalidContent_ThrowsArgumentException(string? invalidContent)
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Act & Assert
+        Assert.ThrowsAny<ArgumentException>(() => task.AddComment(invalidContent!));
+    }
+
+    [Fact]
+    public void UpdateComment_WithValidContent_UpdatesCommentAndReturnsIt()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var comment = task.AddComment("Original content");
+        var commentId = comment.Id;
+
+        // Act
+        var updated = task.UpdateComment(commentId, "Updated content");
+
+        // Assert
+        Assert.NotNull(updated);
+        Assert.Equal(commentId, updated.Id);
+        Assert.Equal("Updated content", updated.Content);
+        Assert.True(updated.UpdatedAt > comment.CreatedAt);
+    }
+
+    [Fact]
+    public void UpdateComment_WithNonExistentId_ReturnsNull()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        task.AddComment("Some comment");
+
+        // Act
+        var result = task.UpdateComment(Guid.NewGuid(), "New content");
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void UpdateComment_UpdatesTaskUpdatedAt()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var comment = task.AddComment("Original");
+        var originalUpdatedAt = task.UpdatedAt;
+
+        Thread.Sleep(1);
+
+        // Act
+        task.UpdateComment(comment.Id, "Updated");
+
+        // Assert
+        Assert.True(task.UpdatedAt > originalUpdatedAt);
+    }
+
+    [Fact]
+    public void RemoveComment_WithExistingId_RemovesAndReturnsTrue()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var comment = task.AddComment("To be removed");
+        var commentId = comment.Id;
+
+        // Act
+        var removed = task.RemoveComment(commentId);
+
+        // Assert
+        Assert.True(removed);
+        Assert.Empty(task.Comments);
+    }
+
+    [Fact]
+    public void RemoveComment_WithNonExistentId_ReturnsFalse()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        task.AddComment("Some comment");
+        var originalCount = task.Comments.Count;
+
+        // Act
+        var removed = task.RemoveComment(Guid.NewGuid());
+
+        // Assert
+        Assert.False(removed);
+        Assert.Equal(originalCount, task.Comments.Count);
+    }
+
+    [Fact]
+    public void RemoveComment_UpdatesUpdatedAtOnlyIfRemoved()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        task.AddComment("Comment");
+        var originalUpdatedAt = task.UpdatedAt;
+
+        // Act - try to remove non-existent
+        task.RemoveComment(Guid.NewGuid());
+
+        // Assert - UpdatedAt should not change
+        Assert.Equal(originalUpdatedAt, task.UpdatedAt);
+    }
+
+    [Fact]
+    public void GetComment_WithExistingId_ReturnsComment()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var comment = task.AddComment("Test comment");
+
+        // Act
+        var result = task.GetComment(comment.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(comment.Id, result.Id);
+        Assert.Equal(comment.Content, result.Content);
+    }
+
+    [Fact]
+    public void GetComment_WithNonExistentId_ReturnsNull()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        task.AddComment("Some comment");
+
+        // Act
+        var result = task.GetComment(Guid.NewGuid());
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void MultipleComments_MaintainsOrder()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Act
+        var comment1 = task.AddComment("First");
+        var comment2 = task.AddComment("Second");
+        var comment3 = task.AddComment("Third");
+
+        // Assert
+        var comments = task.Comments.ToList();
+        Assert.Equal(3, comments.Count);
+        Assert.Equal(comment1.Id, comments[0].Id);
+        Assert.Equal(comment2.Id, comments[1].Id);
+        Assert.Equal(comment3.Id, comments[2].Id);
+    }
+
+    #endregion
 }

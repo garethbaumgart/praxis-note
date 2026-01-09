@@ -166,6 +166,7 @@ app.UseAuthorization();
 app.MapGet("/api/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
 app.MapAuthEndpoints();
 app.MapTaskEndpoints();
+app.MapCommentEndpoints();
 
 // SPA fallback - serves index.html for client-side routing
 if (angularAppExists)

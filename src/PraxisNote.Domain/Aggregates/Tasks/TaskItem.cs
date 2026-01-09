@@ -18,6 +18,7 @@ namespace PraxisNote.Domain.Aggregates.Tasks;
 public sealed class TaskItem : AggregateRoot
 {
     private readonly HashSet<Guid> _labelIds = [];
+    private readonly List<Comment> _comments = [];
 
     /// <summary>
     /// The user who owns this task.
@@ -81,6 +82,12 @@ public sealed class TaskItem : AggregateRoot
     /// The application layer joins with Label entities for display.
     /// </remarks>
     public IReadOnlyCollection<Guid> LabelIds => _labelIds.AsReadOnly();
+
+    /// <summary>
+    /// Comments on this task for tracking progress.
+    /// Stored as JSONB array in the database.
+    /// </summary>
+    public IReadOnlyCollection<Comment> Comments => _comments.AsReadOnly();
 
     /// <summary>
     /// Required for EF Core.
@@ -256,4 +263,57 @@ public sealed class TaskItem : AggregateRoot
     /// Returns true if this task was created from a note checkbox.
     /// </summary>
     public bool IsLinkedToNote => CheckboxRef?.IsLinked ?? false;
+
+    /// <summary>
+    /// Adds a comment to this task.
+    /// </summary>
+    /// <param name="content">The comment text.</param>
+    /// <returns>The created comment.</returns>
+    public Comment AddComment(string content)
+    {
+        var comment = Comment.Create(content);
+        _comments.Add(comment);
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return comment;
+    }
+
+    /// <summary>
+    /// Updates an existing comment's content.
+    /// </summary>
+    /// <param name="commentId">The ID of the comment to update.</param>
+    /// <param name="newContent">The new content.</param>
+    /// <returns>The updated comment, or null if not found.</returns>
+    public Comment? UpdateComment(Guid commentId, string newContent)
+    {
+        var index = _comments.FindIndex(c => c.Id == commentId);
+        if (index < 0)
+        {
+            return null;
+        }
+
+        var updated = _comments[index].WithUpdatedContent(newContent);
+        _comments[index] = updated;
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return updated;
+    }
+
+    /// <summary>
+    /// Removes a comment from this task.
+    /// </summary>
+    /// <param name="commentId">The ID of the comment to remove.</param>
+    /// <returns>True if the comment was removed, false if not found.</returns>
+    public bool RemoveComment(Guid commentId)
+    {
+        var removed = _comments.RemoveAll(c => c.Id == commentId) > 0;
+        if (removed)
+        {
+            UpdatedAt = DateTimeOffset.UtcNow;
+        }
+        return removed;
+    }
+
+    /// <summary>
+    /// Gets a comment by ID.
+    /// </summary>
+    public Comment? GetComment(Guid commentId) => _comments.Find(c => c.Id == commentId);
 }

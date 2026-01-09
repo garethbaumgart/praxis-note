@@ -75,6 +75,7 @@ export class TaskService {
           createdAt: now,
           startedAt: status === 'Todo' ? null : now,
           completedAt: status === 'Done' ? now : null,
+          comments: [],
         };
 
         // Push down existing tasks in target column and add new one at position 0
@@ -182,6 +183,82 @@ export class TaskService {
       next: () => {
         this._tasks.update(tasks => tasks.filter(t => t.id !== id));
       },
+      error: () => this.loadTasks(),
+    });
+  }
+
+  addComment(taskId: string, content: string): void {
+    const now = new Date().toISOString();
+    const tempId = crypto.randomUUID();
+
+    // Optimistic update
+    this._tasks.update(tasks =>
+      tasks.map(t =>
+        t.id === taskId
+          ? {
+              ...t,
+              comments: [
+                { id: tempId, content, createdAt: now, updatedAt: now },
+                ...t.comments,
+              ],
+            }
+          : t
+      )
+    );
+
+    this.http.post<{ id: string }>(`/api/tasks/${taskId}/comments`, { content }).subscribe({
+      next: (result) => {
+        // Update the temp ID with the real ID
+        this._tasks.update(tasks =>
+          tasks.map(t =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  comments: t.comments.map(c =>
+                    c.id === tempId ? { ...c, id: result.id } : c
+                  ),
+                }
+              : t
+          )
+        );
+      },
+      error: () => this.loadTasks(),
+    });
+  }
+
+  updateComment(taskId: string, commentId: string, content: string): void {
+    const now = new Date().toISOString();
+
+    // Optimistic update
+    this._tasks.update(tasks =>
+      tasks.map(t =>
+        t.id === taskId
+          ? {
+              ...t,
+              comments: t.comments.map(c =>
+                c.id === commentId ? { ...c, content, updatedAt: now } : c
+              ),
+            }
+          : t
+      )
+    );
+
+    this.http.put(`/api/tasks/${taskId}/comments/${commentId}`, { content }).subscribe({
+      error: () => this.loadTasks(),
+    });
+  }
+
+  deleteComment(taskId: string, commentId: string): void {
+    // Optimistic update
+    this._tasks.update(tasks =>
+      tasks.map(t =>
+        t.id === taskId
+          ? { ...t, comments: t.comments.filter(c => c.id !== commentId) }
+          : t
+      )
+    );
+
+    this.http.delete(`/api/tasks/${taskId}/comments/${commentId}`).subscribe({
       error: () => this.loadTasks(),
     });
   }
