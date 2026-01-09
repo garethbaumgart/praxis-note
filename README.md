@@ -225,20 +225,62 @@ GitHub Actions runs automatically on every push to `main` and on pull requests:
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| **Unit Tests** | Push/PR | Runs `dotnet test` on Domain tests (185+ tests) |
+| **Unit Tests** | Push/PR | Runs `dotnet test` on Domain tests (200+ tests) |
 | **E2E Tests** | Push/PR | Spins up PostgreSQL, runs migrations, starts the app, runs Playwright tests |
 | **Copilot Review** | PR only | AI-powered code review with suggestions |
 
 ### E2E Test Pipeline Details
 
 The E2E workflow:
-1. Starts a PostgreSQL service container (port 5432)
+1. Starts a PostgreSQL service container (port 5433)
 2. Applies EF Core migrations to create the schema
 3. Builds and starts the .NET application in E2E mode
-4. Runs 8 Playwright smoke tests (auth, health, API access)
+4. Runs 12 Playwright smoke tests (auth, health, tasks, API access)
 5. Uploads HTML test reports as artifacts on failure
 
 PRs require all tests to pass before merge.
+
+## Troubleshooting
+
+### NuGet Authentication Errors
+
+If you see errors like `401 Unauthorized` from Azure DevOps or other private feeds:
+
+```
+error NU1301: Unable to load the service index for source https://pkgs.dev.azure.com/...
+```
+
+This happens when your global `~/.nuget/NuGet/NuGet.Config` contains private feeds. The project includes a `nuget.config` that clears inherited sources, but if issues persist:
+
+```bash
+# Verify the project config is being used
+dotnet restore --verbosity detailed | head -20
+
+# Force restore with only nuget.org
+dotnet restore --source https://api.nuget.org/v3/index.json
+```
+
+### E2E Tests Fail to Start
+
+If E2E tests fail with database connection errors:
+
+1. Ensure Docker is running
+2. Check no other service is using port 5433:
+   ```bash
+   lsof -i :5433
+   ```
+3. Clean up orphan containers:
+   ```bash
+   docker compose -f docker-compose.e2e.yml down --remove-orphans
+   ```
+
+### EF Tools Version Warning
+
+If you see "Entity Framework tools version is older than runtime":
+
+```bash
+dotnet tool update --global dotnet-ef
+```
 
 ## Production Deployment
 
