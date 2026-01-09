@@ -47,7 +47,10 @@ test.describe('Tasks', () => {
 
     const taskCard = page.locator('.group').filter({ hasText: 'Action Test' });
 
-    // Verify delete button is accessible
+    // Hover to reveal delete button (hidden by default, shown on hover)
+    await taskCard.hover();
+
+    // Verify delete button is accessible after hovering
     await expect(taskCard.getByLabel('Delete task')).toBeAttached();
 
     // Verify title is clickable (click-to-edit pattern)
@@ -68,7 +71,15 @@ test.describe('Tasks', () => {
     await expect(page.getByText('Delete Me')).toBeVisible();
 
     const taskCard = page.locator('.group').filter({ hasText: 'Delete Me' });
+    
+    // Hover over the task card to reveal the delete button
+    await taskCard.hover();
+    
+    // Click the delete button to trigger confirmation
     await taskCard.getByLabel('Delete task').click();
+    
+    // Click the confirmation button to complete deletion
+    await taskCard.getByLabel('Confirm delete task').click();
 
     await expect(page.getByText('Delete Me')).not.toBeVisible();
   });
