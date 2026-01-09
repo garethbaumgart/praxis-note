@@ -328,8 +328,20 @@ export class TaskCardComponent {
   // Task delete confirmation methods
   startTaskDeleteConfirm(): void {
     this.confirmingTaskDelete.set(true);
+
     // Auto-cancel after 3 seconds
-    setTimeout(() => this.confirmingTaskDelete.set(false), 3000);
+    const timeoutId = setTimeout(() => this.confirmingTaskDelete.set(false), 3000);
+
+    // Cancel on any click outside (after current event completes)
+    setTimeout(() => {
+      const onClick = () => {
+        if (this.confirmingTaskDelete()) {
+          this.confirmingTaskDelete.set(false);
+        }
+        clearTimeout(timeoutId);
+      };
+      document.addEventListener('click', onClick, { once: true });
+    }, 0);
   }
 
   confirmTaskDelete(): void {
@@ -340,12 +352,24 @@ export class TaskCardComponent {
   // Comment delete confirmation methods
   startCommentDeleteConfirm(commentId: string): void {
     this.confirmingCommentDeleteId.set(commentId);
+
     // Auto-cancel after 3 seconds
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       if (this.confirmingCommentDeleteId() === commentId) {
         this.confirmingCommentDeleteId.set(null);
       }
     }, 3000);
+
+    // Cancel on any click outside (after current event completes)
+    setTimeout(() => {
+      const onClick = () => {
+        if (this.confirmingCommentDeleteId() === commentId) {
+          this.confirmingCommentDeleteId.set(null);
+        }
+        clearTimeout(timeoutId);
+      };
+      document.addEventListener('click', onClick, { once: true });
+    }, 0);
   }
 
   confirmCommentDelete(commentId: string): void {
