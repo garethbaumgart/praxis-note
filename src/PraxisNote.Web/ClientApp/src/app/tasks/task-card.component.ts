@@ -1,13 +1,12 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { Button } from 'primeng/button';
-import { Task } from './task.model';
-import { CommentsSectionComponent } from './comments-section.component';
+import { Task, Comment } from './task.model';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, CommentsSectionComponent],
+  imports: [Button],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -89,13 +88,75 @@ import { CommentsSectionComponent } from './comments-section.component';
           </div>
         </div>
 
-        <!-- Comments section -->
-        <app-comments-section
-          [comments]="task().comments"
-          (onAddComment)="onAddComment.emit($event)"
-          (onEditComment)="onEditComment.emit($event)"
-          (onDeleteComment)="onDeleteComment.emit($event)"
-        />
+        <!-- Comments (Option C: Stacked Notes) -->
+        @if (task().comments.length > 0) {
+          <div class="mt-3 space-y-1">
+            @for (comment of task().comments; track comment.id) {
+              @if (editingCommentId() === comment.id) {
+                <!-- Editing comment -->
+                <div class="bg-surface-hover rounded px-3 py-1.5 flex items-start gap-2">
+                  <textarea
+                    #commentEditInput
+                    [value]="editCommentContent()"
+                    (input)="onCommentInput($event)"
+                    (keydown.enter)="onCommentEnterKey($any($event))"
+                    (keydown.escape)="cancelCommentEdit()"
+                    rows="1"
+                    class="flex-1 text-xs text-foreground-muted bg-transparent border-0 outline-none resize-none p-0 leading-normal"
+                  ></textarea>
+                  <div class="flex items-center gap-0.5 shrink-0">
+                    <p-button
+                      icon="pi pi-check"
+                      [rounded]="true"
+                      [text]="true"
+                      size="small"
+                      severity="success"
+                      (onClick)="saveCommentEdit(comment.id)"
+                      aria-label="Save"
+                    />
+                    <p-button
+                      icon="pi pi-times"
+                      [rounded]="true"
+                      [text]="true"
+                      size="small"
+                      severity="secondary"
+                      (onClick)="cancelCommentEdit()"
+                      aria-label="Cancel"
+                    />
+                  </div>
+                </div>
+              } @else {
+                <!-- Display comment as stacked block -->
+                <div
+                  class="group/comment bg-surface-hover rounded px-3 py-1.5 flex items-center justify-between cursor-pointer hover:bg-surface-hover/80 transition-colors"
+                  (click)="startCommentEdit(comment); $event.stopPropagation()"
+                >
+                  <span class="text-xs text-foreground-muted flex-1 min-w-0 truncate">{{ comment.content }}</span>
+                  <span class="text-xs text-foreground-muted/50 ml-2 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                  <button
+                    class="hidden group-hover/comment:flex text-foreground-muted/50 hover:text-danger ml-2 shrink-0"
+                    (click)="onDeleteComment.emit(comment.id); $event.stopPropagation()"
+                  >
+                    <i class="pi pi-times text-xs"></i>
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        }
+
+        <!-- Add comment input (appears on hover) -->
+        <div class="mt-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+          <input
+            type="text"
+            [value]="newCommentText()"
+            (input)="newCommentText.set($any($event.target).value)"
+            (keydown.enter)="submitNewComment(); $event.stopPropagation()"
+            (keydown.escape)="newCommentText.set('')"
+            placeholder="+ Add note"
+            class="w-full text-xs bg-surface-hover/50 hover:bg-surface-hover focus:bg-surface-hover rounded px-3 py-1.5 border-0 outline-none text-foreground-muted placeholder-foreground-muted/50 transition-colors"
+          />
+        </div>
       }
     </div>
   `,
@@ -115,6 +176,12 @@ export class TaskCardComponent {
   readonly editing = signal(false);
   readonly editTitle = signal('');
   readonly editInput = viewChild<ElementRef<HTMLTextAreaElement>>('editInput');
+
+  // Comment editing state
+  readonly editingCommentId = signal<string | null>(null);
+  readonly editCommentContent = signal('');
+  readonly newCommentText = signal('');
+  readonly commentEditInput = viewChild<ElementRef<HTMLTextAreaElement>>('commentEditInput');
 
   // Tick signal for auto-updating relative times (updates every minute)
   private readonly tick = signal(Date.now());
@@ -201,5 +268,64 @@ export class TaskCardComponent {
 
   cancelEdit(): void {
     this.editing.set(false);
+  }
+
+  // Comment methods
+  formatCommentTime(comment: Comment): string {
+    const dateStr = comment.updatedAt !== comment.createdAt ? comment.updatedAt : comment.createdAt;
+    const prefix = comment.updatedAt !== comment.createdAt ? 'edited ' : '';
+    return prefix + this.formatTime(dateStr, 'completed');
+  }
+
+  startCommentEdit(comment: Comment): void {
+    this.editingCommentId.set(comment.id);
+    this.editCommentContent.set(comment.content);
+    afterNextRender(() => {
+      const textarea = this.commentEditInput()?.nativeElement;
+      if (textarea) {
+        this.autoResize(textarea);
+        textarea.focus();
+        textarea.select();
+      }
+    }, { injector: this.injector });
+  }
+
+  onCommentInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    this.editCommentContent.set(textarea.value);
+    this.autoResize(textarea);
+  }
+
+  onCommentEnterKey(event: KeyboardEvent): void {
+    if (event.shiftKey) {
+      return;
+    }
+    event.preventDefault();
+    const commentId = this.editingCommentId();
+    if (commentId) {
+      this.saveCommentEdit(commentId);
+    }
+  }
+
+  saveCommentEdit(commentId: string): void {
+    const content = this.editCommentContent().trim();
+    const originalComment = this.task().comments.find(c => c.id === commentId);
+    if (content && originalComment && content !== originalComment.content) {
+      this.onEditComment.emit({ commentId, content });
+    }
+    this.cancelCommentEdit();
+  }
+
+  cancelCommentEdit(): void {
+    this.editingCommentId.set(null);
+    this.editCommentContent.set('');
+  }
+
+  submitNewComment(): void {
+    const content = this.newCommentText().trim();
+    if (content) {
+      this.onAddComment.emit(content);
+      this.newCommentText.set('');
+    }
   }
 }
