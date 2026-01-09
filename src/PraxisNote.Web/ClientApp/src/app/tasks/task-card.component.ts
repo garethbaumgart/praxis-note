@@ -21,8 +21,8 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
             #editInput
             appAutoResize
             [value]="editTitle()"
-            (input)="editTitle.set($any($event.target).value)"
-            (keydown.enter)="onEnterKey($any($event))"
+            (input)="editTitle.set(asTextArea($event).value)"
+            (keydown.enter)="onEnterKey(asKeyboardEvent($event))"
             (keydown.escape)="cancelEdit()"
             (blur)="saveEdit()"
             rows="1"
@@ -82,8 +82,8 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
             #newCommentInput
             appAutoResize
             [value]="newCommentText()"
-            (input)="newCommentText.set($any($event.target).value)"
-            (keydown.enter)="onNewCommentEnterKey($any($event))"
+            (input)="newCommentText.set(asTextArea($event).value)"
+            (keydown.enter)="onNewCommentEnterKey(asKeyboardEvent($event))"
             (keydown.escape)="newCommentText.set('')"
             placeholder="Add comment..."
             aria-label="Add comment"
@@ -105,8 +105,8 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
                       #commentEditInput
                       appAutoResize
                       [value]="editCommentContent()"
-                      (input)="editCommentContent.set($any($event.target).value)"
-                      (keydown.enter)="onCommentEnterKey($any($event))"
+                      (input)="editCommentContent.set(asTextArea($event).value)"
+                      (keydown.enter)="onCommentEnterKey(asKeyboardEvent($event))"
                       (keydown.escape)="cancelCommentEdit()"
                       (blur)="saveCommentEdit(comment.id)"
                       rows="1"
@@ -210,6 +210,16 @@ export class TaskCardComponent {
       clearInterval(intervalId);
       this.deleteConfirmation.cleanup();
     });
+  }
+
+  /** Type-safe helper for accessing textarea value from events */
+  asTextArea(event: Event): HTMLTextAreaElement {
+    return event.target as HTMLTextAreaElement;
+  }
+
+  /** Type-safe helper for keyboard events */
+  asKeyboardEvent(event: Event): KeyboardEvent {
+    return event as KeyboardEvent;
   }
 
   private formatTime(dateStr: string, type: 'elapsed' | 'completed'): string {
@@ -321,10 +331,6 @@ export class TaskCardComponent {
     if (content) {
       this.onAddComment.emit(content);
       this.newCommentText.set('');
-      const textarea = this.newCommentInput()?.nativeElement;
-      if (textarea) {
-        textarea.style.height = 'auto';
-      }
     }
   }
 

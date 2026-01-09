@@ -25,7 +25,18 @@ const VARIANT_MAP: Record<ColorVariant, { prefix: string; suffix: string }> = {
 export class StatusColorPipe implements PipeTransform {
   transform(status: TaskStatus, variant: ColorVariant): string {
     const statusKey = STATUS_MAP[status];
-    const { prefix, suffix } = VARIANT_MAP[variant];
+    if (!statusKey) {
+      console.warn(`StatusColorPipe: invalid status "${status}", defaulting to "todo"`);
+      return this.transform('Todo', variant);
+    }
+
+    const variantConfig = VARIANT_MAP[variant];
+    if (!variantConfig) {
+      console.warn(`StatusColorPipe: invalid variant "${variant}", defaulting to "bg"`);
+      return this.transform(status, 'bg');
+    }
+
+    const { prefix, suffix } = variantConfig;
     return `${prefix}${statusKey}${suffix}`;
   }
 }

@@ -81,8 +81,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               #inlineInput
               appAutoResize
               [value]="inlineTitle()"
-              (input)="inlineTitle.set($any($event.target).value)"
-              (keydown.enter)="onEnterKey($any($event))"
+              (input)="inlineTitle.set(asTextArea($event).value)"
+              (keydown.enter)="onEnterKey(asKeyboardEvent($event))"
               (keydown.escape)="cancelCreate()"
               (blur)="onBlur($event)"
               placeholder="Task name..."
@@ -144,6 +144,16 @@ export class ColumnComponent {
 
   readonly inlineInput = viewChild<ElementRef<HTMLTextAreaElement>>('inlineInput');
   readonly dropList = viewChild.required<CdkDropList>('dropList');
+
+  /** Type-safe helper for accessing textarea value from events */
+  asTextArea(event: Event): HTMLTextAreaElement {
+    return event.target as HTMLTextAreaElement;
+  }
+
+  /** Type-safe helper for keyboard events */
+  asKeyboardEvent(event: Event): KeyboardEvent {
+    return event as KeyboardEvent;
+  }
 
   startCreate(): void {
     this.isCreating.set(true);
