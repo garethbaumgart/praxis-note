@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.WebUtilities;
@@ -97,6 +98,9 @@ var authBuilder = builder.Services.AddAuthentication(options =>
     options.Scope.Add("email");
     options.Scope.Add("profile");
     options.SaveTokens = false;
+
+    // Map the picture claim from Google's user info response
+    options.ClaimActions.MapJsonKey("picture", "picture");
 
     // Force account selection on each login (useful after logout)
     options.Events.OnRedirectToAuthorizationEndpoint = context =>
