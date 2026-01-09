@@ -32,30 +32,24 @@ export async function seedTestUser(): Promise<{ userId: string; email: string; n
     const email = 'e2e-test@example.com';
     const name = 'E2E Test User';
 
-    // Check if user exists, if not create
-    const result = await client.query(
-      `SELECT "Id" FROM "Users" WHERE "Id" = $1`,
-      [userId]
+    // Use upsert to handle parallel test execution safely
+    await client.query(
+      `
+      INSERT INTO "Users" (
+        "Id",
+        "ExternalIdentity_Provider",
+        "ExternalIdentity_ProviderId",
+        "Email_Value",
+        "Name",
+        "AvatarUrl",
+        "CreatedAt",
+        "LastLoginAt"
+      )
+      VALUES ($1::uuid, 'MockAuth', $2, $3, $4, NULL, NOW(), NOW())
+      ON CONFLICT ("Id") DO NOTHING
+      `,
+      [userId, userId, email, name]
     );
-
-    if (result.rows.length === 0) {
-      await client.query(
-        `
-        INSERT INTO "Users" (
-          "Id",
-          "ExternalIdentity_Provider",
-          "ExternalIdentity_ProviderId",
-          "Email_Value",
-          "Name",
-          "AvatarUrl",
-          "CreatedAt",
-          "LastLoginAt"
-        )
-        VALUES ($1::uuid, 'MockAuth', $2, $3, $4, NULL, NOW(), NOW())
-        `,
-        [userId, userId, email, name]
-      );
-    }
 
     return { userId, email, name };
   } finally {
