@@ -94,8 +94,8 @@ import { Task, Comment } from './task.model';
               @if (editingCommentId() === comment.id) {
                 <!-- Editing comment -->
                 <div>
-                  <div class="flex items-center gap-1.5">
-                    <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0"></i>
+                  <div class="flex items-start gap-1.5">
+                    <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0 mt-0.5"></i>
                     <textarea
                       #commentEditInput
                       [value]="editCommentContent()"
@@ -113,15 +113,15 @@ import { Task, Comment } from './task.model';
               } @else {
                 <!-- Display comment as minimal row -->
                 <div
-                  class="group/comment flex items-center gap-1.5 cursor-pointer"
+                  class="group/comment flex items-start gap-1.5 cursor-pointer"
                   role="button"
                   tabindex="0"
                   (click)="startCommentEdit(comment); $event.stopPropagation()"
                   (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                   (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                 >
-                  <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0"></i>
-                  <span class="text-xs text-foreground-muted flex-1 min-w-0 truncate">{{ comment.content }}</span>
+                  <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0 mt-0.5"></i>
+                  <span class="text-xs text-foreground-muted flex-1 min-w-0 whitespace-pre-wrap">{{ comment.content }}</span>
                   @if (confirmingCommentDeleteId() === comment.id) {
                     <!-- Delete confirmation mode -->
                     <button
