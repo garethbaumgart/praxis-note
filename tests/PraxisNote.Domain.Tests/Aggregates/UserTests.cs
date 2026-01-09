@@ -117,4 +117,60 @@ public class UserTests
         // Assert
         Assert.Equal(originalCreatedAt, user.CreatedAt);
     }
+
+    [Fact]
+    public void RecordLogin_WithValidAvatarUrl_UpdatesAvatarUrl()
+    {
+        // Arrange
+        var user = User.Register(_validExternalIdentity, _validEmail, _validName);
+        var newAvatarUrl = "https://example.com/avatar.jpg";
+
+        // Act
+        user.RecordLogin(newAvatarUrl);
+
+        // Assert
+        Assert.Equal(newAvatarUrl, user.AvatarUrl);
+    }
+
+    [Fact]
+    public void RecordLogin_WithNullAvatarUrl_LeavesExistingAvatarUnchanged()
+    {
+        // Arrange
+        var user = User.Register(_validExternalIdentity, _validEmail, _validName, "https://existing-avatar.com/pic.jpg");
+        var originalAvatarUrl = user.AvatarUrl;
+
+        // Act
+        user.RecordLogin(null);
+
+        // Assert
+        Assert.Equal(originalAvatarUrl, user.AvatarUrl);
+    }
+
+    [Fact]
+    public void RecordLogin_WithEmptyAvatarUrl_LeavesExistingAvatarUnchanged()
+    {
+        // Arrange
+        var user = User.Register(_validExternalIdentity, _validEmail, _validName, "https://existing-avatar.com/pic.jpg");
+        var originalAvatarUrl = user.AvatarUrl;
+
+        // Act
+        user.RecordLogin("");
+
+        // Assert
+        Assert.Equal(originalAvatarUrl, user.AvatarUrl);
+    }
+
+    [Fact]
+    public void RecordLogin_CanUpdateExistingAvatarToNewOne()
+    {
+        // Arrange
+        var user = User.Register(_validExternalIdentity, _validEmail, _validName, "https://old-avatar.com/pic.jpg");
+        var newAvatarUrl = "https://new-avatar.com/pic.jpg";
+
+        // Act
+        user.RecordLogin(newAvatarUrl);
+
+        // Assert
+        Assert.Equal(newAvatarUrl, user.AvatarUrl);
+    }
 }
