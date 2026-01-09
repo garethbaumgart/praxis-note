@@ -3,6 +3,8 @@ import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/
 import { NgClass } from '@angular/common';
 import { TaskCardComponent } from './task-card.component';
 import { Task } from './task.model';
+import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
+import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 
 type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 
@@ -10,15 +12,11 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder],
+  imports: [NgClass, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
   template: `
     <div
       class="flex flex-col rounded-lg p-3 min-h-48 transition-all"
-      [ngClass]="{
-        'bg-todo': status() === 'Todo',
-        'bg-inprogress': status() === 'InProgress',
-        'bg-done': status() === 'Done'
-      }"
+      [ngClass]="status() | statusColor:'bg'"
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
@@ -32,19 +30,11 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           ></i>
           <span
             class="text-xs font-medium uppercase tracking-wide"
-            [ngClass]="{
-              'text-todo-foreground': status() === 'Todo',
-              'text-inprogress-foreground': status() === 'InProgress',
-              'text-done-foreground': status() === 'Done'
-            }"
+            [ngClass]="status() | statusColor:'text'"
           >{{ label() }}</span>
           <span
             class="text-xs"
-            [ngClass]="{
-              'text-todo-foreground-muted': status() === 'Todo',
-              'text-inprogress-foreground-muted': status() === 'InProgress',
-              'text-done-foreground-muted': status() === 'Done'
-            }"
+            [ngClass]="status() | statusColor:'text-muted'"
           >{{ tasks().length }}</span>
         </div>
         @if (showAddButton() && !isCreating()) {
@@ -85,16 +75,13 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
         @if (isCreating()) {
           <div
             class="bg-surface border rounded-md p-3 shadow-sm"
-            [ngClass]="{
-              'border-todo-border': status() === 'Todo',
-              'border-inprogress-border': status() === 'InProgress',
-              'border-done-border': status() === 'Done'
-            }"
+            [ngClass]="status() | statusColor:'border'"
           >
             <textarea
               #inlineInput
+              appAutoResize
               [value]="inlineTitle()"
-              (input)="onInput($event)"
+              (input)="inlineTitle.set($any($event.target).value)"
               (keydown.enter)="onEnterKey($any($event))"
               (keydown.escape)="cancelCreate()"
               (blur)="onBlur($event)"
@@ -171,23 +158,12 @@ export class ColumnComponent {
     this.inlineTitle.set('');
   }
 
-  onInput(event: Event): void {
-    const textarea = event.target as HTMLTextAreaElement;
-    this.inlineTitle.set(textarea.value);
-    this.autoResize(textarea);
-  }
-
   onEnterKey(event: KeyboardEvent): void {
     if (event.shiftKey) {
       return; // Allow Shift+Enter for new line
     }
     event.preventDefault();
     this.submitCreate();
-  }
-
-  private autoResize(textarea: HTMLTextAreaElement): void {
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
   submitCreate(): void {

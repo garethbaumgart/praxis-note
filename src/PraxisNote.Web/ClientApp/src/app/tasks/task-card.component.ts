@@ -1,24 +1,27 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { Task, Comment } from './task.model';
+import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
+import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
+import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+  imports: [NgClass, AutoResizeDirective, StatusColorPipe],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
-      [class.border-todo-border]="task().status === 'Todo'"
-      [class.border-inprogress-border]="task().status === 'InProgress'"
-      [class.border-done-border]="task().status === 'Done'"
+      [ngClass]="task().status | statusColor:'border'"
     >
       @if (editing()) {
         <div>
           <textarea
             #editInput
+            appAutoResize
             [value]="editTitle()"
-            (input)="onInput($event)"
+            (input)="editTitle.set($any($event.target).value)"
             (keydown.enter)="onEnterKey($any($event))"
             (keydown.escape)="cancelEdit()"
             (blur)="saveEdit()"
@@ -76,8 +79,10 @@ import { Task, Comment } from './task.model';
         <div class="mt-2 flex items-start gap-1.5">
           <i class="pi pi-plus text-[10px] text-foreground-muted/30 shrink-0 mt-0.5"></i>
           <textarea
+            #newCommentInput
+            appAutoResize
             [value]="newCommentText()"
-            (input)="onNewCommentInput($event)"
+            (input)="newCommentText.set($any($event.target).value)"
             (keydown.enter)="onNewCommentEnterKey($any($event))"
             (keydown.escape)="newCommentText.set('')"
             placeholder="Add comment..."
@@ -98,8 +103,9 @@ import { Task, Comment } from './task.model';
                     <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0 mt-0.5"></i>
                     <textarea
                       #commentEditInput
+                      appAutoResize
                       [value]="editCommentContent()"
-                      (input)="onCommentInput($event)"
+                      (input)="editCommentContent.set($any($event.target).value)"
                       (keydown.enter)="onCommentEnterKey($any($event))"
                       (keydown.escape)="cancelCommentEdit()"
                       (blur)="saveCommentEdit(comment.id)"
@@ -156,6 +162,7 @@ import { Task, Comment } from './task.model';
 export class TaskCardComponent {
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly deleteConfirmation = inject(DeleteConfirmationService);
 
   readonly task = input.required<Task>();
 
@@ -174,12 +181,11 @@ export class TaskCardComponent {
   readonly editCommentContent = signal('');
   readonly newCommentText = signal('');
   readonly commentEditInput = viewChild<ElementRef<HTMLTextAreaElement>>('commentEditInput');
+  readonly newCommentInput = viewChild<ElementRef<HTMLTextAreaElement>>('newCommentInput');
 
   // Delete confirmation state
   readonly confirmingTaskDelete = signal(false);
   readonly confirmingCommentDeleteId = signal<string | null>(null);
-  private deleteConfirmTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private deleteConfirmClickHandler: (() => void) | null = null;
 
   // Tick signal for auto-updating relative times (updates every minute)
   private readonly tick = signal(Date.now());
@@ -202,20 +208,8 @@ export class TaskCardComponent {
     const intervalId = setInterval(() => this.tick.set(Date.now()), 60000);
     this.destroyRef.onDestroy(() => {
       clearInterval(intervalId);
-      // Clean up delete confirmation timeouts
-      this.clearDeleteConfirmation();
+      this.deleteConfirmation.cleanup();
     });
-  }
-
-  private clearDeleteConfirmation(): void {
-    if (this.deleteConfirmTimeoutId) {
-      clearTimeout(this.deleteConfirmTimeoutId);
-      this.deleteConfirmTimeoutId = null;
-    }
-    if (this.deleteConfirmClickHandler) {
-      document.removeEventListener('click', this.deleteConfirmClickHandler);
-      this.deleteConfirmClickHandler = null;
-    }
   }
 
   private formatTime(dateStr: string, type: 'elapsed' | 'completed'): string {
@@ -240,35 +234,21 @@ export class TaskCardComponent {
   startEdit(): void {
     this.editTitle.set(this.task().title);
     this.editing.set(true);
-    // Focus and auto-resize after view updates
     afterNextRender(() => {
       const textarea = this.editInput()?.nativeElement;
       if (textarea) {
-        this.autoResize(textarea);
         textarea.focus();
         textarea.select();
       }
     }, { injector: this.injector });
   }
 
-  onInput(event: Event): void {
-    const textarea = event.target as HTMLTextAreaElement;
-    this.editTitle.set(textarea.value);
-    this.autoResize(textarea);
-  }
-
   onEnterKey(event: KeyboardEvent): void {
     if (event.shiftKey) {
-      // Allow Shift+Enter for multi-line input
       return;
     }
     event.preventDefault();
     this.saveEdit();
-  }
-
-  private autoResize(textarea: HTMLTextAreaElement): void {
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
   saveEdit(): void {
@@ -296,17 +276,10 @@ export class TaskCardComponent {
     afterNextRender(() => {
       const textarea = this.commentEditInput()?.nativeElement;
       if (textarea) {
-        this.autoResize(textarea);
         textarea.focus();
         textarea.select();
       }
     }, { injector: this.injector });
-  }
-
-  onCommentInput(event: Event): void {
-    const textarea = event.target as HTMLTextAreaElement;
-    this.editCommentContent.set(textarea.value);
-    this.autoResize(textarea);
   }
 
   onCommentEnterKey(event: KeyboardEvent): void {
@@ -334,27 +307,21 @@ export class TaskCardComponent {
     this.editCommentContent.set('');
   }
 
-  onNewCommentInput(event: Event): void {
-    const textarea = event.target as HTMLTextAreaElement;
-    this.newCommentText.set(textarea.value);
-    this.autoResize(textarea);
-  }
-
   onNewCommentEnterKey(event: KeyboardEvent): void {
     if (event.shiftKey) {
-      return; // Allow Shift+Enter for new line
+      return;
     }
     event.preventDefault();
     event.stopPropagation();
-    this.submitNewComment(event.target as HTMLTextAreaElement);
+    this.submitNewComment();
   }
 
-  submitNewComment(textarea?: HTMLTextAreaElement): void {
+  submitNewComment(): void {
     const content = this.newCommentText().trim();
     if (content) {
       this.onAddComment.emit(content);
       this.newCommentText.set('');
-      // Reset textarea height
+      const textarea = this.newCommentInput()?.nativeElement;
       if (textarea) {
         textarea.style.height = 'auto';
       }
@@ -363,60 +330,30 @@ export class TaskCardComponent {
 
   // Task delete confirmation methods
   startTaskDeleteConfirm(): void {
-    this.clearDeleteConfirmation();
+    this.deleteConfirmation.cleanup();
     this.confirmingTaskDelete.set(true);
-
-    // Auto-cancel after 3 seconds
-    this.deleteConfirmTimeoutId = setTimeout(() => {
+    this.deleteConfirmation.start(() => {
       this.confirmingTaskDelete.set(false);
-      this.clearDeleteConfirmation();
-    }, 3000);
-
-    // Cancel on any click outside (after current event completes)
-    setTimeout(() => {
-      this.deleteConfirmClickHandler = () => {
-        if (this.confirmingTaskDelete()) {
-          this.confirmingTaskDelete.set(false);
-        }
-        this.clearDeleteConfirmation();
-      };
-      document.addEventListener('click', this.deleteConfirmClickHandler, { once: true });
-    }, 0);
+    });
   }
 
   confirmTaskDelete(): void {
-    this.clearDeleteConfirmation();
+    this.deleteConfirmation.cleanup();
     this.confirmingTaskDelete.set(false);
     this.onDelete.emit();
   }
 
   // Comment delete confirmation methods
   startCommentDeleteConfirm(commentId: string): void {
-    this.clearDeleteConfirmation();
+    this.deleteConfirmation.cleanup();
     this.confirmingCommentDeleteId.set(commentId);
-
-    // Auto-cancel after 3 seconds
-    this.deleteConfirmTimeoutId = setTimeout(() => {
-      if (this.confirmingCommentDeleteId() === commentId) {
-        this.confirmingCommentDeleteId.set(null);
-      }
-      this.clearDeleteConfirmation();
-    }, 3000);
-
-    // Cancel on any click outside (after current event completes)
-    setTimeout(() => {
-      this.deleteConfirmClickHandler = () => {
-        if (this.confirmingCommentDeleteId() === commentId) {
-          this.confirmingCommentDeleteId.set(null);
-        }
-        this.clearDeleteConfirmation();
-      };
-      document.addEventListener('click', this.deleteConfirmClickHandler, { once: true });
-    }, 0);
+    this.deleteConfirmation.start(() => {
+      this.confirmingCommentDeleteId.set(null);
+    });
   }
 
   confirmCommentDelete(commentId: string): void {
-    this.clearDeleteConfirmation();
+    this.deleteConfirmation.cleanup();
     this.confirmingCommentDeleteId.set(null);
     this.onDeleteComment.emit(commentId);
   }
