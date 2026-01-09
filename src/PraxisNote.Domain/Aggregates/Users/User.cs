@@ -74,10 +74,17 @@ public sealed class User : AggregateRoot
     }
 
     /// <summary>
-    /// Records that the user has logged in, updating the last login timestamp.
+    /// Records that the user has logged in, updating the last login timestamp and optionally the avatar.
     /// </summary>
-    public void RecordLogin()
+    /// <param name="avatarUrl">The updated avatar URL from the OAuth provider, or null to leave unchanged.</param>
+    public void RecordLogin(string? avatarUrl = null)
     {
         LastLoginAt = DateTimeOffset.UtcNow;
+
+        // Update avatar if a new one is provided (allows keeping existing avatar if OAuth doesn't return one)
+        if (!string.IsNullOrWhiteSpace(avatarUrl))
+        {
+            AvatarUrl = avatarUrl;
+        }
     }
 }

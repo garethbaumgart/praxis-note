@@ -28,7 +28,7 @@ public sealed class LoginOrRegisterUser(
 
         if (existingUser is not null)
         {
-            existingUser.RecordLogin();
+            existingUser.RecordLogin(command.AvatarUrl);
             userRepository.Update(existingUser);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return new LoginOrRegisterResult(existingUser.Id, IsNewUser: false);
