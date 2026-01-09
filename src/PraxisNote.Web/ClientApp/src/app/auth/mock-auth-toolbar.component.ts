@@ -1,44 +1,60 @@
-import { Component, inject, isDevMode } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, isDevMode, signal, ChangeDetectionStrategy } from '@angular/core';
 import { MockAuthService } from './mock-auth.service';
 
 @Component({
   selector: 'app-mock-auth-toolbar',
   standalone: true,
-  imports: [FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (isDevMode) {
-      <div class="mock-toolbar">
+      <div class="fixed bottom-4 right-4 z-[9999] flex flex-col items-end gap-2 font-sans text-xs">
         <button
-          class="mock-toggle"
-          [class.enabled]="mockAuth.enabled()"
+          class="px-3 py-2 border-none rounded-md text-white cursor-pointer font-semibold shadow-lg transition-colors"
+          [class.bg-gray-500]="!mockAuth.enabled()"
+          [class.hover:bg-gray-600]="!mockAuth.enabled()"
+          [class.bg-emerald-500]="mockAuth.enabled()"
+          [class.hover:bg-emerald-600]="mockAuth.enabled()"
           (click)="toggleMockMode()"
         >
           Mock: {{ mockAuth.enabled() ? 'ON' : 'OFF' }}
         </button>
 
         @if (mockAuth.enabled()) {
-          <div class="mock-panel">
+          <div class="bg-surface rounded-lg p-3 shadow-lg border border-border">
             @if (mockAuth.isLoggedIn()) {
-              <div class="mock-user">
-                <span class="mock-user-info">{{ mockAuth.user()?.email }}</span>
-                <button class="mock-btn logout" (click)="mockLogout()">Logout</button>
+              <div class="flex items-center gap-2">
+                <span class="text-foreground max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {{ mockAuth.user()?.email }}
+                </span>
+                <button
+                  class="px-3 py-2 border-none rounded bg-red-500 text-white cursor-pointer font-medium transition-colors hover:bg-red-600"
+                  (click)="mockLogout()"
+                >
+                  Logout
+                </button>
               </div>
             } @else {
-              <div class="mock-form">
+              <div class="flex flex-col gap-2">
                 <input
                   type="email"
-                  [(ngModel)]="email"
+                  [value]="email()"
+                  (input)="email.set(asInput($event).value)"
                   placeholder="Email"
-                  class="mock-input"
+                  class="px-3 py-2 border border-border rounded text-xs w-[180px] bg-surface text-foreground focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
                 <input
                   type="text"
-                  [(ngModel)]="name"
+                  [value]="name()"
+                  (input)="name.set(asInput($event).value)"
                   placeholder="Name"
-                  class="mock-input"
+                  class="px-3 py-2 border border-border rounded text-xs w-[180px] bg-surface text-foreground focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
-                <button class="mock-btn login" (click)="mockLogin()">Login</button>
+                <button
+                  class="px-3 py-2 border-none rounded bg-emerald-500 text-white cursor-pointer font-medium transition-colors hover:bg-emerald-600"
+                  (click)="mockLogin()"
+                >
+                  Login
+                </button>
               </div>
             }
           </div>
@@ -46,136 +62,18 @@ import { MockAuthService } from './mock-auth.service';
       </div>
     }
   `,
-  styles: `
-    .mock-toolbar {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 8px;
-      font-family: system-ui, -apple-system, sans-serif;
-      font-size: 12px;
-    }
-
-    .mock-toggle {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      background: #6b7280;
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      transition: background 0.2s;
-    }
-
-    .mock-toggle:hover {
-      background: #4b5563;
-    }
-
-    .mock-toggle.enabled {
-      background: #10b981;
-    }
-
-    .mock-toggle.enabled:hover {
-      background: #059669;
-    }
-
-    .mock-panel {
-      background: white;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-      border: 1px solid #e5e7eb;
-    }
-
-    .mock-form {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .mock-input {
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      font-size: 12px;
-      width: 180px;
-    }
-
-    .mock-input:focus {
-      outline: none;
-      border-color: #10b981;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-    }
-
-    .mock-btn {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-
-    .mock-btn.login {
-      background: #10b981;
-      color: white;
-    }
-
-    .mock-btn.login:hover {
-      background: #059669;
-    }
-
-    .mock-btn.logout {
-      background: #ef4444;
-      color: white;
-    }
-
-    .mock-btn.logout:hover {
-      background: #dc2626;
-    }
-
-    .mock-user {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .mock-user-info {
-      color: #374151;
-      max-width: 150px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    :host-context(.dark-mode) .mock-panel {
-      background: #1f2937;
-      border-color: #374151;
-    }
-
-    :host-context(.dark-mode) .mock-input {
-      background: #374151;
-      border-color: #4b5563;
-      color: white;
-    }
-
-    :host-context(.dark-mode) .mock-user-info {
-      color: #d1d5db;
-    }
-  `,
 })
 export class MockAuthToolbarComponent {
   protected readonly mockAuth = inject(MockAuthService);
-
   protected readonly isDevMode = isDevMode();
 
-  protected email = 'dev@test.com';
-  protected name = 'Dev User';
+  readonly email = signal('dev@test.com');
+  readonly name = signal('Dev User');
+
+  /** Type-safe helper for accessing input value from events */
+  asInput(event: Event): HTMLInputElement {
+    return event.target as HTMLInputElement;
+  }
 
   toggleMockMode(): void {
     if (this.mockAuth.enabled()) {
@@ -188,7 +86,7 @@ export class MockAuthToolbarComponent {
   }
 
   mockLogin(): void {
-    this.mockAuth.login(this.email, this.name);
+    this.mockAuth.login(this.email(), this.name());
     // Reload to trigger auth check with new mock user
     window.location.reload();
   }
