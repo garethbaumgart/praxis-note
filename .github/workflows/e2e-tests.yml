@@ -125,8 +125,9 @@ jobs:
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
-        if: always()
+        if: failure()
         with:
           name: playwright-report
           path: tests/PraxisNote.E2E.Tests/playwright-report/
+          if-no-files-found: ignore
           retention-days: 30
