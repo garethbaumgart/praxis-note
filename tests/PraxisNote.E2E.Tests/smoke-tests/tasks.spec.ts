@@ -36,7 +36,7 @@ test.describe('Tasks', () => {
     await expect(page.locator('.bg-todo').getByText('Test Task')).toBeVisible();
   });
 
-  test('edit and delete buttons are accessible', async ({ page, request }) => {
+  test('click-to-edit title and delete button are accessible', async ({ page, request }) => {
     await request.post('/api/tasks', {
       headers: getMockAuthHeaders(testUser),
       data: { title: 'Action Test' },
@@ -47,9 +47,13 @@ test.describe('Tasks', () => {
 
     const taskCard = page.locator('.group').filter({ hasText: 'Action Test' });
 
-    // Verify action buttons exist and are accessible
-    await expect(taskCard.getByLabel('Edit task')).toBeAttached();
+    // Verify delete button is accessible
     await expect(taskCard.getByLabel('Delete task')).toBeAttached();
+
+    // Verify title is clickable (click-to-edit pattern)
+    const titleText = taskCard.getByText('Action Test');
+    await expect(titleText).toBeVisible();
+    await expect(titleText).toHaveClass(/cursor-pointer/);
   });
 
   test('can delete a task', async ({ page, request }) => {
