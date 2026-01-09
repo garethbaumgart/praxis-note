@@ -64,56 +64,58 @@ export class TaskService {
   }
 
   createTaskInColumn(title: string, status: 'Todo' | 'InProgress' | 'Done'): void {
+    const tempId = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const newTask: Task = {
+      id: tempId,
+      title,
+      status: status,
+      position: 0,
+      createdAt: now,
+      startedAt: status === 'Todo' ? null : now,
+      completedAt: status === 'Done' ? now : null,
+      comments: [],
+    };
+
+    // Optimistic update - add task immediately
+    this._tasks.update(tasks =>
+      tasks.map(t =>
+        t.status === status ? { ...t, position: t.position + 1 } : t
+      ).concat(newTask)
+    );
+
+    // Make HTTP call in background
     this.http.post<{ id: string }>('/api/tasks', { title }).subscribe({
       next: (result) => {
-        const now = new Date().toISOString();
-        const newTask: Task = {
-          id: result.id,
-          title,
-          status: status,
-          position: 0,
-          createdAt: now,
-          startedAt: status === 'Todo' ? null : now,
-          completedAt: status === 'Done' ? now : null,
-          comments: [],
-        };
-
-        // Push down existing tasks in target column and add new one at position 0
+        // Replace temp ID with real ID
         this._tasks.update(tasks =>
-          tasks.map(t =>
-            t.status === status ? { ...t, position: t.position + 1 } : t
-          ).concat(newTask)
+          tasks.map(t => (t.id === tempId ? { ...t, id: result.id } : t))
         );
 
         // If not Todo, also call the status change API
         if (status !== 'Todo') {
           this.http.put(`/api/tasks/${result.id}/status`, { status }).subscribe({
-            error: () => {
-              // Revert optimistic status/timestamps before reloading
-              this._tasks.update(tasks =>
-                tasks.map(t =>
-                  t.id === result.id
-                    ? { ...t, status: 'Todo', startedAt: null, completedAt: null, position: 0 }
-                    : t
-                )
-              );
-              this.loadTasks();
-            },
+            error: () => this.loadTasks(),
           });
         }
       },
-      error: () => this.loadTasks(), // Reload to restore consistent state
+      error: () => {
+        // Remove optimistic task and reload
+        this._tasks.update(tasks => tasks.filter(t => t.id !== tempId));
+        this.loadTasks();
+      },
     });
   }
 
   updateTask(id: string, title: string): void {
+    // Optimistic update - update immediately
+    this._tasks.update(tasks =>
+      tasks.map(t => (t.id === id ? { ...t, title } : t))
+    );
+
+    // Make HTTP call in background
     this.http.put(`/api/tasks/${id}`, { title }).subscribe({
-      next: () => {
-        this._tasks.update(tasks =>
-          tasks.map(t => (t.id === id ? { ...t, title } : t))
-        );
-      },
-      error: () => this.loadTasks(), // Reload to restore consistent state
+      error: () => this.loadTasks(), // Reload to restore if failed
     });
   }
 
@@ -179,11 +181,12 @@ export class TaskService {
   }
 
   deleteTask(id: string): void {
+    // Optimistic update - remove immediately
+    this._tasks.update(tasks => tasks.filter(t => t.id !== id));
+
+    // Make HTTP call in background
     this.http.delete(`/api/tasks/${id}`).subscribe({
-      next: () => {
-        this._tasks.update(tasks => tasks.filter(t => t.id !== id));
-      },
-      error: () => this.loadTasks(),
+      error: () => this.loadTasks(), // Reload to restore if failed
     });
   }
 
