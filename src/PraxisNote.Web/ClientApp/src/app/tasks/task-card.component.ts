@@ -195,10 +195,10 @@ export class TaskCardComponent {
   readonly relativeTime = computed(() => {
     this.tick(); // Depend on tick for auto-updates
     const task = this.task();
-    if (task.status === 'InProgress') {
-      return this.formatTime(task.statusUpdatedAt, 'elapsed');
-    } else if (task.status === 'Done') {
-      return this.formatTime(task.statusUpdatedAt, 'completed');
+    if (task.status === 'InProgress' && task.startedAt) {
+      return this.formatTime(task.startedAt, 'elapsed');
+    } else if (task.status === 'Done' && task.completedAt) {
+      return this.formatTime(task.completedAt, 'completed');
     }
     return null;
   });

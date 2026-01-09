@@ -108,10 +108,10 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           <div cdkDrag [cdkDragData]="task" class="cursor-grab active:cursor-grabbing touch-manipulation">
             <app-task-card
               [task]="task"
-              (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
+              (onTitleChange)="onEditTask.emit({ id: task.id, title: $event })"
               (onDelete)="onDeleteTask.emit(task.id)"
               (onAddComment)="onAddComment.emit({ taskId: task.id, content: $event })"
-              (onEditComment)="onEditComment.emit({ taskId: task.id, commentId: $event.commentId, content: $event.content })"
+              (onUpdateComment)="onEditComment.emit({ taskId: task.id, commentId: $event.id, content: $event.content })"
               (onDeleteComment)="onDeleteComment.emit({ taskId: task.id, commentId: $event })"
             />
             <div
