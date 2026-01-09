@@ -88,6 +88,30 @@ Frontend (ClientApp)
 - **Models**: `*.model.ts` (e.g., `task.model.ts`)
 - **Clear naming is critical**: Function and variable names must be descriptive and unambiguous
 
+## Testing Philosophy
+
+### E2E Tests
+
+E2E tests are expensive to write, maintain, and run. Only add E2E tests for **critical flows that would break the business if they fail**.
+
+**Current E2E coverage** (use `tasks.spec.ts` as the template):
+- `health.spec.ts` - System health/startup verification
+- `auth.spec.ts` - Authentication and access control
+- `tasks.spec.ts` - Core task workflow (create, delete, kanban state transitions)
+
+**DO write E2E tests for:**
+- Authentication/authorization flows
+- Core business operations (task CRUD, workflow state changes)
+- Critical user journeys that span API + UI
+
+**DO NOT write E2E tests for:**
+- Individual UI components or styling changes
+- New buttons, dialogs, or form fields (unit test these instead)
+- Features already covered by existing workflow tests
+- Non-critical enhancements
+
+When adding a new feature, ask: "If this breaks, does the app become unusable?" If no, skip the E2E test.
+
 ## Pre-PR Checklist
 
 Before creating or updating a PR, always run:
