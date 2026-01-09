@@ -16,6 +16,11 @@ public static class DependencyInjection
         services.AddScoped<DeleteTask>();
         services.AddScoped<ReorderTasks>();
 
+        // Comment use cases
+        services.AddScoped<AddComment>();
+        services.AddScoped<UpdateComment>();
+        services.AddScoped<DeleteComment>();
+
         // User use cases
         services.AddScoped<LoginOrRegisterUser>();
 

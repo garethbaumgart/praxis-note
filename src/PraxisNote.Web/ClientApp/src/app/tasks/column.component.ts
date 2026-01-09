@@ -102,6 +102,9 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               [task]="task"
               (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
               (onDelete)="onDeleteTask.emit(task.id)"
+              (onAddComment)="onAddComment.emit({ taskId: task.id, content: $event })"
+              (onEditComment)="onEditComment.emit({ taskId: task.id, commentId: $event.commentId, content: $event.content })"
+              (onDeleteComment)="onDeleteComment.emit({ taskId: task.id, commentId: $event })"
             />
             <div
               *cdkDragPlaceholder
@@ -137,6 +140,9 @@ export class ColumnComponent {
   readonly onEditTask = output<{ id: string; title: string }>();
   readonly onDeleteTask = output<string>();
   readonly onTaskCreated = output<string>();
+  readonly onAddComment = output<{ taskId: string; content: string }>();
+  readonly onEditComment = output<{ taskId: string; commentId: string; content: string }>();
+  readonly onDeleteComment = output<{ taskId: string; commentId: string }>();
 
   readonly isCreating = signal(false);
   readonly inlineTitle = signal('');

@@ -39,6 +39,9 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onEditTask)="updateTask($event.id, $event.title)"
             (onDeleteTask)="deleteTask($event)"
             (onTaskCreated)="createTask($event, 'Todo')"
+            (onAddComment)="addComment($event.taskId, $event.content)"
+            (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+            (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
           />
 
           <app-column
@@ -53,6 +56,9 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onEditTask)="updateTask($event.id, $event.title)"
             (onDeleteTask)="deleteTask($event)"
             (onTaskCreated)="createTask($event, 'InProgress')"
+            (onAddComment)="addComment($event.taskId, $event.content)"
+            (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+            (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
           />
 
           <app-column
@@ -67,6 +73,9 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onEditTask)="updateTask($event.id, $event.title)"
             (onDeleteTask)="deleteTask($event)"
             (onTaskCreated)="createTask($event, 'Done')"
+            (onAddComment)="addComment($event.taskId, $event.content)"
+            (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+            (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
           />
         </div>
       }
@@ -129,6 +138,18 @@ export class TasksPage implements OnInit {
 
   deleteTask(id: string): void {
     this.taskService.deleteTask(id);
+  }
+
+  addComment(taskId: string, content: string): void {
+    this.taskService.addComment(taskId, content);
+  }
+
+  editComment(taskId: string, commentId: string, content: string): void {
+    this.taskService.updateComment(taskId, commentId, content);
+  }
+
+  deleteComment(taskId: string, commentId: string): void {
+    this.taskService.deleteComment(taskId, commentId);
   }
 
   drop(event: CdkDragDrop<Task[]>, targetStatus: TaskStatus): void {

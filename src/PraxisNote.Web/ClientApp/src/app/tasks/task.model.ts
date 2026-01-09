@@ -1,3 +1,10 @@
+export interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -6,4 +13,5 @@ export interface Task {
   createdAt: string;
   startedAt: string | null;
   completedAt: string | null;
+  comments: Comment[];
 }

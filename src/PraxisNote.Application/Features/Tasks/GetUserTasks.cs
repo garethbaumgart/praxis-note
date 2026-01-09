@@ -19,7 +19,11 @@ public sealed class GetUserTasks(ITaskRepository taskRepository)
                 t.Position,
                 t.CreatedAt,
                 t.StartedAt,
-                t.CompletedAt))
+                t.CompletedAt,
+                t.Comments
+                    .OrderByDescending(c => c.CreatedAt)
+                    .Select(c => new CommentDto(c.Id, c.Content, c.CreatedAt, c.UpdatedAt))
+                    .ToList()))
             .ToList();
     }
 }
