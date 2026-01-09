@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PraxisNote.Domain.Aggregates.Tasks;
 
@@ -53,21 +54,33 @@ public sealed class TaskConfiguration : IEntityTypeConfiguration<TaskItem>
         });
 
         // LabelIds stored as JSON array - use backing field which is HashSet<Guid>
+        var labelIdsComparer = new ValueComparer<HashSet<Guid>>(
+            (c1, c2) => c1!.SequenceEqual(c2!),
+            c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+            c => c.ToHashSet());
+
         builder.Property<HashSet<Guid>>("_labelIds")
             .HasColumnName("LabelIds")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
-                v => JsonSerializer.Deserialize<HashSet<Guid>>(v, JsonSerializerOptions.Default) ?? new HashSet<Guid>());
+                v => JsonSerializer.Deserialize<HashSet<Guid>>(v, JsonSerializerOptions.Default) ?? new HashSet<Guid>())
+            .Metadata.SetValueComparer(labelIdsComparer);
 
         builder.Ignore(t => t.LabelIds);
 
         // Comments stored as JSONB array - use backing field which is List<Comment>
+        var commentsComparer = new ValueComparer<List<Comment>>(
+            (c1, c2) => JsonSerializer.Serialize(c1, JsonSerializerOptions.Default) == JsonSerializer.Serialize(c2, JsonSerializerOptions.Default),
+            c => JsonSerializer.Serialize(c, JsonSerializerOptions.Default).GetHashCode(),
+            c => JsonSerializer.Deserialize<List<Comment>>(JsonSerializer.Serialize(c, JsonSerializerOptions.Default), JsonSerializerOptions.Default)!);
+
         builder.Property<List<Comment>>("_comments")
             .HasColumnName("Comments")
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
-                v => JsonSerializer.Deserialize<List<Comment>>(v, JsonSerializerOptions.Default) ?? new List<Comment>());
+                v => JsonSerializer.Deserialize<List<Comment>>(v, JsonSerializerOptions.Default) ?? new List<Comment>())
+            .Metadata.SetValueComparer(commentsComparer);
 
         builder.Ignore(t => t.Comments);
 

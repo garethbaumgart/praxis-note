@@ -17,6 +17,9 @@
 # macOS
 .DS_Store
 
+# Design mockups (local only)
+mockups/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

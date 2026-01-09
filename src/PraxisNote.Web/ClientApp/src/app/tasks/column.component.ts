@@ -22,6 +22,14 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
+          <i
+            class="pi text-sm"
+            [ngClass]="{
+              'pi-lightbulb text-todo-foreground': status() === 'Todo',
+              'pi-clock text-inprogress-foreground': status() === 'InProgress',
+              'pi-check-circle text-done-foreground': status() === 'Done'
+            }"
+          ></i>
           <span
             class="text-xs font-medium uppercase tracking-wide"
             [ngClass]="{

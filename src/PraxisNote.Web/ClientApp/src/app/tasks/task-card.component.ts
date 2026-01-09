@@ -1,12 +1,11 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
-import { Button } from 'primeng/button';
 import { Task, Comment } from './task.model';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button],
+  imports: [],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -15,49 +14,22 @@ import { Task, Comment } from './task.model';
       [class.border-done-border]="task().status === 'Done'"
     >
       @if (editing()) {
-        <div class="flex items-start gap-2">
+        <div>
           <textarea
             #editInput
             [value]="editTitle()"
             (input)="onInput($event)"
             (keydown.enter)="onEnterKey($any($event))"
             (keydown.escape)="cancelEdit()"
+            (blur)="saveEdit()"
             rows="1"
-            class="flex-1 text-sm text-foreground bg-transparent border-0 outline-none resize-none p-0 leading-normal"
+            class="w-full text-sm text-foreground bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
           ></textarea>
-          <div class="flex items-center gap-1 shrink-0">
-            <p-button
-              icon="pi pi-check"
-              [rounded]="true"
-              [text]="true"
-              size="small"
-              severity="success"
-              (onClick)="saveEdit()"
-              aria-label="Save"
-            />
-            <p-button
-              icon="pi pi-times"
-              [rounded]="true"
-              [text]="true"
-              size="small"
-              severity="secondary"
-              (onClick)="cancelEdit()"
-              aria-label="Cancel"
-            />
-          </div>
+          <p class="text-xs text-foreground-muted/50 mt-1">Enter to save · Esc to cancel</p>
         </div>
       } @else {
-        <!-- Task content with document icon -->
+        <!-- Task content -->
         <div class="flex items-start gap-2">
-          <i
-            class="pi text-sm mt-0.5"
-            [class.pi-lightbulb]="task().status === 'Todo'"
-            [class.text-todo-foreground-muted]="task().status === 'Todo'"
-            [class.pi-clock]="task().status === 'InProgress'"
-            [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
-            [class.pi-check-circle]="task().status === 'Done'"
-            [class.text-done-foreground-muted]="task().status === 'Done'"
-          ></i>
           <div class="flex-1 min-w-0">
             <!-- Clickable title for inline editing -->
             <p
@@ -66,105 +38,117 @@ import { Task, Comment } from './task.model';
               [class.text-foreground-muted]="task().status === 'Done'"
               (click)="startEdit(); $event.stopPropagation()"
             >{{ task().title }}</p>
-            @if (relativeTime(); as time) {
-              <span
-                class="text-xs"
-                [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
-                [class.text-done-foreground-muted]="task().status === 'Done'"
-              >{{ time }}</span>
-            }
           </div>
-          <!-- Delete button only - edit via clicking title -->
-          <div class="flex items-center gap-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-            <p-button
-              icon="pi pi-trash"
-              [rounded]="true"
-              [text]="true"
-              size="small"
-              severity="danger"
-              (onClick)="onDelete.emit(); $event.stopPropagation()"
-              aria-label="Delete task"
-            />
+          <!-- Time (visible) / Delete button (on hover) -->
+          <div class="flex items-center shrink-0">
+            @if (confirmingTaskDelete()) {
+              <!-- Delete confirmation mode -->
+              <button
+                type="button"
+                class="flex items-center gap-1 text-red-500 animate-pulse"
+                (click)="confirmTaskDelete(); $event.stopPropagation()"
+                aria-label="Confirm delete task"
+              >
+                <i class="pi pi-trash text-[10px]"></i>
+                <span class="text-[10px]">Confirm?</span>
+              </button>
+            } @else {
+              @if (relativeTime(); as time) {
+                <span
+                  class="text-xs md:group-hover:hidden"
+                  [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
+                  [class.text-done-foreground-muted]="task().status === 'Done'"
+                >{{ time }}</span>
+              }
+              <button
+                type="button"
+                class="hidden md:group-hover:flex text-foreground-muted/40 hover:text-danger"
+                (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
+                aria-label="Delete task"
+              >
+                <i class="pi pi-trash text-[10px]"></i>
+              </button>
+            }
           </div>
         </div>
 
-        <!-- Comments (Option C: Stacked Notes) -->
-        @if (task().comments.length > 0) {
-          <div class="mt-3 space-y-1">
-            @for (comment of task().comments; track comment.id) {
-              @if (editingCommentId() === comment.id) {
-                <!-- Editing comment -->
-                <div class="bg-surface-hover rounded px-3 py-1.5 flex items-start gap-2">
-                  <textarea
-                    #commentEditInput
-                    [value]="editCommentContent()"
-                    (input)="onCommentInput($event)"
-                    (keydown.enter)="onCommentEnterKey($any($event))"
-                    (keydown.escape)="cancelCommentEdit()"
-                    rows="1"
-                    aria-label="Edit comment"
-                    class="flex-1 text-xs text-foreground-muted bg-transparent border-0 outline-none resize-none p-0 leading-normal"
-                  ></textarea>
-                  <div class="flex items-center gap-0.5 shrink-0">
-                    <p-button
-                      icon="pi pi-check"
-                      [rounded]="true"
-                      [text]="true"
-                      size="small"
-                      severity="success"
-                      (onClick)="saveCommentEdit(comment.id)"
-                      aria-label="Save"
-                    />
-                    <p-button
-                      icon="pi pi-times"
-                      [rounded]="true"
-                      [text]="true"
-                      size="small"
-                      severity="secondary"
-                      (onClick)="cancelCommentEdit()"
-                      aria-label="Cancel"
-                    />
-                  </div>
-                </div>
-              } @else {
-                <!-- Display comment as stacked block -->
-                <div
-                  class="group/comment bg-surface-hover rounded px-3 py-1.5 flex items-center justify-between cursor-pointer hover:bg-surface-hover/80 transition-colors"
-                  role="button"
-                  tabindex="0"
-                  (click)="startCommentEdit(comment); $event.stopPropagation()"
-                  (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
-                  (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
-                >
-                  <span class="text-xs text-foreground-muted flex-1 min-w-0 truncate">{{ comment.content }}</span>
-                  <span class="text-xs text-foreground-muted/50 ml-2 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
-                  <button
-                    type="button"
-                    class="hidden group-hover/comment:flex text-foreground-muted/50 hover:text-danger ml-2 shrink-0"
-                    (click)="onDeleteComment.emit(comment.id); $event.stopPropagation()"
-                    [attr.aria-label]="'Delete comment: ' + comment.content"
-                  >
-                    <i class="pi pi-times text-xs"></i>
-                  </button>
-                </div>
-              }
-            }
-          </div>
-        }
-
-        <!-- Add comment input (appears on hover) -->
-        <div class="mt-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+        <!-- Add comment input -->
+        <div class="mt-2 flex items-center gap-1.5">
+          <i class="pi pi-plus text-[10px] text-foreground-muted/30 shrink-0"></i>
           <input
             type="text"
             [value]="newCommentText()"
             (input)="newCommentText.set($any($event.target).value)"
             (keydown.enter)="submitNewComment(); $event.stopPropagation()"
             (keydown.escape)="newCommentText.set('')"
-            placeholder="+ Add note"
-            aria-label="Add note"
-            class="w-full text-xs bg-surface-hover/50 hover:bg-surface-hover focus:bg-surface-hover rounded px-3 py-1.5 border-0 outline-none text-foreground-muted placeholder-foreground-muted/50 transition-colors"
+            placeholder="Add comment..."
+            aria-label="Add comment"
+            class="flex-1 text-xs bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/30"
           />
         </div>
+
+        <!-- Comments (Linear - Minimal Activity) -->
+        @if (task().comments.length > 0) {
+          <div class="mt-2 space-y-2">
+            @for (comment of task().comments; track comment.id) {
+              @if (editingCommentId() === comment.id) {
+                <!-- Editing comment -->
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0"></i>
+                    <textarea
+                      #commentEditInput
+                      [value]="editCommentContent()"
+                      (input)="onCommentInput($event)"
+                      (keydown.enter)="onCommentEnterKey($any($event))"
+                      (keydown.escape)="cancelCommentEdit()"
+                      (blur)="saveCommentEdit(comment.id)"
+                      rows="1"
+                      aria-label="Edit comment"
+                      class="flex-1 text-xs text-foreground-muted bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
+                    ></textarea>
+                  </div>
+                  <p class="text-xs text-foreground-muted/40 mt-0.5 ml-5">Enter to save · Esc to cancel</p>
+                </div>
+              } @else {
+                <!-- Display comment as minimal row -->
+                <div
+                  class="group/comment flex items-center gap-1.5 cursor-pointer"
+                  role="button"
+                  tabindex="0"
+                  (click)="startCommentEdit(comment); $event.stopPropagation()"
+                  (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
+                  (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
+                >
+                  <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0"></i>
+                  <span class="text-xs text-foreground-muted flex-1 min-w-0 truncate">{{ comment.content }}</span>
+                  @if (confirmingCommentDeleteId() === comment.id) {
+                    <!-- Delete confirmation mode -->
+                    <button
+                      type="button"
+                      class="flex items-center gap-1 text-red-500 animate-pulse shrink-0"
+                      (click)="confirmCommentDelete(comment.id); $event.stopPropagation()"
+                      [attr.aria-label]="'Confirm delete comment: ' + comment.content"
+                    >
+                      <i class="pi pi-trash text-[10px]"></i>
+                      <span class="text-[10px]">Confirm?</span>
+                    </button>
+                  } @else {
+                    <span class="text-xs text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                    <button
+                      type="button"
+                      class="hidden group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0"
+                      (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
+                      [attr.aria-label]="'Delete comment: ' + comment.content"
+                    >
+                      <i class="pi pi-trash text-[10px]"></i>
+                    </button>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
       }
     </div>
   `,
@@ -190,6 +174,10 @@ export class TaskCardComponent {
   readonly editCommentContent = signal('');
   readonly newCommentText = signal('');
   readonly commentEditInput = viewChild<ElementRef<HTMLTextAreaElement>>('commentEditInput');
+
+  // Delete confirmation state
+  readonly confirmingTaskDelete = signal(false);
+  readonly confirmingCommentDeleteId = signal<string | null>(null);
 
   // Tick signal for auto-updating relative times (updates every minute)
   private readonly tick = signal(Date.now());
@@ -335,5 +323,33 @@ export class TaskCardComponent {
       this.onAddComment.emit(content);
       this.newCommentText.set('');
     }
+  }
+
+  // Task delete confirmation methods
+  startTaskDeleteConfirm(): void {
+    this.confirmingTaskDelete.set(true);
+    // Auto-cancel after 3 seconds
+    setTimeout(() => this.confirmingTaskDelete.set(false), 3000);
+  }
+
+  confirmTaskDelete(): void {
+    this.confirmingTaskDelete.set(false);
+    this.onDelete.emit();
+  }
+
+  // Comment delete confirmation methods
+  startCommentDeleteConfirm(commentId: string): void {
+    this.confirmingCommentDeleteId.set(commentId);
+    // Auto-cancel after 3 seconds
+    setTimeout(() => {
+      if (this.confirmingCommentDeleteId() === commentId) {
+        this.confirmingCommentDeleteId.set(null);
+      }
+    }, 3000);
+  }
+
+  confirmCommentDelete(commentId: string): void {
+    this.confirmingCommentDeleteId.set(null);
+    this.onDeleteComment.emit(commentId);
   }
 }
