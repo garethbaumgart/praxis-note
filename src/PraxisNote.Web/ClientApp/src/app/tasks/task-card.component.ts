@@ -102,6 +102,7 @@ import { Task, Comment } from './task.model';
                     (keydown.enter)="onCommentEnterKey($any($event))"
                     (keydown.escape)="cancelCommentEdit()"
                     rows="1"
+                    aria-label="Edit comment"
                     class="flex-1 text-xs text-foreground-muted bg-transparent border-0 outline-none resize-none p-0 leading-normal"
                   ></textarea>
                   <div class="flex items-center gap-0.5 shrink-0">
@@ -129,13 +130,19 @@ import { Task, Comment } from './task.model';
                 <!-- Display comment as stacked block -->
                 <div
                   class="group/comment bg-surface-hover rounded px-3 py-1.5 flex items-center justify-between cursor-pointer hover:bg-surface-hover/80 transition-colors"
+                  role="button"
+                  tabindex="0"
                   (click)="startCommentEdit(comment); $event.stopPropagation()"
+                  (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
+                  (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                 >
                   <span class="text-xs text-foreground-muted flex-1 min-w-0 truncate">{{ comment.content }}</span>
                   <span class="text-xs text-foreground-muted/50 ml-2 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
                   <button
+                    type="button"
                     class="hidden group-hover/comment:flex text-foreground-muted/50 hover:text-danger ml-2 shrink-0"
                     (click)="onDeleteComment.emit(comment.id); $event.stopPropagation()"
+                    [attr.aria-label]="'Delete comment: ' + comment.content"
                   >
                     <i class="pi pi-times text-xs"></i>
                   </button>
@@ -154,6 +161,7 @@ import { Task, Comment } from './task.model';
             (keydown.enter)="submitNewComment(); $event.stopPropagation()"
             (keydown.escape)="newCommentText.set('')"
             placeholder="+ Add note"
+            aria-label="Add note"
             class="w-full text-xs bg-surface-hover/50 hover:bg-surface-hover focus:bg-surface-hover rounded px-3 py-1.5 border-0 outline-none text-foreground-muted placeholder-foreground-muted/50 transition-colors"
           />
         </div>
