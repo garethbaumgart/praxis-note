@@ -48,12 +48,12 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
               <!-- Delete confirmation mode -->
               <button
                 type="button"
-                class="flex items-center gap-1 text-red-500 animate-pulse"
+                class="flex items-center gap-1 text-red-500 animate-pulse text-xs"
                 (click)="confirmTaskDelete(); $event.stopPropagation()"
                 aria-label="Confirm delete task"
               >
-                <i class="pi pi-trash text-[10px]"></i>
-                <span class="text-[10px]">Confirm?</span>
+                <i class="pi pi-trash"></i>
+                <span>Confirm?</span>
               </button>
             } @else {
               @if (relativeTime(); as time) {
@@ -65,19 +65,19 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
               }
               <button
                 type="button"
-                class="hidden md:group-hover:flex text-foreground-muted/40 hover:text-danger"
+                class="hidden md:group-hover:flex text-foreground-muted/40 hover:text-danger text-xs"
                 (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                 aria-label="Delete task"
               >
-                <i class="pi pi-trash text-[10px]"></i>
+                <i class="pi pi-trash"></i>
               </button>
             }
           </div>
         </div>
 
         <!-- Add comment input -->
-        <div class="mt-2 flex items-start gap-1.5">
-          <i class="pi pi-plus text-[10px] text-foreground-muted/30 shrink-0 mt-0.5"></i>
+        <div class="mt-2 flex items-start gap-1.5 text-xs">
+          <i class="pi pi-plus text-foreground-muted/30 shrink-0 mt-0.5"></i>
           <textarea
             #newCommentInput
             appAutoResize
@@ -88,7 +88,7 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
             placeholder="Add comment..."
             aria-label="Add comment"
             rows="1"
-            class="flex-1 text-xs bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/30 resize-none leading-normal"
+            class="flex-1 bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/30 resize-none leading-normal"
           ></textarea>
         </div>
 
@@ -98,9 +98,9 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
             @for (comment of task().comments; track comment.id) {
               @if (editingCommentId() === comment.id) {
                 <!-- Editing comment -->
-                <div>
+                <div class="text-xs">
                   <div class="flex items-start gap-1.5">
-                    <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0 mt-0.5"></i>
+                    <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
                     <textarea
                       #commentEditInput
                       appAutoResize
@@ -111,23 +111,23 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
                       (blur)="saveCommentEdit(comment.id)"
                       rows="1"
                       aria-label="Edit comment"
-                      class="flex-1 text-xs text-foreground-muted bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
+                      class="flex-1 text-foreground-muted bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
                     ></textarea>
                   </div>
-                  <p class="text-xs text-foreground-muted/40 mt-0.5 ml-5">Enter to save · Esc to cancel</p>
+                  <p class="text-foreground-muted/40 mt-0.5 ml-5">Enter to save · Esc to cancel</p>
                 </div>
               } @else {
                 <!-- Display comment as minimal row -->
                 <div
-                  class="group/comment flex items-start gap-1.5 cursor-pointer"
+                  class="group/comment flex items-start gap-1.5 cursor-pointer text-xs"
                   role="button"
                   tabindex="0"
                   (click)="startCommentEdit(comment); $event.stopPropagation()"
                   (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                   (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                 >
-                  <i class="pi pi-comment text-[10px] text-foreground-muted/40 shrink-0 mt-0.5"></i>
-                  <span class="text-xs text-foreground-muted flex-1 min-w-0 whitespace-pre-wrap">{{ comment.content }}</span>
+                  <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
+                  <span class="text-foreground-muted flex-1 min-w-0 whitespace-pre-wrap">{{ comment.content }}</span>
                   @if (confirmingCommentDeleteId() === comment.id) {
                     <!-- Delete confirmation mode -->
                     <button
@@ -136,18 +136,18 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
                       (click)="confirmCommentDelete(comment.id); $event.stopPropagation()"
                       [attr.aria-label]="'Confirm delete comment: ' + comment.content"
                     >
-                      <i class="pi pi-trash text-[10px]"></i>
-                      <span class="text-[10px]">Confirm?</span>
+                      <i class="pi pi-trash"></i>
+                      <span>Confirm?</span>
                     </button>
                   } @else {
-                    <span class="text-xs text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                    <span class="text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
                     <button
                       type="button"
                       class="hidden group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0"
                       (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                       [attr.aria-label]="'Delete comment: ' + comment.content"
                     >
-                      <i class="pi pi-trash text-[10px]"></i>
+                      <i class="pi pi-trash"></i>
                     </button>
                   }
                 </div>
