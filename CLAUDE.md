@@ -112,31 +112,9 @@ E2E tests are expensive to write, maintain, and run. Only add E2E tests for **cr
 
 When adding a new feature, ask: "If this breaks, does the app become unusable?" If no, skip the E2E test.
 
-## Pre-PR Checklist
+## PR Workflow
 
-Before creating or updating a PR, always run:
-
-1. **Unit tests**: `dotnet test` (all 185+ tests must pass)
-2. **E2E tests**: `cd tests/PraxisNote.E2E.Tests && npm test` (all tests must pass)
-
-Never put up a PR with failing tests.
-
-## Post-PR Workflow
-
-After creating a PR, follow this workflow:
-
-1. **Self code review**: Review the PR diff and add comments to the PR in GitHub for any issues found
-2. **Wait for CI**: Monitor GitHub Actions for completion
-3. **Check for warnings**: Review action logs AND annotations for any warnings (not just failures)
-   - Use `gh api repos/{owner}/{repo}/check-runs/{job_id}/annotations` to fetch annotations
-   - The "Annotations" section in GitHub UI also shows these
-   - Common warnings: deprecation notices, bundle size budgets, artifact upload failures, EF Core model validation
-   - **ALL warnings must be addressed** - either fix the issue or update the workflow if it's a false positive
-4. **Wait for Copilot**: Allow Copilot to complete its review
-5. **Address all comments**: Fix any issues raised by Copilot or other reviewers
-6. **Verify CI passes**: Ensure all checks pass after fixes (no warnings in annotations)
-
-Only request merge approval once all comments are addressed, CI is green, and there are no warnings in annotations.
+**ALWAYS** use the `/pr` skill when creating or updating a pull request. This ensures all tests are run, the PR is properly reviewed, and CI checks are monitored for warnings.
 
 ## Technical Debt / TODOs
 
