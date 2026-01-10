@@ -3,6 +3,16 @@
 @import "tailwindcss/utilities" layer(utilities);
 @import "primeicons/primeicons.css";
 
+/* PrimeIcons: Force font-size inheritance from parent
+
+   Why !important: Tailwind v4 uses CSS @layer which has lower cascade priority
+   than unlayered CSS (like primeicons.css). Without !important, the browser's
+   default 16px wins. This is a legitimate use - a single rule to fix third-party
+   library behavior, not a specificity hack. */
+.pi {
+  font-size: inherit !important;
+}
+
 /* ========================================
    Semantic Color Tokens - Light Mode
    ======================================== */
