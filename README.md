@@ -228,6 +228,7 @@ GitHub Actions runs automatically on every push to `main` and on pull requests:
 | **Unit Tests** | Push/PR | Runs `dotnet test` on Domain tests (200+ tests) |
 | **E2E Tests** | Push/PR | Spins up PostgreSQL, runs migrations, starts the app, runs Playwright tests |
 | **Copilot Review** | PR only | AI-powered code review with suggestions |
+| **CodeRabbit Review** | PR only | AI-powered code review with detailed line-by-line feedback |
 
 ### E2E Test Pipeline Details
 
