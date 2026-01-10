@@ -11,6 +11,7 @@ This directory contains Architecture Decision Records (ADRs) for the PraxisNote 
 | [0003](0003-angular-signals.md) | Angular Signals over RxJS | Accepted |
 | [0004](0004-primeng-tailwind-no-custom-css.md) | PrimeNG + Tailwind, No Custom CSS | Accepted |
 | [0005](0005-sqlite-dev-postgresql-prod.md) | SQLite for Dev, PostgreSQL for Prod | Accepted |
+| [0006](0006-domain-layer-purity.md) | Domain Layer Purity | Accepted |
 
 ## Template
 
