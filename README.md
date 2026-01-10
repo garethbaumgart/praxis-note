@@ -20,6 +20,10 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 
 ✅ = Implemented | 🚧 = Planned
 
+## Architecture
+
+See [Architecture Decision Records](docs/adr/) for documented decisions on patterns and technology choices.
+
 ## Tech Stack
 
 - .NET 10, C# (nullable reference types, implicit usings)
