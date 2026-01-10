@@ -1,0 +1,17 @@
+# CodeRabbit Configuration
+# https://docs.coderabbit.ai/configuration
+
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    excluded:
+      - "**/*.md"
+      - "**/package-lock.json"
+      - "**/packages.lock.json"
+      - "**/*.Designer.cs"
+      - "**/Migrations/**"
+
+chat:
+  auto_reply: true
