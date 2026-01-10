@@ -1,12 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { resetDatabase, seedTestUser } from '../helpers/db-reset';
+import { seedTestUser } from '../helpers/db-reset';
 import { getMockAuthHeaders } from '../helpers/mock-auth';
 
-test.describe('Authentication', () => {
-  test.beforeEach(async () => {
-    await resetDatabase();
-  });
+// Use unique user suffix for this test file to avoid interference with parallel tests
+const USER_SUFFIX = 1;
 
+test.describe('Authentication', () => {
   test('unauthenticated user sees login page', async ({ page }) => {
     await page.goto('/');
 
@@ -21,7 +20,7 @@ test.describe('Authentication', () => {
 
   test('mock auth header provides user info via /api/auth/me', async ({ request }) => {
     // Seed test user in database
-    const testUser = await seedTestUser();
+    const testUser = await seedTestUser(USER_SUFFIX);
 
     // Make authenticated request with mock header
     const meResponse = await request.get('/api/auth/me', {
@@ -37,7 +36,7 @@ test.describe('Authentication', () => {
 
   test('authenticated user can access tasks API', async ({ request }) => {
     // Seed test user
-    const testUser = await seedTestUser();
+    const testUser = await seedTestUser(USER_SUFFIX);
     const headers = getMockAuthHeaders(testUser);
 
     // Tasks endpoint should work with mock auth header
@@ -50,7 +49,7 @@ test.describe('Authentication', () => {
 
   test('request without mock header is unauthenticated', async ({ request }) => {
     // Seed test user (but don't include header)
-    await seedTestUser();
+    await seedTestUser(USER_SUFFIX);
 
     // Without the header, should get 401
     const response = await request.get('/api/auth/me');

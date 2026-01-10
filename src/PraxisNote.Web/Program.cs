@@ -48,8 +48,8 @@ builder.Services.AddCors(options =>
 // Add Authorization
 builder.Services.AddAuthorization();
 
-// Check if mock auth should be enabled (Development or E2E only)
-var enableMockAuth = builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "E2E";
+// Check if mock auth should be enabled (Development only)
+var enableMockAuth = builder.Environment.IsDevelopment();
 
 // Add Authentication
 var authBuilder = builder.Services.AddAuthentication(options =>

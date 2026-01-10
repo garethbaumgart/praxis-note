@@ -1,13 +1,17 @@
 import { test, expect } from '@playwright/test';
-import { resetDatabase, seedTestUser } from '../helpers/db-reset';
+import { seedTestUser } from '../helpers/db-reset';
 import { getMockAuthHeaders, MockUser } from '../helpers/mock-auth';
 
+// Use unique user suffix for this test file to avoid interference with parallel tests
+const USER_SUFFIX = 3;
 let testUser: MockUser;
 
 test.describe('Icon Sizing', () => {
+  // Run tests serially to avoid race conditions with shared database
+  test.describe.configure({ mode: 'serial' });
+
   test.beforeAll(async () => {
-    await resetDatabase();
-    testUser = await seedTestUser();
+    testUser = await seedTestUser(USER_SUFFIX);
   });
 
   test.beforeEach(async ({ request }) => {

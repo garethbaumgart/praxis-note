@@ -13,7 +13,7 @@ export default async function globalTeardown() {
   if (!process.env.KEEP_CONTAINERS) {
     console.log('Stopping E2E test infrastructure...');
     try {
-      execSync('docker compose -f docker-compose.e2e.yml down', {
+      execSync('docker compose --profile e2e down', {
         cwd: projectRoot,
         stdio: 'inherit',
       });

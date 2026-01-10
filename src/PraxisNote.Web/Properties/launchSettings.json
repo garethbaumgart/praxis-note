@@ -18,15 +18,6 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    "e2e": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": false,
-      "applicationUrl": "http://localhost:5002",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "E2E"
-      }
     }
   }
 }

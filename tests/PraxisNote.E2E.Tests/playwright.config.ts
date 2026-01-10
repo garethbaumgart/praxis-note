@@ -12,7 +12,7 @@ export default defineConfig({
   globalTeardown: './global-teardown.ts',
 
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:5002',
+    baseURL: 'http://localhost:5002',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -27,16 +27,15 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command:
-          'dotnet run --project ../../src/PraxisNote.Web --no-build --launch-profile e2e',
+        command: 'dotnet run --project ../../src/PraxisNote.Web --no-build',
         url: 'http://localhost:5002/api/health',
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         timeout: 120000,
         env: {
-          ASPNETCORE_ENVIRONMENT: 'E2E',
+          ASPNETCORE_ENVIRONMENT: 'Development',
           ASPNETCORE_URLS: 'http://localhost:5002',
           ConnectionStrings__DefaultConnection:
-            'Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword',
+            'Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=e2eTestPassword',
         },
       },
 });

@@ -1,13 +1,25 @@
 import { test, expect } from '@playwright/test';
-import { resetDatabase, seedTestUser } from '../helpers/db-reset';
+import { seedTestUser } from '../helpers/db-reset';
 import { getMockAuthHeaders, MockUser } from '../helpers/mock-auth';
 
+// Use unique user suffix for this test file to avoid interference with parallel tests
+const USER_SUFFIX = 2;
 let testUser: MockUser;
 
+// Format date as YYYY-MM-DD in local time (not UTC)
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 test.describe('Due Dates', () => {
+  // Run tests serially to avoid race conditions with shared database
+  test.describe.configure({ mode: 'serial' });
+
   test.beforeAll(async () => {
-    await resetDatabase();
-    testUser = await seedTestUser();
+    testUser = await seedTestUser(USER_SUFFIX);
   });
 
   test.beforeEach(async ({ request }) => {
@@ -34,7 +46,7 @@ test.describe('Due Dates', () => {
     // Set due date to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dueDateStr = tomorrow.toISOString().split('T')[0];
+    const dueDateStr = formatLocalDate(tomorrow);
 
     const setDueDateRes = await request.put(`/api/tasks/${task.id}/due-date`, {
       headers: getMockAuthHeaders(testUser),
@@ -61,7 +73,7 @@ test.describe('Due Dates', () => {
     // Set due date
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dueDateStr = tomorrow.toISOString().split('T')[0];
+    const dueDateStr = formatLocalDate(tomorrow);
     await request.put(`/api/tasks/${task.id}/due-date`, {
       headers: getMockAuthHeaders(testUser),
       data: { date: dueDateStr },
@@ -92,7 +104,7 @@ test.describe('Due Dates', () => {
 
     // Set due date to today
     const today = new Date();
-    const dueDateStr = today.toISOString().split('T')[0];
+    const dueDateStr = formatLocalDate(today);
 
     await request.put(`/api/tasks/${task.id}/due-date`, {
       headers: getMockAuthHeaders(testUser),
@@ -120,7 +132,7 @@ test.describe('Due Dates', () => {
     // Set due date to yesterday
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const dueDateStr = yesterday.toISOString().split('T')[0];
+    const dueDateStr = formatLocalDate(yesterday);
 
     await request.put(`/api/tasks/${task.id}/due-date`, {
       headers: getMockAuthHeaders(testUser),
@@ -165,7 +177,7 @@ test.describe('Due Dates', () => {
     // Set due date
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dueDateStr = tomorrow.toISOString().split('T')[0];
+    const dueDateStr = formatLocalDate(tomorrow);
     await request.put(`/api/tasks/${task.id}/due-date`, {
       headers: getMockAuthHeaders(testUser),
       data: { date: dueDateStr },

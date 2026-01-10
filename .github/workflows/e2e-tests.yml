@@ -14,7 +14,7 @@ jobs:
         image: postgres:17-alpine
         env:
           POSTGRES_USER: praxisnote
-          POSTGRES_PASSWORD: testpassword
+          POSTGRES_PASSWORD: e2eTestPassword
           POSTGRES_DB: praxisnote_e2e
         ports:
           - 5433:5432
@@ -75,7 +75,7 @@ jobs:
       - name: Run database migrations
         run: dotnet ef database update -p src/PraxisNote.Infrastructure -s src/PraxisNote.Web
         env:
-          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword"
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=e2eTestPassword"
 
       - name: Install frontend dependencies
         if: steps.angular-cache.outputs.cache-hit != 'true'
@@ -110,9 +110,9 @@ jobs:
           echo "Server failed to start within 60 seconds"
           exit 1
         env:
-          ASPNETCORE_ENVIRONMENT: E2E
+          ASPNETCORE_ENVIRONMENT: Development
           ASPNETCORE_URLS: "http://localhost:5002"
-          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword"
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=e2eTestPassword"
           Authentication__Google__ClientId: "dummy-for-e2e"
           Authentication__Google__ClientSecret: "dummy-for-e2e"
 
