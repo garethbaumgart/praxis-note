@@ -34,8 +34,8 @@ After the PR is created, perform these checks:
    - Use `gh api repos/{owner}/{repo}/check-runs/{job_id}/annotations` to fetch annotations
    - Common warnings: deprecation notices, bundle size budgets, artifact upload failures, EF Core model validation
    - **ALL warnings must be addressed** - either fix the issue or update the workflow if it's a false positive
-4. **Wait for Copilot**: Allow Copilot to complete its review
-5. **Address all comments**: Fix any issues raised by Copilot or other reviewers
+4. **Wait for AI reviewers**: Allow CodeRabbit and Copilot to complete their reviews
+5. **Address all comments**: Fix any issues raised by CodeRabbit, Copilot, or other reviewers
 6. **Verify CI passes**: Ensure all checks pass after fixes (no warnings in annotations)
 
 Only request merge approval once all comments are addressed, CI is green, and there are no warnings in annotations.
