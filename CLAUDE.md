@@ -114,7 +114,7 @@ When adding a new feature, ask: "If this breaks, does the app become unusable?" 
 
 ## PR Workflow
 
-Use the `/pr` skill to run through the complete PR checklist (tests, create PR, self-review, CI monitoring, etc.).
+**ALWAYS** use the `/pr` skill when creating or updating a pull request. This ensures all tests are run, the PR is properly reviewed, and CI checks are monitored for warnings.
 
 ## Technical Debt / TODOs
 
