@@ -132,7 +132,7 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
                     <!-- Delete confirmation mode -->
                     <button
                       type="button"
-                      class="flex items-center gap-1 text-red-500 animate-pulse shrink-0"
+                      class="flex items-center gap-1 text-red-500 animate-pulse shrink-0 text-xs"
                       (click)="confirmCommentDelete(comment.id); $event.stopPropagation()"
                       [attr.aria-label]="'Confirm delete comment: ' + comment.content"
                     >
