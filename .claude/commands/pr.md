@@ -1,27 +1,32 @@
 # Create Pull Request
 
-This skill guides you through the complete PR workflow for this project.
+You are creating or updating a pull request. Follow these steps in order.
 
-## Pre-PR Checklist
+## Step 1: Check for Uncommitted Changes
 
-Before creating the PR, run these checks and **ensure they pass**:
+Run `git status` to check for uncommitted changes. If there are changes:
+- Stage and commit them with a clear, descriptive message
+- Push to the remote branch
 
-1. **Run unit tests**: Execute `dotnet test` - all tests must pass
-2. **Run E2E tests**: Execute `cd tests/PraxisNote.E2E.Tests && npm test` - all tests must pass
+## Step 2: Run Tests
+
+Run these checks and **ensure they pass**:
+
+1. **Unit tests**: Execute `dotnet test` - expect 185+ tests, all must pass
+2. **E2E tests**: Execute `cd tests/PraxisNote.E2E.Tests && npm test` - all tests must pass
 
 **STOP if any tests fail.** Fix the failures and re-run until all tests pass. Do not proceed to PR creation with failing tests.
 
-## Create the PR
+## Step 3: Create the PR
 
 Once tests pass:
 
-1. Commit all changes with a clear, descriptive message
-2. Push to the remote branch
-3. Create the PR using `gh pr create`
+1. Push any remaining commits to the remote branch
+2. Create the PR using `gh pr create`
 
-## Post-PR Workflow
+## Step 4: Post-PR Review
 
-After the PR is created:
+After the PR is created, perform these checks:
 
 1. **Self code review**: Review the PR diff using `gh pr diff` and add comments for any issues found using `gh pr comment` or `gh api`
 2. **Wait for CI**: Monitor GitHub Actions for completion using `gh pr checks`
