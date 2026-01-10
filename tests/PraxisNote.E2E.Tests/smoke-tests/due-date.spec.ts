@@ -103,9 +103,10 @@ test.describe('Due Dates', () => {
     await page.goto('/tasks');
 
     const taskCard = page.locator('.group').filter({ hasText: 'Task due today' });
-    const dueDateBadge = taskCard.getByText('Today');
-    await expect(dueDateBadge).toBeVisible();
-    await expect(dueDateBadge).toHaveClass(/text-amber-600/);
+    // Use button selector to avoid matching task title "Task due today"
+    const dueDateButton = taskCard.locator('button').filter({ hasText: 'Today' });
+    await expect(dueDateButton).toBeVisible();
+    await expect(dueDateButton).toHaveClass(/text-amber-600/);
   });
 
   test('displays overdue date with red styling and exclamation icon', async ({ page, request }) => {
@@ -130,9 +131,10 @@ test.describe('Due Dates', () => {
     await page.goto('/tasks');
 
     const taskCard = page.locator('.group').filter({ hasText: 'Overdue task' });
-    const dueDateBadge = taskCard.getByText('Yesterday');
-    await expect(dueDateBadge).toBeVisible();
-    await expect(dueDateBadge).toHaveClass(/text-red-500/);
+    // Class is on the button, not the span text inside
+    const dueDateButton = taskCard.locator('button').filter({ hasText: 'Yesterday' });
+    await expect(dueDateButton).toBeVisible();
+    await expect(dueDateButton).toHaveClass(/text-red-500/);
     // Verify exclamation icon is present
     await expect(taskCard.locator('.pi-exclamation-circle')).toBeVisible();
   });
