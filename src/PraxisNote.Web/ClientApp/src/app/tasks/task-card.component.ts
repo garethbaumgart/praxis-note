@@ -143,7 +143,7 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
                     <span class="text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
                     <button
                       type="button"
-                      class="hidden group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0"
+                      class="hidden group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
                       (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                       [attr.aria-label]="'Delete comment: ' + comment.content"
                     >
