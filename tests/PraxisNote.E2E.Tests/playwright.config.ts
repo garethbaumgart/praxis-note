@@ -28,7 +28,7 @@ export default defineConfig({
     ? undefined
     : {
         command:
-          'dotnet run --project ../../src/PraxisNote.Web --no-build',
+          'dotnet run --project ../../src/PraxisNote.Web --no-build --launch-profile e2e',
         url: 'http://localhost:5002/api/health',
         reuseExistingServer: !process.env.CI,
         timeout: 120000,
