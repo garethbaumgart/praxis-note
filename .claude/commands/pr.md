@@ -4,12 +4,12 @@ This skill guides you through the complete PR workflow for this project.
 
 ## Pre-PR Checklist
 
-Before creating the PR, run these checks:
+Before creating the PR, run these checks and **ensure they pass**:
 
-1. **Run unit tests**: Execute `dotnet test` and verify all tests pass
-2. **Run E2E tests**: Execute `cd tests/PraxisNote.E2E.Tests && npm test` and verify all tests pass
+1. **Run unit tests**: Execute `dotnet test` - all tests must pass
+2. **Run E2E tests**: Execute `cd tests/PraxisNote.E2E.Tests && npm test` - all tests must pass
 
-If any tests fail, fix them before proceeding. Never create a PR with failing tests.
+**STOP if any tests fail.** Fix the failures and re-run until all tests pass. Do not proceed to PR creation with failing tests.
 
 ## Create the PR
 
