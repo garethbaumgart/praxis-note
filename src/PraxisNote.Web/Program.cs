@@ -91,36 +91,32 @@ var authBuilder = builder.Services.AddAuthentication(options =>
     }
 });
 
-// Add Google authentication (not needed in E2E mode where we use mock auth)
-if (!enableMockAuth || builder.Environment.IsDevelopment())
+// Add Google authentication only if credentials are configured
+var googleAuth = builder.Configuration.GetSection("Authentication:Google");
+var clientId = googleAuth["ClientId"];
+var clientSecret = googleAuth["ClientSecret"];
+
+if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
 {
-    var googleAuth = builder.Configuration.GetSection("Authentication:Google");
-    var clientId = googleAuth["ClientId"];
-    var clientSecret = googleAuth["ClientSecret"];
-
-    // Only add Google auth if credentials are configured
-    if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
+    authBuilder.AddGoogle(options =>
     {
-        authBuilder.AddGoogle(options =>
+        options.ClientId = clientId;
+        options.ClientSecret = clientSecret;
+        options.Scope.Add("email");
+        options.Scope.Add("profile");
+        options.SaveTokens = false;
+
+        // Map the picture claim from Google's user info response
+        options.ClaimActions.MapJsonKey("picture", "picture");
+
+        // Force account selection on each login (useful after logout)
+        options.Events.OnRedirectToAuthorizationEndpoint = context =>
         {
-            options.ClientId = clientId;
-            options.ClientSecret = clientSecret;
-            options.Scope.Add("email");
-            options.Scope.Add("profile");
-            options.SaveTokens = false;
-
-            // Map the picture claim from Google's user info response
-            options.ClaimActions.MapJsonKey("picture", "picture");
-
-            // Force account selection on each login (useful after logout)
-            options.Events.OnRedirectToAuthorizationEndpoint = context =>
-            {
-                var uri = QueryHelpers.AddQueryString(context.RedirectUri, "prompt", "select_account");
-                context.Response.Redirect(uri);
-                return Task.CompletedTask;
-            };
-        });
-    }
+            var uri = QueryHelpers.AddQueryString(context.RedirectUri, "prompt", "select_account");
+            context.Response.Redirect(uri);
+            return Task.CompletedTask;
+        };
+    });
 }
 
 // Add mock authentication scheme (Development/E2E only)

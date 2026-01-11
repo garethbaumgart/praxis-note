@@ -57,14 +57,23 @@ export class DueDateBadgeComponent {
 
   readonly showPicker = signal(false);
 
-  readonly displayText = computed(() => {
+  /** Days until due date (negative = overdue, 0 = today, positive = future) */
+  private readonly daysDiff = computed(() => {
     const dueDate = this.dueDate();
     if (!dueDate) return null;
 
     const date = new Date(dueDate + 'T00:00:00');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const diff = Math.floor((date.getTime() - today.getTime()) / 86400000);
+    return Math.floor((date.getTime() - today.getTime()) / 86400000);
+  });
+
+  readonly displayText = computed(() => {
+    const diff = this.daysDiff();
+    if (diff === null) return null;
+
+    const dueDate = this.dueDate()!;
+    const date = new Date(dueDate + 'T00:00:00');
 
     if (diff < -1) return `${-diff}d ago`;
     if (diff === -1) return 'Yesterday';
@@ -75,13 +84,8 @@ export class DueDateBadgeComponent {
   });
 
   readonly badgeClass = computed(() => {
-    const dueDate = this.dueDate();
-    if (!dueDate) return '';
-
-    const date = new Date(dueDate + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diff = Math.floor((date.getTime() - today.getTime()) / 86400000);
+    const diff = this.daysDiff();
+    if (diff === null) return '';
 
     if (this.taskStatus() === 'Done') return 'text-foreground-muted/40 line-through';
     if (diff < 0) return 'text-red-500 font-medium';
@@ -92,14 +96,8 @@ export class DueDateBadgeComponent {
   });
 
   readonly iconClass = computed(() => {
-    const dueDate = this.dueDate();
-    if (!dueDate) return 'pi pi-calendar';
-
-    const date = new Date(dueDate + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diff = Math.floor((date.getTime() - today.getTime()) / 86400000);
-
+    const diff = this.daysDiff();
+    if (diff === null) return 'pi pi-calendar';
     if (diff < 0) return 'pi pi-exclamation-circle';
     return 'pi pi-calendar';
   });
