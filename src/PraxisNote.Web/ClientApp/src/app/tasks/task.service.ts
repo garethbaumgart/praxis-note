@@ -12,6 +12,8 @@ export class TaskService {
   private readonly reorderSubject = new Subject<{ status: string; taskIds: string[] }>();
 
   private readonly _tasks = signal<Task[]>([]);
+  private readonly _archivedTasks = signal<Task[]>([]);
+  private readonly _archivedCount = signal(0);
   private readonly _loading = signal(false);
 
   constructor() {
@@ -26,6 +28,8 @@ export class TaskService {
   }
 
   readonly tasks = this._tasks.asReadonly();
+  readonly archivedTasks = this._archivedTasks.asReadonly();
+  readonly archivedCount = this._archivedCount.asReadonly();
   readonly loading = this._loading.asReadonly();
 
   readonly todoTasks = computed(() =>
@@ -57,6 +61,34 @@ export class TaskService {
         this._loading.set(false);
       },
     });
+  }
+
+  loadArchivedCount(): void {
+    this.http.get<{ count: number }>('/api/tasks/archived/count').subscribe({
+      next: (result) => {
+        this._archivedCount.set(result.count);
+      },
+      error: () => {
+        // Keep existing count on error
+      },
+    });
+  }
+
+  loadArchivedTasks(): void {
+    this._loading.set(true);
+    this.http.get<Task[]>('/api/tasks?includeArchived=true').subscribe({
+      next: (tasks) => {
+        this._archivedTasks.set(tasks);
+        this._loading.set(false);
+      },
+      error: () => {
+        this._loading.set(false);
+      },
+    });
+  }
+
+  clearArchivedTasks(): void {
+    this._archivedTasks.set([]);
   }
 
   createTask(title: string): void {
@@ -123,6 +155,13 @@ export class TaskService {
   changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done', targetPosition?: number): void {
     const position = targetPosition ?? 0;
     const now = new Date().toISOString();
+
+    // Remove from archived tasks if present (unarchiving via drag)
+    const wasArchived = this._archivedTasks().some(t => t.id === id);
+    if (wasArchived) {
+      this._archivedTasks.update(tasks => tasks.filter(t => t.id !== id));
+      this._archivedCount.update(count => Math.max(0, count - 1));
+    }
 
     // Optimistic update - update UI immediately
     this._tasks.update(tasks => {

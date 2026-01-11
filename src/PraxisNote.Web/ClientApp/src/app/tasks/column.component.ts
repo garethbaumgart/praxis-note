@@ -19,7 +19,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
       [ngClass]="{
         'bg-todo': status() === 'Todo',
         'bg-inprogress': status() === 'InProgress',
-        'bg-done': status() === 'Done'
+        'bg-done': status() === 'Done' && !showArchive(),
+        'bg-archive': showArchive()
       }"
     >
       <div class="flex items-center justify-between mb-3">
@@ -29,20 +30,21 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             [ngClass]="{
               'pi-lightbulb text-todo-foreground': status() === 'Todo',
               'pi-clock text-inprogress-foreground': status() === 'InProgress',
-              'pi-check-circle text-done-foreground': status() === 'Done'
+              'pi-check-circle text-done-foreground': status() === 'Done' && !showArchive(),
+              'pi-inbox text-archive-foreground': showArchive()
             }"
           ></i>
           <span
             class="text-xs font-medium uppercase tracking-wide"
-            [ngClass]="status() | statusColor:'text'"
+            [ngClass]="showArchive() ? 'text-archive-foreground' : (status() | statusColor:'text')"
           >{{ label() }}</span>
           <span
             class="text-xs"
-            [ngClass]="status() | statusColor:'text-muted'"
+            [ngClass]="showArchive() ? 'text-archive-foreground-muted' : (status() | statusColor:'text-muted')"
           >{{ tasks().length }}</span>
         </div>
-        @if (showAddButton() && !isCreating()) {
-          <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1">
+          @if (showAddButton() && !isCreating()) {
             <button
               class="flex items-center justify-center w-6 h-6 rounded transition-colors"
               [ngClass]="{
@@ -65,8 +67,23 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
                 }"
               >N</kbd>
             }
-          </div>
-        }
+          }
+          @if (status() === 'Done' && (archiveCount() > 0 || showArchive())) {
+            <button
+              class="flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors"
+              [ngClass]="showArchive()
+                ? 'text-archive-foreground bg-archive-hover'
+                : 'text-done-foreground-muted hover:text-done-foreground hover:bg-done-hover'"
+              (click)="onArchiveToggle.emit()"
+              [attr.aria-label]="showArchive() ? 'Show recent tasks' : 'Show archived tasks'"
+            >
+              <i class="pi pi-inbox text-xs"></i>
+              @if (!showArchive()) {
+                <span class="text-xs">{{ archiveCount() }}</span>
+              }
+            </button>
+          }
+        </div>
       </div>
       <div
         cdkDropList
@@ -113,7 +130,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               [ngClass]="{
                 'bg-todo-hover border-todo-border': status() === 'Todo',
                 'bg-inprogress-hover border-inprogress-border': status() === 'InProgress',
-                'bg-done-hover border-done-border': status() === 'Done'
+                'bg-done-hover border-done-border': status() === 'Done' && !showArchive(),
+                'bg-archive-hover border-archive-border': showArchive()
               }"
             ></div>
           </div>
@@ -136,8 +154,11 @@ export class ColumnComponent {
   readonly showAddButton = input(true);
   readonly showKbdHint = input(false);
   readonly emptyMessage = input('No tasks');
+  readonly archiveCount = input(0);
+  readonly showArchive = input(false);
 
   readonly onDrop = output<CdkDragDrop<Task[]>>();
+  readonly onArchiveToggle = output<void>();
   readonly onEditTask = output<{ id: string; title: string }>();
   readonly onDeleteTask = output<string>();
   readonly onTaskCreated = output<string>();

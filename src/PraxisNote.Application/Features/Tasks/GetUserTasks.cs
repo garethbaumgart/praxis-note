@@ -1,17 +1,31 @@
 using PraxisNote.Domain.Aggregates.Tasks;
+using TaskStatus = PraxisNote.Domain.ValueObjects.TaskStatus;
 
 namespace PraxisNote.Application.Features.Tasks;
 
 public sealed class GetUserTasks(ITaskRepository taskRepository)
 {
-    public record Query(Guid UserId);
+    public record Query(Guid UserId, bool IncludeArchived = false);
 
     public async Task<IReadOnlyList<TaskDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
         var tasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var archiveThreshold = DateTimeOffset.UtcNow.AddDays(-TaskConstants.ArchiveThresholdDays);
 
-        return tasks
-            .OrderBy(t => t.Position)
+        var filteredTasks = query.IncludeArchived
+            ? tasks
+                .Where(t => t.Status == TaskStatus.Done
+                    && t.CompletedAt.HasValue
+                    && t.CompletedAt.Value < archiveThreshold)
+                .OrderByDescending(t => t.CompletedAt)
+                .Take(TaskConstants.MaxArchivedTasks)
+            : tasks
+                .Where(t => t.Status != TaskStatus.Done
+                    || !t.CompletedAt.HasValue
+                    || t.CompletedAt.Value >= archiveThreshold)
+                .OrderBy(t => t.Position);
+
+        return filteredTasks
             .Select(t => new TaskDto(
                 t.Id,
                 t.Title,

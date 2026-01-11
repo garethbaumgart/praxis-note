@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, OnInit, viewChild, ChangeDetectionStrategy, computed } from '@angular/core';
+import { Component, HostListener, inject, OnInit, viewChild, ChangeDetectionStrategy, computed, signal } from '@angular/core';
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
 import { ColumnComponent } from './column.component';
@@ -68,11 +68,14 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           <app-column
             #doneColumn
             status="Done"
-            label="Done"
-            [tasks]="taskService.doneTasks()"
+            [label]="showArchive() ? 'Archive' : 'Done'"
+            [tasks]="doneColumnTasks()"
             [connectedTo]="doneConnectedTo()"
             [showAddButton]="false"
-            emptyMessage="Complete some tasks!"
+            [emptyMessage]="showArchive() ? 'No archived tasks' : 'Complete some tasks!'"
+            [archiveCount]="taskService.archivedCount()"
+            [showArchive]="showArchive()"
+            (onArchiveToggle)="toggleArchive()"
             (onDrop)="drop($event, 'Done')"
             (onEditTask)="updateTask($event.id, $event.title)"
             (onDeleteTask)="deleteTask($event)"
@@ -95,6 +98,14 @@ export class TasksPage implements OnInit {
   readonly inProgressColumn = viewChild<ColumnComponent>('inProgressColumn');
   readonly doneColumn = viewChild<ColumnComponent>('doneColumn');
 
+  readonly showArchive = signal(false);
+
+  readonly doneColumnTasks = computed(() =>
+    this.showArchive()
+      ? this.taskService.archivedTasks()
+      : this.taskService.doneTasks()
+  );
+
   readonly todoConnectedTo = computed(() => {
     const inProgress = this.inProgressColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
@@ -115,6 +126,18 @@ export class TasksPage implements OnInit {
 
   ngOnInit(): void {
     this.taskService.loadTasks();
+    this.taskService.loadArchivedCount();
+  }
+
+  toggleArchive(): void {
+    const newValue = !this.showArchive();
+    this.showArchive.set(newValue);
+
+    if (newValue) {
+      this.taskService.loadArchivedTasks();
+    } else {
+      this.taskService.clearArchivedTasks();
+    }
   }
 
   @HostListener('document:keydown', ['$event'])
