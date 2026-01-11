@@ -12,6 +12,8 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 
 - ✅ **Three-State Tasks** - Todo → In Progress → Done lifecycle with timestamps
 - ✅ **Kanban Board** - Drag-and-drop task management with inline creation
+- ✅ **Due Dates** - Set due dates with visual urgency indicators (overdue, today, tomorrow, this week)
+- ✅ **Task Comments** - Add comments to tasks with click-to-edit
 - ✅ **Google OAuth** - Secure authentication with user accounts
 - 🚧 **Note-First Workflow** - Capture thoughts in rich text notes
 - 🚧 **Automatic Task Extraction** - Checkboxes in notes become tasks on your board
@@ -80,7 +82,7 @@ The easiest way to run the full stack locally with hot reload. No secrets or con
 From the project root:
 
 ```bash
-docker compose -f docker-compose.dev.yml up
+docker compose --profile dev-stack up
 ```
 
 This starts:
@@ -94,7 +96,7 @@ Open http://localhost:4200 and start developing. Changes to both frontend and ba
 
 To stop:
 ```bash
-docker compose -f docker-compose.dev.yml down
+docker compose --profile dev-stack down
 ```
 
 ### Running Locally (Manual)
@@ -103,7 +105,7 @@ If you prefer to run services individually:
 
 1. Start PostgreSQL:
    ```bash
-   docker compose up -d
+   docker compose --profile dev up -d
    ```
 
 2. Configure secrets (see Database and Authentication sections below)
@@ -276,7 +278,7 @@ If E2E tests fail with database connection errors:
    ```
 3. Clean up orphan containers:
    ```bash
-   docker compose -f docker-compose.e2e.yml down --remove-orphans
+   docker compose --profile e2e down --remove-orphans
    ```
 
 ### EF Tools Version Warning
