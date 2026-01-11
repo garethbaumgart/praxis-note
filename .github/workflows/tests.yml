@@ -1,6 +1,8 @@
 name: Unit Tests
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_call: # Allow other workflows to call this one
@@ -23,5 +25,58 @@ jobs:
       - name: Build
         run: dotnet build src/PraxisNote.slnx --no-restore
 
-      - name: Run unit tests
-        run: dotnet test src/PraxisNote.slnx --no-build --verbosity normal
+      - name: Run unit tests with coverage
+        id: test
+        run: |
+          dotnet test src/PraxisNote.slnx --no-build --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage \
+            --logger "trx;LogFileName=test-results.trx"
+
+      - name: Parse test results
+        id: parse
+        if: always()
+        run: |
+          # Extract test count from TRX file
+          TRX_FILE=$(find ./coverage -name "*.trx" -type f | head -1)
+          if [ -f "$TRX_FILE" ]; then
+            TEST_COUNT=$(grep -oP 'total="\K\d+' "$TRX_FILE" | head -1)
+            PASSED=$(grep -oP 'passed="\K\d+' "$TRX_FILE" | head -1)
+            echo "test_count=$TEST_COUNT" >> $GITHUB_OUTPUT
+            echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "test_count=0" >> $GITHUB_OUTPUT
+            echo "passed=0" >> $GITHUB_OUTPUT
+          fi
+
+          # Extract coverage percentage from Cobertura XML
+          COV_FILE=$(find ./coverage -name "coverage.cobertura.xml" -type f | head -1)
+          if [ -f "$COV_FILE" ]; then
+            LINE_RATE=$(grep -oP 'line-rate="\K[0-9.]+' "$COV_FILE" | head -1)
+            PERCENT=$(echo "$LINE_RATE * 100" | bc -l | xargs printf "%.1f")
+            echo "coverage=$PERCENT" >> $GITHUB_OUTPUT
+          else
+            echo "coverage=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update unit tests badge
+        if: github.ref == 'refs/heads/main' && always()
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 093c03c9b23736d0600e9eeb2e772063
+          filename: unit-tests.json
+          label: Unit Tests
+          message: ${{ steps.parse.outputs.passed }} passing
+          color: ${{ steps.test.outcome == 'success' && 'brightgreen' || 'red' }}
+
+      - name: Update coverage badge
+        if: github.ref == 'refs/heads/main' && always()
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 093c03c9b23736d0600e9eeb2e772063
+          filename: coverage.json
+          label: Coverage
+          message: ${{ steps.parse.outputs.coverage }}%
+          color: ${{ steps.parse.outputs.coverage > 80 && 'brightgreen' || steps.parse.outputs.coverage > 60 && 'yellow' || 'red' }}
