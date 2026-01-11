@@ -1,9 +1,9 @@
 services:
-  # Development database - use: docker compose --profile dev up
+  # Development database
   postgres-dev:
     image: postgres:17-alpine
     container_name: praxisnote-db-dev
-    profiles: ["dev"]
+    profiles: ["dev", "dev-stack"]
     environment:
       POSTGRES_USER: praxisnote
       POSTGRES_PASSWORD: devTestPassword
@@ -35,7 +35,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # Full dev stack (optional) - use: docker compose --profile dev-stack up
+  # API with hot reload - use: docker compose --profile dev-stack up
   api:
     build:
       context: .
