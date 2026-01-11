@@ -56,6 +56,12 @@
   --color-done-text: var(--color-emerald-700);
   --color-done-text-muted: var(--color-emerald-500);
   --color-done-border: var(--color-emerald-200);
+
+  --color-archive-bg: var(--color-amber-100);
+  --color-archive-bg-hover: var(--color-amber-200);
+  --color-archive-text: var(--color-amber-700);
+  --color-archive-text-muted: var(--color-amber-500);
+  --color-archive-border: var(--color-amber-200);
 }
 
 /* ========================================
@@ -96,6 +102,12 @@
   --color-done-text: var(--color-emerald-400);
   --color-done-text-muted: var(--color-emerald-500);
   --color-done-border: var(--color-emerald-800);
+
+  --color-archive-bg: var(--color-amber-900);
+  --color-archive-bg-hover: var(--color-amber-800);
+  --color-archive-text: var(--color-amber-400);
+  --color-archive-text-muted: var(--color-amber-500);
+  --color-archive-border: var(--color-amber-800);
 }
 
 /* ========================================
@@ -141,6 +153,12 @@
   --color-done-foreground: var(--color-done-text);
   --color-done-foreground-muted: var(--color-done-text-muted);
   --color-done-border: var(--color-done-border);
+
+  --color-archive: var(--color-archive-bg);
+  --color-archive-hover: var(--color-archive-bg-hover);
+  --color-archive-foreground: var(--color-archive-text);
+  --color-archive-foreground-muted: var(--color-archive-text-muted);
+  --color-archive-border: var(--color-archive-border);
 }
 
 /* Custom animations */

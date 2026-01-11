@@ -11,6 +11,7 @@ public static class TaskEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", (Delegate)HandleGetTasks);
+        group.MapGet("/archived/count", (Delegate)HandleGetArchivedCount);
         group.MapPost("/", (Delegate)HandleCreateTask);
         group.MapPut("/{id:guid}", (Delegate)HandleUpdateTask);
         group.MapPut("/{id:guid}/status", (Delegate)HandleChangeStatus);
@@ -21,6 +22,24 @@ public static class TaskEndpoints
     private static async Task<IResult> HandleGetTasks(
         ClaimsPrincipal user,
         GetUserTasks getUserTasks,
+        CancellationToken cancellationToken,
+        bool includeArchived = false)
+    {
+        var userId = GetUserId(user);
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var query = new GetUserTasks.Query(userId.Value, includeArchived);
+        var tasks = await getUserTasks.ExecuteAsync(query, cancellationToken);
+
+        return Results.Ok(tasks);
+    }
+
+    private static async Task<IResult> HandleGetArchivedCount(
+        ClaimsPrincipal user,
+        GetArchivedCount getArchivedCount,
         CancellationToken cancellationToken)
     {
         var userId = GetUserId(user);
@@ -29,10 +48,10 @@ public static class TaskEndpoints
             return Results.Unauthorized();
         }
 
-        var query = new GetUserTasks.Query(userId.Value);
-        var tasks = await getUserTasks.ExecuteAsync(query, cancellationToken);
+        var query = new GetArchivedCount.Query(userId.Value);
+        var count = await getArchivedCount.ExecuteAsync(query, cancellationToken);
 
-        return Results.Ok(tasks);
+        return Results.Ok(new { count });
     }
 
     private static async Task<IResult> HandleCreateTask(

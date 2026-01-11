@@ -11,6 +11,7 @@ public static class DependencyInjection
         // Task use cases
         services.AddScoped<CreateTask>();
         services.AddScoped<GetUserTasks>();
+        services.AddScoped<GetArchivedCount>();
         services.AddScoped<UpdateTask>();
         services.AddScoped<ChangeTaskStatus>();
         services.AddScoped<DeleteTask>();
