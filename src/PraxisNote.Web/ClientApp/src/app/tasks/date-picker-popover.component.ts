@@ -26,31 +26,28 @@ import { DatePicker } from 'primeng/datepicker';
       class="absolute left-0 top-full mt-1 z-50 bg-surface border border-border rounded-lg shadow-lg"
     >
       <!-- Quick options bar -->
-      <div class="flex flex-wrap gap-1 p-2 border-b border-border">
+      <div class="flex flex-wrap gap-2 p-3 border-b border-border">
         <button
           type="button"
           (click)="selectQuickOption('today'); $event.stopPropagation()"
-          class="px-2 py-1 text-xs rounded hover:bg-surface-hover text-foreground-secondary"
-          [class.bg-accent]="isSelected('today')"
-          [class.text-accent-foreground]="isSelected('today')"
+          class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+          [class]="isSelected('today') ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
         >
           Today
         </button>
         <button
           type="button"
           (click)="selectQuickOption('tomorrow'); $event.stopPropagation()"
-          class="px-2 py-1 text-xs rounded hover:bg-surface-hover text-foreground-secondary"
-          [class.bg-accent]="isSelected('tomorrow')"
-          [class.text-accent-foreground]="isSelected('tomorrow')"
+          class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+          [class]="isSelected('tomorrow') ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
         >
           Tomorrow
         </button>
         <button
           type="button"
           (click)="selectQuickOption('nextWeek'); $event.stopPropagation()"
-          class="px-2 py-1 text-xs rounded hover:bg-surface-hover text-foreground-secondary"
-          [class.bg-accent]="isSelected('nextWeek')"
-          [class.text-accent-foreground]="isSelected('nextWeek')"
+          class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+          [class]="isSelected('nextWeek') ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
         >
           Next week
         </button>
