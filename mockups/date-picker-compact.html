@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Date Picker Compact Styling - UI Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#ffffff',
+            'surface-hover': '#f8fafc',
+            foreground: '#1e293b',
+            'foreground-muted': '#94a3b8',
+            border: '#e2e8f0',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .mockup-section { margin-bottom: 3rem; }
+    .mockup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+    .mockup-card { background: #f8fafc; border-radius: 12px; padding: 1rem; }
+    .mockup-label { font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem; font-weight: 500; }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Date Picker Compact Styling</h1>
+    <p class="text-gray-600 mb-8">Comparing current PrimeNG calendar styling with proposed compact version</p>
+
+    <!-- ============================================ -->
+    <!-- SECTION 1: Current vs Compact Comparison -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">1. Side-by-Side Comparison</h2>
+      <div class="mockup-grid">
+
+        <!-- Current State (simulating default PrimeNG) -->
+        <div class="mockup-card">
+          <div class="mockup-label text-red-600">Current - Too Bulky</div>
+          <div class="bg-white rounded-lg shadow-lg border border-gray-200 inline-block">
+            <!-- Quick options bar -->
+            <div class="flex flex-wrap gap-2 p-3 border-b border-gray-200">
+              <button class="px-3 py-1 text-sm font-medium rounded-full bg-amber-100 text-amber-700">Today</button>
+              <button class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-600">Tomorrow</button>
+              <button class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-600">Next week</button>
+            </div>
+            <!-- Calendar Header - current bulky -->
+            <div class="p-4">
+              <div class="flex items-center justify-between mb-4">
+                <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center">
+                  <i class="pi pi-chevron-left text-lg text-gray-600"></i>
+                </button>
+                <span class="text-lg font-semibold">January 2026</span>
+                <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center">
+                  <i class="pi pi-chevron-right text-lg text-gray-600"></i>
+                </button>
+              </div>
+              <!-- Day headers - current too large -->
+              <div class="grid grid-cols-7 gap-2 mb-2">
+                <span class="text-sm font-medium text-gray-500 text-center py-2">Sun</span>
+                <span class="text-sm font-medium text-gray-500 text-center py-2">Mon</span>
+                <span class="text-sm font-medium text-gray-500 text-center py-2">Tue</span>
+                <span class="text-sm font-medium text-gray-500 text-center py-2">Wed</span>
+                <span class="text-sm font-medium text-gray-500 text-center py-2">Thu</span>
+                <span class="text-sm font-medium text-gray-500 text-center py-2">Fri</span>
+                <span class="text-sm font-medium text-gray-500 text-center py-2">Sat</span>
+              </div>
+              <!-- Day cells - current too large -->
+              <div class="grid grid-cols-7 gap-1">
+                <span class="text-base text-gray-300 text-center py-3">28</span>
+                <span class="text-base text-gray-300 text-center py-3">29</span>
+                <span class="text-base text-gray-300 text-center py-3">30</span>
+                <span class="text-base text-gray-300 text-center py-3">31</span>
+                <span class="text-base text-gray-800 text-center py-3">1</span>
+                <span class="text-base text-gray-800 text-center py-3">2</span>
+                <span class="text-base text-gray-800 text-center py-3">3</span>
+                <span class="text-base text-gray-800 text-center py-3">4</span>
+                <span class="text-base text-gray-800 text-center py-3">5</span>
+                <span class="text-base text-gray-800 text-center py-3">6</span>
+                <span class="text-base text-gray-800 text-center py-3">7</span>
+                <span class="text-base text-gray-800 text-center py-3">8</span>
+                <span class="text-base text-gray-800 text-center py-3">9</span>
+                <span class="text-base text-gray-800 text-center py-3">10</span>
+                <span class="text-base text-gray-800 text-center py-3 bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto">11</span>
+                <span class="text-base text-gray-800 text-center py-3">12</span>
+                <span class="text-base text-gray-800 text-center py-3">13</span>
+                <span class="text-base text-gray-800 text-center py-3">14</span>
+                <span class="text-base text-gray-800 text-center py-3">15</span>
+                <span class="text-base text-gray-800 text-center py-3">16</span>
+                <span class="text-base text-gray-800 text-center py-3">17</span>
+                <span class="text-base text-gray-800 text-center py-3">18</span>
+                <span class="text-base text-gray-800 text-center py-3">19</span>
+                <span class="text-base text-gray-800 text-center py-3">20</span>
+                <span class="text-base text-gray-800 text-center py-3">21</span>
+              </div>
+            </div>
+          </div>
+          <ul class="text-xs text-red-600 mt-3 space-y-1">
+            <li>• Day-of-week headers too large (14px)</li>
+            <li>• Day numbers oversized (16px)</li>
+            <li>• Month header bulky</li>
+            <li>• Navigation arrows too big</li>
+            <li>• Excessive padding in cells</li>
+          </ul>
+        </div>
+
+        <!-- Proposed Compact Version -->
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700">Proposed - Compact</div>
+          <div class="bg-white rounded-lg shadow-lg border border-gray-200 inline-block">
+            <!-- Quick options bar -->
+            <div class="flex flex-wrap gap-2 p-3 border-b border-gray-200">
+              <button class="px-3 py-1 text-sm font-medium rounded-full bg-amber-100 text-amber-700">Today</button>
+              <button class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-600">Tomorrow</button>
+              <button class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-600">Next week</button>
+            </div>
+            <!-- Calendar Header - compact -->
+            <div class="p-2">
+              <div class="flex items-center justify-between mb-2">
+                <button class="w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center">
+                  <i class="pi pi-chevron-left text-[10px] text-gray-500"></i>
+                </button>
+                <span class="text-sm font-semibold text-gray-700">January 2026</span>
+                <button class="w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center">
+                  <i class="pi pi-chevron-right text-[10px] text-gray-500"></i>
+                </button>
+              </div>
+              <!-- Day headers - compact -->
+              <div class="grid grid-cols-7 gap-0 mb-1">
+                <span class="text-[11px] font-medium text-gray-400 text-center py-1">Su</span>
+                <span class="text-[11px] font-medium text-gray-400 text-center py-1">Mo</span>
+                <span class="text-[11px] font-medium text-gray-400 text-center py-1">Tu</span>
+                <span class="text-[11px] font-medium text-gray-400 text-center py-1">We</span>
+                <span class="text-[11px] font-medium text-gray-400 text-center py-1">Th</span>
+                <span class="text-[11px] font-medium text-gray-400 text-center py-1">Fr</span>
+                <span class="text-[11px] font-medium text-gray-400 text-center py-1">Sa</span>
+              </div>
+              <!-- Day cells - compact -->
+              <div class="grid grid-cols-7 gap-0">
+                <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">28</span>
+                <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">29</span>
+                <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">30</span>
+                <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">31</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">1</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">2</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">3</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">4</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">5</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">6</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">7</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">8</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">9</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">10</span>
+                <span class="w-7 h-7 text-xs bg-blue-500 text-white flex items-center justify-center rounded-full cursor-pointer">11</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">12</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">13</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">14</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">15</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">16</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">17</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">18</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">19</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">20</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">21</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">22</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">23</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">24</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">25</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">26</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">27</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">28</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">29</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">30</span>
+                <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">31</span>
+                <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">1</span>
+              </div>
+            </div>
+          </div>
+          <ul class="text-xs text-emerald-700 mt-3 space-y-1">
+            <li>• Day-of-week: 11px, light gray</li>
+            <li>• Day numbers: 12px (xs)</li>
+            <li>• Header: 14px, tighter</li>
+            <li>• Navigation: 10px icons, 24px buttons</li>
+            <li>• Cell size: 28x28px (w-7 h-7)</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 2: In Context -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">2. In Context - Date Picker Open</h2>
+      <div class="mockup-grid">
+
+        <!-- Current context -->
+        <div class="mockup-card">
+          <div class="mockup-label text-red-600">Current - Takes Too Much Space</div>
+          <div class="bg-gray-100 p-4 rounded-lg relative" style="min-height: 400px;">
+            <!-- Simulated task card -->
+            <div class="bg-white rounded-md shadow-sm p-3 border border-gray-200 w-64">
+              <p class="text-sm text-gray-800 mb-2">Fix authentication bug</p>
+              <div class="flex items-center gap-1 text-xs text-gray-400 cursor-pointer">
+                <i class="pi pi-calendar text-[10px]"></i>
+                <span>Set due date</span>
+              </div>
+            </div>
+            <!-- Large calendar popover -->
+            <div class="absolute top-20 left-4 bg-white rounded-lg shadow-xl border border-gray-200" style="width: 340px;">
+              <div class="flex gap-2 p-3 border-b">
+                <button class="px-3 py-1 text-sm rounded-full bg-gray-100">Today</button>
+                <button class="px-3 py-1 text-sm rounded-full bg-gray-100">Tomorrow</button>
+                <button class="px-3 py-1 text-sm rounded-full bg-gray-100">Next week</button>
+              </div>
+              <div class="p-4">
+                <div class="flex justify-between items-center mb-3">
+                  <i class="pi pi-chevron-left text-gray-500"></i>
+                  <span class="text-lg font-semibold">January 2026</span>
+                  <i class="pi pi-chevron-right text-gray-500"></i>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center text-sm text-gray-500 mb-2">
+                  <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center text-base">
+                  <span class="py-2 text-gray-300">28</span>
+                  <span class="py-2 text-gray-300">29</span>
+                  <span class="py-2 text-gray-300">30</span>
+                  <span class="py-2 text-gray-300">31</span>
+                  <span class="py-2">1</span>
+                  <span class="py-2">2</span>
+                  <span class="py-2">3</span>
+                  <span class="py-2">4</span>
+                  <span class="py-2">5</span>
+                  <span class="py-2">6</span>
+                  <span class="py-2">7</span>
+                  <span class="py-2">8</span>
+                  <span class="py-2">9</span>
+                  <span class="py-2">10</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Calendar feels oversized for a popover context</p>
+        </div>
+
+        <!-- Proposed compact context -->
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700">Proposed - Compact & Refined</div>
+          <div class="bg-gray-100 p-4 rounded-lg relative" style="min-height: 400px;">
+            <!-- Simulated task card -->
+            <div class="bg-white rounded-md shadow-sm p-3 border border-gray-200 w-64">
+              <p class="text-sm text-gray-800 mb-2">Fix authentication bug</p>
+              <div class="flex items-center gap-1 text-xs text-gray-400 cursor-pointer">
+                <i class="pi pi-calendar text-[10px]"></i>
+                <span>Set due date</span>
+              </div>
+            </div>
+            <!-- Compact calendar popover -->
+            <div class="absolute top-20 left-4 bg-white rounded-lg shadow-xl border border-gray-200 inline-block">
+              <div class="flex gap-2 p-3 border-b">
+                <button class="px-3 py-1 text-sm font-medium rounded-full bg-amber-100 text-amber-700">Today</button>
+                <button class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-600">Tomorrow</button>
+                <button class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-600">Next week</button>
+              </div>
+              <div class="p-2">
+                <div class="flex justify-between items-center mb-2 px-1">
+                  <button class="w-6 h-6 rounded hover:bg-gray-100 flex items-center justify-center">
+                    <i class="pi pi-chevron-left text-[10px] text-gray-500"></i>
+                  </button>
+                  <span class="text-sm font-semibold text-gray-700">January 2026</span>
+                  <button class="w-6 h-6 rounded hover:bg-gray-100 flex items-center justify-center">
+                    <i class="pi pi-chevron-right text-[10px] text-gray-500"></i>
+                  </button>
+                </div>
+                <div class="grid grid-cols-7 gap-0 mb-1 text-center">
+                  <span class="text-[11px] font-medium text-gray-400 py-1">Su</span>
+                  <span class="text-[11px] font-medium text-gray-400 py-1">Mo</span>
+                  <span class="text-[11px] font-medium text-gray-400 py-1">Tu</span>
+                  <span class="text-[11px] font-medium text-gray-400 py-1">We</span>
+                  <span class="text-[11px] font-medium text-gray-400 py-1">Th</span>
+                  <span class="text-[11px] font-medium text-gray-400 py-1">Fr</span>
+                  <span class="text-[11px] font-medium text-gray-400 py-1">Sa</span>
+                </div>
+                <div class="grid grid-cols-7 gap-0">
+                  <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">28</span>
+                  <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">29</span>
+                  <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">30</span>
+                  <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">31</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">1</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">2</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">3</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">4</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">5</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">6</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">7</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">8</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">9</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">10</span>
+                  <span class="w-7 h-7 text-xs bg-blue-500 text-white flex items-center justify-center rounded-full cursor-pointer">11</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">12</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">13</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">14</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">15</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">16</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">17</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">18</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">19</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">20</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">21</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">22</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">23</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">24</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">25</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">26</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">27</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">28</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">29</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">30</span>
+                  <span class="w-7 h-7 text-xs text-gray-700 flex items-center justify-center hover:bg-gray-100 rounded-full cursor-pointer">31</span>
+                  <span class="w-7 h-7 text-xs text-gray-300 flex items-center justify-center">1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Compact calendar fits naturally in popover context</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 3: CSS Overrides -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">3. Required CSS Overrides</h2>
+      <div class="mockup-card" style="max-width: 700px;">
+        <div class="mockup-label">Add to styles.css</div>
+        <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto"><code>/* ========================================
+   PrimeNG DatePicker - Compact Styling
+   ======================================== */
+
+/* Reduce overall calendar size */
+.p-datepicker {
+  font-size: 0.8125rem;
+}
+
+/* Compact header with month/year */
+.p-datepicker-header {
+  padding: 0.5rem 0.25rem;
+}
+
+.p-datepicker-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 0.25rem;
+}
+
+/* Smaller navigation buttons */
+.p-datepicker-prev,
+.p-datepicker-next {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.p-datepicker-prev-icon,
+.p-datepicker-next-icon {
+  font-size: 0.625rem;
+}
+
+/* Compact day-of-week headers */
+.p-datepicker table th {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  padding: 0.25rem;
+}
+
+/* Smaller day cells */
+.p-datepicker table td {
+  padding: 0.0625rem;
+}
+
+.p-datepicker table td > span {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.75rem;
+}
+
+/* Calendar table spacing */
+.p-datepicker table {
+  font-size: 0.75rem;
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 4: Size Comparison -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">4. Size Comparison</h2>
+      <div class="mockup-card" style="max-width: 500px;">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-2 px-3">Element</th>
+              <th class="text-left py-2 px-3 text-red-600">Current</th>
+              <th class="text-left py-2 px-3 text-emerald-600">Proposed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-gray-100">
+              <td class="py-2 px-3">Day-of-week headers</td>
+              <td class="py-2 px-3 text-red-600">14px (text-sm)</td>
+              <td class="py-2 px-3 text-emerald-600">11px (0.6875rem)</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-2 px-3">Day numbers</td>
+              <td class="py-2 px-3 text-red-600">16px (text-base)</td>
+              <td class="py-2 px-3 text-emerald-600">12px (0.75rem)</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-2 px-3">Month/year header</td>
+              <td class="py-2 px-3 text-red-600">18px (text-lg)</td>
+              <td class="py-2 px-3 text-emerald-600">14px (0.875rem)</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-2 px-3">Navigation buttons</td>
+              <td class="py-2 px-3 text-red-600">40x40px</td>
+              <td class="py-2 px-3 text-emerald-600">24x24px</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-2 px-3">Day cell size</td>
+              <td class="py-2 px-3 text-red-600">~40x40px</td>
+              <td class="py-2 px-3 text-emerald-600">28x28px</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-medium">Overall width</td>
+              <td class="py-2 px-3 text-red-600">~340px</td>
+              <td class="py-2 px-3 text-emerald-600">~220px</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- RECOMMENDATION SUMMARY -->
+    <!-- ============================================ -->
+    <div class="mockup-section bg-emerald-50 rounded-xl p-6 border-2 border-emerald-200">
+      <h2 class="text-xl font-semibold text-emerald-800 mb-4">Implementation Summary</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">What Changes</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>• Add CSS overrides to `styles.css`</li>
+            <li>• No changes to component code needed</li>
+            <li>• Uses PrimeNG CSS custom properties where possible</li>
+            <li>• ~25 lines of CSS total</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Result</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>• Calendar width reduced by ~35%</li>
+            <li>• More polished, refined appearance</li>
+            <li>• Better fits popover context</li>
+            <li>• Matches quick options pill styling</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
