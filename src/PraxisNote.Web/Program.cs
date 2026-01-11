@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using PraxisNote.Application;
+using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Infrastructure;
 using PraxisNote.Infrastructure.Persistence;
 using PraxisNote.Web.Auth;
@@ -21,6 +22,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
+
+// Configure Task settings
+builder.Services.Configure<TaskSettings>(builder.Configuration.GetSection(TaskSettings.SectionName));
 
 // Add Application services (use cases)
 builder.Services.AddApplication();
