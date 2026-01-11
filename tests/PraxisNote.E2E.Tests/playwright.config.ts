@@ -27,16 +27,15 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command:
-          'dotnet run --project ../../src/PraxisNote.Web --no-build',
+        command: 'dotnet run --project ../../src/PraxisNote.Web --no-build',
         url: 'http://localhost:5002/api/health',
         reuseExistingServer: !process.env.CI,
         timeout: 120000,
         env: {
-          ASPNETCORE_ENVIRONMENT: 'E2E',
+          ASPNETCORE_ENVIRONMENT: 'Development',
           ASPNETCORE_URLS: 'http://localhost:5002',
           ConnectionStrings__DefaultConnection:
-            'Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=testpassword',
+            'Host=localhost;Port=5433;Database=praxisnote_e2e;Username=praxisnote;Password=e2eTestPassword',
         },
       },
 });

@@ -1,0 +1,231 @@
+Op[tion<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comment Edit Actions - Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <style>
+    body { background: #1a1a2e; color: #e4e4e7; }
+    .card { background: #16213e; border: 1px solid #2d3748; }
+    .input-bg { background: #0f1729; }
+  </style>
+</head>
+<body class="p-8">
+  <h1 class="text-2xl font-bold mb-2 text-center">Comment Edit Actions</h1>
+  <p class="text-gray-400 text-center mb-8">Different icon/button options for save and cancel</p>
+
+  <div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Current Implementation -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-purple-400 mb-3">Current: PrimeNG Rounded Buttons</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-1 shrink-0">
+          <button class="w-6 h-6 rounded-full bg-green-600/20 text-green-500 hover:bg-green-600/30 flex items-center justify-center">
+            <i class="pi pi-check text-xs"></i>
+          </button>
+          <button class="w-6 h-6 rounded-full bg-gray-600/20 text-gray-400 hover:bg-gray-600/30 flex items-center justify-center">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 1: Text Links -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 1: Text Links</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-2 shrink-0 text-xs">
+          <button class="text-blue-400 hover:text-blue-300 font-medium">Save</button>
+          <button class="text-gray-500 hover:text-gray-400">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 2: Minimal Icons (no background) -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 2: Minimal Icons (no background)</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="text-green-500 hover:text-green-400">
+            <i class="pi pi-check text-xs"></i>
+          </button>
+          <button class="text-gray-500 hover:text-gray-400">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 3: Single Save Button + Escape hint -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 3: Single Save + Escape Hint</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="text-blue-400 hover:text-blue-300 text-xs font-medium">Save</button>
+          <span class="text-gray-600 text-xs">Esc to cancel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 4: Enter/Escape Only (no visible buttons) -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 4: Keyboard Only (no buttons)</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300 border-b border-blue-500/50">
+      </div>
+      <p class="text-xs text-gray-600 mt-1 ml-5">Enter to save · Esc to cancel</p>
+    </div>
+
+    <!-- Option 5: Pill Buttons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 5: Pill Buttons</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-1 shrink-0">
+          <button class="px-2 py-0.5 rounded-full bg-blue-600 text-white text-xs hover:bg-blue-500">Save</button>
+          <button class="px-2 py-0.5 rounded-full bg-gray-700 text-gray-300 text-xs hover:bg-gray-600">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 6: Icon + Text Combo -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 6: Icon + Text Combo</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-2 shrink-0 text-xs">
+          <button class="flex items-center gap-1 text-green-500 hover:text-green-400">
+            <i class="pi pi-check text-xs"></i> Save
+          </button>
+          <button class="text-gray-500 hover:text-gray-400">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 7: Square Mini Buttons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 7: Square Mini Buttons</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-0.5 shrink-0">
+          <button class="w-5 h-5 rounded bg-green-600/80 text-white hover:bg-green-600 flex items-center justify-center">
+            <i class="pi pi-check" style="font-size: 10px;"></i>
+          </button>
+          <button class="w-5 h-5 rounded bg-gray-600/80 text-gray-300 hover:bg-gray-600 flex items-center justify-center">
+            <i class="pi pi-times" style="font-size: 10px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 8: Underline Style -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 8: Underline Links</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-3 shrink-0 text-xs">
+          <button class="text-blue-400 hover:text-blue-300 underline underline-offset-2">save</button>
+          <button class="text-gray-500 hover:text-gray-400 underline underline-offset-2">cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 9: FontAwesome Icons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 9: FontAwesome Icons</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="text-green-500 hover:text-green-400">
+            <i class="fas fa-check text-xs"></i>
+          </button>
+          <button class="text-gray-500 hover:text-gray-400">
+            <i class="fas fa-xmark text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 10: Floppy Disk + X -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 10: Save Disk Icon</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="text-blue-400 hover:text-blue-300">
+            <i class="pi pi-save text-xs"></i>
+          </button>
+          <button class="text-gray-500 hover:text-gray-400">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 11: Send Arrow -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 11: Send Arrow</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="text-blue-400 hover:text-blue-300">
+            <i class="pi pi-send text-xs"></i>
+          </button>
+          <button class="text-gray-500 hover:text-gray-400">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 12: Outline Buttons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 12: Outline Buttons</h3>
+      <div class="flex items-center gap-1.5">
+        <i class="pi pi-comment text-xs text-gray-500 shrink-0"></i>
+        <input type="text" value="Editing this comment..." class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-300">
+        <div class="flex items-center gap-1 shrink-0">
+          <button class="px-2 py-0.5 rounded border border-green-500 text-green-500 text-xs hover:bg-green-500/10">Save</button>
+          <button class="px-2 py-0.5 rounded border border-gray-600 text-gray-400 text-xs hover:bg-gray-600/10">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mt-8 max-w-2xl mx-auto">
+    <h2 class="text-lg font-bold mb-3 text-center">Recommendations</h2>
+    <div class="card rounded-lg p-4 text-sm text-gray-400">
+      <ul class="space-y-2">
+        <li><strong class="text-green-400">Minimal:</strong> Option 2 or 4 - Keeps UI clean</li>
+        <li><strong class="text-blue-400">Clear:</strong> Option 1 or 5 - Text is unambiguous</li>
+        <li><strong class="text-purple-400">Compact:</strong> Option 7 - Small but visible</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="text-center text-gray-500 text-sm mt-8">Open in browser to view all options</p>
+</body>
+</html>

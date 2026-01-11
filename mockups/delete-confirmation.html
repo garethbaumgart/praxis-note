@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delete Confirmation Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <style>
+    body { background: #1a1a2e; color: #e4e4e7; }
+    .card { background: #16213e; border: 1px solid #2d3748; }
+    .task-card { background: #1e293b; border: 1px solid #334155; }
+  </style>
+</head>
+<body class="p-8">
+  <h1 class="text-2xl font-bold mb-2 text-center">Delete Confirmation Options</h1>
+  <p class="text-gray-400 text-center mb-8">Inline confirmation replacing the trash icon</p>
+
+  <div class="max-w-3xl mx-auto space-y-8">
+
+    <!-- ==================== TASK DELETION ==================== -->
+    <h2 class="text-xl font-bold text-purple-400 border-b border-purple-400/30 pb-2">Task Deletion</h2>
+
+    <!-- Option 1: Confirm/Cancel Text Links -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 1: Text Links</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0 text-xs">
+            <span class="text-gray-500">Delete?</span>
+            <button class="text-red-400 hover:text-red-300 font-medium">Yes</button>
+            <button class="text-gray-500 hover:text-gray-400">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 2: Confirm/Cancel Icons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 2: Check/X Icons</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="text-xs text-gray-500">Delete?</span>
+            <button class="text-red-400 hover:text-red-300">
+              <i class="pi pi-check text-xs"></i>
+            </button>
+            <button class="text-gray-500 hover:text-gray-400">
+              <i class="pi pi-times text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 3: Rounded Icon Buttons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 3: Rounded Icon Buttons</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button class="w-5 h-5 rounded-full bg-red-600/20 text-red-400 hover:bg-red-600/30 flex items-center justify-center">
+              <i class="pi pi-check" style="font-size: 10px;"></i>
+            </button>
+            <button class="w-5 h-5 rounded-full bg-gray-600/20 text-gray-400 hover:bg-gray-600/30 flex items-center justify-center">
+              <i class="pi pi-times" style="font-size: 10px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 4: Pill Buttons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 4: Pill Buttons</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button class="px-2 py-0.5 rounded-full bg-red-600 text-white text-xs hover:bg-red-500">Delete</button>
+            <button class="px-2 py-0.5 rounded-full bg-gray-700 text-gray-300 text-xs hover:bg-gray-600">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 5: Single Confirm with Escape hint -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 5: Confirm + Escape Hint</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button class="text-red-400 hover:text-red-300 text-xs font-medium">Delete</button>
+            <span class="text-gray-600 text-xs">Esc to cancel</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 6: Trash turns red + confirm -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 6: Red Trash + Confirm Text</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button class="text-red-500 hover:text-red-400 flex items-center gap-1">
+              <i class="pi pi-trash text-xs"></i>
+              <span class="text-xs">Confirm?</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 7: Shake/Wiggle Trash (visual indicator) -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 7: Animated Trash + Click Again</h3>
+      <p class="text-xs text-gray-500 mb-2">Trash icon animates, click again to confirm</p>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center shrink-0">
+            <button class="text-red-500 hover:text-red-400 animate-pulse">
+              <i class="pi pi-trash text-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 8: Inline Warning Bar -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 8: Warning Bar Below</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+        </div>
+        <div class="mt-2 flex items-center justify-between bg-red-900/20 border border-red-800/30 rounded px-2 py-1">
+          <span class="text-xs text-red-300">Delete this task?</span>
+          <div class="flex items-center gap-2">
+            <button class="text-xs text-red-400 hover:text-red-300 font-medium">Delete</button>
+            <button class="text-xs text-gray-500 hover:text-gray-400">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 9: Strikethrough + Undo -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 9: Strikethrough + Undo (Optimistic)</h3>
+      <p class="text-xs text-gray-500 mb-2">Delete immediately, show undo option briefly</p>
+      <div class="task-card rounded-md py-2 px-3 opacity-60">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-400 line-through">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center shrink-0">
+            <button class="text-blue-400 hover:text-blue-300 text-xs font-medium">Undo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 10: Double-click to delete -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 10: Double-Click Trash</h3>
+      <p class="text-xs text-gray-500 mb-2">Single click shows tooltip, double-click deletes</p>
+      <div class="task-card rounded-md py-2 px-3">
+        <div class="flex items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200">Fix authentication bug</p>
+          </div>
+          <div class="flex items-center shrink-0 relative">
+            <div class="absolute -top-8 right-0 bg-gray-800 text-xs text-gray-300 px-2 py-1 rounded shadow-lg whitespace-nowrap">
+              Double-click to delete
+            </div>
+            <button class="text-red-400 hover:text-red-300">
+              <i class="pi pi-trash text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== COMMENT DELETION ==================== -->
+    <h2 class="text-xl font-bold text-purple-400 border-b border-purple-400/30 pb-2 mt-12">Comment Deletion</h2>
+
+    <!-- Option 1: Text Links -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 1: Text Links</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5">
+          <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+          <span class="text-xs text-gray-400 flex-1">Checked JWT token validation</span>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-gray-500">Delete?</span>
+            <button class="text-red-400 hover:text-red-300">Yes</button>
+            <button class="text-gray-500 hover:text-gray-400">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 2: Check/X Icons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 2: Check/X Icons</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5">
+          <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+          <span class="text-xs text-gray-400 flex-1">Checked JWT token validation</span>
+          <div class="flex items-center gap-1">
+            <button class="text-red-400 hover:text-red-300">
+              <i class="pi pi-check" style="font-size: 10px;"></i>
+            </button>
+            <button class="text-gray-500 hover:text-gray-400">
+              <i class="pi pi-times" style="font-size: 10px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 3: Rounded Icon Buttons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 3: Rounded Icon Buttons</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5">
+          <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+          <span class="text-xs text-gray-400 flex-1">Checked JWT token validation</span>
+          <div class="flex items-center gap-0.5">
+            <button class="w-4 h-4 rounded-full bg-red-600/20 text-red-400 hover:bg-red-600/30 flex items-center justify-center">
+              <i class="pi pi-check" style="font-size: 8px;"></i>
+            </button>
+            <button class="w-4 h-4 rounded-full bg-gray-600/20 text-gray-400 hover:bg-gray-600/30 flex items-center justify-center">
+              <i class="pi pi-times" style="font-size: 8px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 4: Mini Pill Buttons -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 4: Mini Pill Buttons</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5">
+          <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+          <span class="text-xs text-gray-400 flex-1">Checked JWT token validation</span>
+          <div class="flex items-center gap-0.5">
+            <button class="px-1.5 py-0.5 rounded-full bg-red-600 text-white hover:bg-red-500" style="font-size: 10px;">Delete</button>
+            <button class="px-1.5 py-0.5 rounded-full bg-gray-700 text-gray-300 hover:bg-gray-600" style="font-size: 10px;">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 5: Confirm Link + Esc hint -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 5: Confirm Link + Esc Hint</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5">
+          <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+          <span class="text-xs text-gray-400 flex-1">Checked JWT token validation</span>
+          <div class="flex items-center gap-1.5">
+            <button class="text-red-400 hover:text-red-300" style="font-size: 10px;">Delete</button>
+            <span class="text-gray-600" style="font-size: 10px;">Esc</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 6: Red highlight row -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 6: Red Highlight Row</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5 bg-red-900/20 border border-red-800/30 rounded px-1.5 py-1 -mx-1">
+          <i class="pi pi-comment text-red-400" style="font-size: 10px;"></i>
+          <span class="text-xs text-red-300 flex-1">Checked JWT token validation</span>
+          <div class="flex items-center gap-2">
+            <button class="text-red-400 hover:text-red-300" style="font-size: 10px;">Confirm</button>
+            <button class="text-gray-500 hover:text-gray-400" style="font-size: 10px;">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 7: Trash turns red, click again -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 7: Red Trash + Click Again</h3>
+      <p class="text-xs text-gray-500 mb-2">Trash turns red and pulses, click again to delete</p>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5">
+          <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+          <span class="text-xs text-gray-400 flex-1">Checked JWT token validation</span>
+          <button class="text-red-500 hover:text-red-400 animate-pulse">
+            <i class="pi pi-trash" style="font-size: 10px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 8: Strikethrough + Undo -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 8: Strikethrough + Undo (Optimistic)</h3>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5 opacity-50">
+          <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+          <span class="text-xs text-gray-500 flex-1 line-through">Checked JWT token validation</span>
+          <button class="text-blue-400 hover:text-blue-300" style="font-size: 10px;">Undo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 9: Swipe to reveal (mobile gesture) -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 9: Slide to Reveal Delete</h3>
+      <p class="text-xs text-gray-500 mb-2">Swipe left on mobile, or hold and drag</p>
+      <div class="task-card rounded-md py-2 px-3 relative overflow-hidden">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center">
+          <div class="flex items-center gap-1.5 flex-1 transform -translate-x-12">
+            <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+            <span class="text-xs text-gray-400">Checked JWT token validation</span>
+          </div>
+          <div class="absolute right-0 top-0 bottom-0 w-12 bg-red-600 flex items-center justify-center">
+            <i class="pi pi-trash text-white text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 10: Inline Trash + Confirm Text appears -->
+    <div class="card rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-400 mb-3">Option 10: Trash + Confirm Appears</h3>
+      <p class="text-xs text-gray-500 mb-2">Click trash, "Confirm?" text appears next to it</p>
+      <div class="task-card rounded-md py-2 px-3">
+        <p class="text-sm text-gray-200 mb-2">Fix authentication bug</p>
+        <div class="flex items-center gap-1.5">
+          <i class="pi pi-comment text-gray-500" style="font-size: 10px;"></i>
+          <span class="text-xs text-gray-400 flex-1">Checked JWT token validation</span>
+          <div class="flex items-center gap-1">
+            <button class="text-red-400 hover:text-red-300 flex items-center gap-1">
+              <i class="pi pi-trash" style="font-size: 10px;"></i>
+              <span style="font-size: 10px;">Confirm?</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== RECOMMENDATIONS ==================== -->
+    <div class="mt-12">
+      <h2 class="text-lg font-bold mb-3 text-center">Recommendations</h2>
+      <div class="card rounded-lg p-4 text-sm text-gray-400">
+        <ul class="space-y-2">
+          <li><strong class="text-green-400">Minimal & Consistent:</strong> Option 2 (Check/X Icons) - Matches existing keyboard-only edit pattern</li>
+          <li><strong class="text-blue-400">Clear & Safe:</strong> Option 1 (Text Links) - Unambiguous "Yes/No" text</li>
+          <li><strong class="text-purple-400">Modern & Fast:</strong> Option 9 (Strikethrough + Undo) - Optimistic delete with quick undo</li>
+          <li><strong class="text-yellow-400">Low Friction:</strong> Option 7 (Click Again) - No extra UI, just click trash twice</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="text-center text-gray-500 text-sm mt-8">Open in browser: open mockups/delete-confirmation.html</p>
+</body>
+</html>

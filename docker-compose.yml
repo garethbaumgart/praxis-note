@@ -1,20 +1,74 @@
 services:
-  postgres:
+  # Development database
+  postgres-dev:
     image: postgres:17-alpine
-    container_name: praxisnote-db
+    container_name: praxisnote-db-dev
+    profiles: ["dev", "dev-stack"]
     environment:
       POSTGRES_USER: praxisnote
-      POSTGRES_PASSWORD: devpassword
+      POSTGRES_PASSWORD: devTestPassword
       POSTGRES_DB: praxisnote
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_dev_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U praxisnote"]
+      test: ["CMD-SHELL", "pg_isready -U praxisnote -d praxisnote"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+  # E2E test database - use: docker compose --profile e2e up -d --wait
+  postgres-e2e:
+    image: postgres:17-alpine
+    container_name: praxisnote-db-e2e
+    profiles: ["e2e"]
+    environment:
+      POSTGRES_USER: praxisnote
+      POSTGRES_PASSWORD: e2eTestPassword
+      POSTGRES_DB: praxisnote_e2e
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U praxisnote -d praxisnote_e2e"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  # API with hot reload - use: docker compose --profile dev-stack up
+  api:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile.api
+    container_name: praxisnote-api-dev
+    profiles: ["dev-stack"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5002
+      ConnectionStrings__DefaultConnection: "Host=postgres-dev;Port=5432;Database=praxisnote;Username=praxisnote;Password=devTestPassword"
+      Authentication__Google__ClientId: "mock-client-id"
+      Authentication__Google__ClientSecret: "mock-client-secret"
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./src:/src
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile.frontend
+    container_name: praxisnote-frontend-dev
+    profiles: ["dev-stack"]
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./src/PraxisNote.Web/ClientApp:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
 volumes:
-  postgres_data:
+  postgres_dev_data:

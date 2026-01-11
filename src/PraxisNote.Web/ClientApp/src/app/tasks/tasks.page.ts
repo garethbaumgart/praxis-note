@@ -42,6 +42,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onAddComment)="addComment($event.taskId, $event.content)"
             (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
             (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+            (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+            (onClearDueDate)="clearDueDate($event.taskId)"
           />
 
           <app-column
@@ -59,6 +61,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onAddComment)="addComment($event.taskId, $event.content)"
             (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
             (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+            (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+            (onClearDueDate)="clearDueDate($event.taskId)"
           />
 
           <app-column
@@ -76,6 +80,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onAddComment)="addComment($event.taskId, $event.content)"
             (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
             (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+            (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+            (onClearDueDate)="clearDueDate($event.taskId)"
           />
         </div>
       }
@@ -150,6 +156,14 @@ export class TasksPage implements OnInit {
 
   deleteComment(taskId: string, commentId: string): void {
     this.taskService.deleteComment(taskId, commentId);
+  }
+
+  setDueDate(taskId: string, date: string): void {
+    this.taskService.setDueDate(taskId, date);
+  }
+
+  clearDueDate(taskId: string): void {
+    this.taskService.clearDueDate(taskId);
   }
 
   drop(event: CdkDragDrop<Task[]>, targetStatus: TaskStatus): void {

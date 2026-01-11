@@ -8,7 +8,8 @@ public record TaskDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? StartedAt,
     DateTimeOffset? CompletedAt,
-    IReadOnlyList<CommentDto> Comments);
+    IReadOnlyList<CommentDto> Comments,
+    DateOnly? DueDate);
 
 public record CommentDto(
     Guid Id,

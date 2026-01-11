@@ -236,3 +236,74 @@
 .touch-manipulation {
   touch-action: manipulation;
 }
+
+/* ========================================
+   PrimeNG DatePicker - Compact Styling
+   Scoped to .compact-datepicker for specificity
+   ======================================== */
+
+/* Transparent background and no borders */
+.compact-datepicker.p-datepicker,
+.compact-datepicker .p-datepicker-panel,
+.compact-datepicker .p-datepicker-calendar-container,
+.compact-datepicker .p-datepicker-calendar,
+.compact-datepicker .p-datepicker-header,
+.compact-datepicker table,
+.compact-datepicker table th,
+.compact-datepicker table td {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* Reduce overall calendar size */
+.compact-datepicker.p-datepicker {
+  font-size: 0.8125rem;
+}
+
+/* Compact header with month/year */
+.compact-datepicker .p-datepicker-header {
+  padding: 0.5rem 0.25rem;
+}
+
+.compact-datepicker .p-datepicker-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 0.25rem;
+}
+
+/* Smaller navigation buttons */
+.compact-datepicker .p-datepicker-prev,
+.compact-datepicker .p-datepicker-next {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.compact-datepicker .p-datepicker-prev-icon,
+.compact-datepicker .p-datepicker-next-icon {
+  font-size: 0.625rem;
+}
+
+/* Compact day-of-week headers */
+.compact-datepicker table th {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  padding: 0.25rem;
+}
+
+/* Smaller day cells */
+.compact-datepicker table td {
+  padding: 0.0625rem;
+}
+
+.compact-datepicker table td > span {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.75rem;
+}
+
+/* Calendar table spacing */
+.compact-datepicker table {
+  font-size: 0.75rem;
+}

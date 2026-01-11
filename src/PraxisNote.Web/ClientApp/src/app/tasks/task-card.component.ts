@@ -4,12 +4,13 @@ import { Task, Comment } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
+import { DueDateBadgeComponent } from './due-date-badge.component';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, AutoResizeDirective, StatusColorPipe],
+  imports: [NgClass, AutoResizeDirective, StatusColorPipe, DueDateBadgeComponent],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -73,6 +74,16 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
               </button>
             }
           </div>
+        </div>
+
+        <!-- Icon row for due date -->
+        <div class="mt-1.5 flex items-center gap-1 text-xs">
+          <app-due-date-badge
+            [dueDate]="task().dueDate"
+            [taskStatus]="task().status"
+            (onSetDueDate)="onSetDueDate.emit($event)"
+            (onClearDueDate)="onClearDueDate.emit()"
+          />
         </div>
 
         <!-- Add comment input -->
@@ -171,6 +182,8 @@ export class TaskCardComponent {
   readonly onAddComment = output<string>();
   readonly onEditComment = output<{ commentId: string; content: string }>();
   readonly onDeleteComment = output<string>();
+  readonly onSetDueDate = output<string>();
+  readonly onClearDueDate = output<void>();
 
   readonly editing = signal(false);
   readonly editTitle = signal('');

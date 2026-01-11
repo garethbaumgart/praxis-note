@@ -21,6 +21,10 @@ public static class DependencyInjection
         services.AddScoped<UpdateComment>();
         services.AddScoped<DeleteComment>();
 
+        // Due date use cases
+        services.AddScoped<SetDueDate>();
+        services.AddScoped<ClearDueDate>();
+
         // User use cases
         services.AddScoped<LoginOrRegisterUser>();
 

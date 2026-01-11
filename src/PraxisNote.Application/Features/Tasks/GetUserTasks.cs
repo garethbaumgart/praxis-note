@@ -23,7 +23,8 @@ public sealed class GetUserTasks(ITaskRepository taskRepository)
                 t.Comments
                     .OrderByDescending(c => c.CreatedAt)
                     .Select(c => new CommentDto(c.Id, c.Content, c.CreatedAt, c.UpdatedAt))
-                    .ToList()))
+                    .ToList(),
+                t.DueDate?.Date))
             .ToList();
     }
 }

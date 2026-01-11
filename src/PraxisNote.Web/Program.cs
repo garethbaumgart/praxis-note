@@ -48,8 +48,8 @@ builder.Services.AddCors(options =>
 // Add Authorization
 builder.Services.AddAuthorization();
 
-// Check if mock auth should be enabled (Development or E2E only)
-var enableMockAuth = builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "E2E";
+// Check if mock auth should be enabled (Development only)
+var enableMockAuth = builder.Environment.IsDevelopment();
 
 // Add Authentication
 var authBuilder = builder.Services.AddAuthentication(options =>
@@ -89,27 +89,35 @@ var authBuilder = builder.Services.AddAuthentication(options =>
             return null; // Use default (cookie) scheme
         };
     }
-})
-.AddGoogle(options =>
-{
-    var googleAuth = builder.Configuration.GetSection("Authentication:Google");
-    options.ClientId = googleAuth["ClientId"] ?? throw new InvalidOperationException("Google ClientId not configured");
-    options.ClientSecret = googleAuth["ClientSecret"] ?? throw new InvalidOperationException("Google ClientSecret not configured");
-    options.Scope.Add("email");
-    options.Scope.Add("profile");
-    options.SaveTokens = false;
-
-    // Map the picture claim from Google's user info response
-    options.ClaimActions.MapJsonKey("picture", "picture");
-
-    // Force account selection on each login (useful after logout)
-    options.Events.OnRedirectToAuthorizationEndpoint = context =>
-    {
-        var uri = QueryHelpers.AddQueryString(context.RedirectUri, "prompt", "select_account");
-        context.Response.Redirect(uri);
-        return Task.CompletedTask;
-    };
 });
+
+// Add Google authentication only if credentials are configured
+var googleAuth = builder.Configuration.GetSection("Authentication:Google");
+var clientId = googleAuth["ClientId"];
+var clientSecret = googleAuth["ClientSecret"];
+
+if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = clientId;
+        options.ClientSecret = clientSecret;
+        options.Scope.Add("email");
+        options.Scope.Add("profile");
+        options.SaveTokens = false;
+
+        // Map the picture claim from Google's user info response
+        options.ClaimActions.MapJsonKey("picture", "picture");
+
+        // Force account selection on each login (useful after logout)
+        options.Events.OnRedirectToAuthorizationEndpoint = context =>
+        {
+            var uri = QueryHelpers.AddQueryString(context.RedirectUri, "prompt", "select_account");
+            context.Response.Redirect(uri);
+            return Task.CompletedTask;
+        };
+    });
+}
 
 // Add mock authentication scheme (Development/E2E only)
 if (enableMockAuth)
@@ -171,6 +179,7 @@ app.MapGet("/api/health", () => new { status = "healthy", timestamp = DateTime.U
 app.MapAuthEndpoints();
 app.MapTaskEndpoints();
 app.MapCommentEndpoints();
+app.MapDueDateEndpoints();
 
 // SPA fallback - serves index.html for client-side routing
 if (angularAppExists)

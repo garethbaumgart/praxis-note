@@ -4,6 +4,9 @@ namespace PraxisNote.Domain.Tests.ValueObjects;
 
 public class DueDateTests
 {
+    // Helper to get "today" in UTC (matching DueDate implementation)
+    private static DateOnly TodayUtc => DateOnly.FromDateTime(DateTime.UtcNow);
+
     [Fact]
     public void Constructor_WithDateOnly_SetsDate()
     {
@@ -34,7 +37,7 @@ public class DueDateTests
     public void IsOverdue_WhenDateInPast_ReturnsTrue()
     {
         // Arrange
-        var yesterday = DateOnly.FromDateTime(DateTime.Today.AddDays(-1));
+        var yesterday = TodayUtc.AddDays(-1);
         var dueDate = new DueDate(yesterday);
 
         // Act & Assert
@@ -45,7 +48,7 @@ public class DueDateTests
     public void IsOverdue_WhenDateIsToday_ReturnsFalse()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = TodayUtc;
         var dueDate = new DueDate(today);
 
         // Act & Assert
@@ -56,7 +59,7 @@ public class DueDateTests
     public void IsOverdue_WhenDateInFuture_ReturnsFalse()
     {
         // Arrange
-        var tomorrow = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+        var tomorrow = TodayUtc.AddDays(1);
         var dueDate = new DueDate(tomorrow);
 
         // Act & Assert
@@ -67,7 +70,7 @@ public class DueDateTests
     public void IsDueSoon_WhenDueWithinDefaultDays_ReturnsTrue()
     {
         // Arrange (default is 3 days)
-        var inTwoDays = DateOnly.FromDateTime(DateTime.Today.AddDays(2));
+        var inTwoDays = TodayUtc.AddDays(2);
         var dueDate = new DueDate(inTwoDays);
 
         // Act & Assert
@@ -78,7 +81,7 @@ public class DueDateTests
     public void IsDueSoon_WhenDueBeyondDays_ReturnsFalse()
     {
         // Arrange
-        var inTenDays = DateOnly.FromDateTime(DateTime.Today.AddDays(10));
+        var inTenDays = TodayUtc.AddDays(10);
         var dueDate = new DueDate(inTenDays);
 
         // Act & Assert
@@ -89,7 +92,7 @@ public class DueDateTests
     public void IsDueSoon_WhenOverdue_ReturnsFalse()
     {
         // Arrange
-        var yesterday = DateOnly.FromDateTime(DateTime.Today.AddDays(-1));
+        var yesterday = TodayUtc.AddDays(-1);
         var dueDate = new DueDate(yesterday);
 
         // Act & Assert
@@ -100,7 +103,7 @@ public class DueDateTests
     public void DaysUntilDue_WhenDueInFuture_ReturnsPositive()
     {
         // Arrange
-        var inFiveDays = DateOnly.FromDateTime(DateTime.Today.AddDays(5));
+        var inFiveDays = TodayUtc.AddDays(5);
         var dueDate = new DueDate(inFiveDays);
 
         // Act & Assert
@@ -111,7 +114,7 @@ public class DueDateTests
     public void DaysUntilDue_WhenOverdue_ReturnsNegative()
     {
         // Arrange
-        var threeDaysAgo = DateOnly.FromDateTime(DateTime.Today.AddDays(-3));
+        var threeDaysAgo = TodayUtc.AddDays(-3);
         var dueDate = new DueDate(threeDaysAgo);
 
         // Act & Assert
@@ -122,7 +125,7 @@ public class DueDateTests
     public void ToDisplayString_WhenToday_ReturnsToday()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = TodayUtc;
         var dueDate = new DueDate(today);
 
         // Act & Assert
@@ -133,7 +136,7 @@ public class DueDateTests
     public void ToDisplayString_WhenTomorrow_ReturnsTomorrow()
     {
         // Arrange
-        var tomorrow = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+        var tomorrow = TodayUtc.AddDays(1);
         var dueDate = new DueDate(tomorrow);
 
         // Act & Assert
@@ -144,7 +147,7 @@ public class DueDateTests
     public void ToDisplayString_WhenOverdue_ReturnsOverdueMessage()
     {
         // Arrange
-        var twoDaysAgo = DateOnly.FromDateTime(DateTime.Today.AddDays(-2));
+        var twoDaysAgo = TodayUtc.AddDays(-2);
         var dueDate = new DueDate(twoDaysAgo);
 
         // Act & Assert
@@ -158,7 +161,7 @@ public class DueDateTests
     public void ToDisplayString_WhenDueWithinWeek_ReturnsInXdFormat(int daysFromNow, string expected)
     {
         // Arrange
-        var futureDate = DateOnly.FromDateTime(DateTime.Today.AddDays(daysFromNow));
+        var futureDate = TodayUtc.AddDays(daysFromNow);
         var dueDate = new DueDate(futureDate);
 
         // Act & Assert
@@ -169,7 +172,7 @@ public class DueDateTests
     public void ToDisplayString_WhenDueBeyondWeek_ReturnsMonthDayFormat()
     {
         // Arrange
-        var farFuture = DateOnly.FromDateTime(DateTime.Today.AddDays(30));
+        var farFuture = TodayUtc.AddDays(30);
         var dueDate = new DueDate(farFuture);
 
         // Act

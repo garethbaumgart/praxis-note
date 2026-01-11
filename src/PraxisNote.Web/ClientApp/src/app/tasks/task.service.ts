@@ -75,6 +75,7 @@ export class TaskService {
       startedAt: status === 'Todo' ? null : now,
       completedAt: status === 'Done' ? now : null,
       comments: [],
+      dueDate: null,
     };
 
     // Optimistic update - add task immediately
@@ -262,6 +263,28 @@ export class TaskService {
     );
 
     this.http.delete(`/api/tasks/${taskId}/comments/${commentId}`).subscribe({
+      error: () => this.loadTasks(),
+    });
+  }
+
+  setDueDate(taskId: string, date: string): void {
+    // Optimistic update
+    this._tasks.update(tasks =>
+      tasks.map(t => (t.id === taskId ? { ...t, dueDate: date } : t))
+    );
+
+    this.http.put(`/api/tasks/${taskId}/due-date`, { date }).subscribe({
+      error: () => this.loadTasks(),
+    });
+  }
+
+  clearDueDate(taskId: string): void {
+    // Optimistic update
+    this._tasks.update(tasks =>
+      tasks.map(t => (t.id === taskId ? { ...t, dueDate: null } : t))
+    );
+
+    this.http.delete(`/api/tasks/${taskId}/due-date`).subscribe({
       error: () => this.loadTasks(),
     });
   }

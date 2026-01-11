@@ -1,11 +1,13 @@
 import { Client } from 'pg';
+import { randomUUID } from 'crypto';
+import { MockUser } from './mock-auth';
 
 const connectionConfig = {
   host: 'localhost',
   port: 5433,
   database: 'praxisnote_e2e',
   user: 'praxisnote',
-  password: 'testpassword',
+  password: 'e2eTestPassword',
 };
 
 export async function resetDatabase(): Promise<void> {
@@ -23,14 +25,15 @@ export async function resetDatabase(): Promise<void> {
   }
 }
 
-export async function seedTestUser(): Promise<{ userId: string; email: string; name: string }> {
+// Each test file should use a unique suffix to avoid interference
+export async function seedTestUser(suffix: number = 1): Promise<MockUser> {
   const client = new Client(connectionConfig);
   await client.connect();
 
   try {
-    const userId = '00000000-0000-0000-0000-000000000001';
-    const email = 'e2e-test@example.com';
-    const name = 'E2E Test User';
+    const userId = randomUUID();
+    const email = `e2e-test-${suffix}@example.com`;
+    const name = `E2E Test User ${suffix}`;
 
     // Use upsert to handle parallel test execution safely
     await client.query(
