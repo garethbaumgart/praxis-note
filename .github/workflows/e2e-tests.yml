@@ -143,6 +143,7 @@ jobs:
 
       - name: Update E2E tests badge
         if: github.ref == 'refs/heads/main' && always()
+        continue-on-error: true
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
