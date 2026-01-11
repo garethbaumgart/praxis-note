@@ -8,7 +8,18 @@ Run `git status` to check for uncommitted changes. If there are changes:
 - Stage and commit them with a clear, descriptive message
 - Push to the remote branch
 
-## Step 2: Run Tests
+## Step 2: Review and Update README.md
+
+Check if any changes in this PR require documentation updates:
+- New features or commands
+- Changed setup/installation steps (e.g., Docker commands)
+- New environment variables or configuration
+- Updated dev workflow
+- API changes that affect usage examples
+
+If updates are needed, make them and commit before proceeding.
+
+## Step 3: Run Tests
 
 Run these checks and **ensure they pass**:
 
@@ -17,14 +28,14 @@ Run these checks and **ensure they pass**:
 
 **STOP if any tests fail.** Fix the failures and re-run until all tests pass. Do not proceed to PR creation with failing tests.
 
-## Step 3: Create the PR
+## Step 4: Create the PR
 
 Once tests pass:
 
 1. Push any remaining commits to the remote branch
 2. Create the PR using `gh pr create`
 
-## Step 4: Post-PR Review
+## Step 5: Post-PR Review
 
 After the PR is created, perform these checks:
 

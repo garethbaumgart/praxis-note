@@ -114,22 +114,7 @@ When adding a new feature, ask: "If this breaks, does the app become unusable?" 
 
 ## PR Workflow
 
-**ALWAYS** use the `/pr` skill when creating or updating a pull request. This ensures all tests are run, the PR is properly reviewed, and CI checks are monitored for warnings.
-
-### Pre-PR Checklist
-
-Before creating a PR, always:
-
-1. **Review README.md** - Check if any changes require documentation updates:
-   - New features or commands
-   - Changed setup/installation steps
-   - New environment variables or configuration
-   - Updated dev workflow (Docker commands, etc.)
-   - API changes that affect usage examples
-
-2. **Run tests** - `dotnet test` (unit) and `npm test` (E2E if applicable)
-
-3. **Update README.md** if needed - Keep documentation in sync with code changes
+**ALWAYS** use the `/pr` skill when creating or updating a pull request. This ensures README is reviewed, tests are run, the PR is properly reviewed, and CI checks are monitored for warnings.
 
 ## Technical Debt / TODOs
 
