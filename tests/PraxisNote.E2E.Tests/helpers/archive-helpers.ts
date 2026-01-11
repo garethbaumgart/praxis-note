@@ -9,20 +9,23 @@ const connectionConfig = {
   password: 'e2eTestPassword',
 };
 
+// Archive threshold must match appsettings.json Tasks:ArchiveThresholdDays
+const ARCHIVE_THRESHOLD_DAYS = 2;
+
 /**
- * Seeds a task that is considered "archived" (completed more than 7 days ago)
+ * Seeds a task that is considered "archived" (completed more than 2 days ago)
  * @param userId The user ID to associate the task with
  * @param title The task title
- * @param daysAgo How many days ago the task was completed (must be > 7 for archiving)
+ * @param daysAgo How many days ago the task was completed (must be > 2 for archiving)
  * @returns The created task ID
  */
 export async function seedArchivedTask(
   userId: string,
   title: string,
-  daysAgo: number = 10
+  daysAgo: number = 5
 ): Promise<string> {
-  if (daysAgo <= 7) {
-    throw new Error('daysAgo must be > 7 for an archived task');
+  if (daysAgo <= ARCHIVE_THRESHOLD_DAYS) {
+    throw new Error(`daysAgo must be > ${ARCHIVE_THRESHOLD_DAYS} for an archived task`);
   }
 
   const client = new Client(connectionConfig);
@@ -63,7 +66,7 @@ export async function seedArchivedTask(
 }
 
 /**
- * Seeds a recently completed task (within the last 7 days, not archived)
+ * Seeds a recently completed task (within the last 2 days, not archived)
  * @param userId The user ID to associate the task with
  * @param title The task title
  * @returns The created task ID
@@ -78,7 +81,7 @@ export async function seedRecentDoneTask(
   try {
     const taskId = randomUUID();
     const now = new Date();
-    const completedAt = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+    const completedAt = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago (within threshold)
     const startedAt = new Date(completedAt.getTime() - 60 * 60 * 1000); // 1 hour before completed
     const createdAt = new Date(startedAt.getTime() - 60 * 60 * 1000); // 1 hour before started
 

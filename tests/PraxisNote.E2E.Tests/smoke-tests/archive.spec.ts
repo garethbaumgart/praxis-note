@@ -39,9 +39,9 @@ test.describe('Archive', () => {
   });
 
   test('archive count badge shows number of archived tasks', async ({ page }) => {
-    // Seed an archived task (completed > 7 days ago)
-    await seedArchivedTask(testUser.userId, 'Archived Task 1', 10);
-    await seedArchivedTask(testUser.userId, 'Archived Task 2', 14);
+    // Seed archived tasks (completed > 2 days ago per appsettings.json)
+    await seedArchivedTask(testUser.userId, 'Archived Task 1', 5);
+    await seedArchivedTask(testUser.userId, 'Archived Task 2', 7);
 
     await setupAuth(page, testUser);
     await page.goto('/tasks');
@@ -55,7 +55,7 @@ test.describe('Archive', () => {
   test('archive toggle switches Done column to Archive view', async ({ page }) => {
     // Seed both a recent done task and an archived task
     await seedRecentDoneTask(testUser.userId, 'Recent Done Task');
-    await seedArchivedTask(testUser.userId, 'Old Archived Task', 10);
+    await seedArchivedTask(testUser.userId, 'Old Archived Task', 5);
 
     await setupAuth(page, testUser);
     await page.goto('/tasks');
@@ -82,7 +82,7 @@ test.describe('Archive', () => {
 
   test('archive view can be toggled back to Done view', async ({ page }) => {
     await seedRecentDoneTask(testUser.userId, 'Recent Task');
-    await seedArchivedTask(testUser.userId, 'Archived Task', 10);
+    await seedArchivedTask(testUser.userId, 'Archived Task', 5);
 
     await setupAuth(page, testUser);
     await page.goto('/tasks');
@@ -98,7 +98,7 @@ test.describe('Archive', () => {
   });
 
   test('archived tasks can be edited', async ({ page }) => {
-    await seedArchivedTask(testUser.userId, 'Edit This Archived Task', 10);
+    await seedArchivedTask(testUser.userId, 'Edit This Archived Task', 5);
 
     await setupAuth(page, testUser);
     await page.goto('/tasks');
@@ -129,7 +129,7 @@ test.describe('Archive', () => {
 
   test('empty archive view shows appropriate message', async ({ page, request }) => {
     // Seed an archived task first so button appears
-    const archivedId = await seedArchivedTask(testUser.userId, 'Temp Archived Task', 10);
+    const archivedId = await seedArchivedTask(testUser.userId, 'Temp Archived Task', 5);
 
     await setupAuth(page, testUser);
     await page.goto('/tasks');
