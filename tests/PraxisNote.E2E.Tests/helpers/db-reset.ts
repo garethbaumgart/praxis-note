@@ -30,8 +30,8 @@ export async function seedTestUser(suffix: number = 1): Promise<MockUser> {
   await client.connect();
 
   try {
-    // Generate unique user ID based on suffix (e.g., suffix=1 -> ...0001, suffix=2 -> ...0002)
-    const userId = `00000000-0000-0000-0000-00000000000${suffix}`;
+    // Generate unique user ID based on suffix (e.g., suffix=1 -> ...0001, suffix=10 -> ...0010)
+    const userId = `00000000-0000-0000-0000-${suffix.toString().padStart(12, '0')}`;
     const email = `e2e-test-${suffix}@example.com`;
     const name = `E2E Test User ${suffix}`;
 
