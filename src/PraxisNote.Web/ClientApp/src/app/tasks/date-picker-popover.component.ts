@@ -23,7 +23,7 @@ import { DatePicker } from 'primeng/datepicker';
   },
   template: `
     <div
-      class="absolute left-0 top-full mt-1 z-50 bg-surface border border-border rounded-lg shadow-lg w-64 overflow-hidden"
+      class="absolute left-0 top-full mt-1 z-50 bg-surface border border-border rounded-lg shadow-lg w-72 overflow-hidden"
     >
       <!-- Quick options bar -->
       <div class="flex flex-wrap gap-1 p-2 border-b border-border">
