@@ -23,7 +23,7 @@ import { DatePicker } from 'primeng/datepicker';
   },
   template: `
     <div
-      class="absolute left-0 top-full mt-1 z-50 bg-surface border border-border rounded-lg shadow-lg w-72 overflow-hidden"
+      class="absolute left-0 top-full mt-1 z-50 bg-surface border border-border rounded-lg shadow-lg"
     >
       <!-- Quick options bar -->
       <div class="flex flex-wrap gap-1 p-2 border-b border-border">
@@ -47,12 +47,12 @@ import { DatePicker } from 'primeng/datepicker';
         </button>
         <button
           type="button"
-          (click)="selectQuickOption('nextMon'); $event.stopPropagation()"
+          (click)="selectQuickOption('nextWeek'); $event.stopPropagation()"
           class="px-2 py-1 text-xs rounded hover:bg-surface-hover text-foreground-secondary"
-          [class.bg-accent]="isSelected('nextMon')"
-          [class.text-accent-foreground]="isSelected('nextMon')"
+          [class.bg-accent]="isSelected('nextWeek')"
+          [class.text-accent-foreground]="isSelected('nextWeek')"
         >
-          Next Mon
+          Next week
         </button>
         @if (currentDate()) {
           <button
@@ -75,7 +75,7 @@ import { DatePicker } from 'primeng/datepicker';
           [minDate]="minDate"
           [showButtonBar]="false"
           (onSelect)="onDateSelected()"
-          styleClass="w-full border-0"
+          styleClass="border-0"
         />
       </div>
     </div>
@@ -115,13 +115,13 @@ export class DatePickerPopoverComponent {
     }
   }
 
-  selectQuickOption(option: 'today' | 'tomorrow' | 'nextMon'): void {
+  selectQuickOption(option: 'today' | 'tomorrow' | 'nextWeek'): void {
     const date = this.getQuickOptionDate(option);
     this.selectedDate.set(date);
     this.onSelect.emit(this.formatDate(date));
   }
 
-  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'nextMon'): Date {
+  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'nextWeek'): Date {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -130,14 +130,12 @@ export class DatePickerPopoverComponent {
         return today;
       case 'tomorrow':
         return new Date(today.getTime() + 86400000);
-      case 'nextMon': {
-        const daysUntilMonday = ((8 - today.getDay()) % 7) || 7;
-        return new Date(today.getTime() + daysUntilMonday * 86400000);
-      }
+      case 'nextWeek':
+        return new Date(today.getTime() + 7 * 86400000);
     }
   }
 
-  isSelected(option: 'today' | 'tomorrow' | 'nextMon'): boolean {
+  isSelected(option: 'today' | 'tomorrow' | 'nextWeek'): boolean {
     const current = this.currentDate();
     if (!current) return false;
 
