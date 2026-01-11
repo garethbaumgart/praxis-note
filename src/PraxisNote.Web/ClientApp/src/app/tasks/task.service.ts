@@ -68,6 +68,9 @@ export class TaskService {
       next: (result) => {
         this._archivedCount.set(result.count);
       },
+      error: () => {
+        // Keep existing count on error
+      },
     });
   }
 
@@ -152,6 +155,13 @@ export class TaskService {
   changeStatus(id: string, status: 'Todo' | 'InProgress' | 'Done', targetPosition?: number): void {
     const position = targetPosition ?? 0;
     const now = new Date().toISOString();
+
+    // Remove from archived tasks if present (unarchiving via drag)
+    const wasArchived = this._archivedTasks().some(t => t.id === id);
+    if (wasArchived) {
+      this._archivedTasks.update(tasks => tasks.filter(t => t.id !== id));
+      this._archivedCount.update(count => Math.max(0, count - 1));
+    }
 
     // Optimistic update - update UI immediately
     this._tasks.update(tasks => {

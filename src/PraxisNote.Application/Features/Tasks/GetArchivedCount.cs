@@ -5,14 +5,12 @@ namespace PraxisNote.Application.Features.Tasks;
 
 public sealed class GetArchivedCount(ITaskRepository taskRepository)
 {
-    private const int ArchiveThresholdDays = 7;
-
     public record Query(Guid UserId);
 
     public async Task<int> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
         var tasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
-        var archiveThreshold = DateTimeOffset.UtcNow.AddDays(-ArchiveThresholdDays);
+        var archiveThreshold = DateTimeOffset.UtcNow.AddDays(-TaskConstants.ArchiveThresholdDays);
 
         return tasks.Count(t =>
             t.Status == TaskStatus.Done
