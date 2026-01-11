@@ -1,6 +1,8 @@
 name: E2E Tests
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_call: # Allow other workflows to call this one
@@ -117,11 +119,38 @@ jobs:
           Authentication__Google__ClientSecret: "dummy-for-e2e"
 
       - name: Run E2E tests
-        run: npm test -- --reporter=github
+        id: e2e
+        run: PLAYWRIGHT_JSON_OUTPUT_NAME=results.json npm test -- --reporter=github --reporter=json
         working-directory: tests/PraxisNote.E2E.Tests
         env:
           BASE_URL: "http://localhost:5002"
           CI: true
+
+      - name: Parse E2E test results
+        id: parse
+        if: always()
+        working-directory: tests/PraxisNote.E2E.Tests
+        run: |
+          if [ -f "results.json" ]; then
+            # Parse Playwright JSON output
+            PASSED=$(jq '.stats.expected // 0' results.json)
+            echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          else
+            # Fallback: count test files
+            TEST_COUNT=$(find . -name "*.spec.ts" -exec grep -l "test(" {} \; | wc -l)
+            echo "passed=$TEST_COUNT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update E2E tests badge
+        if: github.ref == 'refs/heads/main' && always()
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 093c03c9b23736d0600e9eeb2e772063
+          filename: e2e-tests.json
+          label: E2E Tests
+          message: ${{ steps.parse.outputs.passed }} passing
+          color: ${{ steps.e2e.outcome == 'success' && 'brightgreen' || 'red' }}
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

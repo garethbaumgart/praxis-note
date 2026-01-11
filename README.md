@@ -1,5 +1,15 @@
 # PraxisNote
 
+[![Unit Tests](https://github.com/garethbaumgart/praxis-note/actions/workflows/tests.yml/badge.svg)](https://github.com/garethbaumgart/praxis-note/actions/workflows/tests.yml)
+[![E2E Tests](https://github.com/garethbaumgart/praxis-note/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/garethbaumgart/praxis-note/actions/workflows/e2e-tests.yml)
+[![Deploy](https://github.com/garethbaumgart/praxis-note/actions/workflows/deploy-cloud-run.yml/badge.svg?branch=main)](https://github.com/garethbaumgart/praxis-note/actions/workflows/deploy-cloud-run.yml)
+![Unit Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/garethbaumgart/093c03c9b23736d0600e9eeb2e772063/raw/unit-tests.json)
+![E2E Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/garethbaumgart/093c03c9b23736d0600e9eeb2e772063/raw/e2e-tests.json)
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/garethbaumgart/093c03c9b23736d0600e9eeb2e772063/raw/coverage.json)
+[![Last Commit](https://img.shields.io/github/last-commit/garethbaumgart/praxis-note)](https://github.com/garethbaumgart/praxis-note/commits/main)
+![.NET](https://img.shields.io/badge/.NET-10-512BD4)
+![Angular](https://img.shields.io/badge/Angular-21-DD0031)
+
 A task management system with a kanban board. Currently features drag-and-drop task management with three-state workflow (Todo → In Progress → Done).
 
 **Live:** https://praxisnote-kv77ni5hzq-ts.a.run.app
@@ -231,7 +241,7 @@ GitHub Actions runs automatically on every push to `main` and on pull requests:
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| **Unit Tests** | Push/PR | Runs `dotnet test` on Domain tests (200+ tests) |
+| **Unit Tests** | Push/PR | Runs `dotnet test` on Domain tests |
 | **E2E Tests** | Push/PR | Spins up PostgreSQL, runs migrations, starts the app, runs Playwright tests |
 | **Copilot Review** | PR only | AI-powered code review with suggestions |
 | **CodeRabbit Review** | PR only | AI-powered code review with detailed line-by-line feedback |
@@ -242,7 +252,7 @@ The E2E workflow:
 1. Starts a PostgreSQL service container (port 5433)
 2. Applies EF Core migrations to create the schema
 3. Builds and starts the .NET application in E2E mode
-4. Runs 12 Playwright smoke tests (auth, health, tasks, API access)
+4. Runs Playwright smoke tests (auth, health, tasks, API access)
 5. Uploads HTML test reports as artifacts on failure
 
 PRs require all tests to pass before merge.
