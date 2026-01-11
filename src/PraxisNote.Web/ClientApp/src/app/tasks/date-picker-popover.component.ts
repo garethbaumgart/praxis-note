@@ -39,7 +39,7 @@ import { DatePicker } from 'primeng/datepicker';
           type="button"
           (click)="selectQuickOption('tomorrow'); $event.stopPropagation()"
           class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
-          [class]="isSelected('tomorrow') ? 'bg-blue-200 text-blue-800' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
+          [class]="isSelected('tomorrow') ? 'bg-amber-100 text-amber-700' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'"
         >
           +1
         </button>
@@ -47,7 +47,7 @@ import { DatePicker } from 'primeng/datepicker';
           type="button"
           (click)="selectQuickOption('nextWeek'); $event.stopPropagation()"
           class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
-          [class]="isSelected('nextWeek') ? 'bg-blue-200 text-blue-800' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
+          [class]="isSelected('nextWeek') ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
         >
           +7
         </button>
