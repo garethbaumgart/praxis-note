@@ -12,7 +12,7 @@ export default defineConfig({
   globalTeardown: './global-teardown.ts',
 
   use: {
-    baseURL: 'http://localhost:5002',
+    baseURL: process.env.BASE_URL || 'http://localhost:5002',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -29,7 +29,7 @@ export default defineConfig({
     : {
         command: 'dotnet run --project ../../src/PraxisNote.Web --no-build',
         url: 'http://localhost:5002/api/health',
-        reuseExistingServer: false,
+        reuseExistingServer: !process.env.CI,
         timeout: 120000,
         env: {
           ASPNETCORE_ENVIRONMENT: 'Development',

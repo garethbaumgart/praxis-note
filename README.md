@@ -133,7 +133,7 @@ PraxisNote uses PostgreSQL. The connection string must be configured via user se
 cd src/PraxisNote.Web
 
 # Set the PostgreSQL connection string
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=praxisnote;Username=praxisnote;Password=devpassword"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=praxisnote;Username=praxisnote;Password=devTestPassword"
 ```
 
 The `docker-compose.yml` creates a PostgreSQL container with these default credentials. Migrations run automatically on startup in Development mode.
