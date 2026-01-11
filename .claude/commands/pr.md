@@ -35,9 +35,9 @@ Once tests pass:
 1. Push any remaining commits to the remote branch
 2. Create the PR using `gh pr create`
 
-## Step 5: Post-PR Review
+## Step 5: Post-PR Review and Monitoring
 
-After the PR is created, perform these checks:
+After the PR is created, **actively monitor** and address feedback:
 
 1. **Self code review**: Review the PR diff using `gh pr diff` and add comments for any issues found using `gh pr comment` or `gh api`
 2. **Wait for CI**: Monitor GitHub Actions for completion using `gh pr checks`
@@ -45,8 +45,15 @@ After the PR is created, perform these checks:
    - Use `gh api repos/{owner}/{repo}/check-runs/{job_id}/annotations` to fetch annotations
    - Common warnings: deprecation notices, bundle size budgets, artifact upload failures, EF Core model validation
    - **ALL warnings must be addressed** - either fix the issue or update the workflow if it's a false positive
-4. **Wait for AI reviewers**: Allow CodeRabbit and Copilot to complete their reviews
-5. **Address all comments**: Fix any issues raised by CodeRabbit, Copilot, or other reviewers
-6. **Verify CI passes**: Ensure all checks pass after fixes (no warnings in annotations)
+4. **Monitor for AI reviews**: Actively poll for CodeRabbit and Copilot reviews to complete
+   - Use `gh pr view <number> --comments` to check for new review comments
+   - Use `gh pr checks` to see if CodeRabbit check has completed
+   - Keep checking every 30-60 seconds until reviews are complete
+5. **Address all comments immediately**: When comments appear:
+   - Read each comment carefully
+   - Make the requested fix if valid
+   - If you disagree, explain why in a reply
+   - Commit, push, and verify the fix resolves the comment
+6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
 
-Only request merge approval once all comments are addressed, CI is green, and there are no warnings in annotations.
+**Do not stop monitoring until**: All AI reviews are complete, all comments are addressed, and CI is green.
