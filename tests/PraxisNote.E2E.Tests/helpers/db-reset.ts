@@ -36,6 +36,7 @@ export async function seedTestUser(suffix: number = 1): Promise<MockUser> {
     const name = `E2E Test User ${suffix}`;
 
     // Use upsert to handle parallel test execution safely
+    // Note: ExternalIdentity_Provider must be lowercase to match the domain value object normalization
     await client.query(
       `
       INSERT INTO "Users" (
@@ -48,7 +49,7 @@ export async function seedTestUser(suffix: number = 1): Promise<MockUser> {
         "CreatedAt",
         "LastLoginAt"
       )
-      VALUES ($1::uuid, 'MockAuth', $2, $3, $4, NULL, NOW(), NOW())
+      VALUES ($1::uuid, 'mockauth', $2, $3, $4, NULL, NOW(), NOW())
       ON CONFLICT ("Id") DO NOTHING
       `,
       [userId, userId, email, name]
