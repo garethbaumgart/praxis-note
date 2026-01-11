@@ -23,48 +23,48 @@ import { DatePicker } from 'primeng/datepicker';
   },
   template: `
     <div
-      class="absolute left-0 top-full mt-1 z-50 bg-surface border border-border rounded-lg shadow-lg"
+      class="absolute left-0 top-full mt-1 z-50 bg-surface-subtle border border-border rounded-lg shadow-lg"
     >
       <!-- Quick options bar -->
-      <div class="flex flex-wrap gap-2 p-3 border-b border-border">
+      <div class="flex items-center gap-1.5 p-2 border-b border-border">
         <button
           type="button"
           (click)="selectQuickOption('today'); $event.stopPropagation()"
-          class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
-          [class]="isSelected('today') ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
+          [class]="isSelected('today') ? 'bg-amber-200 text-amber-800' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'"
         >
           Today
         </button>
         <button
           type="button"
           (click)="selectQuickOption('tomorrow'); $event.stopPropagation()"
-          class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
-          [class]="isSelected('tomorrow') ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
+          [class]="isSelected('tomorrow') ? 'bg-blue-200 text-blue-800' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
         >
-          Tomorrow
+          +1
         </button>
         <button
           type="button"
           (click)="selectQuickOption('nextWeek'); $event.stopPropagation()"
-          class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
-          [class]="isSelected('nextWeek') ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
+          [class]="isSelected('nextWeek') ? 'bg-blue-200 text-blue-800' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
         >
-          Next week
+          +7
         </button>
         @if (currentDate()) {
           <button
             type="button"
             (click)="clear(); $event.stopPropagation()"
-            class="ml-auto px-2 py-1 text-xs rounded hover:bg-red-100 text-red-500"
+            class="ml-auto text-xs text-red-500 hover:text-red-600 hover:underline"
             aria-label="Clear due date"
           >
-            <i class="pi pi-times"></i>
+            Clear
           </button>
         }
       </div>
 
       <!-- PrimeNG DatePicker -->
-      <div class="p-2" (click)="$event.stopPropagation()">
+      <div (click)="$event.stopPropagation()">
         <p-datepicker
           [ngModel]="selectedDate()"
           (ngModelChange)="selectedDate.set($event)"
@@ -72,7 +72,7 @@ import { DatePicker } from 'primeng/datepicker';
           [minDate]="minDate"
           [showButtonBar]="false"
           (onSelect)="onDateSelected()"
-          styleClass="border-0"
+          styleClass="compact-datepicker"
         />
       </div>
     </div>
