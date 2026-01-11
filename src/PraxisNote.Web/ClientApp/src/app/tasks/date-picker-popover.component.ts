@@ -8,7 +8,6 @@ import {
   inject,
   afterNextRender,
   Injector,
-  DestroyRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
@@ -70,7 +69,8 @@ import { DatePicker } from 'primeng/datepicker';
       <!-- PrimeNG DatePicker -->
       <div class="p-2" (click)="$event.stopPropagation()">
         <p-datepicker
-          [(ngModel)]="selectedDate"
+          [ngModel]="selectedDate()"
+          (ngModelChange)="selectedDate.set($event)"
           [inline]="true"
           [minDate]="minDate"
           [showButtonBar]="false"
@@ -84,7 +84,6 @@ import { DatePicker } from 'primeng/datepicker';
 export class DatePickerPopoverComponent {
   private readonly elementRef = inject(ElementRef);
   private readonly injector = inject(Injector);
-  private readonly destroyRef = inject(DestroyRef);
 
   readonly currentDate = input<string | null>(null);
   readonly onSelect = output<string>();
@@ -92,7 +91,7 @@ export class DatePickerPopoverComponent {
   readonly onClose = output<void>();
 
   readonly minDate = new Date(2020, 0, 1);
-  selectedDate: Date | null = null;
+  readonly selectedDate = signal<Date | null>(null);
 
   private initialized = false;
 
@@ -102,7 +101,7 @@ export class DatePickerPopoverComponent {
       // Initialize selected date from currentDate input
       const current = this.currentDate();
       if (current) {
-        this.selectedDate = new Date(current + 'T00:00:00');
+        this.selectedDate.set(new Date(current + 'T00:00:00'));
       }
     }, { injector: this.injector });
   }
@@ -118,7 +117,7 @@ export class DatePickerPopoverComponent {
 
   selectQuickOption(option: 'today' | 'tomorrow' | 'nextMon'): void {
     const date = this.getQuickOptionDate(option);
-    this.selectedDate = date;
+    this.selectedDate.set(date);
     this.onSelect.emit(this.formatDate(date));
   }
 
@@ -147,13 +146,14 @@ export class DatePickerPopoverComponent {
   }
 
   onDateSelected(): void {
-    if (this.selectedDate) {
-      this.onSelect.emit(this.formatDate(this.selectedDate));
+    const date = this.selectedDate();
+    if (date) {
+      this.onSelect.emit(this.formatDate(date));
     }
   }
 
   clear(): void {
-    this.selectedDate = null;
+    this.selectedDate.set(null);
     this.onClear.emit();
   }
 
