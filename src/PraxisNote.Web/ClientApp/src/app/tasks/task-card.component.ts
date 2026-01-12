@@ -332,7 +332,15 @@ export class TaskCardComponent {
 
   // Comment methods
   toggleComments(): void {
+    const wasExpanded = this.commentsExpanded();
     this.commentsExpanded.update(v => !v);
+
+    // Auto-focus the add comment input when expanding
+    if (!wasExpanded) {
+      afterNextRender(() => {
+        this.newCommentInput()?.nativeElement.focus();
+      }, { injector: this.injector });
+    }
   }
 
   formatCommentTime(comment: Comment): string {
