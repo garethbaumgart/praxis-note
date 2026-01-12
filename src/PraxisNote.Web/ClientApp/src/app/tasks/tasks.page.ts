@@ -20,17 +20,15 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 
       <!-- Search -->
       <div class="relative mb-6">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-sm"
-           [class.text-foreground-muted]="!searchQuery()"
-           [class.text-primary]="searchQuery()"></i>
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-foreground-secondary"></i>
         <input
           #searchInput
           type="text"
-          placeholder="Search tasks..."
+          placeholder="Search"
           [value]="searchQuery()"
           (input)="searchQuery.set(asInput($event).value)"
           (keydown.escape)="clearSearch()"
-          class="w-full pl-9 pr-16 py-2 bg-surface rounded-md text-sm text-foreground placeholder-foreground-muted border border-gray-300 dark:border-white/15 focus:border-gray-400 dark:focus:border-white/30 focus:outline-none transition-colors"
+          class="w-full h-9 pl-9 pr-16 text-sm text-foreground-secondary placeholder-foreground-secondary bg-surface-muted hover:bg-surface-muted/80 focus:bg-surface-muted/80 rounded-lg focus:outline-none transition-colors duration-150"
           aria-label="Search tasks"
         >
         @if (searchQuery()) {
@@ -40,10 +38,10 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (click)="clearSearch()"
             aria-label="Clear search"
           >
-            <i class="pi pi-times text-sm"></i>
+            <i class="pi pi-times text-xs"></i>
           </button>
         }
-        <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface-hover border border-surface-border rounded font-sans">/</kbd>
+        <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
       </div>
 
       <!-- Loading state -->
