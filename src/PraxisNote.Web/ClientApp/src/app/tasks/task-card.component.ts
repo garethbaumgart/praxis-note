@@ -3,6 +3,7 @@ import { NgClass } from '@angular/common';
 import { Task, Comment } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
+import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DueDateBadgeComponent } from './due-date-badge.component';
 
@@ -10,7 +11,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, AutoResizeDirective, StatusColorPipe, DueDateBadgeComponent],
+  imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, DueDateBadgeComponent],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -146,12 +147,12 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                   class="group/comment flex items-start gap-1.5 cursor-pointer text-xs"
                   role="button"
                   tabindex="0"
-                  (click)="startCommentEdit(comment); $event.stopPropagation()"
+                  (click)="onCommentClick($event, comment)"
                   (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                   (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                 >
                   <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
-                  <span class="text-foreground-muted flex-1 min-w-0 whitespace-pre-wrap">{{ comment.content }}</span>
+                  <span class="text-foreground-muted flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
                   @if (confirmingCommentDeleteId() === comment.id) {
                     <!-- Delete confirmation mode -->
                     <button
@@ -304,6 +305,18 @@ export class TaskCardComponent {
     const dateStr = comment.updatedAt !== comment.createdAt ? comment.updatedAt : comment.createdAt;
     const prefix = comment.updatedAt !== comment.createdAt ? 'edited ' : '';
     return prefix + this.formatTime(dateStr, 'completed');
+  }
+
+  onCommentClick(event: MouseEvent, comment: Comment): void {
+    event.stopPropagation();
+
+    // Check if the click was on a link - don't trigger edit mode
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'A' || target.closest('a')) {
+      return;
+    }
+
+    this.startCommentEdit(comment);
   }
 
   startCommentEdit(comment: Comment): void {
