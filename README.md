@@ -31,6 +31,39 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 
 See [Architecture Decision Records](docs/adr/) for documented decisions on patterns and technology choices.
 
+## Dependency Management
+
+This project uses **[Renovate](https://renovatebot.com/)** for automated dependency updates across all ecosystems:
+
+- **NuGet** - .NET packages
+- **npm** - JavaScript/TypeScript packages  
+- **Docker** - Base images in Dockerfile
+- **GitHub Actions** - Workflow action versions
+
+### Auto-merge Policy
+
+- **Patch & Minor updates**: Auto-merge when CI passes
+- **Major updates**: Manual review required (no auto-merge)
+
+### Configuration
+
+See `renovate.json` in the repository root. Updates are:
+- Grouped by ecosystem to reduce PR noise
+- Scheduled to run weekly (weekends)
+- Limited to max 5 open PRs at a time
+- Committed with conventional commit style: `chore(deps):`
+
+### Enabling Renovate
+
+To enable Renovate for this repository:
+
+1. Install the [Renovate GitHub App](https://github.com/apps/renovate) on your repository
+2. Grant Renovate access to the repository
+3. Renovate will automatically create a "Dependency Dashboard" issue
+4. Review and merge the initial onboarding PR if created
+
+Once enabled, Renovate runs weekly and creates PRs for dependency updates according to the configuration.
+
 ## Tech Stack
 
 - .NET 10, C# (nullable reference types, implicit usings)
