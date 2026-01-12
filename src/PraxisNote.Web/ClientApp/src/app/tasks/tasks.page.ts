@@ -41,7 +41,9 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             <i class="pi pi-times text-xs"></i>
           </button>
         }
-        <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
+        @if (!searchQuery()) {
+          <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
+        }
       </div>
 
       <!-- Loading state -->
@@ -159,18 +161,21 @@ export class TasksPage implements OnInit {
   }
 
   readonly todoConnectedTo = computed(() => {
+    if (this.searchQuery()) return [];
     const inProgress = this.inProgressColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
     return [inProgress, done].filter((list): list is CdkDropList => !!list);
   });
 
   readonly inProgressConnectedTo = computed(() => {
+    if (this.searchQuery()) return [];
     const todo = this.todoColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
     return [todo, done].filter((list): list is CdkDropList => !!list);
   });
 
   readonly doneConnectedTo = computed(() => {
+    if (this.searchQuery()) return [];
     const todo = this.todoColumn()?.dropList();
     const inProgress = this.inProgressColumn()?.dropList();
     return [todo, inProgress].filter((list): list is CdkDropList => !!list);
