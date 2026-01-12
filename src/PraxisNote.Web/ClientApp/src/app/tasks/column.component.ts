@@ -68,18 +68,29 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               >N</kbd>
             }
           }
-          @if (status() === 'Done' && (archiveCount() > 0 || showArchive())) {
+          @if (status() === 'Done' && (archiveCount() > 0 || showArchive() || doneCount() > 0)) {
             <button
               class="flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors"
               [ngClass]="showArchive()
-                ? 'text-archive-foreground bg-archive-hover'
-                : 'text-done-foreground-muted hover:text-done-foreground hover:bg-done-hover'"
+                ? 'text-done-foreground-muted hover:text-done-foreground hover:bg-done-hover'
+                : 'text-archive-foreground-muted hover:text-archive-foreground hover:bg-archive-hover'"
               (click)="onArchiveToggle.emit()"
               [attr.aria-label]="showArchive() ? 'Show recent tasks' : 'Show archived tasks'"
             >
-              <i class="pi pi-inbox text-xs"></i>
-              @if (!showArchive()) {
-                <span class="text-xs">{{ archiveCount() }}</span>
+              @if (showArchive()) {
+                <!-- Viewing Archive, show button to switch to Done -->
+                <i class="pi pi-check-circle text-xs"></i>
+                <span class="text-xs">Done</span>
+                @if (doneCount() > 0) {
+                  <span class="text-xs">({{ doneCount() }})</span>
+                }
+              } @else {
+                <!-- Viewing Done, show button to switch to Archive -->
+                <i class="pi pi-inbox text-xs"></i>
+                <span class="text-xs">Archive</span>
+                @if (archiveCount() > 0) {
+                  <span class="text-xs">({{ archiveCount() }})</span>
+                }
               }
             </button>
           }
@@ -155,6 +166,7 @@ export class ColumnComponent {
   readonly showKbdHint = input(false);
   readonly emptyMessage = input('No tasks');
   readonly archiveCount = input(0);
+  readonly doneCount = input(0);
   readonly showArchive = input(false);
 
   readonly onDrop = output<CdkDragDrop<Task[]>>();

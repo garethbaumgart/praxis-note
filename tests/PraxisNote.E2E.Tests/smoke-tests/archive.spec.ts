@@ -46,10 +46,11 @@ test.describe('Archive', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
-    // Wait for the archive button to appear (should show count of 2)
+    // Wait for the archive button to appear (should show "Archive (2)")
     const archiveButton = page.getByLabel('Show archived tasks');
     await expect(archiveButton).toBeVisible();
-    await expect(archiveButton.locator('span')).toHaveText('2');
+    await expect(archiveButton).toContainText('Archive');
+    await expect(archiveButton).toContainText('(2)');
   });
 
   test('archive toggle switches Done column to Archive view', async ({ page }) => {
