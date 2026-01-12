@@ -1,6 +1,7 @@
 import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
 import { TaskCardComponent } from './task-card.component';
 import { Task } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
@@ -12,7 +13,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
+  imports: [NgClass, ButtonModule, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
   template: `
     <div
       class="flex flex-col rounded-lg p-3 min-h-48 transition-all"
@@ -69,30 +70,31 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             }
           }
           @if (status() === 'Done' && (archiveCount() > 0 || showArchive() || doneCount() > 0)) {
-            <button
-              class="flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors"
-              [ngClass]="showArchive()
-                ? 'text-done-foreground-muted hover:text-done-foreground hover:bg-done-hover'
-                : 'text-archive-foreground-muted hover:text-archive-foreground hover:bg-archive-hover'"
-              (click)="onArchiveToggle.emit()"
-              [attr.aria-label]="showArchive() ? 'Show recent tasks' : 'Show archived tasks'"
-            >
-              @if (showArchive()) {
-                <!-- Viewing Archive, show button to switch to Done -->
-                <i class="pi pi-check-circle text-xs"></i>
-                <span class="text-xs">Done</span>
-                @if (doneCount() > 0) {
-                  <span class="text-xs">({{ doneCount() }})</span>
-                }
-              } @else {
-                <!-- Viewing Done, show button to switch to Archive -->
-                <i class="pi pi-inbox text-xs"></i>
-                <span class="text-xs">Archive</span>
-                @if (archiveCount() > 0) {
-                  <span class="text-xs">({{ archiveCount() }})</span>
-                }
-              }
-            </button>
+            @if (showArchive()) {
+              <!-- Viewing Archive, show button to switch to Done -->
+              <p-button
+                [label]="'DONE' + (doneCount() > 0 ? ' (' + doneCount() + ')' : '')"
+                icon="pi pi-check-circle"
+                severity="success"
+                [outlined]="true"
+                size="small"
+                styleClass="!py-1 !px-2 !text-[0.625rem]"
+                (click)="onArchiveToggle.emit()"
+                [ariaLabel]="'Show recent tasks'"
+              />
+            } @else {
+              <!-- Viewing Done, show button to switch to Archive -->
+              <p-button
+                [label]="'ARCHIVE' + (archiveCount() > 0 ? ' (' + archiveCount() + ')' : '')"
+                icon="pi pi-inbox"
+                severity="warn"
+                [outlined]="true"
+                size="small"
+                styleClass="!py-1 !px-2 !text-[0.625rem]"
+                (click)="onArchiveToggle.emit()"
+                [ariaLabel]="'Show archived tasks'"
+              />
+            }
           }
         </div>
       </div>
