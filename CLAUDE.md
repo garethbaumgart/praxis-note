@@ -112,6 +112,42 @@ E2E tests are expensive to write, maintain, and run. Only add E2E tests for **cr
 
 When adding a new feature, ask: "If this breaks, does the app become unusable?" If no, skip the E2E test.
 
+## Development
+
+### Starting the Dev Stack
+
+Run the full stack locally with hot reload (requires Docker):
+
+```bash
+docker compose --profile dev-stack up
+```
+
+This starts:
+- **PostgreSQL** on port 5432
+- **.NET API** on port 5002 (with hot reload)
+- **Angular** on port 4200 (with hot reload)
+
+Open http://localhost:4200 to develop. Use the mock auth toolbar to log in.
+
+To stop:
+```bash
+docker compose --profile dev-stack down
+```
+
+### Running Tests
+
+```bash
+# Unit tests
+dotnet test src/PraxisNote.slnx
+
+# E2E tests (starts its own PostgreSQL container on port 5433)
+docker compose --profile e2e up -d --wait
+cd tests/PraxisNote.E2E.Tests && npm test
+
+# Clean up E2E containers
+docker compose --profile e2e down
+```
+
 ## PR Workflow
 
 **ALWAYS** use the `/pr` skill when creating or updating a pull request. This ensures README is reviewed, tests are run, the PR is properly reviewed, and CI checks are monitored for warnings.
