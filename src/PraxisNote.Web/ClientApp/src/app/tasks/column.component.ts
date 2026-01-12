@@ -1,6 +1,7 @@
 import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
 import { TaskCardComponent } from './task-card.component';
 import { Task } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
@@ -12,7 +13,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
+  imports: [NgClass, ButtonModule, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
   template: `
     <div
       class="flex flex-col rounded-lg p-3 min-h-48 transition-all"
@@ -68,20 +69,32 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
               >N</kbd>
             }
           }
-          @if (status() === 'Done' && (archiveCount() > 0 || showArchive())) {
-            <button
-              class="flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors"
-              [ngClass]="showArchive()
-                ? 'text-archive-foreground bg-archive-hover'
-                : 'text-done-foreground-muted hover:text-done-foreground hover:bg-done-hover'"
-              (click)="onArchiveToggle.emit()"
-              [attr.aria-label]="showArchive() ? 'Show recent tasks' : 'Show archived tasks'"
-            >
-              <i class="pi pi-inbox text-xs"></i>
-              @if (!showArchive()) {
-                <span class="text-xs">{{ archiveCount() }}</span>
-              }
-            </button>
+          @if (status() === 'Done' && (archiveCount() > 0 || showArchive() || doneCount() > 0)) {
+            @if (showArchive()) {
+              <!-- Viewing Archive, show button to switch to Done -->
+              <p-button
+                [label]="'DONE' + (doneCount() > 0 ? ' (' + doneCount() + ')' : '')"
+                icon="pi pi-check-circle"
+                severity="success"
+                [outlined]="true"
+                size="small"
+                styleClass="!py-1 !px-2 !text-[0.625rem]"
+                (click)="onArchiveToggle.emit()"
+                [ariaLabel]="'Show recent tasks'"
+              />
+            } @else {
+              <!-- Viewing Done, show button to switch to Archive -->
+              <p-button
+                [label]="'ARCHIVE' + (archiveCount() > 0 ? ' (' + archiveCount() + ')' : '')"
+                icon="pi pi-inbox"
+                severity="warn"
+                [outlined]="true"
+                size="small"
+                styleClass="!py-1 !px-2 !text-[0.625rem]"
+                (click)="onArchiveToggle.emit()"
+                [ariaLabel]="'Show archived tasks'"
+              />
+            }
           }
         </div>
       </div>
@@ -155,6 +168,7 @@ export class ColumnComponent {
   readonly showKbdHint = input(false);
   readonly emptyMessage = input('No tasks');
   readonly archiveCount = input(0);
+  readonly doneCount = input(0);
   readonly showArchive = input(false);
 
   readonly onDrop = output<CdkDragDrop<Task[]>>();

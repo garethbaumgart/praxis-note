@@ -74,6 +74,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             [showAddButton]="false"
             [emptyMessage]="showArchive() ? 'No archived tasks' : 'Complete some tasks!'"
             [archiveCount]="taskService.archivedCount()"
+            [doneCount]="taskService.doneTasks().length"
             [showArchive]="showArchive()"
             (onArchiveToggle)="toggleArchive()"
             (onDrop)="drop($event, 'Done')"
