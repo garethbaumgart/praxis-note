@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archive/Done Toggle - PrimeNG Buttons</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeng/resources/themes/lara-light-blue/theme.css">
+  <link rel="stylesheet" href="https://unpkg.com/primeng/resources/primeng.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            done: {
+              DEFAULT: '#f0fdf4',
+              foreground: '#166534',
+              'foreground-muted': '#4ade80',
+              hover: '#dcfce7',
+              border: '#bbf7d0'
+            },
+            archive: {
+              DEFAULT: '#fffbeb',
+              foreground: '#92400e',
+              'foreground-muted': '#fbbf24',
+              hover: '#fef3c7',
+              border: '#fde68a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #f5f5f5; }
+    .mockup-container { max-width: 320px; }
+
+    /* PrimeNG-style button base */
+    .p-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .p-button-sm {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.6875rem;
+    }
+    .p-button-xs {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.625rem;
+    }
+
+    /* Outlined variants */
+    .p-button-outlined.p-button-warning {
+      background: transparent;
+      border-color: #f59e0b;
+      color: #b45309;
+    }
+    .p-button-outlined.p-button-warning:hover {
+      background: #fef3c7;
+    }
+    .p-button-outlined.p-button-success {
+      background: transparent;
+      border-color: #22c55e;
+      color: #166534;
+    }
+    .p-button-outlined.p-button-success:hover {
+      background: #dcfce7;
+    }
+
+    /* Text variants */
+    .p-button-text.p-button-warning {
+      background: transparent;
+      border-color: transparent;
+      color: #b45309;
+    }
+    .p-button-text.p-button-warning:hover {
+      background: #fef3c7;
+    }
+    .p-button-text.p-button-success {
+      background: transparent;
+      border-color: transparent;
+      color: #166534;
+    }
+    .p-button-text.p-button-success:hover {
+      background: #dcfce7;
+    }
+
+    /* Raised variants */
+    .p-button-raised.p-button-warning {
+      background: #fef3c7;
+      border-color: #fde68a;
+      color: #b45309;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .p-button-raised.p-button-warning:hover {
+      background: #fde68a;
+    }
+    .p-button-raised.p-button-success {
+      background: #dcfce7;
+      border-color: #bbf7d0;
+      color: #166534;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .p-button-raised.p-button-success:hover {
+      background: #bbf7d0;
+    }
+
+    /* Secondary/muted variants */
+    .p-button-secondary {
+      background: transparent;
+      border-color: #d1d5db;
+      color: #6b7280;
+    }
+    .p-button-secondary:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+  </style>
+</head>
+<body class="p-8">
+  <h1 class="text-2xl font-bold mb-2">PrimeNG Button Options</h1>
+  <p class="text-gray-600 mb-8">Using PrimeNG button styles. Each shows both states.</p>
+
+  <!-- Option 1: Outlined Button -->
+  <div class="mb-12">
+    <h2 class="text-lg font-semibold mb-2">Option 1: p-button-outlined</h2>
+    <p class="text-sm text-gray-500 mb-4">Standard PrimeNG outlined button style</p>
+    <div class="flex gap-8">
+      <!-- Done view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Done column:</p>
+        <div class="bg-done rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-sm text-done-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-done-foreground">Done</span>
+              <span class="text-xs text-done-foreground-muted">3</span>
+            </div>
+            <button class="p-button p-button-outlined p-button-warning p-button-sm">
+              <i class="pi pi-inbox"></i>
+              <span>ARCHIVE (5)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Archive view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Archive column:</p>
+        <div class="bg-archive rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-inbox text-sm text-archive-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-archive-foreground">Archive</span>
+              <span class="text-xs text-archive-foreground-muted">5</span>
+            </div>
+            <button class="p-button p-button-outlined p-button-success p-button-sm">
+              <i class="pi pi-check-circle"></i>
+              <span>DONE (3)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option 2: Text Button -->
+  <div class="mb-12">
+    <h2 class="text-lg font-semibold mb-2">Option 2: p-button-text</h2>
+    <p class="text-sm text-gray-500 mb-4">No border, just text with hover background</p>
+    <div class="flex gap-8">
+      <!-- Done view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Done column:</p>
+        <div class="bg-done rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-sm text-done-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-done-foreground">Done</span>
+              <span class="text-xs text-done-foreground-muted">3</span>
+            </div>
+            <button class="p-button p-button-text p-button-warning p-button-sm">
+              <i class="pi pi-inbox"></i>
+              <span>ARCHIVE (5)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Archive view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Archive column:</p>
+        <div class="bg-archive rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-inbox text-sm text-archive-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-archive-foreground">Archive</span>
+              <span class="text-xs text-archive-foreground-muted">5</span>
+            </div>
+            <button class="p-button p-button-text p-button-success p-button-sm">
+              <i class="pi pi-check-circle"></i>
+              <span>DONE (3)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option 3: Raised Button -->
+  <div class="mb-12">
+    <h2 class="text-lg font-semibold mb-2">Option 3: p-button-raised</h2>
+    <p class="text-sm text-gray-500 mb-4">Subtle shadow and background, more prominent</p>
+    <div class="flex gap-8">
+      <!-- Done view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Done column:</p>
+        <div class="bg-done rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-sm text-done-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-done-foreground">Done</span>
+              <span class="text-xs text-done-foreground-muted">3</span>
+            </div>
+            <button class="p-button p-button-raised p-button-warning p-button-sm">
+              <i class="pi pi-inbox"></i>
+              <span>ARCHIVE (5)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Archive view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Archive column:</p>
+        <div class="bg-archive rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-inbox text-sm text-archive-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-archive-foreground">Archive</span>
+              <span class="text-xs text-archive-foreground-muted">5</span>
+            </div>
+            <button class="p-button p-button-raised p-button-success p-button-sm">
+              <i class="pi pi-check-circle"></i>
+              <span>DONE (3)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option 4: Secondary/Muted Button -->
+  <div class="mb-12">
+    <h2 class="text-lg font-semibold mb-2">Option 4: p-button-secondary (Muted)</h2>
+    <p class="text-sm text-gray-500 mb-4">Neutral gray, less visual weight</p>
+    <div class="flex gap-8">
+      <!-- Done view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Done column:</p>
+        <div class="bg-done rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-sm text-done-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-done-foreground">Done</span>
+              <span class="text-xs text-done-foreground-muted">3</span>
+            </div>
+            <button class="p-button p-button-secondary p-button-sm">
+              <i class="pi pi-inbox"></i>
+              <span>ARCHIVE (5)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Archive view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Archive column:</p>
+        <div class="bg-archive rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-inbox text-sm text-archive-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-archive-foreground">Archive</span>
+              <span class="text-xs text-archive-foreground-muted">5</span>
+            </div>
+            <button class="p-button p-button-secondary p-button-sm">
+              <i class="pi pi-check-circle"></i>
+              <span>DONE (3)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option 5: Extra Small Outlined -->
+  <div class="mb-12">
+    <h2 class="text-lg font-semibold mb-2">Option 5: Extra Small Outlined</h2>
+    <p class="text-sm text-gray-500 mb-4">More compact size to fit header better</p>
+    <div class="flex gap-8">
+      <!-- Done view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Done column:</p>
+        <div class="bg-done rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-sm text-done-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-done-foreground">Done</span>
+              <span class="text-xs text-done-foreground-muted">3</span>
+            </div>
+            <button class="p-button p-button-outlined p-button-warning p-button-xs">
+              <i class="pi pi-inbox" style="font-size: 0.625rem"></i>
+              <span>ARCHIVE (5)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Archive view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Archive column:</p>
+        <div class="bg-archive rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-inbox text-sm text-archive-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-archive-foreground">Archive</span>
+              <span class="text-xs text-archive-foreground-muted">5</span>
+            </div>
+            <button class="p-button p-button-outlined p-button-success p-button-xs">
+              <i class="pi pi-check-circle" style="font-size: 0.625rem"></i>
+              <span>DONE (3)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option 6: Text Button No Icon -->
+  <div class="mb-12">
+    <h2 class="text-lg font-semibold mb-2">Option 6: Text Button (No Icon)</h2>
+    <p class="text-sm text-gray-500 mb-4">Cleaner, text-only approach</p>
+    <div class="flex gap-8">
+      <!-- Done view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Done column:</p>
+        <div class="bg-done rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-sm text-done-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-done-foreground">Done</span>
+              <span class="text-xs text-done-foreground-muted">3</span>
+            </div>
+            <button class="p-button p-button-text p-button-warning p-button-sm">
+              <span>ARCHIVE (5)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Archive view -->
+      <div class="mockup-container">
+        <p class="text-xs text-gray-400 mb-2">Viewing Archive column:</p>
+        <div class="bg-archive rounded-lg p-3">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-inbox text-sm text-archive-foreground"></i>
+              <span class="text-xs font-medium uppercase tracking-wide text-archive-foreground">Archive</span>
+              <span class="text-xs text-archive-foreground-muted">5</span>
+            </div>
+            <button class="p-button p-button-text p-button-success p-button-sm">
+              <span>DONE (3)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -43,8 +43,14 @@ test.describe('Icon Sizing', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
-    // Wait for task and comment to be visible
+    // Wait for task to be visible
     await expect(page.getByText('Task with comment')).toBeVisible();
+
+    // Expand comments section by clicking the comment toggle button
+    const commentToggle = page.getByLabel('Show comments');
+    await commentToggle.click();
+
+    // Wait for comment to be visible
     await expect(page.getByText('This is a test comment')).toBeVisible();
 
     // Get the comment row container
@@ -75,6 +81,10 @@ test.describe('Icon Sizing', () => {
     await page.goto('/tasks');
 
     await expect(page.getByText('Task for icon test')).toBeVisible();
+
+    // Expand comments section by clicking the comment toggle button
+    const commentToggle = page.getByLabel('Show comments');
+    await commentToggle.click();
 
     // Find the task card and the add comment textarea within it
     const taskCard = page.locator('.group').filter({ hasText: 'Task for icon test' });

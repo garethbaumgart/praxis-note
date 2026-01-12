@@ -90,35 +90,61 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
           </div>
         </div>
 
-        <!-- Icon row for due date -->
-        <div class="mt-1.5 flex items-center gap-1 text-xs">
+        <!-- Icon row for due date and comments toggle -->
+        <div class="mt-1.5 flex items-center gap-2 text-xs">
           <app-due-date-badge
             [dueDate]="task().dueDate"
             [taskStatus]="task().status"
             (onSetDueDate)="onSetDueDate.emit($event)"
             (onClearDueDate)="onClearDueDate.emit()"
           />
+
+          <!-- Comment toggle button -->
+          <button
+            type="button"
+            class="relative flex items-center justify-center w-6 h-6 rounded transition-colors"
+            [class.text-foreground-muted/40]="!commentsExpanded()"
+            [class.hover:text-foreground-muted]="!commentsExpanded()"
+            [class.text-primary]="commentsExpanded()"
+            [class.bg-primary/10]="commentsExpanded()"
+            (click)="toggleComments(); $event.stopPropagation()"
+            [attr.aria-label]="commentsExpanded() ? 'Hide comments' : 'Show comments'"
+            [attr.aria-expanded]="commentsExpanded()"
+          >
+            <i class="pi pi-comment"></i>
+            @if (task().comments.length > 0) {
+              <span
+                class="absolute -top-1 -right-1 min-w-4 h-4 px-1 flex items-center justify-center rounded-full text-[10px] font-medium"
+                [class.bg-primary]="commentsExpanded()"
+                [class.text-white]="commentsExpanded()"
+                [class.bg-foreground-muted/20]="!commentsExpanded()"
+                [class.text-foreground-muted]="!commentsExpanded()"
+              >{{ task().comments.length }}</span>
+            }
+          </button>
         </div>
 
-        <!-- Add comment input -->
-        <div class="mt-2 flex items-start gap-1.5 text-xs">
-          <i class="pi pi-plus text-foreground-muted/30 shrink-0 mt-0.5"></i>
-          <textarea
-            #newCommentInput
-            appAutoResize
-            [value]="newCommentText()"
-            (input)="newCommentText.set(asTextArea($event).value)"
-            (keydown.enter)="onNewCommentEnterKey(asKeyboardEvent($event))"
-            (keydown.escape)="newCommentText.set('')"
-            placeholder="Add comment..."
-            aria-label="Add comment"
-            rows="1"
-            class="flex-1 bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/30 resize-none leading-normal"
-          ></textarea>
-        </div>
+        <!-- Comments section (expandable) -->
+        @if (commentsExpanded()) {
+          <!-- Add comment input -->
+          <div class="mt-2 flex items-start gap-1.5 text-xs">
+            <i class="pi pi-plus text-foreground-muted/30 shrink-0 mt-0.5"></i>
+            <textarea
+              #newCommentInput
+              appAutoResize
+              [value]="newCommentText()"
+              (input)="newCommentText.set(asTextArea($event).value)"
+              (keydown.enter)="onNewCommentEnterKey(asKeyboardEvent($event))"
+              (keydown.escape)="newCommentText.set('')"
+              placeholder="Add comment..."
+              aria-label="Add comment"
+              rows="1"
+              class="flex-1 bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/30 resize-none leading-normal"
+            ></textarea>
+          </div>
 
-        <!-- Comments (Linear - Minimal Activity) -->
-        @if (task().comments.length > 0) {
+          <!-- Comments list -->
+          @if (task().comments.length > 0) {
           <div class="mt-2 space-y-2">
             @for (comment of task().comments; track comment.id) {
               @if (editingCommentId() === comment.id) {
@@ -179,6 +205,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
               }
             }
           </div>
+          }
         }
       }
     </div>
@@ -213,6 +240,9 @@ export class TaskCardComponent {
   // Delete confirmation state
   readonly confirmingTaskDelete = signal(false);
   readonly confirmingCommentDeleteId = signal<string | null>(null);
+
+  // Comments expand/collapse state
+  readonly commentsExpanded = signal(false);
 
   // Tick signal for auto-updating relative times (updates every minute)
   private readonly tick = signal(Date.now());
@@ -301,6 +331,18 @@ export class TaskCardComponent {
   }
 
   // Comment methods
+  toggleComments(): void {
+    const wasExpanded = this.commentsExpanded();
+    this.commentsExpanded.update(v => !v);
+
+    // Auto-focus the add comment input when expanding
+    if (!wasExpanded) {
+      afterNextRender(() => {
+        this.newCommentInput()?.nativeElement.focus();
+      }, { injector: this.injector });
+    }
+  }
+
   formatCommentTime(comment: Comment): string {
     const dateStr = comment.updatedAt !== comment.createdAt ? comment.updatedAt : comment.createdAt;
     const prefix = comment.updatedAt !== comment.createdAt ? 'edited ' : '';
