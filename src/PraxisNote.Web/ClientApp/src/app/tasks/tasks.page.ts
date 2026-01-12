@@ -30,7 +30,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           [value]="searchQuery()"
           (input)="searchQuery.set(asInput($event).value)"
           (keydown.escape)="clearSearch()"
-          class="w-full pl-9 pr-16 py-2 bg-surface-ground rounded-md text-sm text-foreground placeholder-foreground-muted border border-surface-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+          class="w-full pl-9 pr-16 py-2 bg-surface rounded-md text-sm text-foreground placeholder-foreground-muted border border-foreground-muted/30 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
           aria-label="Search tasks"
         >
         @if (searchQuery()) {
