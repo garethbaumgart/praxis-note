@@ -6,6 +6,8 @@
   "semanticCommits": "enabled",
   "commitMessagePrefix": "chore(deps):",
   "platformAutomerge": true,
+  "automergeType": "pr",
+  "ignoreTests": false,
   "packageRules": [
     {
       "description": "Auto-merge non-major updates for NuGet packages",
