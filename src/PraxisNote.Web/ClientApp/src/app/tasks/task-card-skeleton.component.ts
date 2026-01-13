@@ -1,19 +1,21 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Skeleton } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-task-card-skeleton',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [Skeleton],
   template: `
-    <div class="bg-surface rounded-md py-2 px-3 border border-border animate-pulse">
+    <div class="bg-surface rounded-md py-2 px-3 border border-border">
       <!-- Title skeleton -->
-      <div class="h-4 bg-foreground-muted/20 rounded w-3/4 mb-2"></div>
-      <!-- Second line (sometimes) -->
-      <div class="h-4 bg-foreground-muted/20 rounded w-1/2 mb-3"></div>
+      <p-skeleton width="75%" height="1rem" styleClass="mb-2" />
+      <!-- Second line -->
+      <p-skeleton width="50%" height="1rem" styleClass="mb-3" />
       <!-- Icon row skeleton -->
       <div class="flex items-center gap-2">
-        <div class="h-5 w-16 bg-foreground-muted/10 rounded"></div>
-        <div class="h-5 w-5 bg-foreground-muted/10 rounded"></div>
+        <p-skeleton width="4rem" height="1.25rem" />
+        <p-skeleton width="1.25rem" height="1.25rem" />
       </div>
     </div>
   `,
