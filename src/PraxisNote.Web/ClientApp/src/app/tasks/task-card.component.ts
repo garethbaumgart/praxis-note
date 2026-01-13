@@ -412,6 +412,11 @@ export class TaskCardComponent {
     if (content) {
       this.onAddComment.emit(content);
       this.newCommentText.set('');
+      // Reset textarea height after clearing content
+      const textarea = this.newCommentInput()?.nativeElement;
+      if (textarea) {
+        textarea.style.height = 'auto';
+      }
     }
   }
 
