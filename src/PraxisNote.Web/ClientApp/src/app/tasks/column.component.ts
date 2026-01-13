@@ -1,5 +1,5 @@
 import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed } from '@angular/core';
-import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TaskCardComponent } from './task-card.component';
@@ -14,7 +14,7 @@ type SortMode = 'manual' | 'dueDate';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, ButtonModule, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
+  imports: [NgClass, ButtonModule, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, CdkDragHandle, AutoResizeDirective, StatusColorPipe],
   template: `
     <div
       class="flex flex-col rounded-lg p-3 min-h-48 transition-all"
@@ -169,7 +169,15 @@ type SortMode = 'manual' | 'dueDate';
           </div>
         }
         @for (task of sortedTasks(); track task.id) {
-          <div cdkDrag [cdkDragData]="task" class="cursor-grab active:cursor-grabbing touch-manipulation">
+          <div cdkDrag [cdkDragData]="task" class="group/drag relative touch-manipulation">
+            <!-- Drag handle - visible on hover -->
+            <div
+              cdkDragHandle
+              class="absolute -left-1 top-1/2 -translate-y-1/2 w-4 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/drag:opacity-100 transition-opacity z-10"
+              aria-label="Drag to reorder"
+            >
+              <i class="pi pi-ellipsis-v text-xs text-foreground-muted/50 hover:text-foreground-muted"></i>
+            </div>
             <app-task-card
               [task]="task"
               (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
