@@ -1,4 +1,4 @@
-import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed, HostListener } from '@angular/core';
+import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -213,6 +213,7 @@ export class ColumnComponent {
   readonly archiveCount = input(0);
   readonly doneCount = input(0);
   readonly showArchive = input(false);
+  readonly showSortMenu = input(false);
 
   readonly onDrop = output<CdkDragDrop<Task[]>>();
   readonly onArchiveToggle = output<void>();
@@ -225,11 +226,11 @@ export class ColumnComponent {
   readonly onSetDueDate = output<{ taskId: string; date: string }>();
   readonly onClearDueDate = output<{ taskId: string }>();
   readonly onSortModeChange = output<SortMode>();
+  readonly onSortMenuToggle = output<void>();
 
   readonly isCreating = signal(false);
   readonly inlineTitle = signal('');
   readonly sortMode = signal<SortMode>('manual');
-  readonly showSortMenu = signal(false);
 
   readonly sortedTasks = computed(() => {
     const tasks = this.tasks();
@@ -248,11 +249,6 @@ export class ColumnComponent {
 
   readonly inlineInput = viewChild<ElementRef<HTMLTextAreaElement>>('inlineInput');
   readonly dropList = viewChild.required<CdkDropList>('dropList');
-
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.showSortMenu.set(false);
-  }
 
   /** Type-safe helper for accessing textarea value from events */
   asTextArea(event: Event): HTMLTextAreaElement {
@@ -309,12 +305,12 @@ export class ColumnComponent {
   }
 
   toggleSortMenu(): void {
-    this.showSortMenu.update(v => !v);
+    this.onSortMenuToggle.emit();
   }
 
   setSortMode(mode: SortMode): void {
     this.sortMode.set(mode);
-    this.showSortMenu.set(false);
+    this.onSortMenuToggle.emit(); // Close menu
     this.onSortModeChange.emit(mode);
   }
 }

@@ -73,6 +73,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onSetDueDate)="setDueDate($event.taskId, $event.date)"
             (onClearDueDate)="clearDueDate($event.taskId)"
             (onSortModeChange)="todoSortMode.set($event)"
+            [showSortMenu]="activeSortMenu() === 'Todo'"
+            (onSortMenuToggle)="toggleSortMenu('Todo')"
           />
 
           <app-column
@@ -93,6 +95,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onSetDueDate)="setDueDate($event.taskId, $event.date)"
             (onClearDueDate)="clearDueDate($event.taskId)"
             (onSortModeChange)="inProgressSortMode.set($event)"
+            [showSortMenu]="activeSortMenu() === 'InProgress'"
+            (onSortMenuToggle)="toggleSortMenu('InProgress')"
           />
 
           <app-column
@@ -117,6 +121,8 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onSetDueDate)="setDueDate($event.taskId, $event.date)"
             (onClearDueDate)="clearDueDate($event.taskId)"
             (onSortModeChange)="doneSortMode.set($event)"
+            [showSortMenu]="activeSortMenu() === 'Done'"
+            (onSortMenuToggle)="toggleSortMenu('Done')"
           />
         </div>
       }
@@ -136,6 +142,7 @@ export class TasksPage implements OnInit {
   readonly todoSortMode = signal<'manual' | 'dueDate'>('manual');
   readonly inProgressSortMode = signal<'manual' | 'dueDate'>('manual');
   readonly doneSortMode = signal<'manual' | 'dueDate'>('manual');
+  readonly activeSortMenu = signal<'Todo' | 'InProgress' | 'Done' | null>(null);
 
   readonly doneColumnTasks = computed(() =>
     this.showArchive()
@@ -217,6 +224,11 @@ export class TasksPage implements OnInit {
     }
   }
 
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.activeSortMenu.set(null);
+  }
+
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const target = event.target as HTMLElement;
@@ -273,6 +285,10 @@ export class TasksPage implements OnInit {
 
   clearDueDate(taskId: string): void {
     this.taskService.clearDueDate(taskId);
+  }
+
+  toggleSortMenu(column: 'Todo' | 'InProgress' | 'Done'): void {
+    this.activeSortMenu.update(current => current === column ? null : column);
   }
 
   drop(event: CdkDragDrop<Task[]>, targetStatus: TaskStatus): void {
