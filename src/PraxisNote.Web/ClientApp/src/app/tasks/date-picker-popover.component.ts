@@ -51,6 +51,14 @@ import { DatePicker } from 'primeng/datepicker';
         >
           +7
         </button>
+        <button
+          type="button"
+          (click)="selectQuickOption('plus35'); $event.stopPropagation()"
+          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
+          [class]="isSelected('plus35') ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+        >
+          +35
+        </button>
         @if (currentDate()) {
           <button
             type="button"
@@ -112,13 +120,13 @@ export class DatePickerPopoverComponent {
     }
   }
 
-  selectQuickOption(option: 'today' | 'tomorrow' | 'nextWeek'): void {
+  selectQuickOption(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): void {
     const date = this.getQuickOptionDate(option);
     this.selectedDate.set(date);
     this.onSelect.emit(this.formatDate(date));
   }
 
-  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'nextWeek'): Date {
+  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): Date {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -129,10 +137,12 @@ export class DatePickerPopoverComponent {
         return new Date(today.getTime() + 86400000);
       case 'nextWeek':
         return new Date(today.getTime() + 7 * 86400000);
+      case 'plus35':
+        return new Date(today.getTime() + 35 * 86400000);
     }
   }
 
-  isSelected(option: 'today' | 'tomorrow' | 'nextWeek'): boolean {
+  isSelected(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): boolean {
     const current = this.currentDate();
     if (!current) return false;
 
