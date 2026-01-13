@@ -3,6 +3,7 @@ import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder, CdkDragHandle } 
 import { NgClass } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TaskCardComponent } from './task-card.component';
+import { TaskCardSkeletonComponent } from './task-card-skeleton.component';
 import { Task } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
@@ -14,7 +15,7 @@ type SortMode = 'manual' | 'dueDate';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, ButtonModule, TaskCardComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, CdkDragHandle, AutoResizeDirective, StatusColorPipe],
+  imports: [NgClass, ButtonModule, TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, CdkDragHandle, AutoResizeDirective, StatusColorPipe],
   template: `
     <div
       class="flex flex-col rounded-lg p-3 min-h-48 transition-all"
@@ -168,47 +169,54 @@ type SortMode = 'manual' | 'dueDate';
             ></textarea>
           </div>
         }
-        @for (task of sortedTasks(); track task.id) {
-          <div cdkDrag [cdkDragData]="task" class="group/drag relative touch-manipulation">
-            <!-- Drag handle - visible on hover (2x3 dot grip pattern) -->
-            <div
-              cdkDragHandle
-              class="absolute -left-2 top-1/2 -translate-y-1/2 w-5 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/drag:opacity-100 transition-opacity z-10"
-              aria-label="Drag to reorder"
-            >
-              <div class="grid grid-cols-2 gap-0.5">
-                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+        @if (showSkeleton()) {
+          <!-- Skeleton loading state -->
+          @for (i of [1, 2, 3]; track i) {
+            <app-task-card-skeleton />
+          }
+        } @else {
+          @for (task of sortedTasks(); track task.id) {
+            <div cdkDrag [cdkDragData]="task" class="group/drag relative touch-manipulation">
+              <!-- Drag handle - visible on hover (2x3 dot grip pattern) -->
+              <div
+                cdkDragHandle
+                class="absolute -left-2 top-1/2 -translate-y-1/2 w-5 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/drag:opacity-100 transition-opacity z-10"
+                aria-label="Drag to reorder"
+              >
+                <div class="grid grid-cols-2 gap-0.5">
+                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                </div>
               </div>
+              <app-task-card
+                [task]="task"
+                (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
+                (onDelete)="onDeleteTask.emit(task.id)"
+                (onAddComment)="onAddComment.emit({ taskId: task.id, content: $event })"
+                (onEditComment)="onEditComment.emit({ taskId: task.id, commentId: $event.commentId, content: $event.content })"
+                (onDeleteComment)="onDeleteComment.emit({ taskId: task.id, commentId: $event })"
+                (onSetDueDate)="onSetDueDate.emit({ taskId: task.id, date: $event })"
+                (onClearDueDate)="onClearDueDate.emit({ taskId: task.id })"
+              />
+              <div
+                *cdkDragPlaceholder
+                class="border-2 border-dashed rounded-md h-16"
+                [ngClass]="{
+                  'bg-todo-hover border-todo-border': status() === 'Todo',
+                  'bg-inprogress-hover border-inprogress-border': status() === 'InProgress',
+                  'bg-done-hover border-done-border': status() === 'Done' && !showArchive(),
+                  'bg-archive-hover border-archive-border': showArchive()
+                }"
+              ></div>
             </div>
-            <app-task-card
-              [task]="task"
-              (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
-              (onDelete)="onDeleteTask.emit(task.id)"
-              (onAddComment)="onAddComment.emit({ taskId: task.id, content: $event })"
-              (onEditComment)="onEditComment.emit({ taskId: task.id, commentId: $event.commentId, content: $event.content })"
-              (onDeleteComment)="onDeleteComment.emit({ taskId: task.id, commentId: $event })"
-              (onSetDueDate)="onSetDueDate.emit({ taskId: task.id, date: $event })"
-              (onClearDueDate)="onClearDueDate.emit({ taskId: task.id })"
-            />
-            <div
-              *cdkDragPlaceholder
-              class="border-2 border-dashed rounded-md h-16"
-              [ngClass]="{
-                'bg-todo-hover border-todo-border': status() === 'Todo',
-                'bg-inprogress-hover border-inprogress-border': status() === 'InProgress',
-                'bg-done-hover border-done-border': status() === 'Done' && !showArchive(),
-                'bg-archive-hover border-archive-border': showArchive()
-              }"
-            ></div>
-          </div>
-        } @empty {
-          @if (!isCreating()) {
-            <p class="text-sm text-foreground-muted text-center py-8">{{ emptyMessage() }}</p>
+          } @empty {
+            @if (!isCreating()) {
+              <p class="text-sm text-foreground-muted text-center py-8">{{ emptyMessage() }}</p>
+            }
           }
         }
       </div>
@@ -229,6 +237,7 @@ export class ColumnComponent {
   readonly doneCount = input(0);
   readonly showArchive = input(false);
   readonly showSortMenu = input(false);
+  readonly showSkeleton = input(false);
 
   readonly onDrop = output<CdkDragDrop<Task[]>>();
   readonly onArchiveToggle = output<void>();

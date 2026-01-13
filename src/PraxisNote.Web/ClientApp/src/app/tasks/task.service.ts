@@ -15,6 +15,7 @@ export class TaskService {
   private readonly _archivedTasks = signal<Task[]>([]);
   private readonly _archivedCount = signal(0);
   private readonly _loading = signal(false);
+  private readonly _initialLoadComplete = signal(false);
 
   constructor() {
     // Debounce reorder API calls to avoid excessive requests during rapid drag operations
@@ -31,6 +32,7 @@ export class TaskService {
   readonly archivedTasks = this._archivedTasks.asReadonly();
   readonly archivedCount = this._archivedCount.asReadonly();
   readonly loading = this._loading.asReadonly();
+  readonly initialLoadComplete = this._initialLoadComplete.asReadonly();
 
   readonly todoTasks = computed(() =>
     this._tasks()
@@ -56,9 +58,11 @@ export class TaskService {
       next: (tasks) => {
         this._tasks.set(tasks);
         this._loading.set(false);
+        this._initialLoadComplete.set(true);
       },
       error: () => {
         this._loading.set(false);
+        this._initialLoadComplete.set(true); // Mark complete even on error to stop showing skeletons
       },
     });
   }
