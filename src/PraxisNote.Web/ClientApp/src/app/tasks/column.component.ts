@@ -170,13 +170,20 @@ type SortMode = 'manual' | 'dueDate';
         }
         @for (task of sortedTasks(); track task.id) {
           <div cdkDrag [cdkDragData]="task" class="group/drag relative touch-manipulation">
-            <!-- Drag handle - visible on hover -->
+            <!-- Drag handle - visible on hover (2x3 dot grip pattern) -->
             <div
               cdkDragHandle
-              class="absolute -left-1 top-1/2 -translate-y-1/2 w-4 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/drag:opacity-100 transition-opacity z-10"
+              class="absolute -left-2 top-1/2 -translate-y-1/2 w-5 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/drag:opacity-100 transition-opacity z-10"
               aria-label="Drag to reorder"
             >
-              <i class="pi pi-ellipsis-v text-xs text-foreground-muted/50 hover:text-foreground-muted"></i>
+              <div class="grid grid-cols-2 gap-0.5">
+                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+                <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
+              </div>
             </div>
             <app-task-card
               [task]="task"
