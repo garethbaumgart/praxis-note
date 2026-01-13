@@ -7,7 +7,8 @@ import { Skeleton } from 'primeng/skeleton';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Skeleton],
   template: `
-    <div class="bg-surface rounded-md py-2 px-3 border border-border">
+    <div class="bg-surface rounded-md py-2 px-3 border border-border" role="status" aria-live="polite">
+      <span class="sr-only">Loading task...</span>
       <!-- Title skeleton -->
       <p-skeleton width="75%" height="1rem" styleClass="mb-2" />
       <!-- Second line -->
