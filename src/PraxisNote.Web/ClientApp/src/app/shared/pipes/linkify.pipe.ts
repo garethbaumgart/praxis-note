@@ -4,6 +4,10 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 // URL regex that matches http://, https://, and www. URLs
 const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>"')\]]+/gi;
 
+// Trailing punctuation that should be stripped from URLs
+// These are common sentence-ending punctuation that get captured but aren't part of the URL
+const TRAILING_PUNCTUATION = /[.,!?;:]+$/;
+
 // Maximum display length for URLs before truncation
 const MAX_URL_DISPLAY_LENGTH = 40;
 
@@ -28,10 +32,13 @@ export class LinkifyPipe implements PipeTransform {
     URL_REGEX.lastIndex = 0;
 
     while ((match = URL_REGEX.exec(text)) !== null) {
+      // Strip trailing punctuation from URLs (e.g., "Check https://example.com." -> period is not part of URL)
+      const rawUrl = match[0];
+      const url = rawUrl.replace(TRAILING_PUNCTUATION, '');
       matches.push({
         index: match.index,
-        length: match[0].length,
-        url: match[0],
+        length: url.length, // Use cleaned URL length so punctuation becomes regular text
+        url,
       });
     }
 
