@@ -46,86 +46,82 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
         }
       </div>
 
-      <!-- Loading state -->
-      @if (taskService.loading()) {
-        <div class="flex items-center justify-center py-20">
-          <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
-        </div>
-      } @else {
-        <!-- Kanban Board -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          <app-column
-            #todoColumn
-            status="Todo"
-            label="Todo"
-            [tasks]="filteredTodoTasks()"
-            [connectedTo]="todoConnectedTo()"
-            [showAddButton]="true"
-            [showKbdHint]="!searchQuery()"
-            [emptyMessage]="searchQuery() ? 'No matching tasks' : 'Press N to add your first task'"
-            (onDrop)="drop($event, 'Todo')"
-            (onEditTask)="updateTask($event.id, $event.title)"
-            (onDeleteTask)="deleteTask($event)"
-            (onTaskCreated)="createTask($event, 'Todo')"
-            (onAddComment)="addComment($event.taskId, $event.content)"
-            (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
-            (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
-            (onSetDueDate)="setDueDate($event.taskId, $event.date)"
-            (onClearDueDate)="clearDueDate($event.taskId)"
-            (onSortModeChange)="todoSortMode.set($event)"
-            [showSortMenu]="activeSortMenu() === 'Todo'"
-            (onSortMenuToggle)="toggleSortMenu('Todo')"
-          />
+      <!-- Kanban Board -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <app-column
+          #todoColumn
+          status="Todo"
+          label="Todo"
+          [showSkeleton]="!taskService.initialLoadComplete()"
+          [tasks]="filteredTodoTasks()"
+          [connectedTo]="todoConnectedTo()"
+          [showAddButton]="true"
+          [showKbdHint]="!searchQuery()"
+          [emptyMessage]="searchQuery() ? 'No matching tasks' : 'Press N to add your first task'"
+          (onDrop)="drop($event, 'Todo')"
+          (onEditTask)="updateTask($event.id, $event.title)"
+          (onDeleteTask)="deleteTask($event)"
+          (onTaskCreated)="createTask($event, 'Todo')"
+          (onAddComment)="addComment($event.taskId, $event.content)"
+          (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+          (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+          (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+          (onClearDueDate)="clearDueDate($event.taskId)"
+          (onSortModeChange)="todoSortMode.set($event)"
+          [showSortMenu]="activeSortMenu() === 'Todo'"
+          (onSortMenuToggle)="toggleSortMenu('Todo')"
+        />
 
-          <app-column
-            #inProgressColumn
-            status="InProgress"
-            label="In Progress"
-            [tasks]="filteredInProgressTasks()"
-            [connectedTo]="inProgressConnectedTo()"
-            [showAddButton]="true"
-            [emptyMessage]="searchQuery() ? 'No matching tasks' : 'Nothing in progress'"
-            (onDrop)="drop($event, 'InProgress')"
-            (onEditTask)="updateTask($event.id, $event.title)"
-            (onDeleteTask)="deleteTask($event)"
-            (onTaskCreated)="createTask($event, 'InProgress')"
-            (onAddComment)="addComment($event.taskId, $event.content)"
-            (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
-            (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
-            (onSetDueDate)="setDueDate($event.taskId, $event.date)"
-            (onClearDueDate)="clearDueDate($event.taskId)"
-            (onSortModeChange)="inProgressSortMode.set($event)"
-            [showSortMenu]="activeSortMenu() === 'InProgress'"
-            (onSortMenuToggle)="toggleSortMenu('InProgress')"
-          />
+        <app-column
+          #inProgressColumn
+          status="InProgress"
+          label="In Progress"
+          [showSkeleton]="!taskService.initialLoadComplete()"
+          [tasks]="filteredInProgressTasks()"
+          [connectedTo]="inProgressConnectedTo()"
+          [showAddButton]="true"
+          [emptyMessage]="searchQuery() ? 'No matching tasks' : 'Nothing in progress'"
+          (onDrop)="drop($event, 'InProgress')"
+          (onEditTask)="updateTask($event.id, $event.title)"
+          (onDeleteTask)="deleteTask($event)"
+          (onTaskCreated)="createTask($event, 'InProgress')"
+          (onAddComment)="addComment($event.taskId, $event.content)"
+          (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+          (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+          (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+          (onClearDueDate)="clearDueDate($event.taskId)"
+          (onSortModeChange)="inProgressSortMode.set($event)"
+          [showSortMenu]="activeSortMenu() === 'InProgress'"
+          (onSortMenuToggle)="toggleSortMenu('InProgress')"
+        />
 
-          <app-column
-            #doneColumn
-            status="Done"
-            [label]="showArchive() ? 'Archive' : 'Done'"
-            [tasks]="filteredDoneColumnTasks()"
-            [connectedTo]="doneConnectedTo()"
-            [showAddButton]="false"
-            [emptyMessage]="searchQuery() ? 'No matching tasks' : (showArchive() ? 'No archived tasks' : 'Complete some tasks!')"
-            [archiveCount]="taskService.archivedCount()"
-            [doneCount]="taskService.doneTasks().length"
-            [showArchive]="showArchive()"
-            (onArchiveToggle)="toggleArchive()"
-            (onDrop)="drop($event, 'Done')"
-            (onEditTask)="updateTask($event.id, $event.title)"
-            (onDeleteTask)="deleteTask($event)"
-            (onTaskCreated)="createTask($event, 'Done')"
-            (onAddComment)="addComment($event.taskId, $event.content)"
-            (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
-            (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
-            (onSetDueDate)="setDueDate($event.taskId, $event.date)"
-            (onClearDueDate)="clearDueDate($event.taskId)"
-            (onSortModeChange)="doneSortMode.set($event)"
-            [showSortMenu]="activeSortMenu() === 'Done'"
-            (onSortMenuToggle)="toggleSortMenu('Done')"
-          />
-        </div>
-      }
+        <app-column
+          #doneColumn
+          status="Done"
+          [label]="showArchive() ? 'Archive' : 'Done'"
+          [showSkeleton]="!taskService.initialLoadComplete()"
+          [tasks]="filteredDoneColumnTasks()"
+          [connectedTo]="doneConnectedTo()"
+          [showAddButton]="false"
+          [emptyMessage]="searchQuery() ? 'No matching tasks' : (showArchive() ? 'No archived tasks' : 'Complete some tasks!')"
+          [archiveCount]="taskService.archivedCount()"
+          [doneCount]="taskService.doneTasks().length"
+          [showArchive]="showArchive()"
+          (onArchiveToggle)="toggleArchive()"
+          (onDrop)="drop($event, 'Done')"
+          (onEditTask)="updateTask($event.id, $event.title)"
+          (onDeleteTask)="deleteTask($event)"
+          (onTaskCreated)="createTask($event, 'Done')"
+          (onAddComment)="addComment($event.taskId, $event.content)"
+          (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+          (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+          (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+          (onClearDueDate)="clearDueDate($event.taskId)"
+          (onSortModeChange)="doneSortMode.set($event)"
+          [showSortMenu]="activeSortMenu() === 'Done'"
+          (onSortMenuToggle)="toggleSortMenu('Done')"
+        />
+      </div>
     </div>
   `,
 })
