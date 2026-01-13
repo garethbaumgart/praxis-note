@@ -72,6 +72,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
             (onSetDueDate)="setDueDate($event.taskId, $event.date)"
             (onClearDueDate)="clearDueDate($event.taskId)"
+            (onSortModeChange)="todoSortMode.set($event)"
           />
 
           <app-column
@@ -91,6 +92,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
             (onSetDueDate)="setDueDate($event.taskId, $event.date)"
             (onClearDueDate)="clearDueDate($event.taskId)"
+            (onSortModeChange)="inProgressSortMode.set($event)"
           />
 
           <app-column
@@ -114,6 +116,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
             (onSetDueDate)="setDueDate($event.taskId, $event.date)"
             (onClearDueDate)="clearDueDate($event.taskId)"
+            (onSortModeChange)="doneSortMode.set($event)"
           />
         </div>
       }
@@ -130,6 +133,9 @@ export class TasksPage implements OnInit {
 
   readonly showArchive = signal(false);
   readonly searchQuery = signal('');
+  readonly todoSortMode = signal<'manual' | 'dueDate'>('manual');
+  readonly inProgressSortMode = signal<'manual' | 'dueDate'>('manual');
+  readonly doneSortMode = signal<'manual' | 'dueDate'>('manual');
 
   readonly doneColumnTasks = computed(() =>
     this.showArchive()
@@ -161,21 +167,21 @@ export class TasksPage implements OnInit {
   }
 
   readonly todoConnectedTo = computed(() => {
-    if (this.searchQuery()) return [];
+    if (this.searchQuery() || this.todoSortMode() !== 'manual') return [];
     const inProgress = this.inProgressColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
     return [inProgress, done].filter((list): list is CdkDropList => !!list);
   });
 
   readonly inProgressConnectedTo = computed(() => {
-    if (this.searchQuery()) return [];
+    if (this.searchQuery() || this.inProgressSortMode() !== 'manual') return [];
     const todo = this.todoColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
     return [todo, done].filter((list): list is CdkDropList => !!list);
   });
 
   readonly doneConnectedTo = computed(() => {
-    if (this.searchQuery()) return [];
+    if (this.searchQuery() || this.doneSortMode() !== 'manual') return [];
     const todo = this.todoColumn()?.dropList();
     const inProgress = this.inProgressColumn()?.dropList();
     return [todo, inProgress].filter((list): list is CdkDropList => !!list);

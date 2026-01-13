@@ -1,4 +1,4 @@
-import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender } from '@angular/core';
+import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed, HostListener } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -8,6 +8,7 @@ import { AutoResizeDirective } from '../shared/directives/auto-resize.directive'
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 
 type TaskStatus = 'Todo' | 'InProgress' | 'Done';
+type SortMode = 'manual' | 'dueDate';
 
 @Component({
   selector: 'app-column',
@@ -43,6 +44,48 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             class="text-xs"
             [ngClass]="showArchive() ? 'text-archive-foreground-muted' : (status() | statusColor:'text-muted')"
           >{{ tasks().length }}</span>
+          <!-- Sort dropdown -->
+          <div class="relative ml-1">
+            <button
+              type="button"
+              class="w-6 h-6 flex items-center justify-center rounded transition-colors"
+              [ngClass]="{
+                'bg-primary/10 text-primary': sortMode() !== 'manual',
+                'text-foreground-muted hover:text-foreground hover:bg-surface-hover': sortMode() === 'manual'
+              }"
+              (click)="toggleSortMenu(); $event.stopPropagation()"
+              [attr.aria-label]="'Sort options'"
+              [attr.aria-expanded]="showSortMenu()"
+            >
+              <i class="pi pi-sort-alt text-xs"></i>
+            </button>
+            @if (showSortMenu()) {
+              <div class="absolute left-0 top-full mt-1 w-36 bg-surface rounded-lg shadow-lg border border-border py-1 z-50">
+                <button
+                  type="button"
+                  class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-surface-muted transition-colors"
+                  (click)="setSortMode('manual'); $event.stopPropagation()"
+                >
+                  <i class="pi pi-bars text-foreground-muted"></i>
+                  <span>Manual order</span>
+                  @if (sortMode() === 'manual') {
+                    <i class="pi pi-check text-primary ml-auto"></i>
+                  }
+                </button>
+                <button
+                  type="button"
+                  class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-surface-muted transition-colors"
+                  (click)="setSortMode('dueDate'); $event.stopPropagation()"
+                >
+                  <i class="pi pi-calendar text-foreground-muted"></i>
+                  <span>Due date</span>
+                  @if (sortMode() === 'dueDate') {
+                    <i class="pi pi-check text-primary ml-auto"></i>
+                  }
+                </button>
+              </div>
+            }
+          </div>
         </div>
         <div class="flex items-center gap-1">
           @if (showAddButton() && !isCreating()) {
@@ -125,7 +168,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
             ></textarea>
           </div>
         }
-        @for (task of tasks(); track task.id) {
+        @for (task of sortedTasks(); track task.id) {
           <div cdkDrag [cdkDragData]="task" class="cursor-grab active:cursor-grabbing touch-manipulation">
             <app-task-card
               [task]="task"
@@ -181,12 +224,35 @@ export class ColumnComponent {
   readonly onDeleteComment = output<{ taskId: string; commentId: string }>();
   readonly onSetDueDate = output<{ taskId: string; date: string }>();
   readonly onClearDueDate = output<{ taskId: string }>();
+  readonly onSortModeChange = output<SortMode>();
 
   readonly isCreating = signal(false);
   readonly inlineTitle = signal('');
+  readonly sortMode = signal<SortMode>('manual');
+  readonly showSortMenu = signal(false);
+
+  readonly sortedTasks = computed(() => {
+    const tasks = this.tasks();
+    if (this.sortMode() === 'manual') {
+      return tasks;
+    }
+    // Sort by due date (nulls last), then by position as tiebreaker
+    return [...tasks].sort((a, b) => {
+      if (!a.dueDate && !b.dueDate) return a.position - b.position;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      const dateCompare = a.dueDate.localeCompare(b.dueDate);
+      return dateCompare !== 0 ? dateCompare : a.position - b.position;
+    });
+  });
 
   readonly inlineInput = viewChild<ElementRef<HTMLTextAreaElement>>('inlineInput');
   readonly dropList = viewChild.required<CdkDropList>('dropList');
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.showSortMenu.set(false);
+  }
 
   /** Type-safe helper for accessing textarea value from events */
   asTextArea(event: Event): HTMLTextAreaElement {
@@ -240,5 +306,15 @@ export class ColumnComponent {
     } else {
       this.cancelCreate();
     }
+  }
+
+  toggleSortMenu(): void {
+    this.showSortMenu.update(v => !v);
+  }
+
+  setSortMode(mode: SortMode): void {
+    this.sortMode.set(mode);
+    this.showSortMenu.set(false);
+    this.onSortModeChange.emit(mode);
   }
 }
