@@ -67,6 +67,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
+          (onTogglePriority)="togglePriority($event.taskId)"
           (onSortModeChange)="todoSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Todo'"
           (onSortMenuToggle)="toggleSortMenu('Todo')"
@@ -90,6 +91,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
+          (onTogglePriority)="togglePriority($event.taskId)"
           (onSortModeChange)="inProgressSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'InProgress'"
           (onSortMenuToggle)="toggleSortMenu('InProgress')"
@@ -117,6 +119,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
+          (onTogglePriority)="togglePriority($event.taskId)"
           (onSortModeChange)="doneSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Done'"
           (onSortMenuToggle)="toggleSortMenu('Done')"
@@ -135,9 +138,9 @@ export class TasksPage implements OnInit {
 
   readonly showArchive = signal(false);
   readonly searchQuery = signal('');
-  readonly todoSortMode = signal<'manual' | 'dueDate'>('manual');
-  readonly inProgressSortMode = signal<'manual' | 'dueDate'>('manual');
-  readonly doneSortMode = signal<'manual' | 'dueDate'>('manual');
+  readonly todoSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
+  readonly inProgressSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
+  readonly doneSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly activeSortMenu = signal<'Todo' | 'InProgress' | 'Done' | null>(null);
 
   readonly doneColumnTasks = computed(() =>
@@ -281,6 +284,10 @@ export class TasksPage implements OnInit {
 
   clearDueDate(taskId: string): void {
     this.taskService.clearDueDate(taskId);
+  }
+
+  togglePriority(taskId: string): void {
+    this.taskService.togglePriority(taskId);
   }
 
   toggleSortMenu(column: 'Todo' | 'InProgress' | 'Done'): void {

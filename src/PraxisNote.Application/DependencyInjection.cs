@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<ChangeTaskStatus>();
         services.AddScoped<DeleteTask>();
         services.AddScoped<ReorderTasks>();
+        services.AddScoped<ToggleTaskPriority>();
 
         // Comment use cases
         services.AddScoped<AddComment>();

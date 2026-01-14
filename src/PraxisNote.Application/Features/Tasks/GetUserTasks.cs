@@ -34,6 +34,7 @@ public sealed class GetUserTasks(ITaskRepository taskRepository, IOptions<TaskSe
                 t.Title,
                 t.Status.ToString(),
                 t.Position,
+                t.IsPriority,
                 t.CreatedAt,
                 t.StartedAt,
                 t.CompletedAt,

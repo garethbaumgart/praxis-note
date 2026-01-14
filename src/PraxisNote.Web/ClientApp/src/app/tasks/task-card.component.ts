@@ -35,6 +35,18 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
       } @else {
         <!-- Task content -->
         <div class="flex items-start gap-2">
+          <!-- Priority flag -->
+          <button
+            type="button"
+            class="shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors"
+            [class.text-amber-500]="task().isPriority"
+            [class.text-foreground-muted/30]="!task().isPriority"
+            [class.hover:text-amber-400]="!task().isPriority"
+            (click)="onTogglePriority.emit(); $event.stopPropagation()"
+            [attr.aria-label]="task().isPriority ? 'Remove priority' : 'Mark as priority'"
+          >
+            <i class="pi text-sm" [class.pi-flag-fill]="task().isPriority" [class.pi-flag]="!task().isPriority"></i>
+          </button>
           <div class="flex-1 min-w-0">
             <!-- Clickable title for inline editing -->
             <p
@@ -225,6 +237,7 @@ export class TaskCardComponent {
   readonly onDeleteComment = output<string>();
   readonly onSetDueDate = output<string>();
   readonly onClearDueDate = output<void>();
+  readonly onTogglePriority = output<void>();
 
   readonly editing = signal(false);
   readonly editTitle = signal('');

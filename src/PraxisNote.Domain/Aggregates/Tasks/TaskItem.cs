@@ -49,6 +49,11 @@ public sealed class TaskItem : AggregateRoot
     public DueDate? DueDate { get; private set; }
 
     /// <summary>
+    /// Whether this task is marked as high priority.
+    /// </summary>
+    public bool IsPriority { get; private set; }
+
+    /// <summary>
     /// Reference to the source note checkbox, if this task was created from a note.
     /// Null for standalone tasks created directly on the board.
     /// </summary>
@@ -207,6 +212,15 @@ public sealed class TaskItem : AggregateRoot
     public void ClearDueDate()
     {
         DueDate = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Toggles the priority flag.
+    /// </summary>
+    public void TogglePriority()
+    {
+        IsPriority = !IsPriority;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

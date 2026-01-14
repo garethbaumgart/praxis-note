@@ -5,6 +5,7 @@ public record TaskDto(
     string Title,
     string Status,
     int Position,
+    bool IsPriority,
     DateTimeOffset CreatedAt,
     DateTimeOffset? StartedAt,
     DateTimeOffset? CompletedAt,

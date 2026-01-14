@@ -118,6 +118,55 @@ test.describe('Tasks', () => {
     await expect(page.locator('.bg-done').getByText('Workflow Task')).toBeVisible();
   });
 
+  test('can toggle priority flag on and off', async ({ page, request }) => {
+    // Create a task via API
+    const createRes = await request.post('/api/tasks', {
+      headers: getMockAuthHeaders(testUser),
+      data: { title: 'Priority Test Task' },
+    });
+    const task = await createRes.json();
+
+    await setupAuth(page, testUser);
+    await page.goto('/tasks');
+
+    const taskCard = page.locator('app-task-card').filter({ hasText: 'Priority Test Task' });
+
+    // Verify task is visible and priority is off (outline flag icon)
+    await expect(taskCard).toBeVisible();
+    await expect(taskCard.getByLabel('Mark as priority')).toBeVisible();
+    await expect(taskCard.locator('i.pi-flag')).toBeVisible();
+
+    // Toggle priority ON via API
+    const toggleOnRes = await request.patch(`/api/tasks/${task.id}/priority`, {
+      headers: getMockAuthHeaders(testUser),
+    });
+    if (!toggleOnRes.ok()) {
+      console.log('Toggle ON failed:', toggleOnRes.status(), await toggleOnRes.text());
+    }
+    expect(toggleOnRes.ok()).toBeTruthy();
+
+    // Refresh to see the change
+    await page.goto('/tasks');
+
+    // Verify priority is now on (filled flag icon with amber color)
+    await expect(taskCard.locator('i.pi-flag-fill')).toBeVisible();
+    await expect(taskCard.getByLabel('Remove priority')).toBeVisible();
+    await expect(taskCard.getByLabel('Remove priority')).toHaveClass(/text-amber-500/);
+
+    // Toggle priority OFF via API
+    const toggleOffRes = await request.patch(`/api/tasks/${task.id}/priority`, {
+      headers: getMockAuthHeaders(testUser),
+    });
+    expect(toggleOffRes.ok()).toBeTruthy();
+
+    // Refresh to see the change
+    await page.goto('/tasks');
+
+    // Verify priority is off again
+    await expect(taskCard.locator('i.pi-flag')).toBeVisible();
+    await expect(taskCard.getByLabel('Mark as priority')).toBeVisible();
+  });
+
 });
 
 async function setupAuth(page: any, user: MockUser): Promise<void> {
