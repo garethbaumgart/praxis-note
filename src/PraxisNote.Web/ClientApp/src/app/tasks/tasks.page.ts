@@ -170,21 +170,21 @@ export class TasksPage implements OnInit {
   }
 
   readonly todoConnectedTo = computed(() => {
-    if (this.searchQuery() || this.todoSortMode() !== 'manual') return [];
+    if (this.searchQuery()) return [];
     const inProgress = this.inProgressColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
     return [inProgress, done].filter((list): list is CdkDropList => !!list);
   });
 
   readonly inProgressConnectedTo = computed(() => {
-    if (this.searchQuery() || this.inProgressSortMode() !== 'manual') return [];
+    if (this.searchQuery()) return [];
     const todo = this.todoColumn()?.dropList();
     const done = this.doneColumn()?.dropList();
     return [todo, done].filter((list): list is CdkDropList => !!list);
   });
 
   readonly doneConnectedTo = computed(() => {
-    if (this.searchQuery() || this.doneSortMode() !== 'manual') return [];
+    if (this.searchQuery()) return [];
     const todo = this.todoColumn()?.dropList();
     const inProgress = this.inProgressColumn()?.dropList();
     return [todo, inProgress].filter((list): list is CdkDropList => !!list);
