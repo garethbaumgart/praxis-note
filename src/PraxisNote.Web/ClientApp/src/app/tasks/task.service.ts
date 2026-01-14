@@ -107,6 +107,7 @@ export class TaskService {
       title,
       status: status,
       position: 0,
+      isPriority: false,
       createdAt: now,
       startedAt: status === 'Todo' ? null : now,
       completedAt: status === 'Done' ? now : null,
@@ -328,6 +329,17 @@ export class TaskService {
     );
 
     this.http.delete(`/api/tasks/${taskId}/due-date`).subscribe({
+      error: () => this.loadTasks(),
+    });
+  }
+
+  togglePriority(taskId: string): void {
+    // Optimistic update
+    this._tasks.update(tasks =>
+      tasks.map(t => (t.id === taskId ? { ...t, isPriority: !t.isPriority } : t))
+    );
+
+    this.http.patch(`/api/tasks/${taskId}/priority`, {}).subscribe({
       error: () => this.loadTasks(),
     });
   }

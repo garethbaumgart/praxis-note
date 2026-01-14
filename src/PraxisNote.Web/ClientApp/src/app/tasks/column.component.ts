@@ -9,7 +9,7 @@ import { AutoResizeDirective } from '../shared/directives/auto-resize.directive'
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 
 type TaskStatus = 'Todo' | 'InProgress' | 'Done';
-type SortMode = 'manual' | 'dueDate';
+type SortMode = 'manual' | 'dueDate' | 'priority';
 
 @Component({
   selector: 'app-column',
@@ -81,6 +81,17 @@ type SortMode = 'manual' | 'dueDate';
                   <i class="pi pi-calendar text-foreground-muted"></i>
                   <span>Due date</span>
                   @if (sortMode() === 'dueDate') {
+                    <i class="pi pi-check text-violet-600 ml-auto"></i>
+                  }
+                </button>
+                <button
+                  type="button"
+                  class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-surface-muted transition-colors"
+                  (click)="setSortMode('priority'); $event.stopPropagation()"
+                >
+                  <i class="pi pi-flag text-foreground-muted"></i>
+                  <span>Priority</span>
+                  @if (sortMode() === 'priority') {
                     <i class="pi pi-check text-violet-600 ml-auto"></i>
                   }
                 </button>
@@ -186,6 +197,7 @@ type SortMode = 'manual' | 'dueDate';
                 (onDeleteComment)="onDeleteComment.emit({ taskId: task.id, commentId: $event })"
                 (onSetDueDate)="onSetDueDate.emit({ taskId: task.id, date: $event })"
                 (onClearDueDate)="onClearDueDate.emit({ taskId: task.id })"
+                (onTogglePriority)="onTogglePriority.emit({ taskId: task.id })"
               />
               <div
                 *cdkDragPlaceholder
@@ -234,6 +246,7 @@ export class ColumnComponent {
   readonly onDeleteComment = output<{ taskId: string; commentId: string }>();
   readonly onSetDueDate = output<{ taskId: string; date: string }>();
   readonly onClearDueDate = output<{ taskId: string }>();
+  readonly onTogglePriority = output<{ taskId: string }>();
   readonly onSortModeChange = output<SortMode>();
   readonly onSortMenuToggle = output<void>();
 
@@ -243,8 +256,16 @@ export class ColumnComponent {
 
   readonly sortedTasks = computed(() => {
     const tasks = this.tasks();
-    if (this.sortMode() === 'manual') {
+    const mode = this.sortMode();
+    if (mode === 'manual') {
       return tasks;
+    }
+    if (mode === 'priority') {
+      // Sort by priority (true first), then by position as tiebreaker
+      return [...tasks].sort((a, b) => {
+        if (a.isPriority === b.isPriority) return a.position - b.position;
+        return a.isPriority ? -1 : 1;
+      });
     }
     // Sort by due date (nulls last), then by position as tiebreaker
     return [...tasks].sort((a, b) => {

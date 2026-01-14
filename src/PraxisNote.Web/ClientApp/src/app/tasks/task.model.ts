@@ -10,6 +10,7 @@ export interface Task {
   title: string;
   status: 'Todo' | 'InProgress' | 'Done';
   position: number;
+  isPriority: boolean;
   createdAt: string;
   startedAt: string | null;
   completedAt: string | null;

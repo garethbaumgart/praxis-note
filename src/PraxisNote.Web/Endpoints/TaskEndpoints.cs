@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 using PraxisNote.Application.Features.Tasks;
 
 namespace PraxisNote.Web.Endpoints;
@@ -15,6 +16,7 @@ public static class TaskEndpoints
         group.MapPost("/", (Delegate)HandleCreateTask);
         group.MapPut("/{id:guid}", (Delegate)HandleUpdateTask);
         group.MapPut("/{id:guid}/status", (Delegate)HandleChangeStatus);
+        group.MapPatch("/{id:guid}/priority", (Delegate)HandleTogglePriority);
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteTask);
         group.MapPut("/reorder", (Delegate)HandleReorderTasks);
     }
@@ -121,6 +123,24 @@ public static class TaskEndpoints
 
         var command = new ChangeTaskStatus.Command(id, userId.Value, request.Status, request.Position);
         var success = await changeStatus.ExecuteAsync(command, cancellationToken);
+
+        return success ? Results.NoContent() : Results.NotFound();
+    }
+
+    private static async Task<IResult> HandleTogglePriority(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] ToggleTaskPriority togglePriority,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(user);
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var command = new ToggleTaskPriority.Command(id, userId.Value);
+        var success = await togglePriority.ExecuteAsync(command, cancellationToken);
 
         return success ? Results.NoContent() : Results.NotFound();
     }
