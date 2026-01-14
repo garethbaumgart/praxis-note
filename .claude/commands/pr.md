@@ -57,3 +57,15 @@ After the PR is created, **actively monitor** and address feedback:
 6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
 
 **Do not stop monitoring until**: All AI reviews are complete, all comments are addressed, and CI is green.
+
+## Step 6: Manual Testing (Required Before Merge)
+
+Once CI is green and all comments are addressed:
+
+1. **Start the dev stack**: Run `docker compose --profile dev-stack up`
+2. **Notify the user**: Tell them the app is running at http://localhost:4200 and ask them to test the changes
+3. **Wait for approval**: Do NOT merge until the user explicitly approves or provides feedback
+4. **If feedback given**: Make fixes, commit, push, and repeat from Step 5 (CI monitoring)
+5. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
+
+**Exception**: Skip this step for markdown-only PRs (`.md` files only) - merge immediately.
