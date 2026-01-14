@@ -27,7 +27,7 @@ import { MockAuthService } from './mock-auth.service';
                   {{ mockAuth.user()?.email }}
                 </span>
                 <button
-                  class="px-3 py-2 border-none rounded bg-red-500 text-white cursor-pointer font-medium transition-colors hover:bg-red-600"
+                  class="px-3 py-2 border-none rounded bg-rose-600 text-white cursor-pointer font-medium transition-colors hover:bg-rose-700"
                   (click)="mockLogout()"
                 >
                   Logout
