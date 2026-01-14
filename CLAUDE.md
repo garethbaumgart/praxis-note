@@ -21,26 +21,11 @@
 
 When building UI, follow this order strictly:
 
-1. **PrimeNG Component** - ALWAYS check https://primeng.org first
+1. **PrimeNG Component** - ALWAYS check https://primeng.org first (buttons, inputs, dialogs, dropdowns, menus, tooltips, tables, cards, date pickers, etc.)
 2. **Tailwind Utilities** - Style with utility classes only
-3. **Custom CSS (LAST RESORT)** - Only for:
-   - Library integration (CDK drag-drop, third-party)
-   - Animation keyframes
-   - CSS custom properties/theming
-   - PrimeNG component overrides that can't be done via theming
+3. **Custom CSS (LAST RESORT)** - Only for library integration (CDK), animations, theming, or PrimeNG overrides
 
 **Before writing custom CSS, ask:** "Can this be achieved with Tailwind utilities or PrimeNG props?"
-
-### PrimeNG First
-
-Before creating ANY custom UI element, check if PrimeNG has it:
-
-- Buttons, inputs, dialogs → PrimeNG
-- Dropdowns, menus, tooltips → PrimeNG
-- Tables, cards, panels → PrimeNG
-- Date pickers, sliders, toggles → PrimeNG
-
-**Reference:** https://primeng.org/installation (component showcase)
 
 ### Template Syntax (ENFORCED)
 
@@ -71,14 +56,14 @@ readonly items = signal<Item[]>([]);
 readonly count = computed(() => this.items().length);
 readonly task = input.required<Task>();
 readonly onChange = output<void>();
+```
 
-// Form inputs - use native event binding, NOT ngModel
-[value]="mySignal()"
-(input)="mySignal.set($any($event.target).value)"
+```html
+<!-- Form inputs - use native event binding, NOT ngModel -->
+<input [value]="mySignal()" (input)="mySignal.set($any($event.target).value)" />
 
-// PrimeNG two-way binding
-[visible]="showDialog()"
-(visibleChange)="showDialog.set($event)"
+<!-- PrimeNG two-way binding -->
+<p-dialog [visible]="showDialog()" (visibleChange)="showDialog.set($event)" />
 ```
 
 ### Signal Forms (Angular 21 - Use for New Forms)
@@ -166,61 +151,21 @@ readonly items = signal<Item[]>([]);
 
 ### UI Design Resources
 
-When designing UI components, reference these official documentation sites:
-
-- **PrimeNG v21**: https://primeng.org - Component API, examples, theming
-- **PrimeNG Showcase**: https://primeng.org/installation - Live demos of every component
-- **Tailwind CSS v4**: https://tailwindcss.com/docs - Utility class reference
-- **Angular 21**: https://angular.dev - Official Angular documentation
+- **PrimeNG v21**: https://primeng.org - Components, theming, examples
+- **Tailwind CSS v4**: https://tailwindcss.com/docs - Utility classes
+- **Angular 21**: https://angular.dev - Official documentation
 
 ### Mockups (Required for UI Changes)
 
 Before implementing UI features, create a mockup HTML file in `mockups/` to explore design options.
 
 **Requirements:**
-- Create a standalone HTML file in `mockups/`
-- Include **at least 5 distinct design options** to thoroughly explore the design space
-- Use the app's current styling (Tailwind classes, color tokens)
+- Create standalone HTML file using Tailwind CDN + PrimeIcons
+- Include **at least 5 distinct design options**
 - Mark one option as "Recommended" with reasoning
-- Include pros/cons or issues for each option
+- Include pros/cons for each option
 
-**Mockup Template:**
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[Feature Name] Options</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css">
-</head>
-<body class="bg-gray-100 p-8">
-  <h1 class="text-2xl font-bold mb-2">[Feature Name] Options</h1>
-  <p class="text-gray-600 mb-8">[Brief description of what we're designing]</p>
-
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Option A (Recommended) -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border-2 border-emerald-400">
-      <div class="flex items-center gap-2 mb-4">
-        <h2 class="text-lg font-semibold">Option A: [Name]</h2>
-        <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Recommended</span>
-      </div>
-      <!-- Mock content here -->
-    </div>
-
-    <!-- Option B -->
-    <div class="bg-white rounded-xl p-6 shadow-sm">
-      <h2 class="text-lg font-semibold mb-4">Option B: [Name]</h2>
-      <!-- Mock content here -->
-    </div>
-  </div>
-</body>
-</html>
-```
-
-**Examples:** See existing mockups in `mockups/` folder (e.g., `due-date-colors.html`, `comments-display-options.html`)
+**Template:** Copy an existing file from `mockups/` (e.g., `due-date-colors.html`)
 
 ## Project Structure
 
@@ -315,5 +260,4 @@ docker compose --profile e2e down
 
 ## Technical Debt / TODOs
 
-When switching from SQLite to PostgreSQL:
-- [ ] `TaskRepository.GetByUserIdAsync` - Move `OrderByDescending(t => t.CreatedAt)` back to the EF query (currently sorting in memory due to SQLite DateTimeOffset limitation)
+_None currently tracked._
