@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Due Date Color Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css">
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <h1 class="text-2xl font-bold mb-2">Due Date Color Options</h1>
+  <p class="text-gray-600 mb-8">Comparing current colors vs harmonized alternatives that work with the column theme (slate/sky/emerald)</p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <!-- CURRENT COLORS -->
+    <div class="bg-white rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-1">Current Colors</h2>
+      <p class="text-sm text-gray-500 mb-4">Red, amber, orange, blue - multiple hues that clash with column colors</p>
+
+      <div class="space-y-3">
+        <!-- Overdue -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Overdue</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-500">
+            <i class="pi pi-exclamation-circle text-[10px]"></i>
+            3d ago
+          </span>
+        </div>
+
+        <!-- Today -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Today</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Today
+          </span>
+        </div>
+
+        <!-- Tomorrow -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Tomorrow</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-500">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Tomorrow
+          </span>
+        </div>
+
+        <!-- This week -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">This week</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-500">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Thu
+          </span>
+        </div>
+
+        <!-- Future -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Future</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Jan 25
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-4 p-3 bg-red-50 rounded-lg border border-red-200">
+        <p class="text-xs text-red-700"><strong>Issues:</strong> 5 different hues (red, amber, orange, blue, gray) create visual noise. Amber/orange are too similar. Blue clashes with sky column.</p>
+      </div>
+    </div>
+
+    <!-- OPTION A: Warm Gradient (Recommended) -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border-2 border-emerald-400">
+      <div class="flex items-center gap-2 mb-1">
+        <h2 class="text-lg font-semibold">Option A: Warm Urgency Scale</h2>
+        <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Recommended</span>
+      </div>
+      <p class="text-sm text-gray-500 mb-4">Single warm hue (amber/orange) with intensity indicating urgency</p>
+
+      <div class="space-y-3">
+        <!-- Overdue -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Overdue</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
+            <i class="pi pi-exclamation-circle text-[10px]"></i>
+            3d ago
+          </span>
+        </div>
+
+        <!-- Today -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Today</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+            <i class="pi pi-clock text-[10px]"></i>
+            Today
+          </span>
+        </div>
+
+        <!-- Tomorrow -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Tomorrow</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Tomorrow
+          </span>
+        </div>
+
+        <!-- This week -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">This week</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Thu
+          </span>
+        </div>
+
+        <!-- Future -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Future</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Jan 25
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+        <p class="text-xs text-emerald-700"><strong>Benefits:</strong> Red for overdue (universal danger), amber for urgent (today/tomorrow), slate for non-urgent. Matches column theme. Clear urgency hierarchy.</p>
+      </div>
+    </div>
+
+    <!-- OPTION B: Violet Accent -->
+    <div class="bg-white rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-1">Option B: Violet Accent System</h2>
+      <p class="text-sm text-gray-500 mb-4">Uses your existing primary violet color for upcoming dates</p>
+
+      <div class="space-y-3">
+        <!-- Overdue -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Overdue</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
+            <i class="pi pi-exclamation-circle text-[10px]"></i>
+            3d ago
+          </span>
+        </div>
+
+        <!-- Today -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Today</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-700">
+            <i class="pi pi-clock text-[10px]"></i>
+            Today
+          </span>
+        </div>
+
+        <!-- Tomorrow -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Tomorrow</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Tomorrow
+          </span>
+        </div>
+
+        <!-- This week -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">This week</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Thu
+          </span>
+        </div>
+
+        <!-- Future -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Future</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Jan 25
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <p class="text-xs text-gray-600"><strong>Benefits:</strong> Leverages existing primary color. Violet is distinct from all column colors. Downside: violet doesn't convey urgency as intuitively as warm colors.</p>
+      </div>
+    </div>
+
+    <!-- OPTION C: Minimal (Just 2 colors) -->
+    <div class="bg-white rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-1">Option C: Minimal (2 Colors)</h2>
+      <p class="text-sm text-gray-500 mb-4">Simplest approach - only highlight overdue and today</p>
+
+      <div class="space-y-3">
+        <!-- Overdue -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Overdue</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
+            <i class="pi pi-exclamation-circle text-[10px]"></i>
+            3d ago
+          </span>
+        </div>
+
+        <!-- Today -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Today</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+            <i class="pi pi-clock text-[10px]"></i>
+            Today
+          </span>
+        </div>
+
+        <!-- Tomorrow -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Tomorrow</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Tomorrow
+          </span>
+        </div>
+
+        <!-- This week -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">This week</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Thu
+          </span>
+        </div>
+
+        <!-- Future -->
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <span class="text-sm text-gray-600 w-24">Future</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Jan 25
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <p class="text-xs text-gray-600"><strong>Benefits:</strong> Maximum simplicity. Only 2 states need attention (overdue, today). Everything else is neutral. Downside: Tomorrow loses its warning color.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- In-context comparison -->
+  <h2 class="text-xl font-bold mt-12 mb-4">In Context: Task Cards</h2>
+  <p class="text-gray-600 mb-6">How the recommended Option A looks on actual task cards in each column</p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Todo Column -->
+    <div class="bg-slate-100 rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <i class="pi pi-lightbulb text-slate-600"></i>
+        <span class="text-sm font-semibold text-slate-600 uppercase">Todo</span>
+        <span class="ml-auto text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">3</span>
+      </div>
+
+      <div class="space-y-2">
+        <!-- Overdue task -->
+        <div class="bg-white rounded-md p-3 shadow-sm">
+          <p class="text-sm text-gray-900 mb-2">Review pull request</p>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
+            <i class="pi pi-exclamation-circle text-[10px]"></i>
+            2d ago
+          </span>
+        </div>
+
+        <!-- Today task -->
+        <div class="bg-white rounded-md p-3 shadow-sm">
+          <p class="text-sm text-gray-900 mb-2">Write documentation</p>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+            <i class="pi pi-clock text-[10px]"></i>
+            Today
+          </span>
+        </div>
+
+        <!-- Future task -->
+        <div class="bg-white rounded-md p-3 shadow-sm">
+          <p class="text-sm text-gray-900 mb-2">Plan sprint goals</p>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Jan 20
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- In Progress Column -->
+    <div class="bg-sky-100 rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <i class="pi pi-clock text-sky-700"></i>
+        <span class="text-sm font-semibold text-sky-700 uppercase">In Progress</span>
+        <span class="ml-auto text-xs bg-sky-200 text-sky-700 px-2 py-0.5 rounded-full">2</span>
+      </div>
+
+      <div class="space-y-2">
+        <!-- Tomorrow task -->
+        <div class="bg-white rounded-md p-3 shadow-sm">
+          <p class="text-sm text-gray-900 mb-2">Implement feature X</p>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Tomorrow
+          </span>
+        </div>
+
+        <!-- This week task -->
+        <div class="bg-white rounded-md p-3 shadow-sm">
+          <p class="text-sm text-gray-900 mb-2">Update API endpoints</p>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Fri
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Done Column -->
+    <div class="bg-emerald-100 rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <i class="pi pi-check-circle text-emerald-700"></i>
+        <span class="text-sm font-semibold text-emerald-700 uppercase">Done</span>
+        <span class="ml-auto text-xs bg-emerald-200 text-emerald-700 px-2 py-0.5 rounded-full">2</span>
+      </div>
+
+      <div class="space-y-2">
+        <!-- Completed on time -->
+        <div class="bg-white rounded-md p-3 shadow-sm">
+          <p class="text-sm text-gray-400 line-through mb-2">Fix login bug</p>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-400 line-through">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Jan 10
+          </span>
+        </div>
+
+        <!-- Completed task -->
+        <div class="bg-white rounded-md p-3 shadow-sm">
+          <p class="text-sm text-gray-400 line-through mb-2">Setup CI pipeline</p>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-400 line-through">
+            <i class="pi pi-calendar text-[10px]"></i>
+            Jan 8
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Color palette summary -->
+  <div class="mt-12 bg-white rounded-xl p-6 shadow-sm">
+    <h2 class="text-lg font-semibold mb-4">Recommended Color Palette (Option A)</h2>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="text-center">
+        <div class="w-full h-12 bg-red-100 rounded-lg mb-2 flex items-center justify-center">
+          <span class="text-red-600 font-medium">red-600</span>
+        </div>
+        <p class="text-xs text-gray-600">Overdue</p>
+        <p class="text-xs text-gray-400">bg-red-100</p>
+      </div>
+      <div class="text-center">
+        <div class="w-full h-12 bg-amber-100 rounded-lg mb-2 flex items-center justify-center">
+          <span class="text-amber-700 font-medium">amber-700</span>
+        </div>
+        <p class="text-xs text-gray-600">Today</p>
+        <p class="text-xs text-gray-400">bg-amber-100</p>
+      </div>
+      <div class="text-center">
+        <div class="w-full h-12 bg-amber-50 rounded-lg mb-2 flex items-center justify-center">
+          <span class="text-amber-600 font-medium">amber-600</span>
+        </div>
+        <p class="text-xs text-gray-600">Tomorrow</p>
+        <p class="text-xs text-gray-400">bg-amber-50</p>
+      </div>
+      <div class="text-center">
+        <div class="w-full h-12 bg-slate-100 rounded-lg mb-2 flex items-center justify-center">
+          <span class="text-slate-600 font-medium">slate-600</span>
+        </div>
+        <p class="text-xs text-gray-600">This week</p>
+        <p class="text-xs text-gray-400">bg-slate-100</p>
+      </div>
+      <div class="text-center">
+        <div class="w-full h-12 bg-slate-100 rounded-lg mb-2 flex items-center justify-center">
+          <span class="text-slate-500 font-medium">slate-500</span>
+        </div>
+        <p class="text-xs text-gray-600">Future</p>
+        <p class="text-xs text-gray-400">bg-slate-100</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

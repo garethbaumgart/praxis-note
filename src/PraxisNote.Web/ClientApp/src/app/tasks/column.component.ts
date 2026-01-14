@@ -1,5 +1,5 @@
 import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed } from '@angular/core';
-import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder, CdkDragHandle } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TaskCardComponent } from './task-card.component';
@@ -15,7 +15,7 @@ type SortMode = 'manual' | 'dueDate';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, ButtonModule, TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, CdkDragHandle, AutoResizeDirective, StatusColorPipe],
+  imports: [NgClass, ButtonModule, TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
   template: `
     <div
       class="flex flex-col rounded-lg p-3 min-h-48 transition-all"
@@ -176,22 +176,7 @@ type SortMode = 'manual' | 'dueDate';
           }
         } @else {
           @for (task of sortedTasks(); track task.id) {
-            <div cdkDrag [cdkDragData]="task" class="group/drag relative touch-manipulation">
-              <!-- Drag handle - visible on hover (2x3 dot grip pattern) -->
-              <div
-                cdkDragHandle
-                class="absolute -left-2 top-1/2 -translate-y-1/2 w-5 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/drag:opacity-100 transition-opacity z-10"
-                aria-label="Drag to reorder"
-              >
-                <div class="grid grid-cols-2 gap-0.5">
-                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                  <span class="w-1 h-1 rounded-full bg-foreground-muted/40"></span>
-                </div>
-              </div>
+            <div cdkDrag [cdkDragData]="task" class="cursor-grab active:cursor-grabbing touch-manipulation">
               <app-task-card
                 [task]="task"
                 (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
