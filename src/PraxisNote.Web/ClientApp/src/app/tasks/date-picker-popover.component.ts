@@ -63,7 +63,7 @@ import { DatePicker } from 'primeng/datepicker';
           <button
             type="button"
             (click)="clear(); $event.stopPropagation()"
-            class="ml-auto text-xs text-red-500 hover:text-red-600 hover:underline"
+            class="ml-auto text-xs text-rose-600 hover:text-rose-700 hover:underline"
             aria-label="Clear due date"
           >
             Clear

@@ -146,7 +146,7 @@ test.describe('Due Dates', () => {
     // Class is on the button, not the span text inside
     const dueDateButton = taskCard.locator('button').filter({ hasText: 'Yesterday' });
     await expect(dueDateButton).toBeVisible();
-    await expect(dueDateButton).toHaveClass(/text-red-600/);
+    await expect(dueDateButton).toHaveClass(/text-rose-600/);
     // Verify exclamation icon is present
     await expect(taskCard.locator('.pi-exclamation-circle')).toBeVisible();
   });

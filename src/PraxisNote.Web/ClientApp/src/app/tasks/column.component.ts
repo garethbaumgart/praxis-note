@@ -142,7 +142,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
               <p-button
                 [label]="'ARCHIVE' + (archiveCount() > 0 ? ' (' + archiveCount() + ')' : '')"
                 icon="pi pi-inbox"
-                severity="warn"
+                severity="help"
                 [outlined]="true"
                 size="small"
                 styleClass="!py-1 !px-2 !text-[0.625rem]"

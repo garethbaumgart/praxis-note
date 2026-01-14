@@ -57,11 +57,11 @@
   --color-done-text-muted: var(--color-emerald-500);
   --color-done-border: var(--color-emerald-200);
 
-  --color-archive-bg: var(--color-amber-100);
-  --color-archive-bg-hover: var(--color-amber-200);
-  --color-archive-text: var(--color-amber-700);
-  --color-archive-text-muted: var(--color-amber-500);
-  --color-archive-border: var(--color-amber-200);
+  --color-archive-bg: var(--color-violet-100);
+  --color-archive-bg-hover: var(--color-violet-200);
+  --color-archive-text: var(--color-violet-700);
+  --color-archive-text-muted: var(--color-violet-500);
+  --color-archive-border: var(--color-violet-200);
 }
 
 /* ========================================
@@ -103,11 +103,11 @@
   --color-done-text-muted: var(--color-emerald-500);
   --color-done-border: var(--color-emerald-800);
 
-  --color-archive-bg: var(--color-amber-900);
-  --color-archive-bg-hover: var(--color-amber-800);
-  --color-archive-text: var(--color-amber-400);
-  --color-archive-text-muted: var(--color-amber-500);
-  --color-archive-border: var(--color-amber-800);
+  --color-archive-bg: var(--color-violet-900);
+  --color-archive-bg-hover: var(--color-violet-800);
+  --color-archive-text: var(--color-violet-400);
+  --color-archive-text-muted: var(--color-violet-500);
+  --color-archive-border: var(--color-violet-800);
 }
 
 /* ========================================

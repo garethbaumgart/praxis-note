@@ -89,7 +89,7 @@ export class DueDateBadgeComponent {
 
     // Option A: Warm urgency scale - red (overdue), amber (today/tomorrow), slate (future)
     if (this.taskStatus() === 'Done') return 'bg-slate-100 text-slate-400 line-through';
-    if (diff < 0) return 'bg-red-100 text-red-600 font-medium';
+    if (diff < 0) return 'bg-rose-100 text-rose-600 font-medium';
     if (diff === 0) return 'bg-amber-100 text-amber-700';
     if (diff === 1) return 'bg-amber-50 text-amber-600';
     if (diff <= 6) return 'bg-slate-100 text-slate-600';
