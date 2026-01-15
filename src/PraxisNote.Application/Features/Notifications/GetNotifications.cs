@@ -19,14 +19,8 @@ public sealed class GetNotifications(
             return [];
         }
 
-        var notifications = await notificationRepository.GetNotificationsForUserAsync(
-            query.UserId,
-            user.CreatedAt,
-            cancellationToken);
-
-        var seenIds = await notificationRepository.GetSeenNotificationIdsAsync(
-            query.UserId,
-            cancellationToken);
+        var notifications = await notificationRepository.GetAllNotificationsAsync(cancellationToken);
+        var lastSeenId = user.LastSeenNotificationId;
 
         return notifications
             .Select(n => new NotificationDto(
@@ -36,7 +30,7 @@ public sealed class GetNotifications(
                 n.Summary,
                 n.IssueUrl,
                 n.CreatedAt,
-                seenIds.Contains(n.Id)))
+                lastSeenId.HasValue && n.Id <= lastSeenId.Value))
             .ToList();
     }
 }

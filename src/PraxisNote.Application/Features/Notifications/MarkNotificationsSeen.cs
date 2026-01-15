@@ -1,21 +1,23 @@
 using PraxisNote.Application.Common;
-using PraxisNote.Domain.Aggregates.Notifications;
+using PraxisNote.Domain.Aggregates.Users;
 
 namespace PraxisNote.Application.Features.Notifications;
 
 public sealed class MarkNotificationsSeen(
-    INotificationRepository notificationRepository,
+    IUserRepository userRepository,
     IUnitOfWork unitOfWork)
 {
-    public record Command(Guid UserId, IEnumerable<Guid> NotificationIds);
+    public record Command(Guid UserId, int LastSeenNotificationId);
 
     public async Task ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
-        await notificationRepository.MarkAsSeenAsync(
-            command.UserId,
-            command.NotificationIds,
-            cancellationToken);
+        var user = await userRepository.GetByIdAsync(command.UserId, cancellationToken);
+        if (user is null)
+        {
+            return;
+        }
 
+        user.UpdateLastSeenNotificationId(command.LastSeenNotificationId);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

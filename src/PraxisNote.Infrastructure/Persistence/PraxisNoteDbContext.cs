@@ -12,7 +12,6 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<User> Users => Set<User>();
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
     public DbSet<FeatureNotification> FeatureNotifications => Set<FeatureNotification>();
-    public DbSet<UserNotificationRead> UserNotificationReads => Set<UserNotificationRead>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public PraxisNoteDbContext(DbContextOptions<PraxisNoteDbContext> options)

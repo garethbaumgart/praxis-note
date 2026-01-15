@@ -1,4 +1,3 @@
-using PraxisNote.Domain.Common;
 using PraxisNote.Domain.ValueObjects;
 
 namespace PraxisNote.Domain.Aggregates.Notifications;
@@ -7,8 +6,13 @@ namespace PraxisNote.Domain.Aggregates.Notifications;
 /// Represents a system-wide notification about new features, bug fixes, or improvements.
 /// These are read-only entries inserted via migrations.
 /// </summary>
-public sealed class FeatureNotification : Entity
+public sealed class FeatureNotification
 {
+    /// <summary>
+    /// Auto-incrementing primary key.
+    /// </summary>
+    public int Id { get; private init; }
+
     /// <summary>
     /// The type of notification (Feature, BugFix, Improvement).
     /// </summary>
@@ -43,25 +47,21 @@ public sealed class FeatureNotification : Entity
     /// Creates a new feature notification. Used by migrations for seeding data.
     /// </summary>
     public static FeatureNotification Create(
-        Guid id,
         NotificationType type,
         string title,
         string summary,
-        string? issueUrl,
-        DateTimeOffset createdAt)
+        string? issueUrl = null)
     {
-        ArgumentOutOfRangeException.ThrowIfEqual(id, Guid.Empty, nameof(id));
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         ArgumentException.ThrowIfNullOrWhiteSpace(summary);
 
         return new FeatureNotification
         {
-            Id = id,
             Type = type,
             Title = title.Trim(),
             Summary = summary.Trim(),
             IssueUrl = string.IsNullOrWhiteSpace(issueUrl) ? null : issueUrl.Trim(),
-            CreatedAt = createdAt
+            CreatedAt = DateTimeOffset.UtcNow
         };
     }
 }

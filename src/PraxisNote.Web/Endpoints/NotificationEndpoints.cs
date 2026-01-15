@@ -66,7 +66,7 @@ public static class NotificationEndpoints
         }
 
         await markSeen.ExecuteAsync(
-            new MarkNotificationsSeen.Command(userId.Value, request.NotificationIds),
+            new MarkNotificationsSeen.Command(userId.Value, request.LastSeenNotificationId),
             cancellationToken);
 
         return Results.NoContent();
@@ -123,4 +123,4 @@ public static class NotificationEndpoints
     }
 }
 
-public record MarkSeenRequest(IEnumerable<Guid> NotificationIds);
+public record MarkSeenRequest(int LastSeenNotificationId);

@@ -5,80 +5,25 @@ namespace PraxisNote.Infrastructure.Persistence.Repositories;
 
 public sealed class NotificationRepository(PraxisNoteDbContext context) : INotificationRepository
 {
-    public async Task<IReadOnlyList<FeatureNotification>> GetNotificationsForUserAsync(
-        Guid userId,
-        DateTimeOffset userCreatedAt,
+    public async Task<IReadOnlyList<FeatureNotification>> GetAllNotificationsAsync(
         CancellationToken cancellationToken = default)
     {
-        // Get last notification before user signup
-        var lastBeforeSignup = await context.FeatureNotifications
-            .Where(n => n.CreatedAt < userCreatedAt)
-            .OrderByDescending(n => n.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        // Get all notifications at or after signup
-        var afterSignup = await context.FeatureNotifications
-            .Where(n => n.CreatedAt >= userCreatedAt)
-            .OrderByDescending(n => n.CreatedAt)
+        return await context.FeatureNotifications
+            .OrderByDescending(n => n.Id)
             .ToListAsync(cancellationToken);
-
-        // Combine results
-        if (lastBeforeSignup != null)
-        {
-            afterSignup.Add(lastBeforeSignup);
-        }
-
-        return afterSignup.OrderByDescending(n => n.CreatedAt).ToList();
-    }
-
-    public async Task<IReadOnlySet<Guid>> GetSeenNotificationIdsAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default)
-    {
-        var ids = await context.UserNotificationReads
-            .Where(r => r.UserId == userId)
-            .Select(r => r.NotificationId)
-            .ToListAsync(cancellationToken);
-
-        return ids.ToHashSet();
-    }
-
-    public async Task MarkAsSeenAsync(
-        Guid userId,
-        IEnumerable<Guid> notificationIds,
-        CancellationToken cancellationToken = default)
-    {
-        var existingIds = await GetSeenNotificationIdsAsync(userId, cancellationToken);
-
-        var newReads = notificationIds
-            .Distinct()
-            .Where(id => !existingIds.Contains(id))
-            .Select(id => UserNotificationRead.Create(userId, id));
-
-        await context.UserNotificationReads.AddRangeAsync(newReads, cancellationToken);
     }
 
     public async Task<int> GetUnseenCountAsync(
-        Guid userId,
-        DateTimeOffset userCreatedAt,
+        int? lastSeenNotificationId,
         CancellationToken cancellationToken = default)
     {
-        var seenIds = await GetSeenNotificationIdsAsync(userId, cancellationToken);
+        if (lastSeenNotificationId is null)
+        {
+            return await context.FeatureNotifications.CountAsync(cancellationToken);
+        }
 
-        // Count notifications after signup that haven't been seen
-        var afterSignupCount = await context.FeatureNotifications
-            .Where(n => n.CreatedAt >= userCreatedAt && !seenIds.Contains(n.Id))
+        return await context.FeatureNotifications
+            .Where(n => n.Id > lastSeenNotificationId)
             .CountAsync(cancellationToken);
-
-        // Check if the last notification before signup is unseen
-        var lastBeforeSignup = await context.FeatureNotifications
-            .Where(n => n.CreatedAt < userCreatedAt)
-            .OrderByDescending(n => n.CreatedAt)
-            .Select(n => n.Id)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        var beforeSignupUnseen = lastBeforeSignup != Guid.Empty && !seenIds.Contains(lastBeforeSignup) ? 1 : 0;
-
-        return afterSignupCount + beforeSignupUnseen;
     }
 }

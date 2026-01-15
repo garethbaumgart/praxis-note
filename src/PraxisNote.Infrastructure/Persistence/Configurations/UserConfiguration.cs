@@ -43,6 +43,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.CreatedAt);
         builder.Property(u => u.LastLoginAt);
+        builder.Property(u => u.LastSeenNotificationId);
 
         builder.Ignore(u => u.DomainEvents);
     }

@@ -1,7 +1,7 @@
 namespace PraxisNote.Application.Features.Notifications;
 
 public record NotificationDto(
-    Guid Id,
+    int Id,
     string Type,
     string Title,
     string Summary,

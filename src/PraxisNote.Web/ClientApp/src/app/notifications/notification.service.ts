@@ -100,19 +100,19 @@ export class NotificationService {
   }
 
   markAllAsSeen(): void {
-    const unseenIds = this._notifications()
-      .filter(n => !n.isSeen)
-      .map(n => n.id);
+    const notifications = this._notifications();
+    if (notifications.length === 0) return;
 
-    if (unseenIds.length === 0) return;
+    // Find the max notification ID
+    const maxId = Math.max(...notifications.map(n => n.id));
 
-    // Optimistic update
+    // Optimistic update - mark all as seen
     this._notifications.update(list =>
-      list.map(n => unseenIds.includes(n.id) ? { ...n, isSeen: true } : n)
+      list.map(n => ({ ...n, isSeen: true }))
     );
     this._unseenCount.set(0);
 
-    this.http.post('/api/notifications/seen', { notificationIds: unseenIds }).subscribe({
+    this.http.post('/api/notifications/seen', { lastSeenNotificationId: maxId }).subscribe({
       error: () => this.loadNotifications(),
     });
   }

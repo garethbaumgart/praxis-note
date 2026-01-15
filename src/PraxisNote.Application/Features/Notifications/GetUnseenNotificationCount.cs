@@ -18,8 +18,7 @@ public sealed class GetUnseenNotificationCount(
         }
 
         return await notificationRepository.GetUnseenCountAsync(
-            query.UserId,
-            user.CreatedAt,
+            user.LastSeenNotificationId,
             cancellationToken);
     }
 }

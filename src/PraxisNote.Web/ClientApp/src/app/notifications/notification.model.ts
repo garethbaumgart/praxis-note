@@ -1,5 +1,5 @@
 export interface Notification {
-  id: string;
+  id: number;
   type: 'Feature' | 'BugFix' | 'Improvement';
   title: string;
   summary: string;

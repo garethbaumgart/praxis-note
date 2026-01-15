@@ -13,7 +13,7 @@ using PraxisNote.Infrastructure.Persistence;
 namespace PraxisNote.Infrastructure.Migrations
 {
     [DbContext(typeof(PraxisNoteDbContext))]
-    [Migration("20260115084217_AddNotifications")]
+    [Migration("20260115102610_AddNotifications")]
     partial class AddNotifications
     {
         /// <inheritdoc />
@@ -47,9 +47,11 @@ namespace PraxisNote.Infrastructure.Migrations
 
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.Notifications.FeatureNotification", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -78,31 +80,6 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.ToTable("FeatureNotifications");
-                });
-
-            modelBuilder.Entity("PraxisNote.Domain.Aggregates.Notifications.UserNotificationRead", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("NotificationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("SeenAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "NotificationId")
-                        .IsUnique();
-
-                    b.ToTable("UserNotificationReads");
                 });
 
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.Tasks.TaskItem", b =>
@@ -174,6 +151,9 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("LastLoginAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("LastSeenNotificationId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
