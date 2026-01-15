@@ -40,6 +40,11 @@ public sealed class User : AggregateRoot
     public DateTimeOffset LastLoginAt { get; private set; }
 
     /// <summary>
+    /// The ID of the last notification the user has seen. Null if no notifications have been seen.
+    /// </summary>
+    public int? LastSeenNotificationId { get; private set; }
+
+    /// <summary>
     /// Required for EF Core.
     /// </summary>
     private User() { }
@@ -85,6 +90,18 @@ public sealed class User : AggregateRoot
         if (!string.IsNullOrWhiteSpace(avatarUrl))
         {
             AvatarUrl = avatarUrl;
+        }
+    }
+
+    /// <summary>
+    /// Updates the last seen notification ID. Only updates if the new ID is greater than the current one.
+    /// </summary>
+    /// <param name="notificationId">The notification ID the user has now seen.</param>
+    public void UpdateLastSeenNotificationId(int notificationId)
+    {
+        if (LastSeenNotificationId is null || notificationId > LastSeenNotificationId)
+        {
+            LastSeenNotificationId = notificationId;
         }
     }
 }

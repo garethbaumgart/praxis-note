@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.Notifications;
 using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.Users;
 using PraxisNote.Infrastructure.Persistence;
@@ -30,6 +31,7 @@ public static class DependencyInjection
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         return services;
     }

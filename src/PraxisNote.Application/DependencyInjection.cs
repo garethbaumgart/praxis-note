@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Application.Features.Users;
 
@@ -29,6 +30,11 @@ public static class DependencyInjection
 
         // User use cases
         services.AddScoped<LoginOrRegisterUser>();
+
+        // Notification use cases
+        services.AddScoped<GetNotifications>();
+        services.AddScoped<GetUnseenNotificationCount>();
+        services.AddScoped<MarkNotificationsSeen>();
 
         return services;
     }

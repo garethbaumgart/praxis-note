@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.Notifications;
 using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.Users;
 
@@ -10,6 +11,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
+    public DbSet<FeatureNotification> FeatureNotifications => Set<FeatureNotification>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public PraxisNoteDbContext(DbContextOptions<PraxisNoteDbContext> options)
