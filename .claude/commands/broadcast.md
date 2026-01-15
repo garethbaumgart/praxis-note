@@ -25,9 +25,8 @@ Create a SQL file in `src/PraxisNote.Infrastructure/Migrations/FeatureNotificati
 
 **File content**:
 ```sql
-INSERT INTO "FeatureNotifications" ("Id", "Type", "Title", "Summary", "IssueUrl", "CreatedAt")
+INSERT INTO "FeatureNotifications" ("Type", "Title", "Summary", "IssueUrl", "CreatedAt")
 VALUES (
-    '<generate-new-guid>',
     '<Feature|BugFix|Improvement>',
     '<PR title or concise feature name>',
     '<1-2 sentence description of user-facing change>',
@@ -35,6 +34,8 @@ VALUES (
     '<current UTC timestamp in ISO 8601 format>'
 );
 ```
+
+Note: The `Id` column is auto-incremented, so it should NOT be specified in the INSERT.
 
 ### Step 4: Guidelines for Writing Summary
 
