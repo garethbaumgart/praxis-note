@@ -12,6 +12,7 @@ using PraxisNote.Infrastructure;
 using PraxisNote.Infrastructure.Persistence;
 using PraxisNote.Web.Auth;
 using PraxisNote.Web.Endpoints;
+using PraxisNote.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,9 @@ builder.Services.AddApplication();
 
 // Add Infrastructure services (DbContext, repositories)
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// SSE Manager for real-time notifications (singleton for connection tracking)
+builder.Services.AddSingleton<NotificationSseManager>();
 
 // Configure Data Protection to persist keys to database (survives cold starts)
 builder.Services.AddDataProtection()
@@ -184,6 +188,7 @@ app.MapAuthEndpoints();
 app.MapTaskEndpoints();
 app.MapCommentEndpoints();
 app.MapDueDateEndpoints();
+app.MapNotificationEndpoints();
 
 // SPA fallback - serves index.html for client-side routing
 if (angularAppExists)

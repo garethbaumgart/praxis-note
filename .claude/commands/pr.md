@@ -19,6 +19,19 @@ Check if any changes in this PR require documentation updates:
 
 If updates are needed, make them and commit before proceeding.
 
+## Step 2.5: Generate Feature Notification (Optional)
+
+If this PR includes user-facing changes (new features, bug fixes, or improvements), ask the user:
+"Would you like to notify users about this change? (Run /broadcast)"
+
+If yes, run the `/broadcast` skill to generate a notification migration, then continue.
+
+Skip this step for:
+- Internal refactoring
+- Test changes
+- Documentation updates
+- CI/workflow changes
+
 ## Step 3: Run Tests
 
 Run these checks and **ensure they pass**:

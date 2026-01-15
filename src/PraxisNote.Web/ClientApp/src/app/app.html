@@ -27,8 +27,17 @@
           </button>
         </div>
         <div class="flex items-center gap-2">
-          <button class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg" aria-label="Notifications">
+          <button
+            class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg relative"
+            aria-label="Notifications"
+            (click)="toggleNotificationPanel()"
+          >
             <i class="pi pi-bell text-foreground-muted" aria-hidden="true"></i>
+            @if (notificationService.unseenCount() > 0) {
+              <span class="absolute -top-1 -right-1 min-w-5 h-5 flex items-center justify-center px-1.5 text-xs font-medium rounded-full bg-red-500 text-white">
+                {{ notificationService.unseenCount() > 99 ? '99+' : notificationService.unseenCount() }}
+              </span>
+            }
           </button>
           <button class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg" aria-label="Settings">
             <i class="pi pi-cog text-foreground-muted" aria-hidden="true"></i>
@@ -41,6 +50,12 @@
         <router-outlet />
       </main>
     </div>
+
+    <!-- Notification Panel -->
+    <app-notification-panel
+      [visible]="notificationPanelOpen()"
+      (visibleChange)="notificationPanelOpen.set($event)"
+    />
   </div>
 } @else {
   <!-- Unauthenticated: Login screen -->
