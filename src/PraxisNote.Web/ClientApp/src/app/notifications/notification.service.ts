@@ -8,6 +8,9 @@ export class NotificationService {
   private readonly ngZone = inject(NgZone);
 
   private eventSource: EventSource | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private reconnectAttempts = 0;
+  private readonly maxReconnectDelay = 60000; // 1 minute max
 
   private readonly _notifications = signal<Notification[]>([]);
   private readonly _unseenCount = signal(0);
@@ -35,28 +38,44 @@ export class NotificationService {
 
       this.eventSource.addEventListener('count', (event: MessageEvent) => {
         this.ngZone.run(() => {
-          const data = JSON.parse(event.data);
-          this._unseenCount.set(data.count);
+          try {
+            const data = JSON.parse(event.data);
+            this._unseenCount.set(data.count);
+            this.reconnectAttempts = 0; // Reset on successful message
+          } catch {
+            // Ignore malformed JSON
+          }
         });
       });
 
       this.eventSource.addEventListener('new', (event: MessageEvent) => {
         this.ngZone.run(() => {
-          const notification = JSON.parse(event.data) as Notification;
-          this._notifications.update(list => [notification, ...list]);
-          this._unseenCount.update(c => c + 1);
+          try {
+            const notification = JSON.parse(event.data) as Notification;
+            this._notifications.update(list => [notification, ...list]);
+            this._unseenCount.update(c => c + 1);
+            this.reconnectAttempts = 0; // Reset on successful message
+          } catch {
+            // Ignore malformed JSON
+          }
         });
       });
 
       this.eventSource.onerror = () => {
         this.disconnectSse();
-        // Retry after 5 seconds
-        setTimeout(() => this.connectSse(), 5000);
+        // Exponential backoff: 1s, 2s, 4s, 8s, ... up to maxReconnectDelay
+        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
+        this.reconnectAttempts++;
+        this.reconnectTimer = setTimeout(() => this.connectSse(), delay);
       };
     });
   }
 
   disconnectSse(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;

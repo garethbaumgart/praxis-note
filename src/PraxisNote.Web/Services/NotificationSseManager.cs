@@ -9,21 +9,20 @@ namespace PraxisNote.Web.Services;
 /// </summary>
 public sealed class NotificationSseManager
 {
-    private readonly ConcurrentDictionary<Guid, ConcurrentBag<HttpResponse>> _connections = new();
+    // Using ConcurrentDictionary<HttpResponse, byte> as a concurrent set for O(1) removal
+    private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<HttpResponse, byte>> _connections = new();
 
     public void AddConnection(Guid userId, HttpResponse response)
     {
-        var connections = _connections.GetOrAdd(userId, _ => []);
-        connections.Add(response);
+        var connections = _connections.GetOrAdd(userId, _ => new ConcurrentDictionary<HttpResponse, byte>());
+        connections.TryAdd(response, 0);
     }
 
     public void RemoveConnection(Guid userId, HttpResponse response)
     {
         if (_connections.TryGetValue(userId, out var connections))
         {
-            // ConcurrentBag doesn't support removal, so we rebuild without the response
-            var remaining = connections.Where(r => r != response).ToList();
-            _connections[userId] = new ConcurrentBag<HttpResponse>(remaining);
+            connections.TryRemove(response, out _);
         }
     }
 
@@ -38,7 +37,9 @@ public sealed class NotificationSseManager
         var message = $"event: {eventName}\ndata: {json}\n\n";
         var bytes = Encoding.UTF8.GetBytes(message);
 
-        foreach (var response in connections)
+        var deadConnections = new List<HttpResponse>();
+
+        foreach (var response in connections.Keys)
         {
             try
             {
@@ -47,8 +48,15 @@ public sealed class NotificationSseManager
             }
             catch
             {
-                // Connection closed, will be cleaned up
+                // Track dead connection for removal
+                deadConnections.Add(response);
             }
+        }
+
+        // Clean up dead connections
+        foreach (var dead in deadConnections)
+        {
+            connections.TryRemove(dead, out _);
         }
     }
 

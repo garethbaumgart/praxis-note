@@ -51,6 +51,7 @@ public sealed class NotificationRepository(PraxisNoteDbContext context) : INotif
         var existingIds = await GetSeenNotificationIdsAsync(userId, cancellationToken);
 
         var newReads = notificationIds
+            .Distinct()
             .Where(id => !existingIds.Contains(id))
             .Select(id => UserNotificationRead.Create(userId, id));
 
