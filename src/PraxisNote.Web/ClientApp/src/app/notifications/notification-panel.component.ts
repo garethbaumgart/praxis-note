@@ -137,17 +137,17 @@ export class NotificationPanelComponent {
   protected readonly activeTab = signal<'new' | 'history'>('new');
 
   constructor() {
-    // Load notifications and auto-mark as seen when panel opens
+    // Load notifications when panel opens
     effect(() => {
       if (this.visible()) {
         this.notificationService.loadNotifications();
-        // Auto-mark as seen after a brief delay
-        setTimeout(() => this.notificationService.markAllAsSeen(), 1000);
       }
     });
   }
 
   protected close(): void {
+    // Mark notifications as seen when closing the panel
+    this.notificationService.markAllAsSeen();
     this.visibleChange.emit(false);
   }
 
