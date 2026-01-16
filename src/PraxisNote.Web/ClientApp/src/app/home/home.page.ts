@@ -78,7 +78,7 @@ import { AuthService } from '../auth';
       <!-- Empty state card -->
       <div class="bg-surface border border-border rounded-2xl p-8 lg:p-12 text-center">
         <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mx-auto mb-5">
-          <i class="pi pi-check-square text-3xl text-done-foreground"></i>
+          <i class="pi pi-check-square text-3xl text-done-foreground" aria-hidden="true"></i>
         </div>
         <h2 class="text-xl font-semibold text-foreground mb-2">Your workspace is ready</h2>
         <p class="text-foreground-secondary mb-8 max-w-md mx-auto">
