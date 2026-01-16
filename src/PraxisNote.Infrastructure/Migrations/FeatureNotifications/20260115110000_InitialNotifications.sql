@@ -105,7 +105,7 @@ INSERT INTO "FeatureNotifications" ("Type", "Title", "Summary", "IssueUrl", "Cre
 VALUES (
     'Improvement',
     'Smarter task sorting',
-    'Priority and due date sorts now work together: priority sort considers due dates, and due date sort considers priority flags.',
+    'Priority and due date sorts now use each other as secondary sorts for smarter task ordering.',
     'https://github.com/garethbaumgart/praxis-note/pull/125',
     '2026-01-16T00:00:00Z'
 );
