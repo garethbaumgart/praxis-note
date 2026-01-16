@@ -19,26 +19,49 @@ import { AuthService } from '../auth';
 
       <!-- Quick actions -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <button class="group p-4 bg-surface border border-border rounded-xl hover:border-accent-foreground hover:shadow-md transition-all duration-200 text-left" aria-label="Create new note">
-          <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center mb-3 group-hover:bg-accent-hover transition-colors">
+        <!-- New Note - Coming Soon -->
+        <button
+          class="group relative p-4 bg-surface border border-border rounded-xl transition-all duration-200 text-left opacity-70 cursor-not-allowed"
+          aria-label="Create new note - Coming soon"
+        >
+          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+            <i class="pi pi-clock text-[10px]" aria-hidden="true"></i>
+            Soon
+          </span>
+          <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center mb-3">
             <i class="pi pi-plus text-accent-foreground" aria-hidden="true"></i>
           </div>
           <p class="font-medium text-foreground mb-1">New Note</p>
           <p class="text-sm text-foreground-secondary">Start writing</p>
         </button>
+
+        <!-- Tasks - Live -->
         <button
-          class="group p-4 bg-surface border border-border rounded-xl hover:border-done-foreground hover:shadow-md transition-all duration-200 text-left"
-          aria-label="Create new task"
+          class="group relative p-4 bg-surface border border-border rounded-xl hover:border-done-foreground hover:shadow-md transition-all duration-200 text-left"
+          aria-label="View tasks"
           (click)="goToTasks()"
         >
+          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+            <i class="pi pi-check-circle text-[10px]" aria-hidden="true"></i>
+            Live
+          </span>
           <div class="w-10 h-10 rounded-lg bg-done flex items-center justify-center mb-3 group-hover:bg-done-hover transition-colors">
             <i class="pi pi-check-square text-done-foreground" aria-hidden="true"></i>
           </div>
           <p class="font-medium text-foreground mb-1">Tasks</p>
           <p class="text-sm text-foreground-secondary">View your board</p>
         </button>
-        <button class="group p-4 bg-surface border border-border rounded-xl hover:border-accent-foreground hover:shadow-md transition-all duration-200 text-left" aria-label="Search">
-          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-3 group-hover:bg-amber-200 transition-colors">
+
+        <!-- Search - Coming Soon -->
+        <button
+          class="group relative p-4 bg-surface border border-border rounded-xl transition-all duration-200 text-left opacity-70 cursor-not-allowed"
+          aria-label="Search - Coming soon"
+        >
+          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+            <i class="pi pi-clock text-[10px]" aria-hidden="true"></i>
+            Soon
+          </span>
+          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-3">
             <i class="pi pi-search text-amber-600" aria-hidden="true"></i>
           </div>
           <p class="font-medium text-foreground mb-1">Search</p>
