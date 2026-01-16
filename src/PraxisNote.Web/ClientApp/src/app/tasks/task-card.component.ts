@@ -56,49 +56,37 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
             (click)="startEdit(); $event.stopPropagation()"
           >{{ task().title }}</p>
 
-          <!-- Time / Delete area -->
-          <div class="shrink-0 text-xs leading-none">
-            @if (confirmingTaskDelete()) {
-              <button
-                type="button"
-                class="flex items-center gap-1 text-rose-600 animate-pulse"
-                (click)="confirmTaskDelete(); $event.stopPropagation()"
-                aria-label="Confirm delete task"
-              >
-                <i class="pi pi-trash"></i>
-                <span>Confirm?</span>
-              </button>
-            } @else if (relativeTime(); as time) {
-              <!-- Has time: show time, delete on hover -->
-              <span
-                class="md:group-hover:hidden"
-                [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
-                [class.text-done-foreground-muted]="task().status === 'Done'"
-              >{{ time }}</span>
-              <button
-                type="button"
-                class="hidden md:group-hover:block text-foreground-muted/40 hover:text-danger"
-                (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
-                aria-label="Delete task"
-              >
-                <i class="pi pi-trash"></i>
-              </button>
-            } @else {
-              <!-- No time (Todo): just delete on hover -->
-              <button
-                type="button"
-                class="hidden md:group-hover:block text-foreground-muted/40 hover:text-danger"
-                (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
-                aria-label="Delete task"
-              >
-                <i class="pi pi-trash"></i>
-              </button>
-            }
-          </div>
+          <!-- Delete button (hover only) -->
+          @if (confirmingTaskDelete()) {
+            <button
+              type="button"
+              class="shrink-0 flex items-center gap-1 text-rose-600 animate-pulse text-xs"
+              (click)="confirmTaskDelete(); $event.stopPropagation()"
+              aria-label="Confirm delete task"
+            >
+              <i class="pi pi-trash"></i>
+              <span>Confirm?</span>
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="shrink-0 hidden md:group-hover:block text-foreground-muted/40 hover:text-danger text-xs"
+              (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
+              aria-label="Delete task"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          }
         </div>
 
-        <!-- Icon row for due date and comments toggle -->
+        <!-- Icon row for due date, time, and comments toggle -->
         <div class="mt-1.5 flex items-center gap-2 text-xs">
+          @if (relativeTime(); as time) {
+            <span
+              [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
+              [class.text-done-foreground-muted]="task().status === 'Done'"
+            >{{ time }}</span>
+          }
           <app-due-date-badge
             [dueDate]="task().dueDate"
             [taskStatus]="task().status"
