@@ -21,8 +21,11 @@ import { AuthService } from '../auth';
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
         <!-- New Note - Coming Soon -->
         <button
+          type="button"
           class="group relative p-4 bg-surface border border-border rounded-xl transition-all duration-200 text-left opacity-70 cursor-not-allowed"
           aria-label="Create new note - Coming soon"
+          disabled
+          aria-disabled="true"
         >
           <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
             <i class="pi pi-clock text-[10px]" aria-hidden="true"></i>
@@ -54,8 +57,11 @@ import { AuthService } from '../auth';
 
         <!-- Search - Coming Soon -->
         <button
+          type="button"
           class="group relative p-4 bg-surface border border-border rounded-xl transition-all duration-200 text-left opacity-70 cursor-not-allowed"
           aria-label="Search - Coming soon"
+          disabled
+          aria-disabled="true"
         >
           <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
             <i class="pi pi-clock text-[10px]" aria-hidden="true"></i>
