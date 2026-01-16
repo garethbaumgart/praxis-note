@@ -99,3 +99,13 @@ VALUES (
     'https://github.com/garethbaumgart/praxis-note/pull/118',
     '2026-01-15T11:00:00Z'
 );
+
+-- 11. Smarter task sorting (PR #125)
+INSERT INTO "FeatureNotifications" ("Type", "Title", "Summary", "IssueUrl", "CreatedAt")
+VALUES (
+    'Improvement',
+    'Smarter task sorting',
+    'Priority and due date sorts now use each other as secondary sorts for smarter task ordering.',
+    'https://github.com/garethbaumgart/praxis-note/pull/125',
+    '2026-01-16T00:00:00Z'
+);
