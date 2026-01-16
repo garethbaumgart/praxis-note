@@ -16,9 +16,10 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgClass, ButtonModule, TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
+  host: { class: 'block' },
   template: `
     <div
-      class="flex flex-col rounded-lg p-3 min-h-48 transition-all"
+      class="flex flex-col rounded-lg p-3 min-h-48 md:h-full transition-all"
       [ngClass]="{
         'bg-todo': status() === 'Todo',
         'bg-inprogress': status() === 'InProgress',

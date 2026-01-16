@@ -109,3 +109,13 @@ VALUES (
     'https://github.com/garethbaumgart/praxis-note/pull/125',
     '2026-01-16T00:00:00Z'
 );
+
+-- 12. Equal column heights (PR #126)
+INSERT INTO "FeatureNotifications" ("Type", "Title", "Summary", "IssueUrl", "CreatedAt")
+VALUES (
+    'BugFix',
+    'Equal column heights on desktop',
+    'Kanban columns now maintain equal heights on desktop for a cleaner, more consistent board layout.',
+    'https://github.com/garethbaumgart/praxis-note/pull/126',
+    '2026-01-16T01:00:00Z'
+);
