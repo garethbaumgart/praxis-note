@@ -10,7 +10,7 @@ using PraxisNote.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace PraxisNote.Infrastructure.Migrations
+namespace PraxisNote.Infrastructure.Migrations.FeatureNotifications
 {
     [DbContext(typeof(PraxisNoteDbContext))]
     [Migration("20260117000000_AddMissingNotifications")]

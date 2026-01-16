@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PraxisNote.Infrastructure.Migrations
+namespace PraxisNote.Infrastructure.Migrations.FeatureNotifications
 {
     /// <inheritdoc />
     public partial class AddMissingNotifications : Migration
