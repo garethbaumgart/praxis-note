@@ -26,9 +26,9 @@ Based on changes, classify as one of:
 
 ### Step 3: Create EF Core Migration
 
-Create two files in `src/PraxisNote.Infrastructure/Migrations/FeatureNotifications/`:
+Create two files in `src/PraxisNote.Infrastructure/Migrations/Data/FeatureNotifications/`:
 
-> **Note**: This subfolder separates data migrations (notifications) from structural schema migrations.
+> **Note**: The `Data/` subfolder separates data migrations from structural schema migrations.
 
 **Naming**: `YYYYMMDDHHMMSS_AddNotification{PascalCaseTitle}.cs`
 
@@ -40,7 +40,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PraxisNote.Infrastructure.Migrations.FeatureNotifications
+namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
 {
     public partial class AddNotification{PascalCaseTitle} : Migration
     {
@@ -73,7 +73,7 @@ namespace PraxisNote.Infrastructure.Migrations.FeatureNotifications
 - Copy from the most recent migration's Designer.cs in the parent Migrations folder
 - Update the `[Migration("...")]` attribute to match your new migration name
 - Update the `partial class` name to match
-- Update the `namespace` to `PraxisNote.Infrastructure.Migrations.FeatureNotifications`
+- Update the `namespace` to `PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications`
 
 ### Step 4: Build and Restart
 
