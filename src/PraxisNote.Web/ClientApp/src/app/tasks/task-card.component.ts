@@ -53,6 +53,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
               class="text-sm text-foreground whitespace-pre-wrap cursor-pointer hover:bg-surface-hover rounded px-1 -mx-1 transition-colors"
               [class.line-through]="task().status === 'Done'"
               [class.text-foreground-muted]="task().status === 'Done'"
+              (mousedown)="$event.stopPropagation()"
               (click)="startEdit(); $event.stopPropagation()"
             >{{ task().title }}</p>
           </div>
@@ -80,7 +81,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                   >{{ time }}</span>
                   <button
                     type="button"
-                    class="absolute inset-0 flex items-center justify-end text-foreground-muted/40 hover:text-danger text-xs invisible opacity-0 md:group-hover:visible md:group-hover:opacity-100 transition-opacity"
+                    class="absolute inset-0 flex items-center justify-end text-foreground-muted/40 hover:text-danger text-xs invisible opacity-0 md:group-hover:visible md:group-hover:opacity-100"
                     (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                     aria-label="Delete task"
                   >
@@ -91,7 +92,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                 <!-- No time displayed (Todo) - simple hover button -->
                 <button
                   type="button"
-                  class="hidden md:group-hover:flex text-foreground-muted/40 hover:text-danger text-xs transition-opacity"
+                  class="hidden md:group-hover:flex text-foreground-muted/40 hover:text-danger text-xs"
                   (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                   aria-label="Delete task"
                 >
