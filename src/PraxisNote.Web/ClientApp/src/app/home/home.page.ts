@@ -77,14 +77,14 @@ import { AuthService } from '../auth';
 
       <!-- Empty state card -->
       <div class="bg-surface border border-border rounded-2xl p-8 lg:p-12 text-center">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center mx-auto mb-5">
-          <i class="pi pi-file-edit text-3xl text-accent-foreground"></i>
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mx-auto mb-5">
+          <i class="pi pi-check-square text-3xl text-done-foreground"></i>
         </div>
         <h2 class="text-xl font-semibold text-foreground mb-2">Your workspace is ready</h2>
         <p class="text-foreground-secondary mb-8 max-w-md mx-auto">
-          Start creating notes with checkboxes that automatically become trackable tasks.
+          Start organizing your work with tasks on a kanban board.
         </p>
-        <p-button label="Create your first note" icon="pi pi-plus" />
+        <p-button label="Create your first task" icon="pi pi-plus" (onClick)="goToTasks()" />
       </div>
     </div>
   `,
