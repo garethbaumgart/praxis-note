@@ -261,10 +261,20 @@ export class ColumnComponent {
       return tasks;
     }
     if (mode === 'priority') {
-      // Sort by priority (true first), then by position as tiebreaker
+      // Sort by priority (true first), then by due date (earliest first, nulls last), then by position
       return [...tasks].sort((a, b) => {
-        if (a.isPriority === b.isPriority) return a.position - b.position;
-        return a.isPriority ? -1 : 1;
+        // First: sort by priority flag
+        if (a.isPriority !== b.isPriority) {
+          return a.isPriority ? -1 : 1;
+        }
+        // Second: sort by due date within same priority
+        if (a.dueDate !== b.dueDate) {
+          if (!a.dueDate) return 1;  // nulls last
+          if (!b.dueDate) return -1;
+          return a.dueDate.localeCompare(b.dueDate);
+        }
+        // Third: position as final tiebreaker
+        return a.position - b.position;
       });
     }
     // Sort by due date (nulls last), then by position as tiebreaker
