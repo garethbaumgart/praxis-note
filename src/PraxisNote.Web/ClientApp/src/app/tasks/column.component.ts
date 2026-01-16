@@ -277,13 +277,20 @@ export class ColumnComponent {
         return a.position - b.position;
       });
     }
-    // Sort by due date (nulls last), then by position as tiebreaker
+    // Sort by due date (nulls last), then by priority (flagged first), then by position
     return [...tasks].sort((a, b) => {
-      if (!a.dueDate && !b.dueDate) return a.position - b.position;
-      if (!a.dueDate) return 1;
-      if (!b.dueDate) return -1;
-      const dateCompare = a.dueDate.localeCompare(b.dueDate);
-      return dateCompare !== 0 ? dateCompare : a.position - b.position;
+      // First: sort by due date
+      if (a.dueDate !== b.dueDate) {
+        if (!a.dueDate) return 1;  // nulls last
+        if (!b.dueDate) return -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      }
+      // Second: sort by priority within same due date
+      if (a.isPriority !== b.isPriority) {
+        return a.isPriority ? -1 : 1;
+      }
+      // Third: position as final tiebreaker
+      return a.position - b.position;
     });
   });
 

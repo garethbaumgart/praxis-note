@@ -100,12 +100,12 @@ VALUES (
     '2026-01-15T11:00:00Z'
 );
 
--- 11. Smarter priority sorting (PR #125)
+-- 11. Smarter task sorting (PR #125)
 INSERT INTO "FeatureNotifications" ("Type", "Title", "Summary", "IssueUrl", "CreatedAt")
 VALUES (
     'Improvement',
-    'Smarter priority sorting',
-    'Priority sort now uses due date as a secondary sort, so urgent tasks with approaching deadlines appear first.',
+    'Smarter task sorting',
+    'Priority and due date sorts now work together: priority sort considers due dates, and due date sort considers priority flags.',
     'https://github.com/garethbaumgart/praxis-note/pull/125',
     '2026-01-16T00:00:00Z'
 );
