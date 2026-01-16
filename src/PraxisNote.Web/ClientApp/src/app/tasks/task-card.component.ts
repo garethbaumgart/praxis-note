@@ -14,31 +14,30 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
   imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, DueDateBadgeComponent],
   template: `
     <div
-      class="bg-surface rounded-md py-2 px-3 border transition-colors group"
+      class="bg-surface rounded-md py-2 px-3 border group"
       [ngClass]="task().status | statusColor:'border'"
     >
       @if (editing()) {
-        <div>
-          <textarea
-            #editInput
-            appAutoResize
-            [value]="editTitle()"
-            (input)="editTitle.set(asTextArea($event).value)"
-            (keydown.enter)="onEnterKey(asKeyboardEvent($event))"
-            (keydown.escape)="cancelEdit()"
-            (blur)="saveEdit()"
-            rows="1"
-            class="w-full text-sm text-foreground bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
-          ></textarea>
-          <p class="text-xs text-foreground-muted/50 mt-1">Enter to save · Esc to cancel</p>
-        </div>
+        <!-- Edit mode: just textarea and hint -->
+        <textarea
+          #editInput
+          appAutoResize
+          [value]="editTitle()"
+          (input)="editTitle.set(asTextArea($event).value)"
+          (keydown.enter)="onEnterKey(asKeyboardEvent($event))"
+          (keydown.escape)="cancelEdit()"
+          (blur)="saveEdit()"
+          rows="1"
+          class="w-full text-sm text-foreground bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
+        ></textarea>
+        <p class="text-xs text-foreground-muted/50 mt-1">Enter to save · Esc to cancel</p>
       } @else {
-        <!-- Task content -->
+        <!-- Display mode -->
         <div class="flex items-start gap-2">
           <!-- Priority flag -->
           <button
             type="button"
-            class="shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors"
+            class="shrink-0 w-5 h-5 flex items-center justify-center rounded"
             [class.text-rose-600]="task().isPriority"
             [class.text-foreground-muted/30]="!task().isPriority"
             [class.hover:text-rose-500]="!task().isPriority"
@@ -47,58 +46,53 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
           >
             <i class="pi text-sm" [class.pi-flag-fill]="task().isPriority" [class.pi-flag]="!task().isPriority"></i>
           </button>
-          <div class="flex-1 min-w-0">
-            <!-- Clickable title for inline editing -->
-            <p
-              class="text-sm text-foreground whitespace-pre-wrap cursor-pointer hover:bg-surface-hover rounded px-1 -mx-1 transition-colors"
-              [class.line-through]="task().status === 'Done'"
-              [class.text-foreground-muted]="task().status === 'Done'"
-              (mousedown)="$event.stopPropagation()"
-              (click)="startEdit(); $event.stopPropagation()"
-            >{{ task().title }}</p>
-          </div>
-          <!-- Time (visible) / Delete button (on hover) -->
-          <div class="flex items-center shrink-0">
+
+          <!-- Title -->
+          <p
+            class="flex-1 min-w-0 text-sm text-foreground whitespace-pre-wrap cursor-pointer hover:bg-surface-hover rounded px-1 -mx-1"
+            [class.line-through]="task().status === 'Done'"
+            [class.text-foreground-muted]="task().status === 'Done'"
+            (mousedown)="$event.stopPropagation()"
+            (click)="startEdit(); $event.stopPropagation()"
+          >{{ task().title }}</p>
+
+          <!-- Time / Delete area -->
+          <div class="shrink-0 text-xs leading-none">
             @if (confirmingTaskDelete()) {
-              <!-- Delete confirmation mode -->
               <button
                 type="button"
-                class="flex items-center gap-1 text-rose-600 animate-pulse text-xs"
+                class="flex items-center gap-1 text-rose-600 animate-pulse"
                 (click)="confirmTaskDelete(); $event.stopPropagation()"
                 aria-label="Confirm delete task"
               >
                 <i class="pi pi-trash"></i>
                 <span>Confirm?</span>
               </button>
+            } @else if (relativeTime(); as time) {
+              <!-- Has time: show time, delete on hover -->
+              <span
+                class="md:group-hover:hidden"
+                [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
+                [class.text-done-foreground-muted]="task().status === 'Done'"
+              >{{ time }}</span>
+              <button
+                type="button"
+                class="hidden md:group-hover:block text-foreground-muted/40 hover:text-danger"
+                (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
+                aria-label="Delete task"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
             } @else {
-              @if (relativeTime(); as time) {
-                <!-- Relative container prevents layout shift on hover -->
-                <div class="relative leading-none">
-                  <span
-                    class="text-xs transition-opacity md:group-hover:opacity-0"
-                    [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
-                    [class.text-done-foreground-muted]="task().status === 'Done'"
-                  >{{ time }}</span>
-                  <button
-                    type="button"
-                    class="absolute inset-0 flex items-center justify-end text-foreground-muted/40 hover:text-danger text-xs invisible opacity-0 md:group-hover:visible md:group-hover:opacity-100"
-                    (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
-                    aria-label="Delete task"
-                  >
-                    <i class="pi pi-trash"></i>
-                  </button>
-                </div>
-              } @else {
-                <!-- No time displayed (Todo) - simple hover button -->
-                <button
-                  type="button"
-                  class="hidden md:group-hover:flex text-foreground-muted/40 hover:text-danger text-xs"
-                  (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
-                  aria-label="Delete task"
-                >
-                  <i class="pi pi-trash"></i>
-                </button>
-              }
+              <!-- No time (Todo): just delete on hover -->
+              <button
+                type="button"
+                class="hidden md:group-hover:block text-foreground-muted/40 hover:text-danger"
+                (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
+                aria-label="Delete task"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
             }
           </div>
         </div>
