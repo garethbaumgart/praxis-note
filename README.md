@@ -1,6 +1,6 @@
 # PraxisNote
 
-[![Deploy](https://github.com/garethbaumgart/praxis-note/actions/workflows/deploy-cloud-run.yml/badge.svg?branch=main)](https://github.com/garethbaumgart/praxis-note/actions/workflows/deploy-cloud-run.yml)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/garethbaumgart/praxis-note/deploy-cloud-run.yml?branch=main&label=Deploy)](https://github.com/garethbaumgart/praxis-note/actions/workflows/deploy-cloud-run.yml)
 ![Unit Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/garethbaumgart/093c03c9b23736d0600e9eeb2e772063/raw/unit-tests.json)
 ![E2E Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/garethbaumgart/093c03c9b23736d0600e9eeb2e772063/raw/e2e-tests.json)
 ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/garethbaumgart/093c03c9b23736d0600e9eeb2e772063/raw/coverage.json)
