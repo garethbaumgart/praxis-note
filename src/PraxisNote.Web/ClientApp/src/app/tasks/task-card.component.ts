@@ -71,16 +71,26 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
               </button>
             } @else {
               @if (relativeTime(); as time) {
-                <!-- Relative container prevents layout shift on hover -->
-                <div class="relative leading-none">
+                <!-- With time: mobile shows both, desktop swaps on hover -->
+                <div class="flex items-center gap-2">
                   <span
                     class="text-xs transition-opacity md:group-hover:opacity-0"
                     [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
                     [class.text-done-foreground-muted]="task().status === 'Done'"
                   >{{ time }}</span>
+                  <!-- Mobile: always visible delete button -->
                   <button
                     type="button"
-                    class="absolute inset-0 flex items-center justify-end text-foreground-muted/40 hover:text-danger text-xs invisible opacity-0 md:group-hover:visible md:group-hover:opacity-100 transition-opacity"
+                    class="flex md:hidden text-foreground-muted/30 hover:text-danger text-xs transition-colors"
+                    (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
+                    aria-label="Delete task"
+                  >
+                    <i class="pi pi-trash"></i>
+                  </button>
+                  <!-- Desktop: hover-reveal delete button (overlays time) -->
+                  <button
+                    type="button"
+                    class="hidden md:group-hover:flex absolute right-3 text-foreground-muted/40 hover:text-danger text-xs transition-opacity"
                     (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                     aria-label="Delete task"
                   >
@@ -88,10 +98,10 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                   </button>
                 </div>
               } @else {
-                <!-- No time displayed (Todo) - simple hover button -->
+                <!-- No time (Todo): mobile shows always, desktop on hover -->
                 <button
                   type="button"
-                  class="hidden md:group-hover:flex text-foreground-muted/40 hover:text-danger text-xs transition-opacity"
+                  class="flex text-foreground-muted/30 hover:text-danger text-xs transition-colors md:opacity-0 md:group-hover:opacity-100"
                   (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                   aria-label="Delete task"
                 >
