@@ -72,7 +72,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
             } @else {
               @if (relativeTime(); as time) {
                 <!-- With time: mobile shows both, desktop swaps on hover -->
-                <div class="flex items-center gap-2">
+                <div class="relative flex items-center gap-2">
                   <span
                     class="text-xs transition-opacity md:group-hover:opacity-0"
                     [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
@@ -90,7 +90,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                   <!-- Desktop: hover-reveal delete button (overlays time) -->
                   <button
                     type="button"
-                    class="hidden md:group-hover:flex absolute right-3 text-foreground-muted/40 hover:text-danger text-xs transition-opacity"
+                    class="hidden md:group-hover:flex absolute right-0 text-foreground-muted/40 hover:text-danger text-xs"
                     (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                     aria-label="Delete task"
                   >
@@ -101,7 +101,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                 <!-- No time (Todo): mobile shows always, desktop on hover -->
                 <button
                   type="button"
-                  class="flex text-foreground-muted/30 hover:text-danger text-xs transition-colors md:opacity-0 md:group-hover:opacity-100"
+                  class="flex text-foreground-muted/30 hover:text-danger text-xs transition-colors md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
                   (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                   aria-label="Delete task"
                 >
