@@ -31,6 +31,10 @@ export class NotificationService {
   connectSse(): void {
     if (this.eventSource) return;
 
+    // Load initial count via HTTP - works with mock auth interceptor
+    // SSE can't use custom headers, so this ensures count loads in dev mode
+    this.loadUnseenCount();
+
     this.ngZone.runOutsideAngular(() => {
       this.eventSource = new EventSource('/api/notifications/stream', {
         withCredentials: true
