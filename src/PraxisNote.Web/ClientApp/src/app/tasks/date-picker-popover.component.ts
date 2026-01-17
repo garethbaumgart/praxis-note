@@ -30,32 +30,36 @@ import { DatePicker } from 'primeng/datepicker';
         <button
           type="button"
           (click)="selectQuickOption('today'); $event.stopPropagation()"
-          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
-          [class]="isSelected('today') ? 'bg-amber-200 text-amber-800' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'"
+          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-today text-due-today-foreground hover:opacity-80"
+          [class.ring-2]="isSelected('today')"
+          [class.ring-due-today-foreground]="isSelected('today')"
         >
           Today
         </button>
         <button
           type="button"
           (click)="selectQuickOption('tomorrow'); $event.stopPropagation()"
-          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
-          [class]="isSelected('tomorrow') ? 'bg-amber-100 text-amber-700' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'"
+          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-soon text-due-soon-foreground hover:opacity-80"
+          [class.ring-2]="isSelected('tomorrow')"
+          [class.ring-due-soon-foreground]="isSelected('tomorrow')"
         >
           +1
         </button>
         <button
           type="button"
           (click)="selectQuickOption('nextWeek'); $event.stopPropagation()"
-          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
-          [class]="isSelected('nextWeek') ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-later text-due-later-foreground hover:opacity-80"
+          [class.ring-2]="isSelected('nextWeek')"
+          [class.ring-due-later-foreground]="isSelected('nextWeek')"
         >
           +7
         </button>
         <button
           type="button"
           (click)="selectQuickOption('plus35'); $event.stopPropagation()"
-          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors"
-          [class]="isSelected('plus35') ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-later text-due-later-foreground hover:opacity-80"
+          [class.ring-2]="isSelected('plus35')"
+          [class.ring-due-later-foreground]="isSelected('plus35')"
         >
           +35
         </button>
@@ -63,7 +67,7 @@ import { DatePicker } from 'primeng/datepicker';
           <button
             type="button"
             (click)="clear(); $event.stopPropagation()"
-            class="ml-auto text-xs text-rose-600 hover:text-rose-700 hover:underline"
+            class="ml-auto text-xs text-danger hover:text-danger-hover hover:underline"
             aria-label="Clear due date"
           >
             Clear

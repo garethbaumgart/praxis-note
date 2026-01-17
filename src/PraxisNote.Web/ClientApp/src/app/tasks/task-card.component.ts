@@ -39,9 +39,9 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
           <button
             type="button"
             class="shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors"
-            [class.text-rose-600]="task().isPriority"
+            [class.text-danger]="task().isPriority"
             [class.text-foreground-muted/30]="!task().isPriority"
-            [class.hover:text-rose-500]="!task().isPriority"
+            [class.hover:text-danger-hover]="!task().isPriority"
             (click)="onTogglePriority.emit(); $event.stopPropagation()"
             [attr.aria-label]="task().isPriority ? 'Remove priority' : 'Mark as priority'"
           >
@@ -62,7 +62,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
               <!-- Delete confirmation mode -->
               <button
                 type="button"
-                class="flex items-center gap-1 text-rose-600 animate-pulse text-xs"
+                class="flex items-center gap-1 text-danger animate-pulse text-xs"
                 (click)="confirmTaskDelete(); $event.stopPropagation()"
                 aria-label="Confirm delete task"
               >
@@ -195,7 +195,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                     <!-- Delete confirmation mode -->
                     <button
                       type="button"
-                      class="flex items-center gap-1 text-rose-600 animate-pulse shrink-0 text-xs"
+                      class="flex items-center gap-1 text-danger animate-pulse shrink-0 text-xs"
                       (click)="confirmCommentDelete(comment.id); $event.stopPropagation()"
                       [attr.aria-label]="'Confirm delete comment: ' + comment.content"
                     >

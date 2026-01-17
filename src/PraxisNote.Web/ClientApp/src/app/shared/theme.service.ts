@@ -14,7 +14,11 @@ export class ThemeService {
     effect(() => {
       const theme = this.theme();
       if (isPlatformBrowser(this.platformId)) {
-        document.documentElement.classList.toggle('dark-mode', theme === 'dark');
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
         localStorage.setItem(this.STORAGE_KEY, theme);
       }
     });

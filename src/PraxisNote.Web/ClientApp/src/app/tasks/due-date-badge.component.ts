@@ -87,13 +87,13 @@ export class DueDateBadgeComponent {
     const diff = this.daysDiff();
     if (diff === null) return '';
 
-    // Option A: Warm urgency scale - red (overdue), amber (today/tomorrow), slate (future)
-    if (this.taskStatus() === 'Done') return 'bg-slate-100 text-slate-400 line-through';
-    if (diff < 0) return 'bg-rose-100 text-rose-600 font-medium';
-    if (diff === 0) return 'bg-amber-100 text-amber-700';
-    if (diff === 1) return 'bg-amber-50 text-amber-600';
-    if (diff <= 6) return 'bg-slate-100 text-slate-600';
-    return 'bg-slate-100 text-slate-500';
+    // Urgency scale using semantic tokens
+    if (this.taskStatus() === 'Done') return 'bg-due-done text-due-done-foreground line-through';
+    if (diff < 0) return 'bg-overdue text-overdue-foreground font-medium';
+    if (diff === 0) return 'bg-due-today text-due-today-foreground';
+    if (diff === 1) return 'bg-due-soon text-due-soon-foreground';
+    if (diff <= 6) return 'bg-due-later text-due-later-foreground';
+    return 'bg-due-later text-due-later-foreground';
   });
 
   readonly iconClass = computed(() => {
