@@ -1,3 +1,8 @@
+---
+name: pr
+description: Create or update a pull request. Use when the user wants to create a PR, submit changes for review, or merge their work. Handles git operations, tests, CI monitoring, and PR creation.
+---
+
 # Create Pull Request
 
 You are creating or updating a pull request. Follow these steps in order.
