@@ -32,9 +32,14 @@
             aria-label="Notifications"
             (click)="toggleNotificationPanel()"
           >
-            <i class="pi pi-bell text-foreground-muted" aria-hidden="true"></i>
+            <i
+              class="pi pi-bell"
+              [class.text-foreground-muted]="notificationService.unseenCount() === 0"
+              [class.text-accent-foreground]="notificationService.unseenCount() > 0"
+              aria-hidden="true"
+            ></i>
             @if (notificationService.unseenCount() > 0) {
-              <span class="absolute -top-1 -right-1 min-w-5 h-5 flex items-center justify-center px-1.5 text-xs font-medium rounded-full bg-red-500 text-white">
+              <span class="absolute -top-1 -right-1 min-w-5 h-5 flex items-center justify-center px-1.5 text-xs font-medium rounded-full bg-danger text-white">
                 {{ notificationService.unseenCount() > 99 ? '99+' : notificationService.unseenCount() }}
               </span>
             }
