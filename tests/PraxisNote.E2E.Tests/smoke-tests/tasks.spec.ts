@@ -151,7 +151,7 @@ test.describe('Tasks', () => {
     // Verify priority is now on (filled flag icon with rose color)
     await expect(taskCard.locator('i.pi-flag-fill')).toBeVisible();
     await expect(taskCard.getByLabel('Remove priority')).toBeVisible();
-    await expect(taskCard.getByLabel('Remove priority')).toHaveClass(/text-rose-600/);
+    await expect(taskCard.getByLabel('Remove priority')).toHaveClass(/text-danger/);
 
     // Toggle priority OFF via API
     const toggleOffRes = await request.patch(`/api/tasks/${task.id}/priority`, {

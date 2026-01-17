@@ -167,6 +167,17 @@ Before implementing UI features, create a mockup HTML file in `mockups/` to expl
 
 **Template:** Copy an existing file from `mockups/` (e.g., `due-date-colors.html`)
 
+## Theming Conventions
+
+PraxisNote uses a semantic token system for colors. **These rules are mandatory:**
+
+- **ALWAYS use semantic tokens** from `styles.css` (e.g., `bg-surface`, `text-foreground`, `bg-todo`)
+- **NEVER use hardcoded Tailwind colors** (e.g., `bg-gray-100`, `text-violet-600`)
+- **NEVER use `dark:` prefix** - our CSS variable system handles dark mode automatically
+- **New colors**: Add semantic tokens to `styles.css` in both `:root` (light) and `[data-theme="dark"]` (dark) blocks within `@layer theme`
+
+**Reference**: See `src/PraxisNote.Web/ClientApp/THEMING.md` for the full token reference and usage guidelines.
+
 ## Project Structure
 
 ```

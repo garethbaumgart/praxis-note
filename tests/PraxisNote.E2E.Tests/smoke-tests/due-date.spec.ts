@@ -118,7 +118,7 @@ test.describe('Due Dates', () => {
     // Use button selector to avoid matching task title "Task due today"
     const dueDateButton = taskCard.locator('button').filter({ hasText: 'Today' });
     await expect(dueDateButton).toBeVisible();
-    await expect(dueDateButton).toHaveClass(/text-amber-700/);
+    await expect(dueDateButton).toHaveClass(/text-due-today-foreground/);
   });
 
   test('displays overdue date with red styling and exclamation icon', async ({ page, request }) => {
@@ -146,7 +146,7 @@ test.describe('Due Dates', () => {
     // Class is on the button, not the span text inside
     const dueDateButton = taskCard.locator('button').filter({ hasText: 'Yesterday' });
     await expect(dueDateButton).toBeVisible();
-    await expect(dueDateButton).toHaveClass(/text-rose-600/);
+    await expect(dueDateButton).toHaveClass(/text-overdue-foreground/);
     // Verify exclamation icon is present
     await expect(taskCard.locator('.pi-exclamation-circle')).toBeVisible();
   });

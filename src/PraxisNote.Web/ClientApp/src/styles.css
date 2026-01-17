@@ -14,9 +14,11 @@
 }
 
 /* ========================================
-   Semantic Color Tokens - Light Mode
+   Semantic Color Tokens
    ======================================== */
-:root {
+@layer theme {
+  /* Light Mode */
+  :root {
   /* Backgrounds */
   --color-bg-base: var(--color-white);
   --color-bg-subtle: var(--color-gray-50);
@@ -96,10 +98,8 @@
   --gradient-brand: linear-gradient(to bottom right, var(--color-violet-500), var(--color-purple-600));
 }
 
-/* ========================================
-   Dark Mode Overrides
-   ======================================== */
-.dark-mode {
+  /* Dark Mode */
+  [data-theme="dark"] {
   --color-bg-base: var(--color-gray-900);
   --color-bg-subtle: var(--color-gray-800);
   --color-bg-muted: var(--color-gray-700);
@@ -172,12 +172,13 @@
 
   /* Brand gradient */
   --gradient-brand: linear-gradient(to bottom right, var(--color-violet-600), var(--color-purple-700));
+  }
 }
 
 /* ========================================
    Extend Tailwind Theme
    ======================================== */
-@theme {
+@theme inline {
   /* Backgrounds */
   --color-surface: var(--color-bg-base);
   --color-surface-subtle: var(--color-bg-subtle);

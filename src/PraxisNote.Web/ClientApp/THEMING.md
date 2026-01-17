@@ -4,15 +4,16 @@ This document describes the color and theme management system used in PraxisNote
 
 ## Architecture Overview
 
-PraxisNote uses a **two-tier semantic token system**:
+PraxisNote uses a **two-tier semantic token system** aligned with Tailwind CSS v4 best practices:
 
-1. **CSS Variables** (`:root` and `.dark-mode`) - Define the actual color values
-2. **Tailwind `@theme` Extensions** - Map CSS variables to Tailwind utility classes
+1. **CSS Variables** (`:root` and `[data-theme="dark"]`) - Define the actual color values
+2. **Tailwind `@theme inline`** - Map CSS variables to Tailwind utility classes
 
 This approach provides:
 - Automatic dark mode support without `dark:` prefixes
 - Centralized color management in `styles.css`
 - Type-safe Tailwind classes with IDE autocompletion
+- Runtime theme switching support via `inline` keyword
 
 ## Color Token Reference
 
@@ -93,28 +94,30 @@ This approach provides:
 
 ### DON'T: Use Tailwind's `dark:` prefix
 
-PraxisNote uses a custom `.dark-mode` class system, not Tailwind's native dark mode. The CSS variables automatically switch values when `.dark-mode` is applied to the document root.
+PraxisNote uses a `data-theme` attribute system, not Tailwind's native dark mode. The CSS variables automatically switch values when `data-theme="dark"` is set on the document root.
 
 ## Adding New Tokens
 
-1. **Define CSS variables** in `:root` (light) and `.dark-mode` (dark) blocks in `styles.css`
-2. **Add Tailwind mapping** in the `@theme` block
+1. **Define CSS variables** in `:root` (light) and `[data-theme="dark"]` (dark) blocks inside `@layer theme` in `styles.css`
+2. **Add Tailwind mapping** in the `@theme inline` block
 3. **Document** the new token in this file
 
 Example:
 ```css
 /* styles.css */
-:root {
-  --color-warning-bg: var(--color-yellow-100);
-  --color-warning-text: var(--color-yellow-800);
+@layer theme {
+  :root {
+    --color-warning-bg: var(--color-yellow-100);
+    --color-warning-text: var(--color-yellow-800);
+  }
+
+  [data-theme="dark"] {
+    --color-warning-bg: var(--color-yellow-900);
+    --color-warning-text: var(--color-yellow-200);
+  }
 }
 
-.dark-mode {
-  --color-warning-bg: var(--color-yellow-900);
-  --color-warning-text: var(--color-yellow-200);
-}
-
-@theme {
+@theme inline {
   --color-warning: var(--color-warning-bg);
   --color-warning-foreground: var(--color-warning-text);
 }
@@ -123,7 +126,7 @@ Example:
 ## Dark Mode Implementation
 
 Dark mode is managed by `ThemeService`:
-- Toggles `.dark-mode` class on `document.documentElement`
+- Sets `data-theme="dark"` attribute on `document.documentElement` (or removes it for light mode)
 - Persists preference to localStorage
 - Respects system preference (`prefers-color-scheme`) on first visit
 
@@ -131,9 +134,9 @@ To toggle theme programmatically:
 ```typescript
 import { ThemeService } from './shared/theme.service';
 
-themeService.toggleTheme();
+themeService.toggle();
 // or
-themeService.theme() // 'light' | 'dark'
+themeService.theme() // Signal<'light' | 'dark'>
 ```
 
 ## File Locations
