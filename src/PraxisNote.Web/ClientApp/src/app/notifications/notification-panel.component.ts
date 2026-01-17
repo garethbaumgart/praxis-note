@@ -61,6 +61,11 @@ import { NotificationService } from './notification.service';
               (click)="setTab('history')"
             >
               History
+              @if (notificationService.historyNotifications().length > 0) {
+                <span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-surface-muted text-foreground-muted">
+                  {{ notificationService.historyNotifications().length }}
+                </span>
+              }
             </button>
           </div>
 
