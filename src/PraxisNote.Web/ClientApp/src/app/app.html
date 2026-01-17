@@ -29,7 +29,7 @@
         <div class="flex items-center gap-2">
           <button
             class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg relative"
-            aria-label="Notifications"
+            [attr.aria-label]="notificationService.unseenCount() === 0 ? 'Notifications' : 'Notifications (' + (notificationService.unseenCount() > 99 ? '99+' : notificationService.unseenCount()) + ' unread)'"
             (click)="toggleNotificationPanel()"
           >
             <i
