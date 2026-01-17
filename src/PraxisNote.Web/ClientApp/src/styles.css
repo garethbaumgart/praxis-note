@@ -62,6 +62,38 @@
   --color-archive-text: var(--color-violet-700);
   --color-archive-text-muted: var(--color-violet-500);
   --color-archive-border: var(--color-violet-200);
+
+  /* Notification types */
+  --color-feature-bg: var(--color-purple-100);
+  --color-feature-text: var(--color-purple-800);
+  --color-bugfix-bg: var(--color-red-100);
+  --color-bugfix-text: var(--color-red-800);
+  --color-improvement-bg: var(--color-blue-100);
+  --color-improvement-text: var(--color-blue-800);
+
+  /* Date urgency */
+  --color-overdue-bg: var(--color-rose-100);
+  --color-overdue-text: var(--color-rose-600);
+  --color-due-today-bg: var(--color-amber-100);
+  --color-due-today-text: var(--color-amber-700);
+  --color-due-soon-bg: var(--color-amber-50);
+  --color-due-soon-text: var(--color-amber-600);
+  --color-due-later-bg: var(--color-slate-100);
+  --color-due-later-text: var(--color-slate-600);
+  --color-due-done-bg: var(--color-slate-100);
+  --color-due-done-text: var(--color-slate-400);
+
+  /* Danger/destructive */
+  --color-danger: var(--color-rose-600);
+  --color-danger-hover: var(--color-rose-500);
+  --color-danger-bg: var(--color-rose-100);
+
+  /* Interactive accent (for sort buttons, checkmarks, etc.) */
+  --color-interactive-bg: var(--color-violet-100);
+  --color-interactive-text: var(--color-violet-600);
+
+  /* Brand gradient */
+  --gradient-brand: linear-gradient(to bottom right, var(--color-violet-500), var(--color-purple-600));
 }
 
 /* ========================================
@@ -108,6 +140,38 @@
   --color-archive-text: var(--color-violet-400);
   --color-archive-text-muted: var(--color-violet-500);
   --color-archive-border: var(--color-violet-800);
+
+  /* Notification types */
+  --color-feature-bg: var(--color-purple-900);
+  --color-feature-text: var(--color-purple-200);
+  --color-bugfix-bg: var(--color-red-900);
+  --color-bugfix-text: var(--color-red-200);
+  --color-improvement-bg: var(--color-blue-900);
+  --color-improvement-text: var(--color-blue-200);
+
+  /* Date urgency */
+  --color-overdue-bg: var(--color-rose-900);
+  --color-overdue-text: var(--color-rose-300);
+  --color-due-today-bg: var(--color-amber-900);
+  --color-due-today-text: var(--color-amber-300);
+  --color-due-soon-bg: var(--color-amber-950);
+  --color-due-soon-text: var(--color-amber-400);
+  --color-due-later-bg: var(--color-slate-800);
+  --color-due-later-text: var(--color-slate-400);
+  --color-due-done-bg: var(--color-slate-800);
+  --color-due-done-text: var(--color-slate-500);
+
+  /* Danger/destructive */
+  --color-danger: var(--color-rose-400);
+  --color-danger-hover: var(--color-rose-300);
+  --color-danger-bg: var(--color-rose-900);
+
+  /* Interactive accent (for sort buttons, checkmarks, etc.) */
+  --color-interactive-bg: var(--color-violet-900);
+  --color-interactive-text: var(--color-violet-400);
+
+  /* Brand gradient */
+  --gradient-brand: linear-gradient(to bottom right, var(--color-violet-600), var(--color-purple-700));
 }
 
 /* ========================================
@@ -159,6 +223,40 @@
   --color-archive-foreground: var(--color-archive-text);
   --color-archive-foreground-muted: var(--color-archive-text-muted);
   --color-archive-border: var(--color-archive-border);
+
+  /* Notification types */
+  --color-feature: var(--color-feature-bg);
+  --color-feature-foreground: var(--color-feature-text);
+  --color-bugfix: var(--color-bugfix-bg);
+  --color-bugfix-foreground: var(--color-bugfix-text);
+  --color-improvement: var(--color-improvement-bg);
+  --color-improvement-foreground: var(--color-improvement-text);
+
+  /* Date urgency */
+  --color-overdue: var(--color-overdue-bg);
+  --color-overdue-foreground: var(--color-overdue-text);
+  --color-due-today: var(--color-due-today-bg);
+  --color-due-today-foreground: var(--color-due-today-text);
+  --color-due-soon: var(--color-due-soon-bg);
+  --color-due-soon-foreground: var(--color-due-soon-text);
+  --color-due-later: var(--color-due-later-bg);
+  --color-due-later-foreground: var(--color-due-later-text);
+  --color-due-done: var(--color-due-done-bg);
+  --color-due-done-foreground: var(--color-due-done-text);
+
+  /* Danger/destructive */
+  --color-danger: var(--color-danger);
+  --color-danger-hover: var(--color-danger-hover);
+  --color-danger-bg: var(--color-danger-bg);
+
+  /* Interactive accent */
+  --color-interactive: var(--color-interactive-bg);
+  --color-interactive-foreground: var(--color-interactive-text);
+}
+
+/* Brand gradient utility class */
+.bg-brand-gradient {
+  background: var(--gradient-brand);
 }
 
 /* Custom animations */

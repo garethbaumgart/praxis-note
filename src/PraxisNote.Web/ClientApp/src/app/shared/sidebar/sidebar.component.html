@@ -2,7 +2,7 @@
 <aside class="hidden lg:flex lg:flex-col w-56 border-r border-border bg-surface-subtle/80">
   <!-- Workspace header -->
   <div class="h-14 flex items-center gap-3 px-4 border-b border-border">
-    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+    <div class="w-8 h-8 rounded-lg bg-brand-gradient flex items-center justify-center shadow-sm">
       <i class="pi pi-check-square text-white text-sm"></i>
     </div>
     <div class="flex-1 min-w-0">
@@ -75,7 +75,7 @@
       @if (user().avatarUrl) {
         <img [src]="user().avatarUrl!" class="w-7 h-7 rounded-full ring-2 ring-surface shadow-sm" [alt]="user().name" />
       } @else {
-        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center ring-2 ring-surface shadow-sm">
+        <div class="w-7 h-7 rounded-full bg-brand-gradient flex items-center justify-center ring-2 ring-surface shadow-sm">
           <span class="text-white text-xs font-medium">{{ user().name.charAt(0) }}</span>
         </div>
       }
@@ -95,7 +95,7 @@
       <!-- Mobile sidebar header -->
       <div class="h-14 flex items-center justify-between px-4 border-b border-border">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+          <div class="w-8 h-8 rounded-lg bg-brand-gradient flex items-center justify-center shadow-sm">
             <i class="pi pi-check-square text-white text-sm" aria-hidden="true"></i>
           </div>
           <span class="font-semibold text-foreground">PraxisNote</span>
@@ -154,7 +154,7 @@
           @if (user().avatarUrl) {
             <img [src]="user().avatarUrl!" class="w-8 h-8 rounded-full" [alt]="user().name" />
           } @else {
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center">
               <span class="text-white text-sm font-medium">{{ user().name.charAt(0) }}</span>
             </div>
           }

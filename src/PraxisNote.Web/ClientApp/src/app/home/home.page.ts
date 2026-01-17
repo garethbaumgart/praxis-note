@@ -27,7 +27,7 @@ import { AuthService } from '../auth';
           disabled
           aria-disabled="true"
         >
-          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-due-today text-due-today-foreground">
             <i class="pi pi-clock text-[10px]" aria-hidden="true"></i>
             Soon
           </span>
@@ -44,7 +44,7 @@ import { AuthService } from '../auth';
           aria-label="View tasks"
           (click)="goToTasks()"
         >
-          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-done text-done-foreground">
             <i class="pi pi-check-circle text-[10px]" aria-hidden="true"></i>
             Live
           </span>
@@ -63,12 +63,12 @@ import { AuthService } from '../auth';
           disabled
           aria-disabled="true"
         >
-          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-due-today text-due-today-foreground">
             <i class="pi pi-clock text-[10px]" aria-hidden="true"></i>
             Soon
           </span>
-          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-3">
-            <i class="pi pi-search text-amber-600" aria-hidden="true"></i>
+          <div class="w-10 h-10 rounded-lg bg-due-today flex items-center justify-center mb-3">
+            <i class="pi pi-search text-due-today-foreground" aria-hidden="true"></i>
           </div>
           <p class="font-medium text-foreground mb-1">Search</p>
           <p class="text-sm text-foreground-secondary">Find anything</p>
@@ -77,7 +77,7 @@ import { AuthService } from '../auth';
 
       <!-- Empty state card -->
       <div class="bg-surface border border-border rounded-2xl p-8 lg:p-12 text-center">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mx-auto mb-5">
+        <div class="w-16 h-16 rounded-2xl bg-done flex items-center justify-center mx-auto mb-5">
           <i class="pi pi-check-square text-3xl text-done-foreground" aria-hidden="true"></i>
         </div>
         <h2 class="text-xl font-semibold text-foreground mb-2">Your workspace is ready</h2>

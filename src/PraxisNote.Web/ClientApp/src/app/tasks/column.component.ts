@@ -52,7 +52,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
               type="button"
               class="w-6 h-6 flex items-center justify-center rounded transition-colors"
               [ngClass]="{
-                'bg-violet-100 text-violet-600': sortMode() !== 'manual',
+                'bg-interactive text-interactive-foreground': sortMode() !== 'manual',
                 'text-foreground-muted hover:text-foreground hover:bg-surface-hover': sortMode() === 'manual'
               }"
               (click)="toggleSortMenu(); $event.stopPropagation()"
@@ -71,7 +71,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
                   <i class="pi pi-bars text-foreground-muted"></i>
                   <span>Manual order</span>
                   @if (sortMode() === 'manual') {
-                    <i class="pi pi-check text-violet-600 ml-auto"></i>
+                    <i class="pi pi-check text-interactive-foreground ml-auto"></i>
                   }
                 </button>
                 <button
@@ -82,7 +82,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
                   <i class="pi pi-calendar text-foreground-muted"></i>
                   <span>Due date</span>
                   @if (sortMode() === 'dueDate') {
-                    <i class="pi pi-check text-violet-600 ml-auto"></i>
+                    <i class="pi pi-check text-interactive-foreground ml-auto"></i>
                   }
                 </button>
                 <button
@@ -93,7 +93,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
                   <i class="pi pi-flag text-foreground-muted"></i>
                   <span>Priority</span>
                   @if (sortMode() === 'priority') {
-                    <i class="pi pi-check text-violet-600 ml-auto"></i>
+                    <i class="pi pi-check text-interactive-foreground ml-auto"></i>
                   }
                 </button>
               </div>
