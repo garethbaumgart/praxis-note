@@ -86,9 +86,9 @@
   --color-due-done-text: var(--color-slate-400);
 
   /* Danger/destructive */
-  --color-danger: var(--color-rose-600);
-  --color-danger-hover: var(--color-rose-500);
-  --color-danger-bg: var(--color-rose-100);
+  --color-danger-base: var(--color-rose-600);
+  --color-danger-hover-base: var(--color-rose-500);
+  --color-danger-bg-base: var(--color-rose-100);
 
   /* Interactive accent (for sort buttons, checkmarks, etc.) */
   --color-interactive-bg: var(--color-violet-100);
@@ -162,9 +162,9 @@
   --color-due-done-text: var(--color-slate-500);
 
   /* Danger/destructive */
-  --color-danger: var(--color-rose-400);
-  --color-danger-hover: var(--color-rose-300);
-  --color-danger-bg: var(--color-rose-900);
+  --color-danger-base: var(--color-rose-400);
+  --color-danger-hover-base: var(--color-rose-300);
+  --color-danger-bg-base: var(--color-rose-900);
 
   /* Interactive accent (for sort buttons, checkmarks, etc.) */
   --color-interactive-bg: var(--color-violet-900);
@@ -246,9 +246,9 @@
   --color-due-done-foreground: var(--color-due-done-text);
 
   /* Danger/destructive */
-  --color-danger: var(--color-danger);
-  --color-danger-hover: var(--color-danger-hover);
-  --color-danger-bg: var(--color-danger-bg);
+  --color-danger: var(--color-danger-base);
+  --color-danger-hover: var(--color-danger-hover-base);
+  --color-danger-bg: var(--color-danger-bg-base);
 
   /* Interactive accent */
   --color-interactive: var(--color-interactive-bg);
