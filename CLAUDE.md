@@ -205,6 +205,40 @@ Frontend (ClientApp)
 
 ## Testing Philosophy
 
+### Well-Named Tests Are Essential
+
+Test names should clearly describe what is being tested and the expected outcome. A developer should understand what broke just by reading the test name.
+
+**Format:** `MethodName_Scenario_ExpectedBehavior` or `Should_ExpectedBehavior_When_Condition`
+
+```csharp
+// ✅ Good - Clear and descriptive
+Create_WithValidContent_ReturnsComment()
+Create_WithNullContent_ThrowsArgumentException()
+Complete_WhenAlreadyDone_PreservesOriginalCompletedAt()
+
+// ❌ Bad - Vague or meaningless
+TestCreate()
+Test1()
+WorksCorrectly()
+```
+
+### Domain Unit Tests
+
+**Target: ~100% coverage** for the Domain layer. Domain contains core business logic, aggregates, entities, and value objects. These are pure, deterministic, and easy to test—no excuse for gaps.
+
+**DO test:**
+- All factory methods (Create, etc.)
+- All state-changing methods
+- Validation rules (null, empty, whitespace, invalid values)
+- Edge cases and boundary conditions
+- Immutability of value objects
+
+**Patterns to follow** (see `TaskItemTests.cs`):
+- AAA pattern (Arrange-Act-Assert)
+- Theory tests with InlineData for validation scenarios
+- Regions to organize test methods by functionality
+
 ### E2E Tests
 
 E2E tests are expensive to write, maintain, and run. Only add E2E tests for **critical flows that would break the business if they fail**.
@@ -212,7 +246,9 @@ E2E tests are expensive to write, maintain, and run. Only add E2E tests for **cr
 **Current E2E coverage** (use `tasks.spec.ts` as the template):
 - `health.spec.ts` - System health/startup verification
 - `auth.spec.ts` - Authentication and access control
-- `tasks.spec.ts` - Core task workflow (create, delete, kanban state transitions)
+- `tasks.spec.ts` - Core task workflow (create, delete, kanban state transitions, priority)
+- `due-date.spec.ts` - Due date display and styling
+- `icon-sizing.spec.ts` - Icon rendering quality
 
 **DO write E2E tests for:**
 - Authentication/authorization flows
@@ -223,7 +259,7 @@ E2E tests are expensive to write, maintain, and run. Only add E2E tests for **cr
 - Individual UI components or styling changes
 - New buttons, dialogs, or form fields (unit test these instead)
 - Features already covered by existing workflow tests
-- Non-critical enhancements
+- Non-critical enhancements (search, sorting, keyboard shortcuts)
 
 When adding a new feature, ask: "If this breaks, does the app become unusable?" If no, skip the E2E test.
 
