@@ -202,7 +202,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
         <!-- Comments expanded content -->
         @if (commentsExpanded()) {
-          <div class="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+          <div class="mt-2">
             <!-- Comments list -->
             @if (task().comments.length > 0) {
               <div class="space-y-1.5 mb-2">
@@ -211,7 +211,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                     <!-- Editing comment -->
                     <div class="text-xs">
                       <div class="flex items-start gap-1.5">
-                        <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
+                        <i class="pi pi-comment text-primary/60 shrink-0 mt-0.5"></i>
                         <textarea
                           #commentEditInput
                           appAutoResize
@@ -237,7 +237,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                       (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                       (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                     >
-                      <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
+                      <i class="pi pi-comment text-primary/40 shrink-0 mt-0.5"></i>
                       <span class="text-foreground-muted flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
                       @if (confirmingCommentDeleteId() === comment.id) {
                         <app-delete-confirm-button
@@ -263,8 +263,8 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             }
 
             <!-- Add comment input -->
-            <div class="flex items-center gap-1.5 text-xs border-t border-primary/10 pt-2">
-              <i class="pi pi-plus text-foreground-muted/30"></i>
+            <div class="flex items-center gap-1.5 text-xs">
+              <i class="pi pi-plus text-primary/40"></i>
               <textarea
                 #newCommentInput
                 appAutoResize
@@ -275,7 +275,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 placeholder="Add comment..."
                 aria-label="Add comment"
                 rows="1"
-                class="flex-1 bg-transparent outline-none text-foreground-muted placeholder-foreground-muted/30 resize-none leading-normal"
+                class="flex-1 bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/40 resize-none leading-normal"
               ></textarea>
             </div>
           </div>
