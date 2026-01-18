@@ -12,11 +12,14 @@ export class DeleteConfirmationService {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private clickHandler: (() => void) | null = null;
 
+  /** Default timeout for delete confirmation in milliseconds */
+  static readonly DEFAULT_TIMEOUT_MS = 5000;
+
   /**
    * Start a delete confirmation with auto-cancel after timeout or click outside.
    * Call cleanup() first if starting a new confirmation while one is active.
    */
-  start(onCancel: () => void, timeoutMs = 3000): void {
+  start(onCancel: () => void, timeoutMs = DeleteConfirmationService.DEFAULT_TIMEOUT_MS): void {
     this.cleanup();
 
     // Auto-cancel after timeout

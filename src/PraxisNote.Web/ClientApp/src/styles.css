@@ -328,6 +328,16 @@
   animation: fade-in 0.5s ease-out 0.5s forwards;
 }
 
+/* Shrinking progress bar for delete confirmation countdown */
+@keyframes shrink-width {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
 /* ========================================
    Angular CDK Drag and Drop
    ======================================== */

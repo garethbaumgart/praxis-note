@@ -59,16 +59,24 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
           <!-- Time (visible) / Delete button (on hover) -->
           <div class="flex items-center shrink-0">
             @if (confirmingTaskDelete()) {
-              <!-- Delete confirmation mode -->
-              <button
-                type="button"
-                class="flex items-center gap-1 text-danger animate-pulse text-xs"
-                (click)="confirmTaskDelete(); $event.stopPropagation()"
-                aria-label="Confirm delete task"
-              >
-                <i class="pi pi-trash"></i>
-                <span>Confirm?</span>
-              </button>
+              <!-- Delete confirmation mode with countdown -->
+              <div class="flex flex-col items-end">
+                <button
+                  type="button"
+                  class="flex items-center gap-1 text-danger text-xs"
+                  (click)="confirmTaskDelete(); $event.stopPropagation()"
+                  aria-label="Confirm delete task"
+                >
+                  <i class="pi pi-trash"></i>
+                  <span>Confirm?</span>
+                </button>
+                <div class="h-0.5 bg-danger/30 rounded-full mt-0.5 w-full overflow-hidden">
+                  <div
+                    class="h-full bg-danger rounded-full"
+                    style="animation: shrink-width 5s linear forwards"
+                  ></div>
+                </div>
+              </div>
             } @else {
               @if (relativeTime(); as time) {
                 <!-- With time: mobile shows both, desktop swaps on hover -->
@@ -202,16 +210,24 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                   <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
                   <span class="text-foreground-muted flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
                   @if (confirmingCommentDeleteId() === comment.id) {
-                    <!-- Delete confirmation mode -->
-                    <button
-                      type="button"
-                      class="flex items-center gap-1 text-danger animate-pulse shrink-0 text-xs"
-                      (click)="confirmCommentDelete(comment.id); $event.stopPropagation()"
-                      [attr.aria-label]="'Confirm delete comment: ' + comment.content"
-                    >
-                      <i class="pi pi-trash"></i>
-                      <span>Confirm?</span>
-                    </button>
+                    <!-- Delete confirmation mode with countdown -->
+                    <div class="flex flex-col items-end shrink-0">
+                      <button
+                        type="button"
+                        class="flex items-center gap-1 text-danger text-xs"
+                        (click)="confirmCommentDelete(comment.id); $event.stopPropagation()"
+                        [attr.aria-label]="'Confirm delete comment: ' + comment.content"
+                      >
+                        <i class="pi pi-trash"></i>
+                        <span>Confirm?</span>
+                      </button>
+                      <div class="h-0.5 bg-danger/30 rounded-full mt-0.5 w-full overflow-hidden">
+                        <div
+                          class="h-full bg-danger rounded-full"
+                          style="animation: shrink-width 5s linear forwards"
+                        ></div>
+                      </div>
+                    </div>
                   } @else {
                     <span class="text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
                     <button
