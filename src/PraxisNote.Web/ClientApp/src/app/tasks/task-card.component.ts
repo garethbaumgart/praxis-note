@@ -283,7 +283,7 @@ export class TaskCardComponent {
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly deleteConfirmation = inject(DeleteConfirmationService);
-  private readonly elementRef = inject(ElementRef);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   // Flag to prevent click-outside from firing during initial render
   private initialized = false;
@@ -456,7 +456,10 @@ export class TaskCardComponent {
   onDocumentClick(event: Event): void {
     if (!this.initialized || !this.selectedTab()) return;
 
-    const target = event.target as HTMLElement;
+    const target = event.target;
+    // Guard for non-Node targets (e.g., SVG elements in some browsers)
+    if (!(target instanceof Node)) return;
+
     if (!this.elementRef.nativeElement.contains(target)) {
       this.closeExpanded();
     }
