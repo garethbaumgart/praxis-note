@@ -272,7 +272,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
             <!-- Add comment input -->
             <div class="flex items-center gap-1.5 text-xs">
-              <i class="pi pi-plus text-primary/40"></i>
+              <i class="pi pi-plus text-foreground/40"></i>
               <textarea
                 #newCommentInput
                 appAutoResize
@@ -283,7 +283,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 placeholder="Add comment..."
                 aria-label="Add comment"
                 rows="1"
-                class="flex-1 bg-transparent border-0 outline-none text-foreground placeholder-foreground-secondary resize-none leading-normal"
+                class="flex-1 bg-transparent border-0 outline-none text-foreground placeholder-foreground/50 resize-none leading-normal"
               ></textarea>
             </div>
           </div>
