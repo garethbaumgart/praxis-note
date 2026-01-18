@@ -1,4 +1,4 @@
-import { Injectable, signal, effect, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, signal, effect, inject, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 type Theme = 'light' | 'dark';
@@ -6,6 +6,7 @@ type Theme = 'light' | 'dark';
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly theme = signal<Theme>(this.getSystemTheme());
 
@@ -16,12 +17,15 @@ export class ThemeService {
       const handler = (e: MediaQueryListEvent) => {
         this.theme.set(e.matches ? 'dark' : 'light');
       };
+
       // Use addEventListener with fallback for older browsers (Safari < 14)
       if (mediaQuery.addEventListener) {
         mediaQuery.addEventListener('change', handler);
+        this.destroyRef.onDestroy(() => mediaQuery.removeEventListener('change', handler));
       } else {
         // Deprecated but needed for older Safari
         mediaQuery.addListener(handler);
+        this.destroyRef.onDestroy(() => mediaQuery.removeListener(handler));
       }
     }
 
