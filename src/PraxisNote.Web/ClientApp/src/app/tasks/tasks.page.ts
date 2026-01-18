@@ -290,7 +290,20 @@ export class TasksPage implements OnInit {
   }
 
   deleteComment(taskId: string, commentId: string): void {
-    this.taskService.deleteComment(taskId, commentId);
+    const deletedComment = this.taskService.deleteCommentWithUndo(taskId, commentId);
+    if (deletedComment) {
+      this.toastService.success({
+        summary: 'Comment deleted',
+        action: {
+          label: 'Undo',
+          callback: () => {
+            this.taskService.undoCommentDelete(commentId);
+            this.toastService.clear();
+          },
+        },
+        life: 5000,
+      });
+    }
   }
 
   setDueDate(taskId: string, date: string): void {

@@ -241,12 +241,23 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                           (onConfirm)="confirmCommentDelete(comment.id)"
                         />
                       } @else {
-                        <span class="text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                        <!-- Time: mobile shows both time and delete, desktop swaps on hover/focus -->
+                        <span class="text-foreground-muted/30 shrink-0 md:group-hover/comment:hidden md:group-focus-within/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                        <!-- Mobile: always visible delete button -->
                         <button
                           type="button"
-                          class="hidden group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
+                          class="flex md:hidden text-foreground-muted/30 hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
-                          [attr.aria-label]="'Delete comment: ' + comment.content"
+                          [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
+                        >
+                          <i class="pi pi-trash"></i>
+                        </button>
+                        <!-- Desktop: hover/focus-reveal delete button for keyboard accessibility -->
+                        <button
+                          type="button"
+                          class="hidden md:group-hover/comment:flex md:group-focus-within/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
+                          (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
+                          [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >
                           <i class="pi pi-trash"></i>
                         </button>
@@ -612,6 +623,19 @@ export class TaskCardComponent {
     const dateStr = comment.updatedAt !== comment.createdAt ? comment.updatedAt : comment.createdAt;
     const prefix = comment.updatedAt !== comment.createdAt ? 'edited ' : '';
     return prefix + this.formatTime(dateStr, 'completed');
+  }
+
+  /** Generate a concise aria-label for the delete comment button */
+  getDeleteCommentAriaLabel(comment: Comment): string {
+    const content = comment.content?.trim();
+    if (!content) {
+      return 'Delete comment';
+    }
+    const maxLength = 40;
+    if (content.length <= maxLength) {
+      return `Delete comment: ${content}`;
+    }
+    return `Delete comment: ${content.slice(0, maxLength).trimEnd()}…`;
   }
 
   onCommentClick(event: MouseEvent, comment: Comment): void {
