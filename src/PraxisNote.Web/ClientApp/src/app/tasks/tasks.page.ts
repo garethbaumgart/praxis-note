@@ -271,7 +271,10 @@ export class TasksPage implements OnInit {
         summary: 'Task deleted',
         action: {
           label: 'Undo',
-          callback: () => this.taskService.undoDelete(id),
+          callback: () => {
+            this.taskService.undoDelete(id);
+            this.toastService.clear(); // Dismiss toast immediately after undo
+          },
         },
         life: 5000,
       });
