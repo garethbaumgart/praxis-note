@@ -223,7 +223,6 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                           class="flex-1 text-foreground-muted bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
                         ></textarea>
                       </div>
-                      <p class="text-foreground-muted/40 mt-0.5 ml-5">Enter to save · Esc to cancel</p>
                     </div>
                   } @else {
                     <!-- Display comment as minimal row -->
