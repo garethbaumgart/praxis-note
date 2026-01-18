@@ -83,7 +83,7 @@
       @if (message.data?.label) {
         <button
           type="button"
-          (click)="message.data.callback(); $event.stopPropagation()"
+          (click)="$event.stopPropagation(); message.data.callback()"
           class="px-3 py-1 text-sm font-medium bg-white/20 hover:bg-white/30 rounded transition-colors"
         >
           {{ message.data.label }}

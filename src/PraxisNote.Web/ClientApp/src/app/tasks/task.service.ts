@@ -8,6 +8,8 @@ import { ToastService } from '../shared/services/toast.service';
 interface PendingDeletion {
   task: Task;
   timeoutId: ReturnType<typeof setTimeout>;
+  /** Original index in the tasks array for restoring at the same position */
+  index: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -265,8 +267,11 @@ export class TaskService {
    * The actual API deletion is delayed to allow undo.
    */
   deleteTaskWithUndo(id: string, undoTimeoutMs = 5000): Task | null {
-    const task = this._tasks().find(t => t.id === id);
-    if (!task) return null;
+    const tasks = this._tasks();
+    const index = tasks.findIndex(t => t.id === id);
+    if (index === -1) return null;
+
+    const task = tasks[index];
 
     // Cancel any existing pending deletion for this task
     this.cancelPendingDeletion(id);
@@ -279,14 +284,14 @@ export class TaskService {
       this.commitDeletion(id);
     }, undoTimeoutMs);
 
-    // Store for potential undo
-    this.pendingDeletions.set(id, { task, timeoutId });
+    // Store for potential undo (including original index for position restoration)
+    this.pendingDeletions.set(id, { task, timeoutId, index });
 
     return task;
   }
 
   /**
-   * Undo a pending deletion, restoring the task to the UI.
+   * Undo a pending deletion, restoring the task to the UI at its original position.
    * Returns true if the undo was successful, false if the task was already deleted.
    */
   undoDelete(id: string): boolean {
@@ -297,8 +302,15 @@ export class TaskService {
     clearTimeout(pending.timeoutId);
     this.pendingDeletions.delete(id);
 
-    // Restore task to UI
-    this._tasks.update(tasks => [...tasks, pending.task]);
+    // Restore task to UI at original position
+    this._tasks.update(tasks => {
+      const clampedIndex = Math.min(pending.index, tasks.length);
+      return [
+        ...tasks.slice(0, clampedIndex),
+        pending.task,
+        ...tasks.slice(clampedIndex),
+      ];
+    });
 
     return true;
   }
@@ -313,8 +325,15 @@ export class TaskService {
     this.http.delete(`/api/tasks/${id}`).subscribe({
       error: () => {
         this.toast.error('Failed to delete task');
-        // Restore task on error
-        this._tasks.update(tasks => [...tasks, pending.task]);
+        // Restore task at original position on error
+        this._tasks.update(tasks => {
+          const clampedIndex = Math.min(pending.index, tasks.length);
+          return [
+            ...tasks.slice(0, clampedIndex),
+            pending.task,
+            ...tasks.slice(clampedIndex),
+          ];
+        });
       },
     });
   }
