@@ -13,7 +13,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
             migrationBuilder.Sql("""
                 INSERT INTO "FeatureNotifications" ("Type", "Title", "Summary", "IssueUrl", "CreatedAt")
                 VALUES (
-                    'NewFeature',
+                    'Feature',
                     'Search term highlighting',
                     'Matching search text is now highlighted in violet in task titles for easy identification in both light and dark modes.',
                     'https://github.com/garethbaumgart/praxis-note/pull/169',
