@@ -191,6 +191,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
             <div cdkDrag [cdkDragData]="task" [cdkDragStartDelay]="{ touch: 150, mouse: 0 }" class="cursor-grab active:cursor-grabbing touch-manipulation">
               <app-task-card
                 [task]="task"
+                [searchQuery]="searchQuery()"
                 (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
                 (onDelete)="onDeleteTask.emit(task.id)"
                 (onAddComment)="onAddComment.emit({ taskId: task.id, content: $event })"
@@ -236,6 +237,7 @@ export class ColumnComponent {
   readonly showArchive = input(false);
   readonly showSortMenu = input(false);
   readonly showSkeleton = input(false);
+  readonly searchQuery = input('');
 
   readonly onDrop = output<CdkDragDrop<Task[]>>();
   readonly onArchiveToggle = output<void>();

@@ -64,6 +64,12 @@ This approach provides:
 | `text-danger-hover` | Rose (lighter) | Danger hover state |
 | `bg-interactive` / `text-interactive-foreground` | Violet | Active state indicators (sort, toggles) |
 
+### Search Highlight
+
+| Token | Color | Usage |
+|-------|-------|-------|
+| `bg-highlight` / `text-highlight-foreground` | Violet | Search term highlighting |
+
 ### Brand
 
 | Class | Usage |

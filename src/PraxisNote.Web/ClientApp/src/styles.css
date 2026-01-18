@@ -94,6 +94,10 @@
   --color-interactive-bg: var(--color-violet-100);
   --color-interactive-text: var(--color-violet-600);
 
+  /* Search highlight */
+  --color-highlight-bg: var(--color-violet-200);
+  --color-highlight-text: var(--color-violet-900);
+
   /* Brand gradient */
   --gradient-brand: linear-gradient(to bottom right, var(--color-violet-500), var(--color-purple-600));
 }
@@ -169,6 +173,10 @@
   /* Interactive accent (for sort buttons, checkmarks, etc.) */
   --color-interactive-bg: var(--color-violet-900);
   --color-interactive-text: var(--color-violet-400);
+
+  /* Search highlight */
+  --color-highlight-bg: var(--color-violet-300);
+  --color-highlight-text: var(--color-violet-900);
 
   /* Brand gradient */
   --gradient-brand: linear-gradient(to bottom right, var(--color-violet-600), var(--color-purple-700));
@@ -253,6 +261,10 @@
   /* Interactive accent */
   --color-interactive: var(--color-interactive-bg);
   --color-interactive-foreground: var(--color-interactive-text);
+
+  /* Search highlight */
+  --color-highlight: var(--color-highlight-bg);
+  --color-highlight-foreground: var(--color-highlight-text);
 }
 
 /* Brand gradient utility class */
