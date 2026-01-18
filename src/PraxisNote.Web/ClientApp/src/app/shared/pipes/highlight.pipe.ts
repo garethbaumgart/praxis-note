@@ -24,7 +24,7 @@ export class HighlightPipe implements PipeTransform {
     const regex = new RegExp(`(${this.escapeRegex(searchTerm.trim())})`, 'gi');
     const highlighted = escaped.replace(
       regex,
-      '<mark class="bg-primary/20 text-foreground rounded-sm px-0.5">$1</mark>'
+      '<mark class="bg-highlight text-highlight-foreground rounded-sm px-0.5">$1</mark>'
     );
 
     return this.sanitizer.bypassSecurityTrustHtml(highlighted);
