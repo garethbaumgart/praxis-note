@@ -39,7 +39,7 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: PraxisNoteTheme,
         options: {
-          darkModeSelector: '.dark-mode',
+          darkModeSelector: '[data-theme="dark"]',
         },
       },
     }),

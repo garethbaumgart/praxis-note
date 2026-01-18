@@ -5,39 +5,32 @@ type Theme = 'light' | 'dark';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly STORAGE_KEY = 'praxis-note-theme';
   private readonly platformId = inject(PLATFORM_ID);
 
-  readonly theme = signal<Theme>(this.getInitialTheme());
+  readonly theme = signal<Theme>(this.getSystemTheme());
 
   constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      // Listen for system preference changes
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      mediaQuery.addEventListener('change', (e) => {
+        this.theme.set(e.matches ? 'dark' : 'light');
+      });
+    }
+
+    // Apply theme to document when it changes
     effect(() => {
       const theme = this.theme();
       if (isPlatformBrowser(this.platformId)) {
-        if (theme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-          document.documentElement.removeAttribute('data-theme');
-        }
-        localStorage.setItem(this.STORAGE_KEY, theme);
+        document.documentElement.setAttribute('data-theme', theme);
       }
     });
   }
 
-  toggle(): void {
-    this.theme.update(t => (t === 'light' ? 'dark' : 'light'));
-  }
-
-  private getInitialTheme(): Theme {
+  private getSystemTheme(): Theme {
     if (!isPlatformBrowser(this.platformId)) {
       return 'light';
     }
-
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') {
-      return stored;
-    }
-
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 }

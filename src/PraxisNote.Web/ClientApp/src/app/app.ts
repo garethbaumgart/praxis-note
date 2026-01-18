@@ -7,6 +7,7 @@ import { LoginComponent } from './shared/login/login.component';
 import { SidebarComponent } from './shared/sidebar/sidebar.component';
 import { NotificationService } from './notifications/notification.service';
 import { NotificationPanelComponent } from './notifications/notification-panel.component';
+import { ThemeService } from './shared/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,9 @@ export class App {
   protected readonly notificationPanelOpen = signal(false);
 
   constructor() {
+    // Initialize theme detection at app startup
+    inject(ThemeService);
+
     // Connect SSE when authenticated
     effect(() => {
       if (this.auth.isAuthenticated()) {
