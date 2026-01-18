@@ -6,13 +6,13 @@ import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
-import { DueDateBadgeComponent } from './due-date-badge.component';
+import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, DeleteConfirmButtonComponent, DueDateBadgeComponent],
+  imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -107,117 +107,177 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
           </div>
         </div>
 
-        <!-- Icon row for due date and comments toggle -->
-        <div class="mt-1.5 flex items-center gap-2 text-xs">
-          <app-due-date-badge
-            [dueDate]="task().dueDate"
-            [taskStatus]="task().status"
-            (onSetDueDate)="onSetDueDate.emit($event)"
-            (onClearDueDate)="onClearDueDate.emit()"
-          />
-
-          <!-- Comment toggle button -->
+        <!-- Tab bar - Google Home style -->
+        <div class="mt-2 flex items-center gap-1.5 relative">
+          <!-- Due Date tab -->
           <button
             type="button"
-            class="relative flex items-center justify-center w-6 h-6 rounded transition-colors"
-            [class.text-foreground-muted/40]="!commentsExpanded()"
-            [class.hover:text-foreground-muted]="!commentsExpanded()"
-            [class.text-primary]="commentsExpanded()"
-            [class.bg-primary/10]="commentsExpanded()"
-            (click)="toggleComments(); $event.stopPropagation()"
+            class="flex items-center justify-center rounded-full transition-all text-xs"
+            [class]="dueDateTabClass()"
+            (click)="toggleTab('dueDate'); $event.stopPropagation()"
+            [attr.aria-label]="task().dueDate ? (dueDateExpanded() ? 'Collapse due date' : 'Expand due date') : 'Set due date'"
+            [attr.aria-expanded]="dueDateExpanded()"
+          >
+            <i [class]="isOverdue() ? 'pi pi-exclamation-circle' : 'pi pi-calendar'"></i>
+            @if (dueDateExpanded() || task().dueDate) {
+              <span>{{ dueDateDisplayText() ?? 'Due Date' }}</span>
+            }
+          </button>
+
+          <!-- Comments tab -->
+          <button
+            type="button"
+            class="relative flex items-center justify-center rounded-full transition-all text-xs"
+            [class]="commentsExpanded() ? 'h-7 px-3 gap-1.5 bg-primary text-white font-medium' : (task().comments.length > 0 ? 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/60 hover:bg-foreground-muted/20' : 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20')"
+            (click)="toggleTab('comments'); $event.stopPropagation()"
             [attr.aria-label]="commentsExpanded() ? 'Hide comments' : 'Show comments'"
             [attr.aria-expanded]="commentsExpanded()"
           >
             <i class="pi pi-comment"></i>
-            @if (task().comments.length > 0) {
-              <span
-                class="absolute -top-1 -right-1 min-w-4 h-4 px-1 flex items-center justify-center rounded-full text-[10px] font-medium"
-                [class.bg-primary]="commentsExpanded()"
-                [class.text-white]="commentsExpanded()"
-                [class.bg-foreground-muted/20]="!commentsExpanded()"
-                [class.text-foreground-muted]="!commentsExpanded()"
-              >{{ task().comments.length }}</span>
+            @if (commentsExpanded()) {
+              <span>Comments</span>
+              @if (task().comments.length > 0) {
+                <span class="bg-white/20 px-1.5 rounded-full">{{ task().comments.length }}</span>
+              }
+            } @else if (task().comments.length > 0) {
+              <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-foreground-muted/30 text-[9px] text-foreground-muted font-medium">{{ task().comments.length }}</span>
             }
           </button>
         </div>
 
-        <!-- Comments section (expandable) -->
-        @if (commentsExpanded()) {
-          <!-- Add comment input -->
-          <div class="mt-2 flex items-start gap-1.5 text-xs">
-            <i class="pi pi-plus text-foreground-muted/30 shrink-0 mt-0.5"></i>
-            <textarea
-              #newCommentInput
-              appAutoResize
-              [value]="newCommentText()"
-              (input)="newCommentText.set(asTextArea($event).value)"
-              (keydown.enter)="onNewCommentEnterKey(asKeyboardEvent($event))"
-              (keydown.escape)="newCommentText.set('')"
-              placeholder="Add comment..."
-              aria-label="Add comment"
-              rows="1"
-              class="flex-1 bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/30 resize-none leading-normal"
-            ></textarea>
-          </div>
-
-          <!-- Comments list -->
-          @if (task().comments.length > 0) {
-          <div class="mt-2 space-y-2">
-            @for (comment of task().comments; track comment.id) {
-              @if (editingCommentId() === comment.id) {
-                <!-- Editing comment -->
-                <div class="text-xs">
-                  <div class="flex items-start gap-1.5">
-                    <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
-                    <textarea
-                      #commentEditInput
-                      appAutoResize
-                      [value]="editCommentContent()"
-                      (input)="editCommentContent.set(asTextArea($event).value)"
-                      (keydown.enter)="onCommentEnterKey(asKeyboardEvent($event))"
-                      (keydown.escape)="cancelCommentEdit()"
-                      (blur)="saveCommentEdit(comment.id)"
-                      rows="1"
-                      aria-label="Edit comment"
-                      class="flex-1 text-foreground-muted bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
-                    ></textarea>
-                  </div>
-                  <p class="text-foreground-muted/40 mt-0.5 ml-5">Enter to save · Esc to cancel</p>
-                </div>
-              } @else {
-                <!-- Display comment as minimal row -->
-                <div
-                  class="group/comment flex items-start gap-1.5 cursor-pointer text-xs"
-                  role="button"
-                  tabindex="0"
-                  (click)="onCommentClick($event, comment)"
-                  (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
-                  (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
-                >
-                  <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
-                  <span class="text-foreground-muted flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
-                  @if (confirmingCommentDeleteId() === comment.id) {
-                    <app-delete-confirm-button
-                      [ariaLabel]="'Confirm delete comment: ' + comment.content"
-                      [shrink]="true"
-                      (onConfirm)="confirmCommentDelete(comment.id)"
-                    />
-                  } @else {
-                    <span class="text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
-                    <button
-                      type="button"
-                      class="hidden group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
-                      (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
-                      [attr.aria-label]="'Delete comment: ' + comment.content"
-                    >
-                      <i class="pi pi-trash"></i>
-                    </button>
-                  }
-                </div>
+        <!-- Due Date expanded content -->
+        @if (dueDateExpanded()) {
+          <div class="mt-2 p-2 bg-amber-50/50 rounded-lg border border-amber-200/50 relative">
+            <div class="flex items-center gap-1 flex-wrap">
+              <button
+                type="button"
+                (click)="selectQuickDate('today'); $event.stopPropagation()"
+                class="px-2 py-1 text-xs rounded transition-colors"
+                [class]="isDateSelected('today') ? 'bg-amber-200 text-amber-800 font-medium' : 'bg-white text-gray-600 hover:bg-gray-100'"
+              >Today</button>
+              <button
+                type="button"
+                (click)="selectQuickDate('tomorrow'); $event.stopPropagation()"
+                class="px-2 py-1 text-xs rounded transition-colors"
+                [class]="isDateSelected('tomorrow') ? 'bg-amber-200 text-amber-800 font-medium' : 'bg-white text-gray-600 hover:bg-gray-100'"
+              >+1</button>
+              <button
+                type="button"
+                (click)="selectQuickDate('nextWeek'); $event.stopPropagation()"
+                class="px-2 py-1 text-xs rounded transition-colors"
+                [class]="isDateSelected('nextWeek') ? 'bg-amber-200 text-amber-800 font-medium' : 'bg-white text-gray-600 hover:bg-gray-100'"
+              >+7</button>
+              <button
+                type="button"
+                (click)="selectQuickDate('plus35'); $event.stopPropagation()"
+                class="px-2 py-1 text-xs rounded transition-colors"
+                [class]="isDateSelected('plus35') ? 'bg-amber-200 text-amber-800 font-medium' : 'bg-white text-gray-600 hover:bg-gray-100'"
+              >+35</button>
+              <button
+                type="button"
+                (click)="showDatePicker.set(true); $event.stopPropagation()"
+                class="px-2 py-1 text-xs rounded bg-white text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-label="Open calendar"
+              ><i class="pi pi-calendar-plus text-[10px]"></i></button>
+              @if (task().dueDate) {
+                <button
+                  type="button"
+                  (click)="clearDueDate(); $event.stopPropagation()"
+                  class="ml-auto px-2 py-1 text-xs rounded text-red-500 hover:bg-red-50 transition-colors"
+                  aria-label="Clear due date"
+                ><i class="pi pi-times text-[10px]"></i> Clear</button>
               }
+            </div>
+            @if (showDatePicker()) {
+              <app-date-picker-popover
+                [currentDate]="task().dueDate"
+                (onSelect)="onDateSelect($event)"
+                (onClear)="clearDueDate()"
+                (onClose)="showDatePicker.set(false)"
+              />
             }
           </div>
-          }
+        }
+
+        <!-- Comments expanded content -->
+        @if (commentsExpanded()) {
+          <div class="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+            <!-- Comments list -->
+            @if (task().comments.length > 0) {
+              <div class="space-y-1.5 mb-2">
+                @for (comment of task().comments; track comment.id) {
+                  @if (editingCommentId() === comment.id) {
+                    <!-- Editing comment -->
+                    <div class="text-xs">
+                      <div class="flex items-start gap-1.5">
+                        <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
+                        <textarea
+                          #commentEditInput
+                          appAutoResize
+                          [value]="editCommentContent()"
+                          (input)="editCommentContent.set(asTextArea($event).value)"
+                          (keydown.enter)="onCommentEnterKey(asKeyboardEvent($event))"
+                          (keydown.escape)="cancelCommentEdit()"
+                          (blur)="saveCommentEdit(comment.id)"
+                          rows="1"
+                          aria-label="Edit comment"
+                          class="flex-1 text-foreground-muted bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
+                        ></textarea>
+                      </div>
+                      <p class="text-foreground-muted/40 mt-0.5 ml-5">Enter to save · Esc to cancel</p>
+                    </div>
+                  } @else {
+                    <!-- Display comment as minimal row -->
+                    <div
+                      class="group/comment flex items-start gap-1.5 cursor-pointer text-xs"
+                      role="button"
+                      tabindex="0"
+                      (click)="onCommentClick($event, comment)"
+                      (keydown.enter)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
+                      (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
+                    >
+                      <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
+                      <span class="text-foreground-muted flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
+                      @if (confirmingCommentDeleteId() === comment.id) {
+                        <app-delete-confirm-button
+                          [ariaLabel]="'Confirm delete comment: ' + comment.content"
+                          [shrink]="true"
+                          (onConfirm)="confirmCommentDelete(comment.id)"
+                        />
+                      } @else {
+                        <span class="text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                        <button
+                          type="button"
+                          class="hidden group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
+                          (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
+                          [attr.aria-label]="'Delete comment: ' + comment.content"
+                        >
+                          <i class="pi pi-trash"></i>
+                        </button>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            }
+
+            <!-- Add comment input -->
+            <div class="flex items-center gap-1.5 text-xs border-t border-primary/10 pt-2">
+              <i class="pi pi-plus text-foreground-muted/30"></i>
+              <textarea
+                #newCommentInput
+                appAutoResize
+                [value]="newCommentText()"
+                (input)="newCommentText.set(asTextArea($event).value)"
+                (keydown.enter)="onNewCommentEnterKey(asKeyboardEvent($event))"
+                (keydown.escape)="newCommentText.set('')"
+                placeholder="Add comment..."
+                aria-label="Add comment"
+                rows="1"
+                class="flex-1 bg-transparent outline-none text-foreground-muted placeholder-foreground-muted/30 resize-none leading-normal"
+              ></textarea>
+            </div>
+          </div>
         }
       }
     </div>
@@ -254,8 +314,76 @@ export class TaskCardComponent {
   readonly confirmingTaskDelete = signal(false);
   readonly confirmingCommentDeleteId = signal<string | null>(null);
 
-  // Comments expand/collapse state
-  readonly commentsExpanded = signal(false);
+  // Tab selection state (Google Home style - one tab at a time)
+  readonly selectedTab = signal<'dueDate' | 'comments' | null>(null);
+  readonly dueDateExpanded = computed(() => this.selectedTab() === 'dueDate');
+  readonly commentsExpanded = computed(() => this.selectedTab() === 'comments');
+
+  // Date picker popover state
+  readonly showDatePicker = signal(false);
+
+  // Due date display calculations
+  private readonly daysDiff = computed(() => {
+    const dueDate = this.task().dueDate;
+    if (!dueDate) return null;
+
+    const date = new Date(dueDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.floor((date.getTime() - today.getTime()) / 86400000);
+  });
+
+  readonly dueDateDisplayText = computed(() => {
+    const diff = this.daysDiff();
+    if (diff === null) return null;
+
+    const dueDate = this.task().dueDate!;
+    const date = new Date(dueDate + 'T00:00:00');
+
+    if (diff < -1) return `${-diff}d ago`;
+    if (diff === -1) return 'Yesterday';
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Tomorrow';
+    if (diff <= 6) return date.toLocaleDateString('en-US', { weekday: 'short' });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  });
+
+  /** Returns true if the task is overdue (past due date and not done) */
+  isOverdue(): boolean {
+    const diff = this.daysDiff();
+    return diff !== null && diff < 0 && this.task().status !== 'Done';
+  }
+
+  /** Returns CSS classes for the due date tab button based on state */
+  dueDateTabClass(): string {
+    const hasDueDate = this.task().dueDate;
+    const isExpanded = this.dueDateExpanded();
+    const isDone = this.task().status === 'Done';
+    const diff = this.daysDiff();
+
+    // Base classes for pill shape when expanded or has date
+    if (isExpanded || hasDueDate) {
+      const base = 'h-7 px-3 gap-1.5';
+
+      if (isDone) {
+        return `${base} bg-due-done text-due-done-foreground line-through`;
+      }
+      if (diff !== null && diff < 0) {
+        return `${base} bg-overdue text-overdue-foreground font-medium`;
+      }
+      if (diff === 0) {
+        return `${base} bg-due-today text-due-today-foreground`;
+      }
+      if (diff === 1) {
+        return `${base} bg-due-soon text-due-soon-foreground`;
+      }
+      // Future dates or no date but expanded
+      return `${base} bg-amber-100 text-amber-700 font-medium`;
+    }
+
+    // Collapsed circular icon (no date set)
+    return 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20';
+  }
 
   // Tick signal for auto-updating relative times (updates every minute)
   private readonly tick = signal(Date.now());
@@ -343,17 +471,72 @@ export class TaskCardComponent {
     this.editing.set(false);
   }
 
-  // Comment methods
-  toggleComments(): void {
-    const wasExpanded = this.commentsExpanded();
-    this.commentsExpanded.update(v => !v);
+  // Tab toggle method (Google Home style - one tab at a time)
+  toggleTab(tab: 'dueDate' | 'comments'): void {
+    const currentTab = this.selectedTab();
+    if (currentTab === tab) {
+      // Clicking the same tab collapses it
+      this.selectedTab.set(null);
+      this.showDatePicker.set(false);
+    } else {
+      // Switch to the new tab
+      this.selectedTab.set(tab);
+      this.showDatePicker.set(false);
 
-    // Auto-focus the add comment input when expanding
-    if (!wasExpanded) {
-      afterNextRender(() => {
-        this.newCommentInput()?.nativeElement.focus();
-      }, { injector: this.injector });
+      // Auto-focus the add comment input when expanding comments
+      if (tab === 'comments') {
+        afterNextRender(() => {
+          this.newCommentInput()?.nativeElement.focus();
+        }, { injector: this.injector });
+      }
     }
+  }
+
+  // Due date quick selection methods
+  selectQuickDate(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): void {
+    const date = this.getQuickOptionDate(option);
+    this.onSetDueDate.emit(this.formatDateString(date));
+  }
+
+  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): Date {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    switch (option) {
+      case 'today':
+        return today;
+      case 'tomorrow':
+        return new Date(today.getTime() + 86400000);
+      case 'nextWeek':
+        return new Date(today.getTime() + 7 * 86400000);
+      case 'plus35':
+        return new Date(today.getTime() + 35 * 86400000);
+    }
+  }
+
+  isDateSelected(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): boolean {
+    const current = this.task().dueDate;
+    if (!current) return false;
+
+    const optionDate = this.getQuickOptionDate(option);
+    return this.formatDateString(optionDate) === current;
+  }
+
+  private formatDateString(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  onDateSelect(date: string): void {
+    this.onSetDueDate.emit(date);
+    this.showDatePicker.set(false);
+  }
+
+  clearDueDate(): void {
+    this.onClearDueDate.emit();
+    this.showDatePicker.set(false);
   }
 
   formatCommentTime(comment: Comment): string {
