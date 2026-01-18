@@ -71,10 +71,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                   <span>Confirm?</span>
                 </button>
                 <div class="h-0.5 bg-danger/30 rounded-full mt-0.5 w-full overflow-hidden">
-                  <div
-                    class="h-full bg-danger rounded-full"
-                    style="animation: shrink-width 5s linear forwards"
-                  ></div>
+                  <div class="h-full bg-danger rounded-full delete-countdown"></div>
                 </div>
               </div>
             } @else {
@@ -222,10 +219,7 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                         <span>Confirm?</span>
                       </button>
                       <div class="h-0.5 bg-danger/30 rounded-full mt-0.5 w-full overflow-hidden">
-                        <div
-                          class="h-full bg-danger rounded-full"
-                          style="animation: shrink-width 5s linear forwards"
-                        ></div>
+                        <div class="h-full bg-danger rounded-full delete-countdown"></div>
                       </div>
                     </div>
                   } @else {
