@@ -112,13 +112,12 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           <!-- Due Date tab -->
           <button
             type="button"
-            class="flex items-center justify-center rounded-full transition-all text-xs"
-            [class]="dueDateTabClass()"
+            [ngClass]="dueDateTabClass()"
             (click)="toggleTab('dueDate'); $event.stopPropagation()"
             [attr.aria-label]="task().dueDate ? (dueDateExpanded() ? 'Collapse due date' : 'Expand due date') : 'Set due date'"
             [attr.aria-expanded]="dueDateExpanded()"
           >
-            <i [class]="isOverdue() ? 'pi pi-exclamation-circle' : 'pi pi-calendar'"></i>
+            <i [ngClass]="isOverdue() ? 'pi pi-exclamation-circle' : 'pi pi-calendar'"></i>
             @if (dueDateExpanded() || task().dueDate) {
               <span>{{ dueDateDisplayText() ?? 'Due Date' }}</span>
             }
@@ -127,8 +126,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           <!-- Comments tab -->
           <button
             type="button"
-            class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0"
-            [class]="commentsTabClass()"
+            [ngClass]="commentsTabClass()"
             (click)="toggleTab('comments'); $event.stopPropagation()"
             [attr.aria-label]="commentsExpanded() ? 'Hide comments' : 'Show comments'"
             [attr.aria-expanded]="commentsExpanded()"
@@ -202,7 +200,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
         <!-- Comments expanded content -->
         @if (commentsExpanded()) {
-          <div class="mt-2">
+          <div class="mt-2 p-2 bg-indigo-50/50 rounded-lg border border-indigo-200/50">
             <!-- Comments list -->
             @if (task().comments.length > 0) {
               <div class="space-y-1.5 mb-2">
@@ -362,28 +360,31 @@ export class TaskCardComponent {
     const isDone = this.task().status === 'Done';
     const diff = this.daysDiff();
 
-    // Base classes for pill shape when expanded or has date
+    // Common base classes for all states
+    const common = 'flex items-center justify-center rounded-full transition-all text-xs shrink-0';
+
+    // Pill shape when expanded or has date
     if (isExpanded || hasDueDate) {
-      const base = 'h-7 px-3 gap-1.5';
+      const pill = `${common} h-7 px-3 gap-1.5`;
 
       if (isDone) {
-        return `${base} bg-due-done text-due-done-foreground line-through`;
+        return `${pill} bg-due-done text-due-done-foreground line-through`;
       }
       if (diff !== null && diff < 0) {
-        return `${base} bg-overdue text-overdue-foreground font-medium`;
+        return `${pill} bg-overdue text-overdue-foreground font-medium`;
       }
       if (diff === 0) {
-        return `${base} bg-due-today text-due-today-foreground`;
+        return `${pill} bg-due-today text-due-today-foreground`;
       }
       if (diff === 1) {
-        return `${base} bg-due-soon text-due-soon-foreground`;
+        return `${pill} bg-due-soon text-due-soon-foreground`;
       }
       // Future dates or no date but expanded
-      return `${base} bg-amber-100 text-amber-700 font-medium`;
+      return `${pill} bg-amber-100 text-amber-700 font-medium`;
     }
 
     // Collapsed circular icon (no date set)
-    return 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20';
+    return `${common} w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20`;
   }
 
   /** Returns CSS classes for the comments tab button based on state */
@@ -391,16 +392,19 @@ export class TaskCardComponent {
     const isExpanded = this.commentsExpanded();
     const hasComments = this.task().comments.length > 0;
 
+    // Common base classes for all states
+    const common = 'relative flex items-center justify-center rounded-full transition-all text-xs shrink-0';
+
     if (isExpanded) {
-      // Expanded pill with indigo/primary styling
-      return 'h-7 px-3 gap-1.5 bg-indigo-500 text-white font-medium';
+      // Expanded pill with indigo styling
+      return `${common} h-7 px-3 gap-1.5 bg-indigo-500 text-white font-medium`;
     }
 
     // Collapsed circular icon
     if (hasComments) {
-      return 'w-7 h-7 bg-indigo-100 text-indigo-600 hover:bg-indigo-200';
+      return `${common} w-7 h-7 bg-indigo-100 text-indigo-600 hover:bg-indigo-200`;
     }
-    return 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20';
+    return `${common} w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20`;
   }
 
   // Tick signal for auto-updating relative times (updates every minute)
