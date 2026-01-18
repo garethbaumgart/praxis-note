@@ -27,7 +27,8 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Error notifications';
+                WHERE "Title" = 'Error notifications'
+                  AND "CreatedAt" = '2026-01-18T01:00:00Z';
                 """);
         }
     }
