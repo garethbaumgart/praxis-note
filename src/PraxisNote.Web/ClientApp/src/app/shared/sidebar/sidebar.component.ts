@@ -1,6 +1,5 @@
-import { Component, computed, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
-import { ThemeService } from '../theme.service';
 
 interface NavItem {
   path: string;
@@ -23,7 +22,6 @@ interface User {
 })
 export class SidebarComponent {
   private readonly router = inject(Router);
-  protected readonly themeService = inject(ThemeService);
 
   readonly user = input.required<User>();
   readonly mobileOpen = input(false);
@@ -49,9 +47,5 @@ export class SidebarComponent {
 
   protected logout(): void {
     this.onLogout.emit();
-  }
-
-  protected toggleTheme(): void {
-    this.themeService.toggle();
   }
 }

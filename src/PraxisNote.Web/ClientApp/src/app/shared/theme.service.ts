@@ -1,43 +1,47 @@
-import { Injectable, signal, effect, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, signal, effect, inject, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 type Theme = 'light' | 'dark';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly STORAGE_KEY = 'praxis-note-theme';
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly theme = signal<Theme>(this.getInitialTheme());
+  readonly theme = signal<Theme>(this.getSystemTheme());
 
   constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      // Listen for system preference changes
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handler = (e: MediaQueryListEvent) => {
+        this.theme.set(e.matches ? 'dark' : 'light');
+      };
+
+      // Use addEventListener with fallback for older browsers (Safari < 14)
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handler);
+        this.destroyRef.onDestroy(() => mediaQuery.removeEventListener('change', handler));
+      } else {
+        // Deprecated but needed for older Safari
+        mediaQuery.addListener(handler);
+        this.destroyRef.onDestroy(() => mediaQuery.removeListener(handler));
+      }
+    }
+
+    // Apply theme to document when it changes
     effect(() => {
       const theme = this.theme();
       if (isPlatformBrowser(this.platformId)) {
-        if (theme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-          document.documentElement.removeAttribute('data-theme');
-        }
-        localStorage.setItem(this.STORAGE_KEY, theme);
+        document.documentElement.setAttribute('data-theme', theme);
       }
     });
   }
 
-  toggle(): void {
-    this.theme.update(t => (t === 'light' ? 'dark' : 'light'));
-  }
-
-  private getInitialTheme(): Theme {
+  private getSystemTheme(): Theme {
     if (!isPlatformBrowser(this.platformId)) {
       return 'light';
     }
-
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') {
-      return stored;
-    }
-
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 }

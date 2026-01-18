@@ -7,6 +7,7 @@ import { LoginComponent } from './shared/login/login.component';
 import { SidebarComponent } from './shared/sidebar/sidebar.component';
 import { NotificationService } from './notifications/notification.service';
 import { NotificationPanelComponent } from './notifications/notification-panel.component';
+import { ThemeService } from './shared/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,7 @@ import { NotificationPanelComponent } from './notifications/notification-panel.c
 export class App {
   protected readonly auth = inject(AuthService);
   protected readonly notificationService = inject(NotificationService);
+  private readonly themeService = inject(ThemeService); // Initialize theme detection at app startup
   protected readonly sidebarOpen = signal(false);
   protected readonly notificationPanelOpen = signal(false);
 

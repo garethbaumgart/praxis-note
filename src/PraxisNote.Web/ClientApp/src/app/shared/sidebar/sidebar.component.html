@@ -49,23 +49,8 @@
     </div>
   </nav>
 
-  <!-- Theme toggle and User section -->
-  <div class="p-3 border-t border-border space-y-2">
-    <!-- Theme toggle -->
-    <button
-      class="w-full flex items-center gap-3 h-10 px-2 hover:bg-surface-muted rounded-lg transition-colors duration-150"
-      (click)="toggleTheme()"
-      aria-label="Toggle theme"
-    >
-      @if (themeService.theme() === 'light') {
-        <i class="pi pi-moon text-foreground-muted"></i>
-        <span class="text-sm text-foreground-secondary">Dark mode</span>
-      } @else {
-        <i class="pi pi-sun text-foreground-muted"></i>
-        <span class="text-sm text-foreground-secondary">Light mode</span>
-      }
-    </button>
-
+  <!-- User section -->
+  <div class="p-3 border-t border-border">
     <!-- User -->
     <button
       class="w-full flex items-center gap-3 h-10 px-2 hover:bg-surface-muted rounded-lg transition-colors duration-150"
@@ -132,23 +117,8 @@
         }
       </nav>
 
-      <!-- Mobile theme toggle and user section -->
-      <div class="p-3 border-t border-border space-y-2">
-        <!-- Theme toggle -->
-        <button
-          class="w-full flex items-center gap-3 h-12 px-3 hover:bg-surface-muted rounded-lg"
-          (click)="toggleTheme()"
-          aria-label="Toggle theme"
-        >
-          @if (themeService.theme() === 'light') {
-            <i class="pi pi-moon text-foreground-muted"></i>
-            <span class="text-sm text-foreground-secondary">Dark mode</span>
-          } @else {
-            <i class="pi pi-sun text-foreground-muted"></i>
-            <span class="text-sm text-foreground-secondary">Light mode</span>
-          }
-        </button>
-
+      <!-- Mobile user section -->
+      <div class="p-3 border-t border-border">
         <!-- User -->
         <button class="w-full flex items-center gap-3 h-12 px-3 hover:bg-surface-muted rounded-lg" (click)="logout()" aria-label="Sign out">
           @if (user().avatarUrl) {
