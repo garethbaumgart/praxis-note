@@ -43,18 +43,21 @@ test.describe('Icon Sizing', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+
     // Wait for task to be visible
-    await expect(page.getByText('Task with comment')).toBeVisible();
+    await expect(desktopGrid.getByText('Task with comment')).toBeVisible();
 
     // Expand comments section by clicking the comment toggle button
-    const commentToggle = page.getByLabel('Show comments');
+    const commentToggle = desktopGrid.getByLabel('Show comments');
     await commentToggle.click();
 
     // Wait for comment to be visible
-    await expect(page.getByText('This is a test comment')).toBeVisible();
+    await expect(desktopGrid.getByText('This is a test comment')).toBeVisible();
 
     // Get the comment row container
-    const commentRow = page.locator('.group\\/comment').first();
+    const commentRow = desktopGrid.locator('.group\\/comment').first();
     const commentIcon = commentRow.locator('i.pi-comment');
     const commentText = commentRow.locator('span').first();
 
@@ -80,14 +83,17 @@ test.describe('Icon Sizing', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
-    await expect(page.getByText('Task for icon test')).toBeVisible();
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+
+    await expect(desktopGrid.getByText('Task for icon test')).toBeVisible();
 
     // Expand comments section by clicking the comment toggle button
-    const commentToggle = page.getByLabel('Show comments');
+    const commentToggle = desktopGrid.getByLabel('Show comments');
     await commentToggle.click();
 
     // Find the task card and the add comment textarea within it
-    const taskCard = page.locator('.group').filter({ hasText: 'Task for icon test' });
+    const taskCard = desktopGrid.locator('.group').filter({ hasText: 'Task for icon test' });
     const plusIcon = taskCard.locator('i.pi-plus');
     const textarea = taskCard.getByPlaceholder('Add comment...');
 
@@ -116,7 +122,9 @@ test.describe('Icon Sizing', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
-    const taskCard = page.locator('.group').filter({ hasText: 'Delete icon test' });
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+    const taskCard = desktopGrid.locator('.group').filter({ hasText: 'Delete icon test' });
 
     // Hover to reveal delete button, then click to show confirmation
     await taskCard.hover();

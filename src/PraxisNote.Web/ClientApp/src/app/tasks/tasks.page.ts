@@ -1,4 +1,5 @@
-import { Component, HostListener, inject, OnInit, viewChild, ChangeDetectionStrategy, computed, signal, ElementRef } from '@angular/core';
+import { Component, HostListener, inject, OnInit, AfterViewInit, OnDestroy, viewChild, ChangeDetectionStrategy, computed, signal, ElementRef, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
 import { ColumnComponent } from './column.component';
@@ -47,8 +48,110 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
         }
       </div>
 
-      <!-- Kanban Board -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+      <!-- Mobile: Horizontal swipe navigation -->
+      <div #mobileScrollContainer role="region" aria-label="Task columns" class="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+        <app-column
+          #todoColumnMobile
+          class="flex-none w-full snap-center pr-4"
+          status="Todo"
+          label="Todo"
+          [showSkeleton]="!taskService.initialLoadComplete()"
+          [tasks]="filteredTodoTasks()"
+          [connectedTo]="[]"
+          [showAddButton]="true"
+          [showKbdHint]="false"
+          [emptyMessage]="searchQuery() ? 'No matching tasks' : 'Tap + to add your first task'"
+          (onDrop)="drop($event, 'Todo')"
+          (onEditTask)="updateTask($event.id, $event.title)"
+          (onDeleteTask)="deleteTask($event)"
+          (onTaskCreated)="createTask($event, 'Todo')"
+          (onAddComment)="addComment($event.taskId, $event.content)"
+          (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+          (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+          (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+          (onClearDueDate)="clearDueDate($event.taskId)"
+          (onTogglePriority)="togglePriority($event.taskId)"
+          (onSortModeChange)="todoSortMode.set($event)"
+          [showSortMenu]="activeSortMenu() === 'Todo'"
+          (onSortMenuToggle)="toggleSortMenu('Todo')"
+        />
+
+        <app-column
+          #inProgressColumnMobile
+          class="flex-none w-full snap-center pr-4"
+          status="InProgress"
+          label="In Progress"
+          [showSkeleton]="!taskService.initialLoadComplete()"
+          [tasks]="filteredInProgressTasks()"
+          [connectedTo]="[]"
+          [showAddButton]="true"
+          [emptyMessage]="searchQuery() ? 'No matching tasks' : 'Nothing in progress'"
+          (onDrop)="drop($event, 'InProgress')"
+          (onEditTask)="updateTask($event.id, $event.title)"
+          (onDeleteTask)="deleteTask($event)"
+          (onTaskCreated)="createTask($event, 'InProgress')"
+          (onAddComment)="addComment($event.taskId, $event.content)"
+          (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+          (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+          (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+          (onClearDueDate)="clearDueDate($event.taskId)"
+          (onTogglePriority)="togglePriority($event.taskId)"
+          (onSortModeChange)="inProgressSortMode.set($event)"
+          [showSortMenu]="activeSortMenu() === 'InProgress'"
+          (onSortMenuToggle)="toggleSortMenu('InProgress')"
+        />
+
+        <app-column
+          #doneColumnMobile
+          class="flex-none w-full snap-center"
+          status="Done"
+          [label]="showArchive() ? 'Archive' : 'Done'"
+          [showSkeleton]="!taskService.initialLoadComplete()"
+          [tasks]="filteredDoneColumnTasks()"
+          [connectedTo]="[]"
+          [showAddButton]="false"
+          [emptyMessage]="searchQuery() ? 'No matching tasks' : (showArchive() ? 'No archived tasks' : 'Complete some tasks!')"
+          [archiveCount]="taskService.archivedCount()"
+          [doneCount]="taskService.doneTasks().length"
+          [showArchive]="showArchive()"
+          (onArchiveToggle)="toggleArchive()"
+          (onDrop)="drop($event, 'Done')"
+          (onEditTask)="updateTask($event.id, $event.title)"
+          (onDeleteTask)="deleteTask($event)"
+          (onTaskCreated)="createTask($event, 'Done')"
+          (onAddComment)="addComment($event.taskId, $event.content)"
+          (onEditComment)="editComment($event.taskId, $event.commentId, $event.content)"
+          (onDeleteComment)="deleteComment($event.taskId, $event.commentId)"
+          (onSetDueDate)="setDueDate($event.taskId, $event.date)"
+          (onClearDueDate)="clearDueDate($event.taskId)"
+          (onTogglePriority)="togglePriority($event.taskId)"
+          (onSortModeChange)="doneSortMode.set($event)"
+          [showSortMenu]="activeSortMenu() === 'Done'"
+          (onSortMenuToggle)="toggleSortMenu('Done')"
+        />
+      </div>
+
+      <!-- Mobile: Column indicator dots -->
+      <div class="flex md:hidden justify-center gap-1 py-4">
+        @for (col of columnLabels; track col; let i = $index) {
+          <button
+            type="button"
+            class="p-2"
+            (click)="scrollToColumn(i)"
+            [attr.aria-label]="'Go to ' + col + ' column'"
+            [attr.aria-current]="i === activeColumn() ? 'true' : null"
+          >
+            <span
+              class="block w-2 h-2 rounded-full transition-colors"
+              [class.bg-primary]="i === activeColumn()"
+              [class.bg-foreground-muted/30]="i !== activeColumn()"
+            ></span>
+          </button>
+        }
+      </div>
+
+      <!-- Desktop: Grid layout -->
+      <div class="hidden md:grid md:grid-cols-3 gap-6">
         <app-column
           #todoColumn
           status="Todo"
@@ -129,17 +232,23 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
     </div>
   `,
 })
-export class TasksPage implements OnInit {
+export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly taskService = inject(TaskService);
   private readonly toastService = inject(ToastService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly todoColumn = viewChild<ColumnComponent>('todoColumn');
   readonly inProgressColumn = viewChild<ColumnComponent>('inProgressColumn');
   readonly doneColumn = viewChild<ColumnComponent>('doneColumn');
   readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  readonly mobileScrollContainer = viewChild<ElementRef<HTMLElement>>('mobileScrollContainer');
 
   readonly showArchive = signal(false);
   readonly searchQuery = signal('');
+  readonly activeColumn = signal(0);
+  readonly columnLabels = ['Todo', 'In Progress', 'Done'] as const;
+
+  private scrollObserver: IntersectionObserver | null = null;
   readonly todoSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly inProgressSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly doneSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
@@ -198,6 +307,47 @@ export class TasksPage implements OnInit {
   ngOnInit(): void {
     this.taskService.loadTasks();
     this.taskService.loadArchivedCount();
+  }
+
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.setupScrollObserver();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.scrollObserver?.disconnect();
+    this.scrollObserver = null;
+  }
+
+  private setupScrollObserver(): void {
+    const container = this.mobileScrollContainer()?.nativeElement;
+    if (!container) return;
+
+    this.scrollObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            const index = Array.from(container.children).indexOf(entry.target as Element);
+            if (index >= 0) {
+              this.activeColumn.set(index);
+            }
+          }
+        });
+      },
+      { root: container, threshold: 0.5 }
+    );
+
+    // Observe all column elements
+    Array.from(container.children).forEach((col) => this.scrollObserver?.observe(col));
+  }
+
+  scrollToColumn(index: number): void {
+    const container = this.mobileScrollContainer()?.nativeElement;
+    if (!container) return;
+
+    const column = container.children[index] as HTMLElement;
+    column?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }
 
   /** Type-safe helper for accessing input value from events */

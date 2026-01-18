@@ -69,8 +69,8 @@ After the PR is created, **actively monitor** and address feedback:
    - Keep checking every 30-60 seconds until reviews are complete
 5. **Address all comments immediately**: When comments appear:
    - Read each comment carefully
-   - Make the requested fix if valid
-   - If you disagree, explain why in a reply
+   - **If addressing**: Add a thumbs up reaction to the comment using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
+   - **If not addressing**: Reply to the comment explaining why (e.g., out of scope, matches existing patterns, deferred to follow-up)
    - Commit, push, and verify the fix resolves the comment
 6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
 
