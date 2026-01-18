@@ -9,16 +9,18 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 export class HighlightPipe implements PipeTransform {
   private readonly sanitizer = inject(DomSanitizer);
 
-  transform(text: string | null | undefined, searchTerm: string | null | undefined): SafeHtml | string {
+  transform(text: string | null | undefined, searchTerm: string | null | undefined): SafeHtml {
     if (!text) {
-      return '';
-    }
-
-    if (!searchTerm?.trim()) {
-      return text;
+      return this.sanitizer.bypassSecurityTrustHtml('');
     }
 
     const escaped = this.escapeHtml(text);
+
+    if (!searchTerm?.trim()) {
+      // Return escaped text to prevent HTML interpretation
+      return this.sanitizer.bypassSecurityTrustHtml(escaped);
+    }
+
     const regex = new RegExp(`(${this.escapeRegex(searchTerm.trim())})`, 'gi');
     const highlighted = escaped.replace(
       regex,
@@ -34,7 +36,8 @@ export class HighlightPipe implements PipeTransform {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+      .replace(/'/g, '&#039;')
+      .replace(/\n/g, '<br>');
   }
 
   private escapeRegex(str: string): string {

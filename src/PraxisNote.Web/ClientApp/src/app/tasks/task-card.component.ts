@@ -283,7 +283,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 placeholder="Add comment..."
                 aria-label="Add comment"
                 rows="1"
-                class="flex-1 bg-transparent border-0 outline-none text-foreground-muted placeholder-foreground-muted/40 resize-none leading-normal"
+                class="flex-1 bg-transparent border-0 outline-none text-foreground placeholder-foreground-secondary resize-none leading-normal"
               ></textarea>
             </div>
           </div>
