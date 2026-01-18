@@ -241,10 +241,21 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                           (onConfirm)="confirmCommentDelete(comment.id)"
                         />
                       } @else {
-                        <span class="text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                        <!-- Time: mobile shows both time and delete, desktop swaps on hover -->
+                        <span class="text-foreground-muted/30 shrink-0 md:group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                        <!-- Mobile: always visible delete button -->
                         <button
                           type="button"
-                          class="hidden group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
+                          class="flex md:hidden text-foreground-muted/30 hover:text-danger shrink-0 text-xs"
+                          (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
+                          [attr.aria-label]="'Delete comment: ' + comment.content"
+                        >
+                          <i class="pi pi-trash"></i>
+                        </button>
+                        <!-- Desktop: hover-reveal delete button -->
+                        <button
+                          type="button"
+                          class="hidden md:group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                           [attr.aria-label]="'Delete comment: ' + comment.content"
                         >

@@ -12,6 +12,14 @@ interface PendingDeletion {
   index: number;
 }
 
+interface PendingCommentDeletion {
+  taskId: string;
+  comment: { id: string; content: string; createdAt: string; updatedAt: string };
+  timeoutId: ReturnType<typeof setTimeout>;
+  /** Original index in the comments array for restoring at the same position */
+  index: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TaskService {
   private readonly http = inject(HttpClient);
@@ -20,6 +28,7 @@ export class TaskService {
 
   private readonly reorderSubject = new Subject<{ status: string; taskIds: string[] }>();
   private readonly pendingDeletions = new Map<string, PendingDeletion>();
+  private readonly pendingCommentDeletions = new Map<string, PendingCommentDeletion>();
 
   private readonly _tasks = signal<Task[]>([]);
   private readonly _archivedTasks = signal<Task[]>([]);
@@ -429,6 +438,105 @@ export class TaskService {
         this.loadTasks();
       },
     });
+  }
+
+  /**
+   * Delete a comment with undo capability.
+   * Returns the deleted comment for display purposes, or null if not found.
+   * The actual API deletion is delayed to allow undo.
+   */
+  deleteCommentWithUndo(taskId: string, commentId: string, undoTimeoutMs = 5000): { id: string; content: string } | null {
+    const task = this._tasks().find(t => t.id === taskId);
+    if (!task) return null;
+
+    const index = task.comments.findIndex(c => c.id === commentId);
+    if (index === -1) return null;
+
+    const comment = task.comments[index];
+
+    // Cancel any existing pending deletion for this comment
+    this.cancelPendingCommentDeletion(commentId);
+
+    // Remove from UI immediately (optimistic update)
+    this._tasks.update(tasks =>
+      tasks.map(t =>
+        t.id === taskId
+          ? { ...t, comments: t.comments.filter(c => c.id !== commentId) }
+          : t
+      )
+    );
+
+    // Schedule actual deletion after timeout
+    const timeoutId = setTimeout(() => {
+      this.commitCommentDeletion(taskId, commentId);
+    }, undoTimeoutMs);
+
+    // Store for potential undo
+    this.pendingCommentDeletions.set(commentId, { taskId, comment, timeoutId, index });
+
+    return { id: comment.id, content: comment.content };
+  }
+
+  /**
+   * Undo a pending comment deletion, restoring the comment to the UI.
+   * Returns true if the undo was successful, false if the comment was already deleted.
+   */
+  undoCommentDelete(commentId: string): boolean {
+    const pending = this.pendingCommentDeletions.get(commentId);
+    if (!pending) return false;
+
+    // Cancel the scheduled deletion
+    clearTimeout(pending.timeoutId);
+    this.pendingCommentDeletions.delete(commentId);
+
+    // Restore comment to UI at original position
+    this._tasks.update(tasks =>
+      tasks.map(t => {
+        if (t.id === pending.taskId) {
+          const comments = [...t.comments];
+          const clampedIndex = Math.min(pending.index, comments.length);
+          comments.splice(clampedIndex, 0, pending.comment);
+          return { ...t, comments };
+        }
+        return t;
+      })
+    );
+
+    return true;
+  }
+
+  private commitCommentDeletion(taskId: string, commentId: string): void {
+    const pending = this.pendingCommentDeletions.get(commentId);
+    if (!pending) return;
+
+    this.pendingCommentDeletions.delete(commentId);
+
+    // Actually delete from backend
+    this.http.delete(`/api/tasks/${taskId}/comments/${commentId}`).subscribe({
+      error: () => {
+        this.toast.error('Failed to delete comment');
+        // Restore comment at original position on error
+        this._tasks.update(tasks =>
+          tasks.map(t => {
+            if (t.id === pending.taskId) {
+              const comments = [...t.comments];
+              const clampedIndex = Math.min(pending.index, comments.length);
+              comments.splice(clampedIndex, 0, pending.comment);
+              return { ...t, comments };
+            }
+            return t;
+          })
+        );
+      },
+    });
+  }
+
+  private cancelPendingCommentDeletion(commentId: string): void {
+    const pending = this.pendingCommentDeletions.get(commentId);
+    if (pending) {
+      clearTimeout(pending.timeoutId);
+      this.pendingCommentDeletions.delete(commentId);
+    }
   }
 
   setDueDate(taskId: string, date: string): void {
