@@ -57,8 +57,11 @@ test.describe('Due Dates', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+
     // Verify due date badge shows "Tomorrow"
-    const taskCard = page.locator('.group').filter({ hasText: 'Task with due date' });
+    const taskCard = desktopGrid.locator('.group').filter({ hasText: 'Task with due date' });
     await expect(taskCard.getByText('Tomorrow')).toBeVisible();
   });
 
@@ -88,8 +91,11 @@ test.describe('Due Dates', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+
     // Verify due date text is not visible, but calendar icon is
-    const taskCard = page.locator('.group').filter({ hasText: 'Task to clear due date' });
+    const taskCard = desktopGrid.locator('.group').filter({ hasText: 'Task to clear due date' });
     await expect(taskCard.getByText('Tomorrow')).not.toBeVisible();
     await expect(taskCard.getByLabel('Set due date')).toBeVisible();
   });
@@ -114,7 +120,9 @@ test.describe('Due Dates', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
-    const taskCard = page.locator('.group').filter({ hasText: 'Task due today' });
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+    const taskCard = desktopGrid.locator('.group').filter({ hasText: 'Task due today' });
     // Use button selector to avoid matching task title "Task due today"
     const dueDateButton = taskCard.locator('button').filter({ hasText: 'Today' });
     await expect(dueDateButton).toBeVisible();
@@ -142,7 +150,9 @@ test.describe('Due Dates', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
-    const taskCard = page.locator('.group').filter({ hasText: 'Overdue task' });
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+    const taskCard = desktopGrid.locator('.group').filter({ hasText: 'Overdue task' });
     // Class is on the button, not the span text inside
     const dueDateButton = taskCard.locator('button').filter({ hasText: 'Yesterday' });
     await expect(dueDateButton).toBeVisible();
@@ -161,7 +171,9 @@ test.describe('Due Dates', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
-    const taskCard = page.locator('.group').filter({ hasText: 'Task without due date' });
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+    const taskCard = desktopGrid.locator('.group').filter({ hasText: 'Task without due date' });
     // Calendar icon should be visible without hover
     await expect(taskCard.getByLabel('Set due date')).toBeVisible();
   });
