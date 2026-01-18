@@ -207,22 +207,20 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 @for (comment of task().comments; track comment.id) {
                   @if (editingCommentId() === comment.id) {
                     <!-- Editing comment -->
-                    <div class="text-xs">
-                      <div class="flex items-start gap-1.5">
-                        <i class="pi pi-comment text-primary/60 shrink-0 mt-0.5"></i>
-                        <textarea
-                          #commentEditInput
-                          appAutoResize
-                          [value]="editCommentContent()"
-                          (input)="editCommentContent.set(asTextArea($event).value)"
-                          (keydown.enter)="onCommentEnterKey(asKeyboardEvent($event))"
-                          (keydown.escape)="cancelCommentEdit()"
-                          (blur)="saveCommentEdit(comment.id)"
-                          rows="1"
-                          aria-label="Edit comment"
-                          class="flex-1 text-foreground-muted bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
-                        ></textarea>
-                      </div>
+                    <div class="flex items-center gap-1.5 text-xs">
+                      <i class="pi pi-comment text-primary/40"></i>
+                      <textarea
+                        #commentEditInput
+                        appAutoResize
+                        [value]="editCommentContent()"
+                        (input)="editCommentContent.set(asTextArea($event).value)"
+                        (keydown.enter)="onCommentEnterKey(asKeyboardEvent($event))"
+                        (keydown.escape)="cancelCommentEdit()"
+                        (blur)="saveCommentEdit(comment.id)"
+                        rows="1"
+                        aria-label="Edit comment"
+                        class="flex-1 bg-transparent border-0 outline-none text-foreground-muted resize-none leading-normal"
+                      ></textarea>
                     </div>
                   } @else {
                     <!-- Display comment as minimal row -->
