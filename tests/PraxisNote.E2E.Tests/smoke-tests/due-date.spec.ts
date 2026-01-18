@@ -204,7 +204,9 @@ test.describe('Due Dates', () => {
     await setupAuth(page, testUser);
     await page.goto('/tasks');
 
-    const taskCard = page.locator('.bg-done .group').filter({ hasText: 'Completed task with due date' });
+    // Target desktop grid (visible at test viewport)
+    const desktopGrid = page.locator('[class*="md:grid"]');
+    const taskCard = desktopGrid.locator('.bg-done .group').filter({ hasText: 'Completed task with due date' });
     const dueDateButton = taskCard.locator('button').filter({ hasText: 'Tomorrow' });
     await expect(dueDateButton).toBeVisible();
     await expect(dueDateButton).toHaveClass(/line-through/);
