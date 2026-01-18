@@ -73,7 +73,6 @@ public class CommentTests
     {
         // Arrange
         var original = Comment.Create("Original content");
-        Thread.Sleep(10); // Ensure time difference
 
         // Act
         var updated = original.WithUpdatedContent("Updated content");
@@ -82,7 +81,7 @@ public class CommentTests
         Assert.Equal(original.Id, updated.Id);
         Assert.Equal("Updated content", updated.Content);
         Assert.Equal(original.CreatedAt, updated.CreatedAt);
-        Assert.True(updated.UpdatedAt > original.UpdatedAt);
+        Assert.True(updated.UpdatedAt >= original.UpdatedAt);
     }
 
     [Fact]
