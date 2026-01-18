@@ -128,18 +128,17 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
             <!-- Segmented toggle: Done / Archive -->
             <div
               class="flex items-center gap-0.5 p-0.5 bg-white/50 rounded-full"
-              role="tablist"
+              role="group"
               aria-label="View selector"
             >
               <button
                 type="button"
-                role="tab"
-                [attr.aria-selected]="!showArchive()"
-                class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors"
+                [attr.aria-pressed]="!showArchive()"
+                class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-done-foreground transition-colors disabled:opacity-100 disabled:cursor-default"
                 [class.bg-done-hover]="!showArchive()"
-                [class.text-done-foreground]="true"
                 [class.hover:bg-done/50]="showArchive()"
-                (click)="showArchive() && onArchiveToggle.emit()"
+                [disabled]="!showArchive()"
+                (click)="onArchiveToggle.emit()"
                 [attr.aria-label]="'Show done tasks (' + doneCount() + ')'"
               >
                 <i class="pi pi-check-circle text-[10px]"></i>
@@ -150,13 +149,12 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
               </button>
               <button
                 type="button"
-                role="tab"
-                [attr.aria-selected]="showArchive()"
-                class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors"
+                [attr.aria-pressed]="showArchive()"
+                class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-archive-foreground transition-colors disabled:opacity-100 disabled:cursor-default"
                 [class.bg-archive-hover]="showArchive()"
-                [class.text-archive-foreground]="true"
                 [class.hover:bg-archive/50]="!showArchive()"
-                (click)="!showArchive() && onArchiveToggle.emit()"
+                [disabled]="showArchive()"
+                (click)="onArchiveToggle.emit()"
                 [attr.aria-label]="'Show archived tasks (' + archiveCount() + ')'"
               >
                 <i class="pi pi-inbox text-[10px]"></i>
