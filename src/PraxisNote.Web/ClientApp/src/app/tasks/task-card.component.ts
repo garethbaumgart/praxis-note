@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, HostListener } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { Task, Comment } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
@@ -283,6 +283,10 @@ export class TaskCardComponent {
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly deleteConfirmation = inject(DeleteConfirmationService);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  // Flag to prevent click-outside from firing during initial render
+  private initialized = false;
 
   readonly task = input.required<Task>();
 
@@ -440,6 +444,39 @@ export class TaskCardComponent {
       clearInterval(intervalId);
       this.deleteConfirmation.cleanup();
     });
+
+    // Set initialized after first render to prevent click-outside from firing immediately
+    afterNextRender(() => {
+      this.initialized = true;
+    }, { injector: this.injector });
+  }
+
+  /** Close expanded tabs when clicking outside the task card */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    if (!this.initialized || !this.selectedTab()) return;
+
+    const target = event.target;
+    // Guard for non-Node targets (e.g., SVG elements in some browsers)
+    if (!(target instanceof Node)) return;
+
+    if (!this.elementRef.nativeElement.contains(target)) {
+      this.closeExpanded();
+    }
+  }
+
+  /** Close expanded tabs when pressing Escape */
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.selectedTab()) {
+      this.closeExpanded();
+    }
+  }
+
+  /** Close all expanded content */
+  private closeExpanded(): void {
+    this.selectedTab.set(null);
+    this.showDatePicker.set(false);
   }
 
   /** Type-safe helper for accessing textarea value from events */
