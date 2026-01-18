@@ -370,8 +370,8 @@ export class TaskCardComponent {
       if (diff !== null && diff < 0) {
         return `${pill} bg-red-500 text-white font-medium`;
       }
-      // Use yellow-500 to match Today colors but with prominence
-      return `${pill} bg-yellow-500 text-yellow-950 font-medium`;
+      // Use yellow-500 with light amber text to match collapsed background color
+      return `${pill} bg-yellow-500 text-amber-100 font-medium`;
     }
 
     // Collapsed with date - lighter colors
