@@ -3,6 +3,7 @@ import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
 import { ColumnComponent } from './column.component';
 import { Task } from './task.model';
+import { ToastService } from '../shared/services/toast.service';
 
 type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 
@@ -130,6 +131,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 })
 export class TasksPage implements OnInit {
   readonly taskService = inject(TaskService);
+  private readonly toastService = inject(ToastService);
 
   readonly todoColumn = viewChild<ColumnComponent>('todoColumn');
   readonly inProgressColumn = viewChild<ColumnComponent>('inProgressColumn');
@@ -263,7 +265,17 @@ export class TasksPage implements OnInit {
   }
 
   deleteTask(id: string): void {
-    this.taskService.deleteTask(id);
+    const deletedTask = this.taskService.deleteTaskWithUndo(id);
+    if (deletedTask) {
+      this.toastService.success({
+        summary: 'Task deleted',
+        action: {
+          label: 'Undo',
+          callback: () => this.taskService.undoDelete(id),
+        },
+        life: 5000,
+      });
+    }
   }
 
   addComment(taskId: string, content: string): void {

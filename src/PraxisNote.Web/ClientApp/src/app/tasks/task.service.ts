@@ -5,6 +5,11 @@ import { Subject, debounceTime } from 'rxjs';
 import { Task } from './task.model';
 import { ToastService } from '../shared/services/toast.service';
 
+interface PendingDeletion {
+  task: Task;
+  timeoutId: ReturnType<typeof setTimeout>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TaskService {
   private readonly http = inject(HttpClient);
@@ -12,6 +17,7 @@ export class TaskService {
   private readonly toast = inject(ToastService);
 
   private readonly reorderSubject = new Subject<{ status: string; taskIds: string[] }>();
+  private readonly pendingDeletions = new Map<string, PendingDeletion>();
 
   private readonly _tasks = signal<Task[]>([]);
   private readonly _archivedTasks = signal<Task[]>([]);
@@ -251,6 +257,74 @@ export class TaskService {
         this.loadTasks();
       },
     });
+  }
+
+  /**
+   * Delete a task with undo capability.
+   * Returns the deleted task for display purposes, or null if task not found.
+   * The actual API deletion is delayed to allow undo.
+   */
+  deleteTaskWithUndo(id: string, undoTimeoutMs = 5000): Task | null {
+    const task = this._tasks().find(t => t.id === id);
+    if (!task) return null;
+
+    // Cancel any existing pending deletion for this task
+    this.cancelPendingDeletion(id);
+
+    // Remove from UI immediately (optimistic update)
+    this._tasks.update(tasks => tasks.filter(t => t.id !== id));
+
+    // Schedule actual deletion after timeout
+    const timeoutId = setTimeout(() => {
+      this.commitDeletion(id);
+    }, undoTimeoutMs);
+
+    // Store for potential undo
+    this.pendingDeletions.set(id, { task, timeoutId });
+
+    return task;
+  }
+
+  /**
+   * Undo a pending deletion, restoring the task to the UI.
+   * Returns true if the undo was successful, false if the task was already deleted.
+   */
+  undoDelete(id: string): boolean {
+    const pending = this.pendingDeletions.get(id);
+    if (!pending) return false;
+
+    // Cancel the scheduled deletion
+    clearTimeout(pending.timeoutId);
+    this.pendingDeletions.delete(id);
+
+    // Restore task to UI
+    this._tasks.update(tasks => [...tasks, pending.task]);
+
+    return true;
+  }
+
+  private commitDeletion(id: string): void {
+    const pending = this.pendingDeletions.get(id);
+    if (!pending) return;
+
+    this.pendingDeletions.delete(id);
+
+    // Actually delete from backend
+    this.http.delete(`/api/tasks/${id}`).subscribe({
+      error: () => {
+        this.toast.error('Failed to delete task');
+        // Restore task on error
+        this._tasks.update(tasks => [...tasks, pending.task]);
+      },
+    });
+  }
+
+  private cancelPendingDeletion(id: string): void {
+    const pending = this.pendingDeletions.get(id);
+    if (pending) {
+      clearTimeout(pending.timeoutId);
+      this.pendingDeletions.delete(id);
+    }
   }
 
   addComment(taskId: string, content: string): void {

@@ -71,4 +71,24 @@
 <app-mock-auth-toolbar />
 
 <!-- Global toast notifications -->
-<p-toast position="bottom-right" />
+<p-toast position="bottom-right">
+  <ng-template let-message pTemplate="message">
+    <div class="flex items-center gap-3 w-full">
+      @if (message.severity === 'success') {
+        <span class="pi pi-check-circle text-xl"></span>
+      } @else if (message.severity === 'error') {
+        <span class="pi pi-times-circle text-xl"></span>
+      }
+      <span class="flex-1 font-medium">{{ message.summary }}</span>
+      @if (message.data?.label) {
+        <button
+          type="button"
+          (click)="message.data.callback(); $event.stopPropagation()"
+          class="px-3 py-1 text-sm font-medium bg-white/20 hover:bg-white/30 rounded transition-colors"
+        >
+          {{ message.data.label }}
+        </button>
+      }
+    </div>
+  </ng-template>
+</p-toast>
