@@ -360,8 +360,25 @@ export class TaskCardComponent {
     // Common base classes for all states
     const common = 'flex items-center justify-center rounded-full transition-all text-xs shrink-0';
 
-    // Pill shape when expanded or has date
-    if (isExpanded || hasDueDate) {
+    // Expanded state - darker/more prominent to show selection
+    if (isExpanded) {
+      const pill = `${common} h-7 px-3 gap-1.5`;
+
+      if (isDone) {
+        return `${pill} bg-due-done text-due-done-foreground line-through`;
+      }
+      if (diff !== null && diff < 0) {
+        return `${pill} bg-red-500 text-white font-medium`;
+      }
+      if (diff === 0) {
+        return `${pill} bg-amber-500 text-white font-medium`;
+      }
+      // Tomorrow or future - use prominent amber
+      return `${pill} bg-amber-500 text-white font-medium`;
+    }
+
+    // Collapsed with date - lighter colors
+    if (hasDueDate) {
       const pill = `${common} h-7 px-3 gap-1.5`;
 
       if (isDone) {
@@ -376,8 +393,7 @@ export class TaskCardComponent {
       if (diff === 1) {
         return `${pill} bg-due-soon text-due-soon-foreground`;
       }
-      // Future dates or no date but expanded
-      return `${pill} bg-amber-100 text-amber-700 font-medium`;
+      return `${pill} bg-amber-100 text-amber-700`;
     }
 
     // Collapsed circular icon (no date set)
