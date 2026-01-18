@@ -13,7 +13,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
             migrationBuilder.Sql("""
                 INSERT INTO "FeatureNotifications" ("Type", "Title", "Summary", "IssueUrl", "CreatedAt")
                 VALUES (
-                    'NewFeature',
+                    'Feature',
                     'Swipe navigation on mobile',
                     'Swipe left/right to switch between Todo, In Progress, and Done columns. Dots at the bottom show your current position.',
                     'https://github.com/garethbaumgart/praxis-note/issues/147',
