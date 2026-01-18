@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, OnInit, AfterViewInit, viewChild, ChangeDetectionStrategy, computed, signal, ElementRef, PLATFORM_ID } from '@angular/core';
+import { Component, HostListener, inject, OnInit, AfterViewInit, OnDestroy, viewChild, ChangeDetectionStrategy, computed, signal, ElementRef, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
@@ -49,7 +49,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
       </div>
 
       <!-- Mobile: Horizontal swipe navigation -->
-      <div #mobileScrollContainer class="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+      <div #mobileScrollContainer role="region" aria-label="Task columns" class="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
         <app-column
           #todoColumnMobile
           class="flex-none w-full snap-center pr-4"
@@ -132,16 +132,21 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
       </div>
 
       <!-- Mobile: Column indicator dots -->
-      <div class="flex md:hidden justify-center gap-2 py-4">
+      <div class="flex md:hidden justify-center gap-1 py-4">
         @for (col of columnLabels; track col; let i = $index) {
           <button
             type="button"
-            class="w-2 h-2 rounded-full transition-colors"
-            [class.bg-primary]="i === activeColumn()"
-            [class.bg-foreground-muted/30]="i !== activeColumn()"
+            class="p-2"
             (click)="scrollToColumn(i)"
             [attr.aria-label]="'Go to ' + col + ' column'"
-          ></button>
+            [attr.aria-current]="i === activeColumn() ? 'true' : null"
+          >
+            <span
+              class="block w-2 h-2 rounded-full transition-colors"
+              [class.bg-primary]="i === activeColumn()"
+              [class.bg-foreground-muted/30]="i !== activeColumn()"
+            ></span>
+          </button>
         }
       </div>
 
@@ -227,7 +232,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
     </div>
   `,
 })
-export class TasksPage implements OnInit, AfterViewInit {
+export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly taskService = inject(TaskService);
   private readonly toastService = inject(ToastService);
   private readonly platformId = inject(PLATFORM_ID);
@@ -310,6 +315,11 @@ export class TasksPage implements OnInit, AfterViewInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.scrollObserver?.disconnect();
+    this.scrollObserver = null;
+  }
+
   private setupScrollObserver(): void {
     const container = this.mobileScrollContainer()?.nativeElement;
     if (!container) return;
@@ -337,7 +347,7 @@ export class TasksPage implements OnInit, AfterViewInit {
     if (!container) return;
 
     const column = container.children[index] as HTMLElement;
-    column?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+    column?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }
 
   /** Type-safe helper for accessing input value from events */
