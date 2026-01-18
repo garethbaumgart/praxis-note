@@ -1,5 +1,6 @@
 import { Component, inject, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Toast } from 'primeng/toast';
 import { AuthService } from './auth';
 import { MockAuthToolbarComponent } from './auth/mock-auth-toolbar.component';
 import { LoginComponent } from './shared/login/login.component';
@@ -11,7 +12,7 @@ import { NotificationPanelComponent } from './notifications/notification-panel.c
   selector: 'app-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, LoginComponent, MockAuthToolbarComponent, NotificationPanelComponent],
+  imports: [RouterOutlet, Toast, SidebarComponent, LoginComponent, MockAuthToolbarComponent, NotificationPanelComponent],
   templateUrl: './app.html',
 })
 export class App {

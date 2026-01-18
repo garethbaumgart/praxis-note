@@ -3,11 +3,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { Subject, debounceTime } from 'rxjs';
 import { Task } from './task.model';
+import { ToastService } from '../shared/services/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
   private readonly http = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toast = inject(ToastService);
 
   private readonly reorderSubject = new Subject<{ status: string; taskIds: string[] }>();
 
@@ -23,7 +25,10 @@ export class TaskService {
       .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
       .subscribe(({ status, taskIds }) => {
         this.http.put('/api/tasks/reorder', { status, taskIds }).subscribe({
-          error: () => this.loadTasks(),
+          error: () => {
+            this.toast.error('Failed to reorder tasks');
+            this.loadTasks();
+          },
         });
       });
   }
@@ -133,13 +138,17 @@ export class TaskService {
         // If not Todo, also call the status change API
         if (status !== 'Todo') {
           this.http.put(`/api/tasks/${result.id}/status`, { status }).subscribe({
-            error: () => this.loadTasks(),
+            error: () => {
+              this.toast.error('Failed to create task');
+              this.loadTasks();
+            },
           });
         }
       },
       error: () => {
         // Remove optimistic task and reload
         this._tasks.update(tasks => tasks.filter(t => t.id !== tempId));
+        this.toast.error('Failed to create task');
         this.loadTasks();
       },
     });
@@ -153,7 +162,10 @@ export class TaskService {
 
     // Make HTTP call in background
     this.http.put(`/api/tasks/${id}`, { title }).subscribe({
-      error: () => this.loadTasks(), // Reload to restore if failed
+      error: () => {
+        this.toast.error('Failed to update task');
+        this.loadTasks();
+      },
     });
   }
 
@@ -205,7 +217,10 @@ export class TaskService {
 
     // Then make API call - reload on error to revert
     this.http.put(`/api/tasks/${id}/status`, { status, position }).subscribe({
-      error: () => this.loadTasks(),
+      error: () => {
+        this.toast.error('Failed to move task');
+        this.loadTasks();
+      },
     });
   }
 
@@ -231,7 +246,10 @@ export class TaskService {
 
     // Make HTTP call in background
     this.http.delete(`/api/tasks/${id}`).subscribe({
-      error: () => this.loadTasks(), // Reload to restore if failed
+      error: () => {
+        this.toast.error('Failed to delete task');
+        this.loadTasks();
+      },
     });
   }
 
@@ -270,7 +288,10 @@ export class TaskService {
           )
         );
       },
-      error: () => this.loadTasks(),
+      error: () => {
+        this.toast.error('Failed to add comment');
+        this.loadTasks();
+      },
     });
   }
 
@@ -292,7 +313,10 @@ export class TaskService {
     );
 
     this.http.put(`/api/tasks/${taskId}/comments/${commentId}`, { content }).subscribe({
-      error: () => this.loadTasks(),
+      error: () => {
+        this.toast.error('Failed to update comment');
+        this.loadTasks();
+      },
     });
   }
 
@@ -307,7 +331,10 @@ export class TaskService {
     );
 
     this.http.delete(`/api/tasks/${taskId}/comments/${commentId}`).subscribe({
-      error: () => this.loadTasks(),
+      error: () => {
+        this.toast.error('Failed to delete comment');
+        this.loadTasks();
+      },
     });
   }
 
@@ -318,7 +345,10 @@ export class TaskService {
     );
 
     this.http.put(`/api/tasks/${taskId}/due-date`, { date }).subscribe({
-      error: () => this.loadTasks(),
+      error: () => {
+        this.toast.error('Failed to set due date');
+        this.loadTasks();
+      },
     });
   }
 
@@ -329,7 +359,10 @@ export class TaskService {
     );
 
     this.http.delete(`/api/tasks/${taskId}/due-date`).subscribe({
-      error: () => this.loadTasks(),
+      error: () => {
+        this.toast.error('Failed to clear due date');
+        this.loadTasks();
+      },
     });
   }
 
@@ -340,7 +373,10 @@ export class TaskService {
     );
 
     this.http.patch(`/api/tasks/${taskId}/priority`, {}).subscribe({
-      error: () => this.loadTasks(),
+      error: () => {
+        this.toast.error('Failed to update priority');
+        this.loadTasks();
+      },
     });
   }
 }
