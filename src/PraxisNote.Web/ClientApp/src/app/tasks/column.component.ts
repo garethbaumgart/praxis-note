@@ -1,7 +1,6 @@
 import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
 import { TaskCardComponent } from './task-card.component';
 import { TaskCardSkeletonComponent } from './task-card-skeleton.component';
 import { Task } from './task.model';
@@ -15,7 +14,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, ButtonModule, TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
+  imports: [NgClass, TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
   host: { class: 'block' },
   template: `
     <div
@@ -126,31 +125,45 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
             }
           }
           @if (status() === 'Done' && (archiveCount() > 0 || showArchive() || doneCount() > 0)) {
-            @if (showArchive()) {
-              <!-- Viewing Archive, show button to switch to Done -->
-              <p-button
-                [label]="'DONE' + (doneCount() > 0 ? ' (' + doneCount() + ')' : '')"
-                icon="pi pi-check-circle"
-                severity="success"
-                [outlined]="true"
-                size="small"
-                styleClass="!py-1 !px-2 !text-[0.625rem]"
+            <!-- Segmented toggle: Done / Archive -->
+            <div
+              class="flex items-center gap-0.5 p-0.5 bg-white/50 rounded-full"
+              role="group"
+              aria-label="View selector"
+            >
+              <button
+                type="button"
+                [attr.aria-pressed]="!showArchive()"
+                class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-done-foreground transition-colors disabled:opacity-100 disabled:cursor-default"
+                [class.bg-done-hover]="!showArchive()"
+                [class.hover:bg-done/50]="showArchive()"
+                [disabled]="!showArchive()"
                 (click)="onArchiveToggle.emit()"
-                [ariaLabel]="'Show recent tasks'"
-              />
-            } @else {
-              <!-- Viewing Done, show button to switch to Archive -->
-              <p-button
-                [label]="'ARCHIVE' + (archiveCount() > 0 ? ' (' + archiveCount() + ')' : '')"
-                icon="pi pi-inbox"
-                severity="help"
-                [outlined]="true"
-                size="small"
-                styleClass="!py-1 !px-2 !text-[0.625rem]"
+                [attr.aria-label]="'Show done tasks (' + doneCount() + ')'"
+              >
+                <i class="pi pi-check-circle text-[10px]"></i>
+                <span>Done</span>
+                @if (doneCount() > 0) {
+                  <span class="opacity-60">{{ doneCount() }}</span>
+                }
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="showArchive()"
+                class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-archive-foreground transition-colors disabled:opacity-100 disabled:cursor-default"
+                [class.bg-archive-hover]="showArchive()"
+                [class.hover:bg-archive/50]="!showArchive()"
+                [disabled]="showArchive()"
                 (click)="onArchiveToggle.emit()"
-                [ariaLabel]="'Show archived tasks'"
-              />
-            }
+                [attr.aria-label]="'Show archived tasks (' + archiveCount() + ')'"
+              >
+                <i class="pi pi-inbox text-[10px]"></i>
+                <span>Archive</span>
+                @if (archiveCount() > 0) {
+                  <span class="opacity-60">{{ archiveCount() }}</span>
+                }
+              </button>
+            </div>
           }
         </div>
       </div>
