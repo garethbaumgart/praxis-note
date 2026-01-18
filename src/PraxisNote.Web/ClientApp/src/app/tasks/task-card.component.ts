@@ -191,6 +191,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             @if (showDatePicker()) {
               <app-date-picker-popover
                 [currentDate]="task().dueDate"
+                [showQuickOptions]="false"
                 (onSelect)="onDateSelect($event)"
                 (onClear)="clearDueDate()"
                 (onClose)="showDatePicker.set(false)"
