@@ -19,13 +19,11 @@ import { ThemeService } from './shared/theme.service';
 export class App {
   protected readonly auth = inject(AuthService);
   protected readonly notificationService = inject(NotificationService);
+  private readonly themeService = inject(ThemeService); // Initialize theme detection at app startup
   protected readonly sidebarOpen = signal(false);
   protected readonly notificationPanelOpen = signal(false);
 
   constructor() {
-    // Initialize theme detection at app startup
-    inject(ThemeService);
-
     // Connect SSE when authenticated
     effect(() => {
       if (this.auth.isAuthenticated()) {

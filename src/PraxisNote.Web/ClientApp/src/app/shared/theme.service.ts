@@ -13,9 +13,16 @@ export class ThemeService {
     if (isPlatformBrowser(this.platformId)) {
       // Listen for system preference changes
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener('change', (e) => {
+      const handler = (e: MediaQueryListEvent) => {
         this.theme.set(e.matches ? 'dark' : 'light');
-      });
+      };
+      // Use addEventListener with fallback for older browsers (Safari < 14)
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handler);
+      } else {
+        // Deprecated but needed for older Safari
+        mediaQuery.addListener(handler);
+      }
     }
 
     // Apply theme to document when it changes
