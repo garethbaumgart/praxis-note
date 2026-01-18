@@ -5,13 +5,14 @@ import { AutoResizeDirective } from '../shared/directives/auto-resize.directive'
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
+import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 import { DueDateBadgeComponent } from './due-date-badge.component';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, DueDateBadgeComponent],
+  imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, DeleteConfirmButtonComponent, DueDateBadgeComponent],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -59,16 +60,10 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
           <!-- Time (visible) / Delete button (on hover) -->
           <div class="flex items-center shrink-0">
             @if (confirmingTaskDelete()) {
-              <!-- Delete confirmation mode -->
-              <button
-                type="button"
-                class="flex items-center gap-1 text-danger animate-pulse text-xs"
-                (click)="confirmTaskDelete(); $event.stopPropagation()"
-                aria-label="Confirm delete task"
-              >
-                <i class="pi pi-trash"></i>
-                <span>Confirm?</span>
-              </button>
+              <app-delete-confirm-button
+                ariaLabel="Confirm delete task"
+                (onConfirm)="confirmTaskDelete()"
+              />
             } @else {
               @if (relativeTime(); as time) {
                 <!-- With time: mobile shows both, desktop swaps on hover -->
@@ -202,16 +197,11 @@ import { DueDateBadgeComponent } from './due-date-badge.component';
                   <i class="pi pi-comment text-foreground-muted/40 shrink-0 mt-0.5"></i>
                   <span class="text-foreground-muted flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
                   @if (confirmingCommentDeleteId() === comment.id) {
-                    <!-- Delete confirmation mode -->
-                    <button
-                      type="button"
-                      class="flex items-center gap-1 text-danger animate-pulse shrink-0 text-xs"
-                      (click)="confirmCommentDelete(comment.id); $event.stopPropagation()"
-                      [attr.aria-label]="'Confirm delete comment: ' + comment.content"
-                    >
-                      <i class="pi pi-trash"></i>
-                      <span>Confirm?</span>
-                    </button>
+                    <app-delete-confirm-button
+                      [ariaLabel]="'Confirm delete comment: ' + comment.content"
+                      [shrink]="true"
+                      (onConfirm)="confirmCommentDelete(comment.id)"
+                    />
                   } @else {
                     <span class="text-foreground-muted/30 shrink-0 group-hover/comment:hidden">{{ formatCommentTime(comment) }}</span>
                     <button

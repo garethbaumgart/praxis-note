@@ -328,6 +328,28 @@
   animation: fade-in 0.5s ease-out 0.5s forwards;
 }
 
+/* Shrinking progress bar for delete confirmation countdown
+   Duration matches DeleteConfirmationService.DEFAULT_TIMEOUT_MS (5000ms) */
+@keyframes shrink-width {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.delete-countdown {
+  animation: shrink-width 5s linear forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .delete-countdown {
+    animation: none;
+    width: 50%; /* Static indicator for reduced motion */
+  }
+}
+
 /* ========================================
    Angular CDK Drag and Drop
    ======================================== */
