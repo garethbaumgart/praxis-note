@@ -23,7 +23,7 @@ public class CommentTests
     }
 
     [Fact]
-    public void Create_WithNullContent_ThrowsArgumentException()
+    public void Create_WithNullContent_ThrowsArgumentNullException()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => Comment.Create(null!));
@@ -85,7 +85,7 @@ public class CommentTests
     }
 
     [Fact]
-    public void WithUpdatedContent_WithNullContent_ThrowsArgumentException()
+    public void WithUpdatedContent_WithNullContent_ThrowsArgumentNullException()
     {
         // Arrange
         var comment = Comment.Create("Original content");
@@ -129,7 +129,7 @@ public class CommentTests
         var originalUpdatedAt = original.UpdatedAt;
 
         // Act
-        var _ = original.WithUpdatedContent("New content");
+        original.WithUpdatedContent("New content");
 
         // Assert - Original unchanged (immutability)
         Assert.Equal(originalContent, original.Content);

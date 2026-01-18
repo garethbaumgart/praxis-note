@@ -43,7 +43,7 @@ public class FeatureNotificationTests
     #region Create Tests - Title Validation
 
     [Fact]
-    public void Create_WithNullTitle_ThrowsArgumentException()
+    public void Create_WithNullTitle_ThrowsArgumentNullException()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
@@ -80,7 +80,7 @@ public class FeatureNotificationTests
     #region Create Tests - Summary Validation
 
     [Fact]
-    public void Create_WithNullSummary_ThrowsArgumentException()
+    public void Create_WithNullSummary_ThrowsArgumentNullException()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
