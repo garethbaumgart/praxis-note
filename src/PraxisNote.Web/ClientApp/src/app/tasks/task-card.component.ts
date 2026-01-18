@@ -127,8 +127,8 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           <!-- Comments tab -->
           <button
             type="button"
-            class="relative flex items-center justify-center rounded-full transition-all text-xs"
-            [class]="commentsExpanded() ? 'h-7 px-3 gap-1.5 bg-primary text-white font-medium' : (task().comments.length > 0 ? 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/60 hover:bg-foreground-muted/20' : 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20')"
+            class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0"
+            [class]="commentsTabClass()"
             (click)="toggleTab('comments'); $event.stopPropagation()"
             [attr.aria-label]="commentsExpanded() ? 'Hide comments' : 'Show comments'"
             [attr.aria-expanded]="commentsExpanded()"
@@ -140,7 +140,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 <span class="bg-white/20 px-1.5 rounded-full">{{ task().comments.length }}</span>
               }
             } @else if (task().comments.length > 0) {
-              <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-foreground-muted/30 text-[9px] text-foreground-muted font-medium">{{ task().comments.length }}</span>
+              <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-indigo-200 text-[9px] text-indigo-700 font-medium">{{ task().comments.length }}</span>
             }
           </button>
         </div>
@@ -383,6 +383,23 @@ export class TaskCardComponent {
     }
 
     // Collapsed circular icon (no date set)
+    return 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20';
+  }
+
+  /** Returns CSS classes for the comments tab button based on state */
+  commentsTabClass(): string {
+    const isExpanded = this.commentsExpanded();
+    const hasComments = this.task().comments.length > 0;
+
+    if (isExpanded) {
+      // Expanded pill with indigo/primary styling
+      return 'h-7 px-3 gap-1.5 bg-indigo-500 text-white font-medium';
+    }
+
+    // Collapsed circular icon
+    if (hasComments) {
+      return 'w-7 h-7 bg-indigo-100 text-indigo-600 hover:bg-indigo-200';
+    }
     return 'w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20';
   }
 
