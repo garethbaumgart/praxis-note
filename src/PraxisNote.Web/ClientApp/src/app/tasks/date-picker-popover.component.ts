@@ -25,55 +25,57 @@ import { DatePicker } from 'primeng/datepicker';
     <div
       class="absolute left-0 top-full mt-1 z-50 bg-surface-subtle border border-border rounded-lg shadow-lg"
     >
-      <!-- Quick options bar -->
-      <div class="flex items-center gap-1.5 p-2 border-b border-border">
-        <button
-          type="button"
-          (click)="selectQuickOption('today'); $event.stopPropagation()"
-          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-today text-due-today-foreground hover:opacity-80"
-          [class.ring-2]="isSelected('today')"
-          [class.ring-due-today-foreground]="isSelected('today')"
-        >
-          Today
-        </button>
-        <button
-          type="button"
-          (click)="selectQuickOption('tomorrow'); $event.stopPropagation()"
-          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-soon text-due-soon-foreground hover:opacity-80"
-          [class.ring-2]="isSelected('tomorrow')"
-          [class.ring-due-soon-foreground]="isSelected('tomorrow')"
-        >
-          +1
-        </button>
-        <button
-          type="button"
-          (click)="selectQuickOption('nextWeek'); $event.stopPropagation()"
-          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-later text-due-later-foreground hover:opacity-80"
-          [class.ring-2]="isSelected('nextWeek')"
-          [class.ring-due-later-foreground]="isSelected('nextWeek')"
-        >
-          +7
-        </button>
-        <button
-          type="button"
-          (click)="selectQuickOption('plus35'); $event.stopPropagation()"
-          class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-later text-due-later-foreground hover:opacity-80"
-          [class.ring-2]="isSelected('plus35')"
-          [class.ring-due-later-foreground]="isSelected('plus35')"
-        >
-          +35
-        </button>
-        @if (currentDate()) {
+      <!-- Quick options bar (can be hidden when parent provides inline options) -->
+      @if (showQuickOptions()) {
+        <div class="flex items-center gap-1.5 p-2 border-b border-border">
           <button
             type="button"
-            (click)="clear(); $event.stopPropagation()"
-            class="ml-auto text-xs text-danger hover:text-danger-hover hover:underline"
-            aria-label="Clear due date"
+            (click)="selectQuickOption('today'); $event.stopPropagation()"
+            class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-today text-due-today-foreground hover:opacity-80"
+            [class.ring-2]="isSelected('today')"
+            [class.ring-due-today-foreground]="isSelected('today')"
           >
-            Clear
+            Today
           </button>
-        }
-      </div>
+          <button
+            type="button"
+            (click)="selectQuickOption('tomorrow'); $event.stopPropagation()"
+            class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-soon text-due-soon-foreground hover:opacity-80"
+            [class.ring-2]="isSelected('tomorrow')"
+            [class.ring-due-soon-foreground]="isSelected('tomorrow')"
+          >
+            +1
+          </button>
+          <button
+            type="button"
+            (click)="selectQuickOption('nextWeek'); $event.stopPropagation()"
+            class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-later text-due-later-foreground hover:opacity-80"
+            [class.ring-2]="isSelected('nextWeek')"
+            [class.ring-due-later-foreground]="isSelected('nextWeek')"
+          >
+            +7
+          </button>
+          <button
+            type="button"
+            (click)="selectQuickOption('plus35'); $event.stopPropagation()"
+            class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-later text-due-later-foreground hover:opacity-80"
+            [class.ring-2]="isSelected('plus35')"
+            [class.ring-due-later-foreground]="isSelected('plus35')"
+          >
+            +35
+          </button>
+          @if (currentDate()) {
+            <button
+              type="button"
+              (click)="clear(); $event.stopPropagation()"
+              class="ml-auto text-xs text-danger hover:text-danger-hover hover:underline"
+              aria-label="Clear due date"
+            >
+              Clear
+            </button>
+          }
+        </div>
+      }
 
       <!-- PrimeNG DatePicker -->
       <div (click)="$event.stopPropagation()">
@@ -95,6 +97,8 @@ export class DatePickerPopoverComponent {
   private readonly injector = inject(Injector);
 
   readonly currentDate = input<string | null>(null);
+  /** Whether to show the quick options bar (Today, +1, +7, +35, Clear). Default true. */
+  readonly showQuickOptions = input(true);
   readonly onSelect = output<string>();
   readonly onClear = output<void>();
   readonly onClose = output<void>();
