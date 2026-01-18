@@ -235,7 +235,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                       (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                     >
                       <i class="pi pi-comment text-primary/40 shrink-0 mt-0.5"></i>
-                      <span class="text-foreground-secondary flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
+                      <span class="text-foreground flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
                       @if (confirmingCommentDeleteId() === comment.id) {
                         <app-delete-confirm-button
                           [ariaLabel]="'Confirm delete comment: ' + comment.content"
