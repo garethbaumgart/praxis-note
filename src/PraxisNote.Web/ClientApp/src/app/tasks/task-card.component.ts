@@ -4,6 +4,7 @@ import { Task, Comment } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
+import { HighlightPipe } from '../shared/pipes/highlight.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 import { DatePickerPopoverComponent } from './date-picker-popover.component';
@@ -12,7 +13,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
+  imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
@@ -55,7 +56,8 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               [class.line-through]="task().status === 'Done'"
               [class.text-foreground-muted]="task().status === 'Done'"
               (click)="startEdit(); $event.stopPropagation()"
-            >{{ task().title }}</p>
+              [innerHTML]="task().title | highlight: searchQuery()"
+            ></p>
           </div>
           <!-- Time (visible) / Delete button (on hover) -->
           <div class="flex items-center shrink-0">
@@ -233,7 +235,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                       (keydown.space)="startCommentEdit(comment); $event.preventDefault(); $event.stopPropagation()"
                     >
                       <i class="pi pi-comment text-primary/40 shrink-0 mt-0.5"></i>
-                      <span class="text-foreground-muted flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
+                      <span class="text-foreground-secondary flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
                       @if (confirmingCommentDeleteId() === comment.id) {
                         <app-delete-confirm-button
                           [ariaLabel]="'Confirm delete comment: ' + comment.content"
@@ -300,6 +302,7 @@ export class TaskCardComponent {
   private initialized = false;
 
   readonly task = input.required<Task>();
+  readonly searchQuery = input('');
 
   readonly onEdit = output<string>();
   readonly onDelete = output<void>();
