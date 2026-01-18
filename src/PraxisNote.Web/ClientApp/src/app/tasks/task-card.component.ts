@@ -181,7 +181,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 <button
                   type="button"
                   (click)="clearDueDate(); $event.stopPropagation()"
-                  class="ml-auto px-2 py-1 text-xs rounded text-red-500 hover:bg-red-50 transition-colors"
+                  class="ml-auto px-2 py-1 text-xs rounded text-danger hover:bg-danger-bg transition-colors"
                   aria-label="Clear due date"
                 ><i class="pi pi-times text-[10px]"></i> Clear</button>
               }
@@ -368,7 +368,7 @@ export class TaskCardComponent {
         return `${pill} bg-due-done text-due-done-foreground line-through`;
       }
       if (diff !== null && diff < 0) {
-        return `${pill} bg-red-500 text-white font-medium`;
+        return `${pill} bg-danger text-white font-medium`;
       }
       // Use yellow-500 with light amber text to match collapsed background color
       return `${pill} bg-yellow-500 text-amber-100 font-medium`;
