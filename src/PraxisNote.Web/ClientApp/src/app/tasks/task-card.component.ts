@@ -248,7 +248,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                           type="button"
                           class="flex md:hidden text-foreground-muted/30 hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
-                          [attr.aria-label]="'Delete comment: ' + comment.content"
+                          [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >
                           <i class="pi pi-trash"></i>
                         </button>
@@ -257,7 +257,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                           type="button"
                           class="hidden md:group-hover/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
-                          [attr.aria-label]="'Delete comment: ' + comment.content"
+                          [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >
                           <i class="pi pi-trash"></i>
                         </button>
@@ -623,6 +623,19 @@ export class TaskCardComponent {
     const dateStr = comment.updatedAt !== comment.createdAt ? comment.updatedAt : comment.createdAt;
     const prefix = comment.updatedAt !== comment.createdAt ? 'edited ' : '';
     return prefix + this.formatTime(dateStr, 'completed');
+  }
+
+  /** Generate a concise aria-label for the delete comment button */
+  getDeleteCommentAriaLabel(comment: Comment): string {
+    const content = comment.content?.trim();
+    if (!content) {
+      return 'Delete comment';
+    }
+    const maxLength = 40;
+    if (content.length <= maxLength) {
+      return `Delete comment: ${content}`;
+    }
+    return `Delete comment: ${content.slice(0, maxLength).trimEnd()}…`;
   }
 
   onCommentClick(event: MouseEvent, comment: Comment): void {

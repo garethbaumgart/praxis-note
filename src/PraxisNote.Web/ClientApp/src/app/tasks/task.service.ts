@@ -490,17 +490,7 @@ export class TaskService {
     this.pendingCommentDeletions.delete(commentId);
 
     // Restore comment to UI at original position
-    this._tasks.update(tasks =>
-      tasks.map(t => {
-        if (t.id === pending.taskId) {
-          const comments = [...t.comments];
-          const clampedIndex = Math.min(pending.index, comments.length);
-          comments.splice(clampedIndex, 0, pending.comment);
-          return { ...t, comments };
-        }
-        return t;
-      })
-    );
+    this.restoreComment(pending);
 
     return true;
   }
@@ -516,19 +506,24 @@ export class TaskService {
       error: () => {
         this.toast.error('Failed to delete comment');
         // Restore comment at original position on error
-        this._tasks.update(tasks =>
-          tasks.map(t => {
-            if (t.id === pending.taskId) {
-              const comments = [...t.comments];
-              const clampedIndex = Math.min(pending.index, comments.length);
-              comments.splice(clampedIndex, 0, pending.comment);
-              return { ...t, comments };
-            }
-            return t;
-          })
-        );
+        this.restoreComment(pending);
       },
     });
+  }
+
+  /** Helper to restore a deleted comment at its original position */
+  private restoreComment(pending: PendingCommentDeletion): void {
+    this._tasks.update(tasks =>
+      tasks.map(t => {
+        if (t.id === pending.taskId) {
+          const comments = [...t.comments];
+          const clampedIndex = Math.min(pending.index, comments.length);
+          comments.splice(clampedIndex, 0, pending.comment);
+          return { ...t, comments };
+        }
+        return t;
+      })
+    );
   }
 
   private cancelPendingCommentDeletion(commentId: string): void {
