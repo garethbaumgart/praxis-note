@@ -188,7 +188,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
           }
         } @else {
           @for (task of sortedTasks(); track task.id) {
-            <div cdkDrag [cdkDragData]="task" [cdkDragStartDelay]="{ touch: 200, mouse: 0 }" class="cursor-grab active:cursor-grabbing touch-manipulation">
+            <div cdkDrag [cdkDragData]="task" [cdkDragStartDelay]="{ touch: 150, mouse: 0 }" class="cursor-grab active:cursor-grabbing touch-manipulation">
               <app-task-card
                 [task]="task"
                 (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
