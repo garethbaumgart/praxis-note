@@ -19,37 +19,35 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
       [ngClass]="task().status | statusColor:'border'"
     >
-      @if (editing()) {
-        <div>
-          <textarea
-            #editInput
-            appAutoResize
-            [value]="editTitle()"
-            (input)="editTitle.set(asTextArea($event).value)"
-            (keydown.enter)="onEnterKey(asKeyboardEvent($event))"
-            (keydown.escape)="cancelEdit()"
-            (blur)="saveEdit()"
-            rows="1"
-            class="w-full text-sm text-foreground bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
-          ></textarea>
-          <p class="text-xs text-foreground-muted/50 mt-1">Enter to save · Esc to cancel</p>
-        </div>
-      } @else {
-        <!-- Task content -->
-        <div class="flex items-start gap-2">
-          <!-- Priority flag -->
-          <button
-            type="button"
-            class="shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors"
-            [class.text-danger]="task().isPriority"
-            [class.text-foreground-muted/30]="!task().isPriority"
-            [class.hover:text-danger-hover]="!task().isPriority"
-            (click)="onTogglePriority.emit(); $event.stopPropagation()"
-            [attr.aria-label]="task().isPriority ? 'Remove priority' : 'Mark as priority'"
-          >
-            <i class="pi text-sm" [class.pi-flag-fill]="task().isPriority" [class.pi-flag]="!task().isPriority"></i>
-          </button>
-          <div class="flex-1 min-w-0">
+      <!-- Task content -->
+      <div class="flex items-start gap-2">
+        <!-- Priority flag -->
+        <button
+          type="button"
+          class="shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors"
+          [class.text-danger]="task().isPriority"
+          [class.text-foreground-muted/30]="!task().isPriority"
+          [class.hover:text-danger-hover]="!task().isPriority"
+          (click)="onTogglePriority.emit(); $event.stopPropagation()"
+          [attr.aria-label]="task().isPriority ? 'Remove priority' : 'Mark as priority'"
+        >
+          <i class="pi text-sm" [class.pi-flag-fill]="task().isPriority" [class.pi-flag]="!task().isPriority"></i>
+        </button>
+        <div class="flex-1 min-w-0">
+          @if (editing()) {
+            <textarea
+              #editInput
+              appAutoResize
+              [value]="editTitle()"
+              (input)="editTitle.set(asTextArea($event).value)"
+              (keydown.enter)="onEnterKey(asKeyboardEvent($event))"
+              (keydown.escape)="cancelEdit()"
+              (blur)="saveEdit()"
+              rows="1"
+              aria-label="Edit task title. Press Enter to save, Escape to cancel."
+              class="w-full text-sm text-foreground bg-transparent border-0 outline-none resize-none p-0 leading-normal"
+            ></textarea>
+          } @else {
             <!-- Clickable title for inline editing -->
             <p
               class="text-sm text-foreground whitespace-pre-wrap cursor-pointer hover:bg-surface-hover rounded px-1 -mx-1 transition-colors"
@@ -58,9 +56,10 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               (click)="startEdit(); $event.stopPropagation()"
               [innerHTML]="task().title | highlight: searchQuery()"
             ></p>
-          </div>
-          <!-- Time (visible) / Delete button (on hover) -->
-          <div class="flex items-center shrink-0">
+          }
+        </div>
+        <!-- Time (visible) / Delete button (on hover) -->
+        <div class="flex items-center shrink-0">
             @if (confirmingTaskDelete()) {
               <app-delete-confirm-button
                 ariaLabel="Confirm delete task"
@@ -288,7 +287,6 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             </div>
           </div>
         }
-      }
     </div>
   `,
 })
