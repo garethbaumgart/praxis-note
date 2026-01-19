@@ -69,9 +69,11 @@ After the PR is created, **actively monitor** and address feedback:
    - Alternatively, use `gh pr view <number> --comments` and look for comments from `copilot-pull-request-reviewer[bot]`
    - Keep checking every 30-60 seconds until BOTH CodeRabbit AND Copilot reviews are complete
 5. **Address all comments immediately**: When comments appear:
-   - Read each comment carefully
-   - **If addressing**: Add a thumbs up reaction to the comment using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
-   - **If not addressing**: Reply to the comment explaining why (e.g., out of scope, matches existing patterns, deferred to follow-up)
+   - Read each comment carefully, including **high-level feedback** in comment bodies (not just line-specific suggestions)
+   - **For line comments (have their own ID)**:
+     - **If addressing**: Add a thumbs up reaction using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
+     - **If not addressing**: Reply to the comment explaining why (e.g., out of scope, matches existing patterns, deferred to follow-up)
+   - **For high-level feedback in PR comments**: Reply to the comment addressing each suggestion - either confirm you'll fix it or explain why not
    - Commit, push, and verify the fix resolves the comment
 6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
 

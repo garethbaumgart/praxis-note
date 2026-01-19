@@ -401,6 +401,11 @@
   touch-action: manipulation;
 }
 
+/* Hide empty column message when receiving a drag to prevent layout offset */
+.cdk-drop-list-receiving .empty-message {
+  display: none;
+}
+
 /* Hide scrollbar while keeping scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;
