@@ -29,7 +29,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           (keydown.escape)="cancelEdit()"
           (blur)="saveEdit()"
           rows="1"
-          class="w-full text-sm text-foreground bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
+          class="w-full text-sm text-foreground bg-transparent border-0 outline-none resize-none p-0 leading-normal"
         ></textarea>
       } @else {
         <!-- Task content -->
