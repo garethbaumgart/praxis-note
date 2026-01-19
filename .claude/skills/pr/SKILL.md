@@ -64,9 +64,10 @@ After the PR is created, **actively monitor** and address feedback:
    - Common warnings: deprecation notices, bundle size budgets, artifact upload failures, EF Core model validation
    - **ALL warnings must be addressed** - either fix the issue or update the workflow if it's a false positive
 4. **Monitor for AI reviews**: Actively poll for CodeRabbit and Copilot reviews to complete
-   - Use `gh pr view <number> --comments` to check for new review comments
-   - Use `gh pr checks` to see if CodeRabbit check has completed
-   - Keep checking every 30-60 seconds until reviews are complete
+   - **CodeRabbit**: Use `gh pr checks` - wait until CodeRabbit shows "Review completed"
+   - **Copilot**: Use `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select(.user.login | contains("copilot")) | .state'` to check if Copilot has submitted a review (look for "COMMENTED" state)
+   - Alternatively, use `gh pr view <number> --comments` and look for comments from `copilot-pull-request-reviewer[bot]`
+   - Keep checking every 30-60 seconds until BOTH CodeRabbit AND Copilot reviews are complete
 5. **Address all comments immediately**: When comments appear:
    - Read each comment carefully
    - **If addressing**: Add a thumbs up reaction to the comment using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
@@ -74,7 +75,7 @@ After the PR is created, **actively monitor** and address feedback:
    - Commit, push, and verify the fix resolves the comment
 6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
 
-**Do not stop monitoring until**: All AI reviews are complete, all comments are addressed, and CI is green.
+**Do not stop monitoring until**: All AI reviews are complete (both CodeRabbit AND Copilot have submitted reviews), all comments are addressed, and CI is green.
 
 ## Step 6: Manual Testing (Required Before Merge)
 

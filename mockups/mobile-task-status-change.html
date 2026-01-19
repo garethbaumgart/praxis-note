@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Task Status Change - UI Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#ffffff',
+            'surface-hover': '#f8fafc',
+            foreground: '#1e293b',
+            'foreground-muted': '#94a3b8',
+            border: '#e2e8f0',
+            primary: '#6366f1',
+            todo: {
+              DEFAULT: '#f1f5f9',
+              foreground: '#475569',
+              'foreground-muted': '#94a3b8',
+              hover: '#e2e8f0',
+              border: '#cbd5e1'
+            },
+            inprogress: {
+              DEFAULT: '#e0f2fe',
+              foreground: '#0369a1',
+              'foreground-muted': '#7dd3fc',
+              hover: '#bae6fd',
+              border: '#7dd3fc'
+            },
+            done: {
+              DEFAULT: '#dcfce7',
+              foreground: '#15803d',
+              'foreground-muted': '#4ade80',
+              hover: '#bbf7d0',
+              border: '#86efac'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #1e293b; }
+    .phone-frame {
+      width: 320px;
+      background: #f5f5f5;
+      border-radius: 32px;
+      padding: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .phone-screen {
+      background: #f8fafc;
+      border-radius: 24px;
+      overflow: hidden;
+      min-height: 500px;
+    }
+    .mockup-section { margin-bottom: 4rem; }
+    .mockup-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+    }
+    .mockup-card {
+      background: #374151;
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    .mockup-label {
+      font-size: 0.875rem;
+      color: #9ca3af;
+      margin-bottom: 1rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    .task-card {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 8px;
+    }
+
+    /* Swipe animation indicator */
+    @keyframes swipeHint {
+      0%, 100% { transform: translateX(0); opacity: 0.5; }
+      50% { transform: translateX(10px); opacity: 1; }
+    }
+    .swipe-hint {
+      animation: swipeHint 1.5s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-white mb-2">Mobile Task Status Change</h1>
+    <p class="text-gray-400 mb-8">Issue #166 - Touch-friendly ways to move tasks between statuses</p>
+
+    <!-- ============================================ -->
+    <!-- OPTION 1: Swipe Gestures -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-white mb-2">Option 1: Swipe Gestures</h2>
+      <p class="text-gray-400 mb-6 text-sm">Swipe right to advance status, swipe left to go back. Used by Todoist, Apple Reminders, Things 3.</p>
+
+      <div class="mockup-grid">
+        <!-- Default state -->
+        <div class="mockup-card">
+          <div class="mockup-label">Default State</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-todo p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-todo-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-todo-foreground">Todo</span>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <div class="flex items-start gap-2">
+                    <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                      <i class="pi pi-flag text-sm"></i>
+                    </button>
+                    <p class="text-sm text-foreground flex-1">Review authentication flow</p>
+                  </div>
+                  <div class="mt-2 flex items-center gap-1.5">
+                    <span class="w-6 h-6 rounded-full bg-todo-hover flex items-center justify-center">
+                      <i class="pi pi-calendar text-xs text-foreground-muted/40"></i>
+                    </span>
+                    <span class="w-6 h-6 rounded-full bg-todo-hover flex items-center justify-center">
+                      <i class="pi pi-comment text-xs text-foreground-muted/40"></i>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <div class="flex items-start gap-2">
+                    <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-500">
+                      <i class="pi pi-flag-fill text-sm"></i>
+                    </button>
+                    <p class="text-sm text-foreground flex-1">Fix critical bug</p>
+                  </div>
+                </div>
+
+                <p class="text-xs text-center text-foreground-muted mt-4">
+                  <i class="pi pi-arrow-right-arrow-left"></i>
+                  Swipe tasks to change status
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Swiping right -->
+        <div class="mockup-card">
+          <div class="mockup-label">Swiping Right → In Progress</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-todo p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-todo-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-todo-foreground">Todo</span>
+                </div>
+
+                <!-- Card being swiped -->
+                <div class="relative overflow-hidden rounded-lg mb-2">
+                  <!-- Reveal layer (behind) -->
+                  <div class="absolute inset-0 bg-inprogress flex items-center px-4">
+                    <div class="flex items-center gap-2 text-inprogress-foreground">
+                      <i class="pi pi-clock text-lg"></i>
+                      <span class="text-sm font-medium">In Progress</span>
+                    </div>
+                  </div>
+                  <!-- Card (sliding) -->
+                  <div class="task-card border-todo-border relative translate-x-24 transition-transform">
+                    <div class="flex items-start gap-2">
+                      <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                        <i class="pi pi-flag text-sm"></i>
+                      </button>
+                      <p class="text-sm text-foreground flex-1">Review authentication flow</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <div class="flex items-start gap-2">
+                    <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-500">
+                      <i class="pi pi-flag-fill text-sm"></i>
+                    </button>
+                    <p class="text-sm text-foreground flex-1">Fix critical bug</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Swiping left -->
+        <div class="mockup-card">
+          <div class="mockup-label">Swiping Left ← Back to Todo</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-inprogress p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-inprogress-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-inprogress-foreground">In Progress</span>
+                </div>
+
+                <!-- Card being swiped left -->
+                <div class="relative overflow-hidden rounded-lg mb-2">
+                  <!-- Reveal layer (behind) -->
+                  <div class="absolute inset-0 bg-todo flex items-center justify-end px-4">
+                    <div class="flex items-center gap-2 text-todo-foreground">
+                      <span class="text-sm font-medium">Todo</span>
+                      <i class="pi pi-lightbulb text-lg"></i>
+                    </div>
+                  </div>
+                  <!-- Card (sliding left) -->
+                  <div class="task-card border-inprogress-border relative -translate-x-20 transition-transform">
+                    <div class="flex items-start gap-2">
+                      <p class="text-sm text-foreground flex-1">Review authentication flow</p>
+                      <span class="text-xs text-inprogress-foreground/60">2h</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Build new feature</p>
+                    <span class="text-xs text-inprogress-foreground/60">4h</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gray-800 rounded-lg p-4 max-w-2xl mx-auto">
+        <h3 class="text-white font-medium mb-2">Pros</h3>
+        <ul class="text-gray-300 text-sm space-y-1 mb-4">
+          <li>• Most intuitive gesture - matches email/messaging apps</li>
+          <li>• Fast once learned - single gesture to move</li>
+          <li>• No extra UI elements needed</li>
+        </ul>
+        <h3 class="text-white font-medium mb-2">Cons</h3>
+        <ul class="text-gray-300 text-sm space-y-1">
+          <li>• Not discoverable - users need to learn the gesture</li>
+          <li>• May conflict with horizontal scroll if cards are wide</li>
+          <li>• Accidental swipes possible</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 2: Long-Press Quick Actions -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-white mb-2">Option 2: Long-Press Quick Actions</h2>
+      <p class="text-gray-400 mb-6 text-sm">Long-press reveals a contextual menu with status options. Standard iOS/Android pattern.</p>
+
+      <div class="mockup-grid">
+        <!-- Default state -->
+        <div class="mockup-card">
+          <div class="mockup-label">Default State</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-todo p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-todo-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-todo-foreground">Todo</span>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <div class="flex items-start gap-2">
+                    <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                      <i class="pi pi-flag text-sm"></i>
+                    </button>
+                    <p class="text-sm text-foreground flex-1">Review authentication flow</p>
+                  </div>
+                  <div class="mt-2 flex items-center gap-1.5">
+                    <span class="w-6 h-6 rounded-full bg-todo-hover flex items-center justify-center">
+                      <i class="pi pi-calendar text-xs text-foreground-muted/40"></i>
+                    </span>
+                    <span class="w-6 h-6 rounded-full bg-todo-hover flex items-center justify-center">
+                      <i class="pi pi-comment text-xs text-foreground-muted/40"></i>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <p class="text-sm text-foreground">Fix critical bug</p>
+                </div>
+
+                <p class="text-xs text-center text-foreground-muted mt-4">
+                  <i class="pi pi-ellipsis-h"></i>
+                  Long-press for options
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Long-press menu shown -->
+        <div class="mockup-card">
+          <div class="mockup-label">Long-Press Menu</div>
+          <div class="phone-frame">
+            <div class="phone-screen relative">
+              <!-- Dimmed background -->
+              <div class="absolute inset-0 bg-black/40 z-10"></div>
+
+              <div class="bg-todo p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-todo-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-todo-foreground">Todo</span>
+                </div>
+
+                <!-- Selected card (highlighted) -->
+                <div class="task-card border-todo-border border-2 border-primary relative z-20 shadow-lg">
+                  <div class="flex items-start gap-2">
+                    <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                      <i class="pi pi-flag text-sm"></i>
+                    </button>
+                    <p class="text-sm text-foreground flex-1">Review authentication flow</p>
+                  </div>
+                </div>
+
+                <!-- Quick action menu -->
+                <div class="relative z-20 mt-2 bg-white rounded-xl shadow-2xl overflow-hidden">
+                  <div class="p-1">
+                    <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 text-left">
+                      <div class="w-8 h-8 rounded-full bg-inprogress flex items-center justify-center">
+                        <i class="pi pi-clock text-inprogress-foreground text-sm"></i>
+                      </div>
+                      <span class="text-sm font-medium text-foreground">Move to In Progress</span>
+                    </button>
+                    <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 text-left">
+                      <div class="w-8 h-8 rounded-full bg-done flex items-center justify-center">
+                        <i class="pi pi-check-circle text-done-foreground text-sm"></i>
+                      </div>
+                      <span class="text-sm font-medium text-foreground">Move to Done</span>
+                    </button>
+                  </div>
+                  <div class="border-t border-gray-100 p-1">
+                    <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 text-left">
+                      <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                        <i class="pi pi-pencil text-foreground-muted text-sm"></i>
+                      </div>
+                      <span class="text-sm text-foreground">Edit</span>
+                    </button>
+                    <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 text-left">
+                      <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                        <i class="pi pi-trash text-red-500 text-sm"></i>
+                      </div>
+                      <span class="text-sm text-red-500">Delete</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="task-card border-todo-border opacity-30">
+                  <p class="text-sm text-foreground">Fix critical bug</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom sheet variant -->
+        <div class="mockup-card">
+          <div class="mockup-label">Alternative: Bottom Sheet</div>
+          <div class="phone-frame">
+            <div class="phone-screen relative">
+              <!-- Dimmed background -->
+              <div class="absolute inset-0 bg-black/40 z-10"></div>
+
+              <div class="bg-todo p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-todo-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-todo-foreground">Todo</span>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <p class="text-sm text-foreground">Review authentication flow</p>
+                </div>
+
+                <div class="task-card border-todo-border opacity-30">
+                  <p class="text-sm text-foreground">Fix critical bug</p>
+                </div>
+              </div>
+
+              <!-- Bottom sheet -->
+              <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl z-20 shadow-2xl">
+                <div class="flex justify-center py-2">
+                  <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+                </div>
+                <div class="px-4 pb-6">
+                  <p class="text-xs text-foreground-muted mb-3">Move to:</p>
+                  <div class="grid grid-cols-3 gap-2">
+                    <button class="flex flex-col items-center gap-1 p-3 rounded-xl bg-todo border-2 border-primary">
+                      <i class="pi pi-lightbulb text-lg text-todo-foreground"></i>
+                      <span class="text-xs font-medium text-todo-foreground">Todo</span>
+                    </button>
+                    <button class="flex flex-col items-center gap-1 p-3 rounded-xl bg-inprogress hover:border-2 hover:border-inprogress-border">
+                      <i class="pi pi-clock text-lg text-inprogress-foreground"></i>
+                      <span class="text-xs font-medium text-inprogress-foreground">In Progress</span>
+                    </button>
+                    <button class="flex flex-col items-center gap-1 p-3 rounded-xl bg-done hover:border-2 hover:border-done-border">
+                      <i class="pi pi-check-circle text-lg text-done-foreground"></i>
+                      <span class="text-xs font-medium text-done-foreground">Done</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gray-800 rounded-lg p-4 max-w-2xl mx-auto">
+        <h3 class="text-white font-medium mb-2">Pros</h3>
+        <ul class="text-gray-300 text-sm space-y-1 mb-4">
+          <li>• Standard mobile pattern - users expect it</li>
+          <li>• Can include other actions (edit, delete, priority)</li>
+          <li>• Clear visual feedback</li>
+        </ul>
+        <h3 class="text-white font-medium mb-2">Cons</h3>
+        <ul class="text-gray-300 text-sm space-y-1">
+          <li>• Requires two steps (long-press + tap)</li>
+          <li>• Not immediately discoverable</li>
+          <li>• Slower than direct gestures</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 3: Tap Status Badge -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-white mb-2">Option 3: Tap Status Badge</h2>
+      <p class="text-gray-400 mb-6 text-sm">Visible status indicator on each card. Tap to open a picker.</p>
+
+      <div class="mockup-grid">
+        <!-- Default with status badges -->
+        <div class="mockup-card">
+          <div class="mockup-label">Cards with Status Badges</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-todo p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-todo-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-todo-foreground">Todo</span>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Review authentication flow</p>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-6 h-6 rounded-full bg-todo-hover flex items-center justify-center">
+                        <i class="pi pi-calendar text-xs text-foreground-muted/40"></i>
+                      </span>
+                      <span class="w-6 h-6 rounded-full bg-todo-hover flex items-center justify-center">
+                        <i class="pi pi-comment text-xs text-foreground-muted/40"></i>
+                      </span>
+                    </div>
+                    <!-- Status badge -->
+                    <button class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-todo-hover text-todo-foreground text-[10px] font-medium">
+                      <i class="pi pi-lightbulb text-[10px]"></i>
+                      Todo
+                      <i class="pi pi-chevron-down text-[8px] opacity-50"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Fix critical bug</p>
+                  </div>
+                  <div class="mt-2 flex items-center justify-end">
+                    <button class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-todo-hover text-todo-foreground text-[10px] font-medium">
+                      <i class="pi pi-lightbulb text-[10px]"></i>
+                      Todo
+                      <i class="pi pi-chevron-down text-[8px] opacity-50"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status picker dropdown -->
+        <div class="mockup-card">
+          <div class="mockup-label">Status Picker Open</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-todo p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-todo-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-todo-foreground">Todo</span>
+                </div>
+
+                <div class="task-card border-todo-border border-2 border-primary relative">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Review authentication flow</p>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-6 h-6 rounded-full bg-todo-hover flex items-center justify-center">
+                        <i class="pi pi-calendar text-xs text-foreground-muted/40"></i>
+                      </span>
+                    </div>
+                    <!-- Status badge (active) -->
+                    <button class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-white text-[10px] font-medium">
+                      <i class="pi pi-lightbulb text-[10px]"></i>
+                      Todo
+                      <i class="pi pi-chevron-up text-[8px]"></i>
+                    </button>
+                  </div>
+
+                  <!-- Dropdown picker -->
+                  <div class="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-10 w-36">
+                    <button class="w-full flex items-center gap-2 px-3 py-2 bg-todo text-todo-foreground text-xs">
+                      <i class="pi pi-lightbulb"></i>
+                      <span>Todo</span>
+                      <i class="pi pi-check ml-auto"></i>
+                    </button>
+                    <button class="w-full flex items-center gap-2 px-3 py-2 hover:bg-inprogress/50 text-inprogress-foreground text-xs">
+                      <i class="pi pi-clock"></i>
+                      <span>In Progress</span>
+                    </button>
+                    <button class="w-full flex items-center gap-2 px-3 py-2 hover:bg-done/50 text-done-foreground text-xs">
+                      <i class="pi pi-check-circle"></i>
+                      <span>Done</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="task-card border-todo-border opacity-50">
+                  <p class="text-sm text-foreground">Fix critical bug</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Different column showing badges -->
+        <div class="mockup-card">
+          <div class="mockup-label">In Progress Column</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-inprogress p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-inprogress-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-inprogress-foreground">In Progress</span>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Build new feature</p>
+                    <span class="text-xs text-inprogress-foreground/60">4h</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-end">
+                    <button class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-inprogress-hover text-inprogress-foreground text-[10px] font-medium">
+                      <i class="pi pi-clock text-[10px]"></i>
+                      In Progress
+                      <i class="pi pi-chevron-down text-[8px] opacity-50"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Write tests</p>
+                    <span class="text-xs text-inprogress-foreground/60">1h</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-end">
+                    <button class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-inprogress-hover text-inprogress-foreground text-[10px] font-medium">
+                      <i class="pi pi-clock text-[10px]"></i>
+                      In Progress
+                      <i class="pi pi-chevron-down text-[8px] opacity-50"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gray-800 rounded-lg p-4 max-w-2xl mx-auto">
+        <h3 class="text-white font-medium mb-2">Pros</h3>
+        <ul class="text-gray-300 text-sm space-y-1 mb-4">
+          <li>• Highly discoverable - visible on every card</li>
+          <li>• Clear affordance (dropdown chevron)</li>
+          <li>• Status always visible at a glance</li>
+        </ul>
+        <h3 class="text-white font-medium mb-2">Cons</h3>
+        <ul class="text-gray-300 text-sm space-y-1">
+          <li>• Takes up card space</li>
+          <li>• Redundant when cards are already in status columns</li>
+          <li>• Two taps required (open picker + select)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 4: Action Arrow Buttons -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-white mb-2">Option 4: Action Arrow Buttons</h2>
+      <p class="text-gray-400 mb-6 text-sm">Visible forward/back buttons on each card. One tap to move.</p>
+
+      <div class="mockup-grid">
+        <!-- Todo column with arrows -->
+        <div class="mockup-card">
+          <div class="mockup-label">Todo Column</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-todo p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-todo-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-todo-foreground">Todo</span>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Review authentication flow</p>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-6 h-6 rounded-full bg-todo-hover flex items-center justify-center">
+                        <i class="pi pi-calendar text-xs text-foreground-muted/40"></i>
+                      </span>
+                    </div>
+                    <!-- Arrow button (only forward, since we're in Todo) -->
+                    <button class="flex items-center gap-1 px-2 py-1 rounded-lg bg-inprogress text-inprogress-foreground text-xs font-medium hover:bg-inprogress-hover">
+                      <span>Start</span>
+                      <i class="pi pi-arrow-right text-[10px]"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="task-card border-todo-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Fix critical bug</p>
+                  </div>
+                  <div class="mt-2 flex items-center justify-end">
+                    <button class="flex items-center gap-1 px-2 py-1 rounded-lg bg-inprogress text-inprogress-foreground text-xs font-medium hover:bg-inprogress-hover">
+                      <span>Start</span>
+                      <i class="pi pi-arrow-right text-[10px]"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- In Progress with both arrows -->
+        <div class="mockup-card">
+          <div class="mockup-label">In Progress Column (Both Directions)</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-inprogress p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-inprogress-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-inprogress-foreground">In Progress</span>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Build new feature</p>
+                    <span class="text-xs text-inprogress-foreground/60">4h</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <!-- Back arrow -->
+                    <button class="flex items-center gap-1 px-2 py-1 rounded-lg bg-todo text-todo-foreground text-xs font-medium hover:bg-todo-hover">
+                      <i class="pi pi-arrow-left text-[10px]"></i>
+                      <span>Todo</span>
+                    </button>
+                    <!-- Forward arrow -->
+                    <button class="flex items-center gap-1 px-2 py-1 rounded-lg bg-done text-done-foreground text-xs font-medium hover:bg-done-hover">
+                      <span>Done</span>
+                      <i class="pi pi-arrow-right text-[10px]"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Write tests</p>
+                    <span class="text-xs text-inprogress-foreground/60">1h</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <button class="flex items-center gap-1 px-2 py-1 rounded-lg bg-todo text-todo-foreground text-xs font-medium">
+                      <i class="pi pi-arrow-left text-[10px]"></i>
+                      <span>Todo</span>
+                    </button>
+                    <button class="flex items-center gap-1 px-2 py-1 rounded-lg bg-done text-done-foreground text-xs font-medium">
+                      <span>Done</span>
+                      <i class="pi pi-arrow-right text-[10px]"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Done column with back arrow only -->
+        <div class="mockup-card">
+          <div class="mockup-label">Done Column</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-done p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-done-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-done-foreground">Done</span>
+                </div>
+
+                <div class="task-card border-done-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground-muted line-through flex-1">Deploy hotfix</p>
+                    <span class="text-xs text-done-foreground/60">2d ago</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-start">
+                    <button class="flex items-center gap-1 px-2 py-1 rounded-lg bg-inprogress text-inprogress-foreground text-xs font-medium">
+                      <i class="pi pi-arrow-left text-[10px]"></i>
+                      <span>Reopen</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="task-card border-done-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground-muted line-through flex-1">Update docs</p>
+                    <span class="text-xs text-done-foreground/60">1d ago</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-start">
+                    <button class="flex items-center gap-1 px-2 py-1 rounded-lg bg-inprogress text-inprogress-foreground text-xs font-medium">
+                      <i class="pi pi-arrow-left text-[10px]"></i>
+                      <span>Reopen</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gray-800 rounded-lg p-4 max-w-2xl mx-auto">
+        <h3 class="text-white font-medium mb-2">Pros</h3>
+        <ul class="text-gray-300 text-sm space-y-1 mb-4">
+          <li>• Most discoverable - buttons are always visible</li>
+          <li>• Single tap to move - fastest option</li>
+          <li>• Clear direction with arrow icons</li>
+          <li>• Color-coded to show destination</li>
+        </ul>
+        <h3 class="text-white font-medium mb-2">Cons</h3>
+        <ul class="text-gray-300 text-sm space-y-1">
+          <li>• Takes significant card space</li>
+          <li>• Visual clutter with many tasks</li>
+          <li>• May not be needed on desktop (drag works)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 5: Icon-Only Compact Buttons -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-white mb-2">Option 5: Icon-Only Compact Buttons</h2>
+      <p class="text-gray-400 mb-6 text-sm">Minimal arrow icons - same as Option 4 but more compact.</p>
+
+      <div class="mockup-grid">
+        <!-- Compact arrows -->
+        <div class="mockup-card">
+          <div class="mockup-label">In Progress - Compact Arrows</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-inprogress p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-inprogress-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-inprogress-foreground">In Progress</span>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Build new feature</p>
+                    <span class="text-xs text-inprogress-foreground/60">4h</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-6 h-6 rounded-full bg-inprogress-hover flex items-center justify-center">
+                        <i class="pi pi-calendar text-xs text-foreground-muted/40"></i>
+                      </span>
+                      <span class="w-6 h-6 rounded-full bg-inprogress-hover flex items-center justify-center">
+                        <i class="pi pi-comment text-xs text-foreground-muted/40"></i>
+                      </span>
+                    </div>
+                    <!-- Compact arrow buttons -->
+                    <div class="flex items-center gap-1">
+                      <button class="w-7 h-7 rounded-full bg-todo flex items-center justify-center text-todo-foreground hover:bg-todo-hover" title="Move to Todo">
+                        <i class="pi pi-arrow-left text-xs"></i>
+                      </button>
+                      <button class="w-7 h-7 rounded-full bg-done flex items-center justify-center text-done-foreground hover:bg-done-hover" title="Move to Done">
+                        <i class="pi pi-arrow-right text-xs"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Write tests</p>
+                    <span class="text-xs text-inprogress-foreground/60">1h</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
+                        <i class="pi pi-calendar text-xs text-amber-600"></i>
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <button class="w-7 h-7 rounded-full bg-todo flex items-center justify-center text-todo-foreground">
+                        <i class="pi pi-arrow-left text-xs"></i>
+                      </button>
+                      <button class="w-7 h-7 rounded-full bg-done flex items-center justify-center text-done-foreground">
+                        <i class="pi pi-arrow-right text-xs"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Integrated with metadata tabs -->
+        <div class="mockup-card bg-emerald-900">
+          <div class="mockup-label text-emerald-400">Recommended: Integrated with Metadata Tabs</div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="bg-inprogress p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-inprogress-foreground"></i>
+                  <span class="text-xs font-medium uppercase tracking-wide text-inprogress-foreground">In Progress</span>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Build new feature</p>
+                    <span class="text-xs text-inprogress-foreground/60">4h</span>
+                  </div>
+                  <!-- Tab bar with status arrows integrated -->
+                  <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center gap-1">
+                      <button class="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                        <i class="pi pi-calendar text-xs"></i>
+                      </button>
+                      <button class="relative w-7 h-7 rounded-full bg-inprogress-hover flex items-center justify-center text-foreground-muted/60">
+                        <i class="pi pi-comment text-xs"></i>
+                        <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-foreground-muted/30 text-[9px]">2</span>
+                      </button>
+                    </div>
+                    <!-- Status movement arrows -->
+                    <div class="flex items-center gap-1">
+                      <button class="w-7 h-7 rounded-full bg-todo flex items-center justify-center text-todo-foreground hover:bg-todo-hover" aria-label="Move to Todo">
+                        <i class="pi pi-arrow-left text-xs"></i>
+                      </button>
+                      <button class="w-7 h-7 rounded-full bg-done flex items-center justify-center text-done-foreground hover:bg-done-hover" aria-label="Move to Done">
+                        <i class="pi pi-arrow-right text-xs"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="task-card border-inprogress-border">
+                  <div class="flex items-start gap-2">
+                    <p class="text-sm text-foreground flex-1">Write tests</p>
+                    <span class="text-xs text-inprogress-foreground/60">1h</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center gap-1">
+                      <button class="w-7 h-7 rounded-full bg-inprogress-hover flex items-center justify-center text-foreground-muted/40">
+                        <i class="pi pi-calendar text-xs"></i>
+                      </button>
+                      <button class="w-7 h-7 rounded-full bg-inprogress-hover flex items-center justify-center text-foreground-muted/40">
+                        <i class="pi pi-comment text-xs"></i>
+                      </button>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <button class="w-7 h-7 rounded-full bg-todo flex items-center justify-center text-todo-foreground">
+                        <i class="pi pi-arrow-left text-xs"></i>
+                      </button>
+                      <button class="w-7 h-7 rounded-full bg-done flex items-center justify-center text-done-foreground">
+                        <i class="pi pi-arrow-right text-xs"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-400 mt-2 text-center">Matches the metadata tab pill style from #156</p>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gray-800 rounded-lg p-4 max-w-2xl mx-auto">
+        <h3 class="text-white font-medium mb-2">Pros</h3>
+        <ul class="text-gray-300 text-sm space-y-1 mb-4">
+          <li>• Compact - fits in the existing tab row</li>
+          <li>• Consistent with metadata pill style</li>
+          <li>• Color-coded destination is clear</li>
+          <li>• Single tap to move</li>
+        </ul>
+        <h3 class="text-white font-medium mb-2">Cons</h3>
+        <ul class="text-gray-300 text-sm space-y-1">
+          <li>• Arrows alone may not be clear enough</li>
+          <li>• Needs good tooltips/aria-labels</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- COMPARISON TABLE -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-white mb-4">Comparison</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm bg-gray-800 rounded-lg border border-gray-700">
+          <thead class="bg-gray-900">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-300">Option</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-300">Taps Required</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-300">Discoverability</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-300">Space Usage</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-300">Best For</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-700">
+            <tr>
+              <td class="px-4 py-3 font-medium text-white">1. Swipe Gestures</td>
+              <td class="px-4 py-3 text-gray-300">0 (gesture)</td>
+              <td class="px-4 py-3 text-yellow-400">Low</td>
+              <td class="px-4 py-3 text-green-400">None</td>
+              <td class="px-4 py-3 text-gray-300">Power users</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium text-white">2. Long-Press Menu</td>
+              <td class="px-4 py-3 text-gray-300">2</td>
+              <td class="px-4 py-3 text-yellow-400">Medium</td>
+              <td class="px-4 py-3 text-green-400">None (overlay)</td>
+              <td class="px-4 py-3 text-gray-300">Multiple actions</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium text-white">3. Status Badge</td>
+              <td class="px-4 py-3 text-gray-300">2</td>
+              <td class="px-4 py-3 text-green-400">High</td>
+              <td class="px-4 py-3 text-yellow-400">Medium</td>
+              <td class="px-4 py-3 text-gray-300">Status visibility</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium text-white">4. Action Buttons</td>
+              <td class="px-4 py-3 text-gray-300">1</td>
+              <td class="px-4 py-3 text-green-400">Highest</td>
+              <td class="px-4 py-3 text-red-400">High</td>
+              <td class="px-4 py-3 text-gray-300">New users</td>
+            </tr>
+            <tr class="bg-emerald-900/30">
+              <td class="px-4 py-3 font-medium text-emerald-400">5. Compact Icons (Recommended)</td>
+              <td class="px-4 py-3 text-gray-300">1</td>
+              <td class="px-4 py-3 text-green-400">High</td>
+              <td class="px-4 py-3 text-green-400">Low</td>
+              <td class="px-4 py-3 text-gray-300">Balance of all</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- RECOMMENDATION -->
+    <!-- ============================================ -->
+    <div class="mockup-section bg-emerald-900/50 rounded-xl p-6 border-2 border-emerald-700">
+      <h2 class="text-xl font-semibold text-emerald-400 mb-4">Recommendation: Option 5 - Compact Icon Buttons</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-emerald-300 mb-2">Why This Option?</h3>
+          <ul class="text-sm text-emerald-100 space-y-1">
+            <li>• Integrates seamlessly with the metadata tab design (#156)</li>
+            <li>• Single tap to move - fastest interaction</li>
+            <li>• Color-coded buttons make destination clear</li>
+            <li>• Compact enough to not overwhelm cards</li>
+            <li>• Highly discoverable - visible on every card</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium text-emerald-300 mb-2">Implementation Notes</h3>
+          <ul class="text-sm text-emerald-100 space-y-1">
+            <li>• Show on mobile only (desktop uses drag)</li>
+            <li>• Add to right side of metadata tab row</li>
+            <li>• Use circular buttons matching tab style</li>
+            <li>• Color matches destination column</li>
+            <li>• Good aria-labels for accessibility</li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-4 p-3 bg-emerald-900 rounded-lg">
+        <p class="text-emerald-200 text-sm"><strong>Alternative:</strong> Consider combining with Option 1 (swipe) for power users who discover the gesture. The buttons serve as the primary method while swipe is a shortcut.</p>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
