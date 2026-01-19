@@ -31,10 +31,12 @@ import { ToastService } from '../shared/services/toast.service';
           class="w-full h-9 pl-9 pr-16 text-sm text-foreground-secondary placeholder-foreground-secondary bg-surface-muted hover:bg-surface-muted/80 focus:bg-surface-muted/80 rounded-lg focus:outline-none transition-colors duration-150"
           aria-label="Search tasks"
         >
-        @if (searchQuery()) {
+        @if (searchQuery().trim()) {
           <span class="absolute right-9 top-1/2 -translate-y-1/2 text-xs text-foreground-muted">
-            {{ searchResultCount() === 0 ? 'No results' : searchResultCount() + (searchResultCount() === 1 ? ' result' : ' results') }}
+            {{ getSearchResultLabel(searchResultCount()) }}
           </span>
+        }
+        @if (searchQuery()) {
           <button
             type="button"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
@@ -286,7 +288,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   );
 
   readonly searchResultCount = computed(() => {
-    if (!this.searchQuery()) return 0;
+    if (!this.searchQuery().trim()) return 0;
     return this.filteredTodoTasks().length +
            this.filteredInProgressTasks().length +
            this.filteredDoneColumnTasks().length;
@@ -372,6 +374,12 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   /** Type-safe helper for accessing input value from events */
   asInput(event: Event): HTMLInputElement {
     return event.target as HTMLInputElement;
+  }
+
+  /** Format search result count for display */
+  getSearchResultLabel(count: number): string {
+    if (count === 0) return 'No results';
+    return count === 1 ? '1 result' : `${count} results`;
   }
 
   clearSearch(): void {
