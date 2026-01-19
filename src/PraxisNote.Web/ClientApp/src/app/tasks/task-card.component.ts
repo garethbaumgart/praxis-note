@@ -20,20 +20,17 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
       [ngClass]="task().status | statusColor:'border'"
     >
       @if (editing()) {
-        <div>
-          <textarea
-            #editInput
-            appAutoResize
-            [value]="editTitle()"
-            (input)="editTitle.set(asTextArea($event).value)"
-            (keydown.enter)="onEnterKey(asKeyboardEvent($event))"
-            (keydown.escape)="cancelEdit()"
-            (blur)="saveEdit()"
-            rows="1"
-            class="w-full text-sm text-foreground bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
-          ></textarea>
-          <p class="text-xs text-foreground-muted/50 mt-1">Enter to save · Esc to cancel</p>
-        </div>
+        <textarea
+          #editInput
+          appAutoResize
+          [value]="editTitle()"
+          (input)="editTitle.set(asTextArea($event).value)"
+          (keydown.enter)="onEnterKey(asKeyboardEvent($event))"
+          (keydown.escape)="cancelEdit()"
+          (blur)="saveEdit()"
+          rows="1"
+          class="w-full text-sm text-foreground bg-transparent border-0 border-b border-primary/50 outline-none resize-none p-0 leading-normal"
+        ></textarea>
       } @else {
         <!-- Task content -->
         <div class="flex items-start gap-2">
