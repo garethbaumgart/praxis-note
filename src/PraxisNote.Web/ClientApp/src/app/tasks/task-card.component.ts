@@ -58,8 +58,8 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             ></p>
           }
         </div>
-          <!-- Time (visible) / Delete button (on hover) -->
-          <div class="flex items-center shrink-0">
+        <!-- Time (visible) / Delete button (on hover) -->
+        <div class="flex items-center shrink-0">
             @if (confirmingTaskDelete()) {
               <app-delete-confirm-button
                 ariaLabel="Confirm delete task"
