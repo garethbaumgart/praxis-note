@@ -113,8 +113,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           <!-- Due Date tab -->
           <button
             type="button"
-            class="flex items-center justify-center rounded-full transition-all text-xs shrink-0"
-            [class.h-7]="isDueDatePill()"
+            class="flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7"
             [class.px-3]="isDueDatePill()"
             [class.gap-1.5]="isDueDatePill()"
             [class.w-7]="isDueDateCircle()"
@@ -150,8 +149,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           <!-- Comments tab -->
           <button
             type="button"
-            class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0"
-            [class.h-7]="isCommentsPill()"
+            class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7"
             [class.px-3]="isCommentsPill()"
             [class.gap-1.5]="isCommentsPill()"
             [class.bg-indigo-500]="isCommentsPill()"
