@@ -480,7 +480,13 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
 
   changeStatus(taskId: string, status: TaskStatus): void {
     // Place at bottom of target column for mobile quick status changes
-    this.taskService.changeStatus(taskId, status, Number.MAX_SAFE_INTEGER);
+    const targetIndex =
+      status === 'Todo'
+        ? this.taskService.todoTasks().length
+        : status === 'InProgress'
+          ? this.taskService.inProgressTasks().length
+          : this.taskService.doneTasks().length;
+    this.taskService.changeStatus(taskId, status, targetIndex);
   }
 
   toggleSortMenu(column: 'Todo' | 'InProgress' | 'Done'): void {
