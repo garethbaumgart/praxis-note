@@ -424,13 +424,31 @@ export class TaskCardComponent {
   // Due date tab state computeds for template bindings
   readonly isDueDatePill = computed(() => this.dueDateExpanded() || !!this.task().dueDate);
   readonly isDueDateExpandedDone = computed(() => this.dueDateExpanded() && this.task().status === 'Done');
-  readonly isDueDateExpandedOverdue = computed(() => this.dueDateExpanded() && !this.isDueDateExpandedDone() && this.daysDiff() !== null && this.daysDiff()! < 0);
-  readonly isDueDateExpandedNormal = computed(() => this.dueDateExpanded() && !this.isDueDateExpandedDone() && !this.isDueDateExpandedOverdue());
+  readonly isDueDateExpandedOverdue = computed(() => {
+    const diff = this.daysDiff();
+    return this.dueDateExpanded() && this.task().status !== 'Done' && diff !== null && diff < 0;
+  });
+  readonly isDueDateExpandedNormal = computed(() => {
+    const diff = this.daysDiff();
+    return this.dueDateExpanded() && this.task().status !== 'Done' && (diff === null || diff >= 0);
+  });
   readonly isDueDateCollapsedDone = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status === 'Done');
-  readonly isDueDateCollapsedOverdue = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done' && this.daysDiff() !== null && this.daysDiff()! < 0);
-  readonly isDueDateCollapsedToday = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done' && this.daysDiff() === 0);
-  readonly isDueDateCollapsedTomorrow = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done' && this.daysDiff() === 1);
-  readonly isDueDateCollapsedDefault = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done' && this.daysDiff() !== null && this.daysDiff()! > 1);
+  // Common condition for collapsed date states (not done)
+  private readonly isCollapsedWithDateNotDone = computed(
+    () => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done'
+  );
+  readonly isDueDateCollapsedOverdue = computed(
+    () => this.isCollapsedWithDateNotDone() && this.daysDiff() !== null && this.daysDiff()! < 0
+  );
+  readonly isDueDateCollapsedToday = computed(
+    () => this.isCollapsedWithDateNotDone() && this.daysDiff() === 0
+  );
+  readonly isDueDateCollapsedTomorrow = computed(
+    () => this.isCollapsedWithDateNotDone() && this.daysDiff() === 1
+  );
+  readonly isDueDateCollapsedDefault = computed(
+    () => this.isCollapsedWithDateNotDone() && this.daysDiff() !== null && this.daysDiff()! > 1
+  );
   readonly isDueDateCircle = computed(() => !this.dueDateExpanded() && !this.task().dueDate);
 
   // Comments tab state computeds
@@ -438,11 +456,11 @@ export class TaskCardComponent {
   readonly isCommentsCircleWithComments = computed(() => !this.commentsExpanded() && this.task().comments.length > 0);
   readonly isCommentsCircleEmpty = computed(() => !this.commentsExpanded() && this.task().comments.length === 0);
 
-  // Status button computeds
-  readonly isPrevStatusTodo = computed(() => this.task().status === 'InProgress');
-  readonly isPrevStatusInProgress = computed(() => this.task().status === 'Done');
-  readonly isNextStatusInProgress = computed(() => this.task().status === 'Todo');
-  readonly isNextStatusDone = computed(() => this.task().status === 'InProgress');
+  // Status button computeds - derive from previousStatus()/nextStatus() to avoid duplication
+  readonly isPrevStatusTodo = computed(() => this.previousStatus() === 'Todo');
+  readonly isPrevStatusInProgress = computed(() => this.previousStatus() === 'InProgress');
+  readonly isNextStatusInProgress = computed(() => this.nextStatus() === 'InProgress');
+  readonly isNextStatusDone = computed(() => this.nextStatus() === 'Done');
 
   readonly dueDateDisplayText = computed(() => {
     const diff = this.daysDiff();

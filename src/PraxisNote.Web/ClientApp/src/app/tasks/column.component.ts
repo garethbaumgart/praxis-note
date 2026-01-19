@@ -39,14 +39,14 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
             [class.text-archive-foreground]="showArchive()"
             [class.text-todo-foreground]="isTodo() && !showArchive()"
             [class.text-inprogress-foreground]="isInProgress() && !showArchive()"
-            [class.text-done-foreground]="isDone() && !showArchive()"
+            [class.text-done-foreground]="isDoneNotArchive()"
           >{{ label() }}</span>
           <span
             class="text-xs"
             [class.text-archive-foreground-muted]="showArchive()"
             [class.text-todo-foreground-muted]="isTodo() && !showArchive()"
             [class.text-inprogress-foreground-muted]="isInProgress() && !showArchive()"
-            [class.text-done-foreground-muted]="isDone() && !showArchive()"
+            [class.text-done-foreground-muted]="isDoneNotArchive()"
           >{{ tasks().length }}</span>
           <!-- Sort dropdown -->
           <div class="relative ml-1">
