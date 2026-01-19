@@ -1,11 +1,9 @@
 import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
-import { NgClass } from '@angular/common';
 import { TaskCardComponent } from './task-card.component';
 import { TaskCardSkeletonComponent } from './task-card-skeleton.component';
 import { Task, TaskStatus } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
-import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 
 type SortMode = 'manual' | 'dueDate' | 'priority';
 
@@ -13,46 +11,53 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, StatusColorPipe],
+  imports: [TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective],
   host: { class: 'block' },
   template: `
     <div
       class="flex flex-col rounded-lg p-3 min-h-48 md:h-full transition-all"
-      [ngClass]="{
-        'bg-todo': status() === 'Todo',
-        'bg-inprogress': status() === 'InProgress',
-        'bg-done': status() === 'Done' && !showArchive(),
-        'bg-archive': showArchive()
-      }"
+      [class.bg-todo]="isTodo()"
+      [class.bg-inprogress]="isInProgress()"
+      [class.bg-done]="isDoneNotArchive()"
+      [class.bg-archive]="showArchive()"
     >
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <i
             class="pi text-sm"
-            [ngClass]="{
-              'pi-lightbulb text-todo-foreground': status() === 'Todo',
-              'pi-clock text-inprogress-foreground': status() === 'InProgress',
-              'pi-check-circle text-done-foreground': status() === 'Done' && !showArchive(),
-              'pi-inbox text-archive-foreground': showArchive()
-            }"
+            [class.pi-lightbulb]="isTodo()"
+            [class.text-todo-foreground]="isTodo()"
+            [class.pi-clock]="isInProgress()"
+            [class.text-inprogress-foreground]="isInProgress()"
+            [class.pi-check-circle]="isDoneNotArchive()"
+            [class.text-done-foreground]="isDoneNotArchive()"
+            [class.pi-inbox]="showArchive()"
+            [class.text-archive-foreground]="showArchive()"
           ></i>
           <span
             class="text-xs font-medium uppercase tracking-wide"
-            [ngClass]="showArchive() ? 'text-archive-foreground' : (status() | statusColor:'text')"
+            [class.text-archive-foreground]="showArchive()"
+            [class.text-todo-foreground]="isTodo() && !showArchive()"
+            [class.text-inprogress-foreground]="isInProgress() && !showArchive()"
+            [class.text-done-foreground]="isDoneNotArchive()"
           >{{ label() }}</span>
           <span
             class="text-xs"
-            [ngClass]="showArchive() ? 'text-archive-foreground-muted' : (status() | statusColor:'text-muted')"
+            [class.text-archive-foreground-muted]="showArchive()"
+            [class.text-todo-foreground-muted]="isTodo() && !showArchive()"
+            [class.text-inprogress-foreground-muted]="isInProgress() && !showArchive()"
+            [class.text-done-foreground-muted]="isDoneNotArchive()"
           >{{ tasks().length }}</span>
           <!-- Sort dropdown -->
           <div class="relative ml-1">
             <button
               type="button"
               class="w-6 h-6 flex items-center justify-center rounded transition-colors"
-              [ngClass]="{
-                'bg-interactive text-interactive-foreground': sortMode() !== 'manual',
-                'text-foreground-muted hover:text-foreground hover:bg-surface-hover': sortMode() === 'manual'
-              }"
+              [class.bg-interactive]="isSortActive()"
+              [class.text-interactive-foreground]="isSortActive()"
+              [class.text-foreground-muted]="!isSortActive()"
+              [class.hover:text-foreground]="!isSortActive()"
+              [class.hover:bg-surface-hover]="!isSortActive()"
               (click)="toggleSortMenu(); $event.stopPropagation()"
               [attr.aria-label]="'Sort options'"
               [attr.aria-expanded]="showSortMenu()"
@@ -102,11 +107,15 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
           @if (showAddButton() && !isCreating()) {
             <button
               class="flex items-center justify-center w-6 h-6 rounded transition-colors"
-              [ngClass]="{
-                'text-todo-foreground-muted hover:text-todo-foreground hover:bg-todo-hover': status() === 'Todo',
-                'text-inprogress-foreground-muted hover:text-inprogress-foreground hover:bg-inprogress-hover': status() === 'InProgress',
-                'text-done-foreground-muted hover:text-done-foreground hover:bg-done-hover': status() === 'Done'
-              }"
+              [class.text-todo-foreground-muted]="isTodo()"
+              [class.hover:text-todo-foreground]="isTodo()"
+              [class.hover:bg-todo-hover]="isTodo()"
+              [class.text-inprogress-foreground-muted]="isInProgress()"
+              [class.hover:text-inprogress-foreground]="isInProgress()"
+              [class.hover:bg-inprogress-hover]="isInProgress()"
+              [class.text-done-foreground-muted]="isDone()"
+              [class.hover:text-done-foreground]="isDone()"
+              [class.hover:bg-done-hover]="isDone()"
               (click)="startCreate()"
               [attr.aria-label]="'Add task to ' + label()"
             >
@@ -115,11 +124,12 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
             @if (showKbdHint()) {
               <kbd
                 class="hidden md:inline px-1.5 py-0.5 text-xs rounded font-sans"
-                [ngClass]="{
-                  'text-todo-foreground-muted bg-todo-hover': status() === 'Todo',
-                  'text-inprogress-foreground-muted bg-inprogress-hover': status() === 'InProgress',
-                  'text-done-foreground-muted bg-done-hover': status() === 'Done'
-                }"
+                [class.text-todo-foreground-muted]="isTodo()"
+                [class.bg-todo-hover]="isTodo()"
+                [class.text-inprogress-foreground-muted]="isInProgress()"
+                [class.bg-inprogress-hover]="isInProgress()"
+                [class.text-done-foreground-muted]="isDone()"
+                [class.bg-done-hover]="isDone()"
               >N</kbd>
             }
           }
@@ -177,7 +187,9 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
         @if (isCreating()) {
           <div
             class="bg-surface border rounded-md p-3 shadow-sm"
-            [ngClass]="status() | statusColor:'border'"
+            [class.border-todo-border]="isTodo()"
+            [class.border-inprogress-border]="isInProgress()"
+            [class.border-done-border]="isDone()"
           >
             <textarea
               #inlineInput
@@ -217,12 +229,14 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
               <div
                 *cdkDragPlaceholder
                 class="border-2 border-dashed rounded-md h-16"
-                [ngClass]="{
-                  'bg-todo-hover border-todo-border': status() === 'Todo',
-                  'bg-inprogress-hover border-inprogress-border': status() === 'InProgress',
-                  'bg-done-hover border-done-border': status() === 'Done' && !showArchive(),
-                  'bg-archive-hover border-archive-border': showArchive()
-                }"
+                [class.bg-todo-hover]="isTodo()"
+                [class.border-todo-border]="isTodo()"
+                [class.bg-inprogress-hover]="isInProgress()"
+                [class.border-inprogress-border]="isInProgress()"
+                [class.bg-done-hover]="isDoneNotArchive()"
+                [class.border-done-border]="isDoneNotArchive()"
+                [class.bg-archive-hover]="showArchive()"
+                [class.border-archive-border]="showArchive()"
               ></div>
             </div>
           } @empty {
@@ -270,6 +284,13 @@ export class ColumnComponent {
   readonly isCreating = signal(false);
   readonly inlineTitle = signal('');
   readonly sortMode = signal<SortMode>('manual');
+
+  // Computed signals for template class bindings
+  readonly isTodo = computed(() => this.status() === 'Todo');
+  readonly isInProgress = computed(() => this.status() === 'InProgress');
+  readonly isDone = computed(() => this.status() === 'Done');
+  readonly isDoneNotArchive = computed(() => this.status() === 'Done' && !this.showArchive());
+  readonly isSortActive = computed(() => this.sortMode() !== 'manual');
 
   readonly sortedTasks = computed(() => {
     const tasks = this.tasks();
