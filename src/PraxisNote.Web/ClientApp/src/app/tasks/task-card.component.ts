@@ -1,8 +1,6 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, HostListener } from '@angular/core';
-import { NgClass } from '@angular/common';
 import { Task, TaskStatus, Comment } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
-import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
 import { HighlightPipe } from '../shared/pipes/highlight.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
@@ -13,11 +11,13 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, AutoResizeDirective, StatusColorPipe, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
+  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
   template: `
     <div
       class="bg-surface rounded-md py-2 px-3 border transition-colors group"
-      [ngClass]="task().status | statusColor:'border'"
+      [class.border-todo-border]="task().status === 'Todo'"
+      [class.border-inprogress-border]="task().status === 'InProgress'"
+      [class.border-done-border]="task().status === 'Done'"
     >
       <!-- Task content -->
       <div class="flex items-start gap-2">
@@ -113,12 +113,35 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           <!-- Due Date tab -->
           <button
             type="button"
-            [ngClass]="dueDateTabClass()"
+            class="flex items-center justify-center rounded-full transition-all text-xs shrink-0"
+            [class.h-7]="isDueDatePill()"
+            [class.px-3]="isDueDatePill()"
+            [class.gap-1.5]="isDueDatePill()"
+            [class.w-7]="isDueDateCircle()"
+            [class.bg-due-done]="isDueDateExpandedDone() || isDueDateCollapsedDone()"
+            [class.text-due-done-foreground]="isDueDateExpandedDone() || isDueDateCollapsedDone()"
+            [class.line-through]="isDueDateExpandedDone() || isDueDateCollapsedDone()"
+            [class.bg-danger]="isDueDateExpandedOverdue()"
+            [class.text-white]="isDueDateExpandedOverdue()"
+            [class.font-medium]="isDueDateExpandedOverdue() || isDueDateExpandedNormal() || isDueDateCollapsedOverdue()"
+            [class.bg-yellow-500]="isDueDateExpandedNormal()"
+            [class.text-amber-100]="isDueDateExpandedNormal()"
+            [class.bg-overdue]="isDueDateCollapsedOverdue()"
+            [class.text-overdue-foreground]="isDueDateCollapsedOverdue()"
+            [class.bg-due-today]="isDueDateCollapsedToday()"
+            [class.text-due-today-foreground]="isDueDateCollapsedToday()"
+            [class.bg-due-soon]="isDueDateCollapsedTomorrow()"
+            [class.text-due-soon-foreground]="isDueDateCollapsedTomorrow()"
+            [class.bg-amber-100]="isDueDateCollapsedDefault()"
+            [class.text-amber-700]="isDueDateCollapsedDefault()"
+            [class.bg-foreground-muted/10]="isDueDateCircle()"
+            [class.text-foreground-muted/40]="isDueDateCircle()"
+            [class.hover:bg-foreground-muted/20]="isDueDateCircle()"
             (click)="toggleTab('dueDate'); $event.stopPropagation()"
             [attr.aria-label]="task().dueDate ? (dueDateExpanded() ? 'Collapse due date' : 'Expand due date') : 'Set due date'"
             [attr.aria-expanded]="dueDateExpanded()"
           >
-            <i [ngClass]="isOverdue() ? 'pi pi-exclamation-circle' : 'pi pi-calendar'"></i>
+            <i class="pi" [class.pi-exclamation-circle]="isOverdue()" [class.pi-calendar]="!isOverdue()"></i>
             @if (dueDateExpanded() || task().dueDate) {
               <span>{{ dueDateDisplayText() ?? 'Due Date' }}</span>
             }
@@ -127,7 +150,20 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           <!-- Comments tab -->
           <button
             type="button"
-            [ngClass]="commentsTabClass()"
+            class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0"
+            [class.h-7]="isCommentsPill()"
+            [class.px-3]="isCommentsPill()"
+            [class.gap-1.5]="isCommentsPill()"
+            [class.bg-indigo-500]="isCommentsPill()"
+            [class.text-white]="isCommentsPill()"
+            [class.font-medium]="isCommentsPill()"
+            [class.w-7]="!isCommentsPill()"
+            [class.bg-indigo-100]="isCommentsCircleWithComments()"
+            [class.text-indigo-600]="isCommentsCircleWithComments()"
+            [class.hover:bg-indigo-200]="isCommentsCircleWithComments()"
+            [class.bg-foreground-muted/10]="isCommentsCircleEmpty()"
+            [class.text-foreground-muted/40]="isCommentsCircleEmpty()"
+            [class.hover:bg-foreground-muted/20]="isCommentsCircleEmpty()"
             (click)="toggleTab('comments'); $event.stopPropagation()"
             [attr.aria-label]="commentsExpanded() ? 'Hide comments' : 'Show comments'"
             [attr.aria-expanded]="commentsExpanded()"
@@ -151,7 +187,12 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               <button
                 type="button"
                 class="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
-                [ngClass]="previousStatusButtonClass()"
+                [class.bg-todo]="isPrevStatusTodo()"
+                [class.text-todo-foreground]="isPrevStatusTodo()"
+                [class.hover:bg-todo-hover]="isPrevStatusTodo()"
+                [class.bg-inprogress]="isPrevStatusInProgress()"
+                [class.text-inprogress-foreground]="isPrevStatusInProgress()"
+                [class.hover:bg-inprogress-hover]="isPrevStatusInProgress()"
                 (click)="moveToPreviousStatus(); $event.stopPropagation()"
                 [attr.aria-label]="'Move to ' + previousStatus()"
               >
@@ -163,7 +204,12 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               <button
                 type="button"
                 class="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
-                [ngClass]="nextStatusButtonClass()"
+                [class.bg-inprogress]="isNextStatusInProgress()"
+                [class.text-inprogress-foreground]="isNextStatusInProgress()"
+                [class.hover:bg-inprogress-hover]="isNextStatusInProgress()"
+                [class.bg-done]="isNextStatusDone()"
+                [class.text-done-foreground]="isNextStatusDone()"
+                [class.hover:bg-done-hover]="isNextStatusDone()"
                 (click)="moveToNextStatus(); $event.stopPropagation()"
                 [attr.aria-label]="'Move to ' + nextStatus()"
               >
@@ -375,6 +421,29 @@ export class TaskCardComponent {
     return Math.floor((date.getTime() - today.getTime()) / 86400000);
   });
 
+  // Due date tab state computeds for template bindings
+  readonly isDueDatePill = computed(() => this.dueDateExpanded() || !!this.task().dueDate);
+  readonly isDueDateExpandedDone = computed(() => this.dueDateExpanded() && this.task().status === 'Done');
+  readonly isDueDateExpandedOverdue = computed(() => this.dueDateExpanded() && !this.isDueDateExpandedDone() && this.daysDiff() !== null && this.daysDiff()! < 0);
+  readonly isDueDateExpandedNormal = computed(() => this.dueDateExpanded() && !this.isDueDateExpandedDone() && !this.isDueDateExpandedOverdue());
+  readonly isDueDateCollapsedDone = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status === 'Done');
+  readonly isDueDateCollapsedOverdue = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done' && this.daysDiff() !== null && this.daysDiff()! < 0);
+  readonly isDueDateCollapsedToday = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done' && this.daysDiff() === 0);
+  readonly isDueDateCollapsedTomorrow = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done' && this.daysDiff() === 1);
+  readonly isDueDateCollapsedDefault = computed(() => !this.dueDateExpanded() && !!this.task().dueDate && this.task().status !== 'Done' && this.daysDiff() !== null && this.daysDiff()! > 1);
+  readonly isDueDateCircle = computed(() => !this.dueDateExpanded() && !this.task().dueDate);
+
+  // Comments tab state computeds
+  readonly isCommentsPill = computed(() => this.commentsExpanded());
+  readonly isCommentsCircleWithComments = computed(() => !this.commentsExpanded() && this.task().comments.length > 0);
+  readonly isCommentsCircleEmpty = computed(() => !this.commentsExpanded() && this.task().comments.length === 0);
+
+  // Status button computeds
+  readonly isPrevStatusTodo = computed(() => this.task().status === 'InProgress');
+  readonly isPrevStatusInProgress = computed(() => this.task().status === 'Done');
+  readonly isNextStatusInProgress = computed(() => this.task().status === 'Todo');
+  readonly isNextStatusDone = computed(() => this.task().status === 'InProgress');
+
   readonly dueDateDisplayText = computed(() => {
     const diff = this.daysDiff();
     if (diff === null) return null;
@@ -394,73 +463,6 @@ export class TaskCardComponent {
   isOverdue(): boolean {
     const diff = this.daysDiff();
     return diff !== null && diff < 0 && this.task().status !== 'Done';
-  }
-
-  /** Returns CSS classes for the due date tab button based on state */
-  dueDateTabClass(): string {
-    const hasDueDate = this.task().dueDate;
-    const isExpanded = this.dueDateExpanded();
-    const isDone = this.task().status === 'Done';
-    const diff = this.daysDiff();
-
-    // Common base classes for all states
-    const common = 'flex items-center justify-center rounded-full transition-all text-xs shrink-0';
-
-    // Expanded state - darker/more prominent to show selection
-    if (isExpanded) {
-      const pill = `${common} h-7 px-3 gap-1.5`;
-
-      if (isDone) {
-        return `${pill} bg-due-done text-due-done-foreground line-through`;
-      }
-      if (diff !== null && diff < 0) {
-        return `${pill} bg-danger text-white font-medium`;
-      }
-      // Use yellow-500 with light amber text to match collapsed background color
-      return `${pill} bg-yellow-500 text-amber-100 font-medium`;
-    }
-
-    // Collapsed with date - lighter colors
-    if (hasDueDate) {
-      const pill = `${common} h-7 px-3 gap-1.5`;
-
-      if (isDone) {
-        return `${pill} bg-due-done text-due-done-foreground line-through`;
-      }
-      if (diff !== null && diff < 0) {
-        return `${pill} bg-overdue text-overdue-foreground font-medium`;
-      }
-      if (diff === 0) {
-        return `${pill} bg-due-today text-due-today-foreground`;
-      }
-      if (diff === 1) {
-        return `${pill} bg-due-soon text-due-soon-foreground`;
-      }
-      return `${pill} bg-amber-100 text-amber-700`;
-    }
-
-    // Collapsed circular icon (no date set)
-    return `${common} w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20`;
-  }
-
-  /** Returns CSS classes for the comments tab button based on state */
-  commentsTabClass(): string {
-    const isExpanded = this.commentsExpanded();
-    const hasComments = this.task().comments.length > 0;
-
-    // Common base classes for all states
-    const common = 'relative flex items-center justify-center rounded-full transition-all text-xs shrink-0';
-
-    if (isExpanded) {
-      // Expanded pill with indigo styling
-      return `${common} h-7 px-3 gap-1.5 bg-indigo-500 text-white font-medium`;
-    }
-
-    // Collapsed circular icon
-    if (hasComments) {
-      return `${common} w-7 h-7 bg-indigo-100 text-indigo-600 hover:bg-indigo-200`;
-    }
-    return `${common} w-7 h-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20`;
   }
 
   // Tick signal for auto-updating relative times (updates every minute)
@@ -777,22 +779,6 @@ export class TaskCardComponent {
 
   nextStatus(): 'InProgress' | 'Done' {
     return this.task().status === 'Todo' ? 'InProgress' : 'Done';
-  }
-
-  previousStatusButtonClass(): string {
-    const prev = this.previousStatus();
-    if (prev === 'Todo') {
-      return 'bg-todo text-todo-foreground hover:bg-todo-hover';
-    }
-    return 'bg-inprogress text-inprogress-foreground hover:bg-inprogress-hover';
-  }
-
-  nextStatusButtonClass(): string {
-    const next = this.nextStatus();
-    if (next === 'InProgress') {
-      return 'bg-inprogress text-inprogress-foreground hover:bg-inprogress-hover';
-    }
-    return 'bg-done text-done-foreground hover:bg-done-hover';
   }
 
   moveToPreviousStatus(): void {
