@@ -28,11 +28,15 @@ import { ToastService } from '../shared/services/toast.service';
           [value]="searchQuery()"
           (input)="searchQuery.set(asInput($event).value)"
           (keydown.escape)="clearSearch()"
-          class="w-full h-9 pl-9 pr-16 text-sm text-foreground-secondary placeholder-foreground-secondary bg-surface-muted hover:bg-surface-muted/80 focus:bg-surface-muted/80 rounded-lg focus:outline-none transition-colors duration-150"
+          class="w-full h-9 pl-9 pr-28 text-sm text-foreground-secondary placeholder-foreground-secondary bg-surface-muted hover:bg-surface-muted/80 focus:bg-surface-muted/80 rounded-lg focus:outline-none transition-colors duration-150"
           aria-label="Search tasks"
         >
         @if (searchQuery().trim()) {
-          <span class="absolute right-9 top-1/2 -translate-y-1/2 text-xs text-foreground-muted">
+          <span
+            class="absolute right-12 top-1/2 -translate-y-1/2 text-xs text-foreground-muted"
+            role="status"
+            aria-live="polite"
+          >
             {{ getSearchResultLabel(searchResultCount()) }}
           </span>
         }
