@@ -3,10 +3,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
 import { ColumnComponent } from './column.component';
-import { Task } from './task.model';
+import { Task, TaskStatus } from './task.model';
 import { ToastService } from '../shared/services/toast.service';
-
-type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 
 @Component({
   selector: 'app-tasks-page',
@@ -72,6 +70,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="todoSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Todo'"
           (onSortMenuToggle)="toggleSortMenu('Todo')"
@@ -98,6 +97,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="inProgressSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'InProgress'"
           (onSortMenuToggle)="toggleSortMenu('InProgress')"
@@ -128,6 +128,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="doneSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Done'"
           (onSortMenuToggle)="toggleSortMenu('Done')"
@@ -176,6 +177,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="todoSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Todo'"
           (onSortMenuToggle)="toggleSortMenu('Todo')"
@@ -201,6 +203,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="inProgressSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'InProgress'"
           (onSortMenuToggle)="toggleSortMenu('InProgress')"
@@ -230,6 +233,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="doneSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Done'"
           (onSortMenuToggle)="toggleSortMenu('Done')"
@@ -472,6 +476,17 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
 
   togglePriority(taskId: string): void {
     this.taskService.togglePriority(taskId);
+  }
+
+  changeStatus(taskId: string, status: TaskStatus): void {
+    // Place at bottom of target column for mobile quick status changes
+    const targetIndex =
+      status === 'Todo'
+        ? this.taskService.todoTasks().length
+        : status === 'InProgress'
+          ? this.taskService.inProgressTasks().length
+          : this.taskService.doneTasks().length;
+    this.taskService.changeStatus(taskId, status, targetIndex);
   }
 
   toggleSortMenu(column: 'Todo' | 'InProgress' | 'Done'): void {
