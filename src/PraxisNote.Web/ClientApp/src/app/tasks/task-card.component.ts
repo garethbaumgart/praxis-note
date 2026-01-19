@@ -142,6 +142,35 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-indigo-200 text-[9px] text-indigo-700 font-medium">{{ task().comments.length }}</span>
             }
           </button>
+
+          <!-- Mobile status change buttons (spacer pushes to right) -->
+          <div class="flex-1"></div>
+          <div class="flex md:hidden items-center gap-1">
+            @if (task().status !== 'Todo') {
+              <!-- Back arrow - move to previous status -->
+              <button
+                type="button"
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+                [ngClass]="previousStatusButtonClass()"
+                (click)="moveToPreviousStatus(); $event.stopPropagation()"
+                [attr.aria-label]="'Move to ' + previousStatus()"
+              >
+                <i class="pi pi-arrow-left text-xs"></i>
+              </button>
+            }
+            @if (task().status !== 'Done') {
+              <!-- Forward arrow - move to next status -->
+              <button
+                type="button"
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+                [ngClass]="nextStatusButtonClass()"
+                (click)="moveToNextStatus(); $event.stopPropagation()"
+                [attr.aria-label]="'Move to ' + nextStatus()"
+              >
+                <i class="pi pi-arrow-right text-xs"></i>
+              </button>
+            }
+          </div>
         </div>
 
         <!-- Due Date expanded content -->
@@ -310,6 +339,7 @@ export class TaskCardComponent {
   readonly onSetDueDate = output<string>();
   readonly onClearDueDate = output<void>();
   readonly onTogglePriority = output<void>();
+  readonly onStatusChange = output<'Todo' | 'InProgress' | 'Done'>();
 
   readonly editing = signal(false);
   readonly editTitle = signal('');
@@ -738,5 +768,38 @@ export class TaskCardComponent {
     this.deleteConfirmation.cleanup();
     this.confirmingCommentDeleteId.set(null);
     this.onDeleteComment.emit(commentId);
+  }
+
+  // Status change methods for mobile
+  previousStatus(): 'Todo' | 'InProgress' {
+    return this.task().status === 'Done' ? 'InProgress' : 'Todo';
+  }
+
+  nextStatus(): 'InProgress' | 'Done' {
+    return this.task().status === 'Todo' ? 'InProgress' : 'Done';
+  }
+
+  previousStatusButtonClass(): string {
+    const prev = this.previousStatus();
+    if (prev === 'Todo') {
+      return 'bg-todo text-todo-foreground hover:bg-todo-hover';
+    }
+    return 'bg-inprogress text-inprogress-foreground hover:bg-inprogress-hover';
+  }
+
+  nextStatusButtonClass(): string {
+    const next = this.nextStatus();
+    if (next === 'InProgress') {
+      return 'bg-inprogress text-inprogress-foreground hover:bg-inprogress-hover';
+    }
+    return 'bg-done text-done-foreground hover:bg-done-hover';
+  }
+
+  moveToPreviousStatus(): void {
+    this.onStatusChange.emit(this.previousStatus());
+  }
+
+  moveToNextStatus(): void {
+    this.onStatusChange.emit(this.nextStatus());
   }
 }

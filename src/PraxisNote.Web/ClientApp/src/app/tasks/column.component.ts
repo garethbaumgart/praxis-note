@@ -213,6 +213,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
                 (onSetDueDate)="onSetDueDate.emit({ taskId: task.id, date: $event })"
                 (onClearDueDate)="onClearDueDate.emit({ taskId: task.id })"
                 (onTogglePriority)="onTogglePriority.emit({ taskId: task.id })"
+                (onStatusChange)="onStatusChange.emit({ taskId: task.id, status: $event })"
               />
               <div
                 *cdkDragPlaceholder
@@ -263,6 +264,7 @@ export class ColumnComponent {
   readonly onSetDueDate = output<{ taskId: string; date: string }>();
   readonly onClearDueDate = output<{ taskId: string }>();
   readonly onTogglePriority = output<{ taskId: string }>();
+  readonly onStatusChange = output<{ taskId: string; status: 'Todo' | 'InProgress' | 'Done' }>();
   readonly onSortModeChange = output<SortMode>();
   readonly onSortMenuToggle = output<void>();
 

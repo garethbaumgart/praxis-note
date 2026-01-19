@@ -72,6 +72,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="todoSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Todo'"
           (onSortMenuToggle)="toggleSortMenu('Todo')"
@@ -98,6 +99,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="inProgressSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'InProgress'"
           (onSortMenuToggle)="toggleSortMenu('InProgress')"
@@ -128,6 +130,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="doneSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Done'"
           (onSortMenuToggle)="toggleSortMenu('Done')"
@@ -176,6 +179,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="todoSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Todo'"
           (onSortMenuToggle)="toggleSortMenu('Todo')"
@@ -201,6 +205,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="inProgressSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'InProgress'"
           (onSortMenuToggle)="toggleSortMenu('InProgress')"
@@ -230,6 +235,7 @@ type TaskStatus = 'Todo' | 'InProgress' | 'Done';
           (onSetDueDate)="setDueDate($event.taskId, $event.date)"
           (onClearDueDate)="clearDueDate($event.taskId)"
           (onTogglePriority)="togglePriority($event.taskId)"
+          (onStatusChange)="changeStatus($event.taskId, $event.status)"
           (onSortModeChange)="doneSortMode.set($event)"
           [showSortMenu]="activeSortMenu() === 'Done'"
           (onSortMenuToggle)="toggleSortMenu('Done')"
@@ -472,6 +478,10 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
 
   togglePriority(taskId: string): void {
     this.taskService.togglePriority(taskId);
+  }
+
+  changeStatus(taskId: string, status: TaskStatus): void {
+    this.taskService.changeStatus(taskId, status);
   }
 
   toggleSortMenu(column: 'Todo' | 'InProgress' | 'Done'): void {
