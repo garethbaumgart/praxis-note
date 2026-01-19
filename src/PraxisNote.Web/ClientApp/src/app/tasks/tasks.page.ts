@@ -32,16 +32,18 @@ import { ToastService } from '../shared/services/toast.service';
           aria-label="Search tasks"
         >
         @if (searchQuery()) {
+          <span class="absolute right-9 top-1/2 -translate-y-1/2 text-xs text-foreground-muted">
+            {{ searchResultCount() === 0 ? 'No results' : searchResultCount() + (searchResultCount() === 1 ? ' result' : ' results') }}
+          </span>
           <button
             type="button"
-            class="absolute right-9 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
             (click)="clearSearch()"
             aria-label="Clear search"
           >
             <i class="pi pi-times text-xs"></i>
           </button>
-        }
-        @if (!searchQuery()) {
+        } @else {
           <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
         }
       </div>
@@ -282,6 +284,13 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly filteredDoneColumnTasks = computed(() =>
     this.filterTasks(this.doneColumnTasks())
   );
+
+  readonly searchResultCount = computed(() => {
+    if (!this.searchQuery()) return 0;
+    return this.filteredTodoTasks().length +
+           this.filteredInProgressTasks().length +
+           this.filteredDoneColumnTasks().length;
+  });
 
   private filterTasks(tasks: Task[]): Task[] {
     const query = this.searchQuery().toLowerCase().trim();
