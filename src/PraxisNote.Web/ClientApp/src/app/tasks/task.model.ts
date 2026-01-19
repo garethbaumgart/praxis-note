@@ -1,3 +1,5 @@
+export type TaskStatus = 'Todo' | 'InProgress' | 'Done';
+
 export interface Comment {
   id: string;
   content: string;
@@ -8,7 +10,7 @@ export interface Comment {
 export interface Task {
   id: string;
   title: string;
-  status: 'Todo' | 'InProgress' | 'Done';
+  status: TaskStatus;
   position: number;
   isPriority: boolean;
   createdAt: string;

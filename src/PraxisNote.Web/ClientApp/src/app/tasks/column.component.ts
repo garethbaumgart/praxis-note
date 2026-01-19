@@ -3,11 +3,10 @@ import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/
 import { NgClass } from '@angular/common';
 import { TaskCardComponent } from './task-card.component';
 import { TaskCardSkeletonComponent } from './task-card-skeleton.component';
-import { Task } from './task.model';
+import { Task, TaskStatus } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 
-type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 type SortMode = 'manual' | 'dueDate' | 'priority';
 
 @Component({
@@ -264,7 +263,7 @@ export class ColumnComponent {
   readonly onSetDueDate = output<{ taskId: string; date: string }>();
   readonly onClearDueDate = output<{ taskId: string }>();
   readonly onTogglePriority = output<{ taskId: string }>();
-  readonly onStatusChange = output<{ taskId: string; status: 'Todo' | 'InProgress' | 'Done' }>();
+  readonly onStatusChange = output<{ taskId: string; status: TaskStatus }>();
   readonly onSortModeChange = output<SortMode>();
   readonly onSortMenuToggle = output<void>();
 

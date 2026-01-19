@@ -3,10 +3,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
 import { ColumnComponent } from './column.component';
-import { Task } from './task.model';
+import { Task, TaskStatus } from './task.model';
 import { ToastService } from '../shared/services/toast.service';
-
-type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 
 @Component({
   selector: 'app-tasks-page',

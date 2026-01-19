@@ -1,6 +1,6 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, HostListener } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { Task, Comment } from './task.model';
+import { Task, TaskStatus, Comment } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { StatusColorPipe } from '../shared/pipes/status-color.pipe';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
@@ -339,7 +339,7 @@ export class TaskCardComponent {
   readonly onSetDueDate = output<string>();
   readonly onClearDueDate = output<void>();
   readonly onTogglePriority = output<void>();
-  readonly onStatusChange = output<'Todo' | 'InProgress' | 'Done'>();
+  readonly onStatusChange = output<TaskStatus>();
 
   readonly editing = signal(false);
   readonly editTitle = signal('');
