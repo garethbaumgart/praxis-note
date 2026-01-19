@@ -28,20 +28,28 @@ import { ToastService } from '../shared/services/toast.service';
           [value]="searchQuery()"
           (input)="searchQuery.set(asInput($event).value)"
           (keydown.escape)="clearSearch()"
-          class="w-full h-9 pl-9 pr-16 text-sm text-foreground-secondary placeholder-foreground-secondary bg-surface-muted hover:bg-surface-muted/80 focus:bg-surface-muted/80 rounded-lg focus:outline-none transition-colors duration-150"
+          class="w-full h-9 pl-9 pr-28 text-sm text-foreground-secondary placeholder-foreground-secondary bg-surface-muted hover:bg-surface-muted/80 focus:bg-surface-muted/80 rounded-lg focus:outline-none transition-colors duration-150"
           aria-label="Search tasks"
         >
+        @if (searchQuery().trim()) {
+          <span
+            class="absolute right-12 top-1/2 -translate-y-1/2 text-xs text-foreground-muted"
+            role="status"
+            aria-live="polite"
+          >
+            {{ getSearchResultLabel(searchResultCount()) }}
+          </span>
+        }
         @if (searchQuery()) {
           <button
             type="button"
-            class="absolute right-9 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
             (click)="clearSearch()"
             aria-label="Clear search"
           >
             <i class="pi pi-times text-xs"></i>
           </button>
-        }
-        @if (!searchQuery()) {
+        } @else {
           <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
         }
       </div>
@@ -283,6 +291,13 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     this.filterTasks(this.doneColumnTasks())
   );
 
+  readonly searchResultCount = computed(() => {
+    if (!this.searchQuery().trim()) return 0;
+    return this.filteredTodoTasks().length +
+           this.filteredInProgressTasks().length +
+           this.filteredDoneColumnTasks().length;
+  });
+
   private filterTasks(tasks: Task[]): Task[] {
     const query = this.searchQuery().toLowerCase().trim();
     if (!query) {
@@ -363,6 +378,12 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   /** Type-safe helper for accessing input value from events */
   asInput(event: Event): HTMLInputElement {
     return event.target as HTMLInputElement;
+  }
+
+  /** Format search result count for display */
+  getSearchResultLabel(count: number): string {
+    if (count === 0) return 'No results';
+    return count === 1 ? '1 result' : `${count} results`;
   }
 
   clearSearch(): void {
