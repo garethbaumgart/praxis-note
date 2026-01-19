@@ -480,3 +480,12 @@
 .compact-datepicker table {
   font-size: 0.75rem;
 }
+
+/* ========================================
+   CDK Drag and Drop
+   ======================================== */
+
+/* Hide empty column message when receiving a drag to prevent layout offset */
+.cdk-drop-list-receiving .empty-message {
+  display: none;
+}

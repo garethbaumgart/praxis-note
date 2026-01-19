@@ -227,7 +227,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
             </div>
           } @empty {
             @if (!isCreating()) {
-              <p class="text-sm text-foreground-muted text-center py-8">{{ emptyMessage() }}</p>
+              <p class="empty-message text-sm text-foreground-muted text-center py-8">{{ emptyMessage() }}</p>
             }
           }
         }
