@@ -136,7 +136,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
           @if (status() === 'Done' && (archiveCount() > 0 || showArchive() || doneCount() > 0)) {
             <!-- Segmented toggle: Done / Archive -->
             <div
-              class="flex items-center gap-0.5 p-0.5 bg-white/50 rounded-full"
+              class="flex items-center gap-0.5 p-0.5 bg-segment rounded-full"
               role="group"
               aria-label="View selector"
             >

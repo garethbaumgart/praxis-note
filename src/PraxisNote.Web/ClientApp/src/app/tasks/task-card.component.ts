@@ -123,16 +123,16 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             [class.bg-danger]="isDueDateExpandedOverdue()"
             [class.text-white]="isDueDateExpandedOverdue()"
             [class.font-medium]="isDueDateExpandedOverdue() || isDueDateExpandedNormal() || isDueDateCollapsedOverdue()"
-            [class.bg-yellow-500]="isDueDateExpandedNormal()"
-            [class.text-amber-100]="isDueDateExpandedNormal()"
+            [class.bg-duedate-expanded]="isDueDateExpandedNormal()"
+            [class.text-duedate-expanded-foreground]="isDueDateExpandedNormal()"
             [class.bg-overdue]="isDueDateCollapsedOverdue()"
             [class.text-overdue-foreground]="isDueDateCollapsedOverdue()"
             [class.bg-due-today]="isDueDateCollapsedToday()"
             [class.text-due-today-foreground]="isDueDateCollapsedToday()"
             [class.bg-due-soon]="isDueDateCollapsedTomorrow()"
             [class.text-due-soon-foreground]="isDueDateCollapsedTomorrow()"
-            [class.bg-amber-100]="isDueDateCollapsedDefault()"
-            [class.text-amber-700]="isDueDateCollapsedDefault()"
+            [class.bg-duedate-default]="isDueDateCollapsedDefault()"
+            [class.text-duedate-default-foreground]="isDueDateCollapsedDefault()"
             [class.bg-foreground-muted/10]="isDueDateCircle()"
             [class.text-foreground-muted/40]="isDueDateCircle()"
             [class.hover:bg-foreground-muted/20]="isDueDateCircle()"
@@ -152,13 +152,13 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7"
             [class.px-3]="isCommentsPill()"
             [class.gap-1.5]="isCommentsPill()"
-            [class.bg-indigo-500]="isCommentsPill()"
-            [class.text-white]="isCommentsPill()"
+            [class.bg-comments-expanded]="isCommentsPill()"
+            [class.text-comments-expanded-foreground]="isCommentsPill()"
             [class.font-medium]="isCommentsPill()"
             [class.w-7]="!isCommentsPill()"
-            [class.bg-indigo-100]="isCommentsCircleWithComments()"
-            [class.text-indigo-600]="isCommentsCircleWithComments()"
-            [class.hover:bg-indigo-200]="isCommentsCircleWithComments()"
+            [class.bg-comments-collapsed]="isCommentsCircleWithComments()"
+            [class.text-comments-collapsed-foreground]="isCommentsCircleWithComments()"
+            [class.hover:bg-comments-collapsed-hover]="isCommentsCircleWithComments()"
             [class.bg-foreground-muted/10]="isCommentsCircleEmpty()"
             [class.text-foreground-muted/40]="isCommentsCircleEmpty()"
             [class.hover:bg-foreground-muted/20]="isCommentsCircleEmpty()"
@@ -170,10 +170,10 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             @if (commentsExpanded()) {
               <span>Comments</span>
               @if (task().comments.length > 0) {
-                <span class="bg-white/20 px-1.5 rounded-full">{{ task().comments.length }}</span>
+                <span class="bg-comments-expanded-badge px-1.5 rounded-full">{{ task().comments.length }}</span>
               }
             } @else if (task().comments.length > 0) {
-              <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-indigo-200 text-[9px] text-indigo-700 font-medium">{{ task().comments.length }}</span>
+              <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-comments-badge text-[9px] text-comments-badge-foreground font-medium">{{ task().comments.length }}</span>
             }
           </button>
 
@@ -219,36 +219,36 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
         <!-- Due Date expanded content -->
         @if (dueDateExpanded()) {
-          <div class="mt-2 p-2 bg-amber-50/50 rounded-lg border border-amber-200/50 relative">
+          <div class="mt-2 p-2 bg-duedate-section rounded-lg border border-duedate-section-border relative">
             <div class="flex items-center gap-1 flex-wrap">
               <button
                 type="button"
                 (click)="selectQuickDate('today'); $event.stopPropagation()"
                 class="px-2 py-1 text-xs rounded transition-colors"
-                [class]="isDateSelected('today') ? 'bg-amber-200 text-amber-800 font-medium' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                [class]="isDateSelected('today') ? 'bg-duedate-btn-selected text-duedate-btn-selected-foreground font-medium' : 'bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover'"
               >Today</button>
               <button
                 type="button"
                 (click)="selectQuickDate('tomorrow'); $event.stopPropagation()"
                 class="px-2 py-1 text-xs rounded transition-colors"
-                [class]="isDateSelected('tomorrow') ? 'bg-amber-200 text-amber-800 font-medium' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                [class]="isDateSelected('tomorrow') ? 'bg-duedate-btn-selected text-duedate-btn-selected-foreground font-medium' : 'bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover'"
               >+1</button>
               <button
                 type="button"
                 (click)="selectQuickDate('nextWeek'); $event.stopPropagation()"
                 class="px-2 py-1 text-xs rounded transition-colors"
-                [class]="isDateSelected('nextWeek') ? 'bg-amber-200 text-amber-800 font-medium' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                [class]="isDateSelected('nextWeek') ? 'bg-duedate-btn-selected text-duedate-btn-selected-foreground font-medium' : 'bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover'"
               >+7</button>
               <button
                 type="button"
                 (click)="selectQuickDate('plus35'); $event.stopPropagation()"
                 class="px-2 py-1 text-xs rounded transition-colors"
-                [class]="isDateSelected('plus35') ? 'bg-amber-200 text-amber-800 font-medium' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                [class]="isDateSelected('plus35') ? 'bg-duedate-btn-selected text-duedate-btn-selected-foreground font-medium' : 'bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover'"
               >+35</button>
               <button
                 type="button"
                 (click)="showDatePicker.set(true); $event.stopPropagation()"
-                class="px-2 py-1 text-xs rounded bg-white text-gray-600 hover:bg-gray-100 transition-colors"
+                class="px-2 py-1 text-xs rounded bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover transition-colors"
                 aria-label="Open calendar"
               ><i class="pi pi-calendar-plus text-[10px]"></i></button>
               @if (task().dueDate) {
@@ -274,7 +274,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
         <!-- Comments expanded content -->
         @if (commentsExpanded()) {
-          <div class="mt-2 p-2 bg-indigo-50/50 rounded-lg border border-indigo-200/50">
+          <div class="mt-2 p-2 bg-comments-section rounded-lg border border-comments-section-border">
             <!-- Comments list -->
             @if (task().comments.length > 0) {
               <div class="space-y-1.5 mb-2">

@@ -98,6 +98,34 @@
   --color-highlight-bg: var(--color-violet-200);
   --color-highlight-text: var(--color-violet-900);
 
+  /* Due date section (expanded panel) */
+  --color-duedate-section-bg: oklch(from var(--color-amber-50) l c h / 50%);
+  --color-duedate-section-border: oklch(from var(--color-amber-200) l c h / 50%);
+  --color-duedate-btn-bg: var(--color-white);
+  --color-duedate-btn-text: var(--color-gray-600);
+  --color-duedate-btn-hover: var(--color-gray-100);
+  --color-duedate-btn-selected-bg: var(--color-amber-200);
+  --color-duedate-btn-selected-text: var(--color-amber-800);
+  --color-duedate-expanded-bg: var(--color-yellow-500);
+  --color-duedate-expanded-text: var(--color-amber-100);
+  --color-duedate-default-bg: var(--color-amber-100);
+  --color-duedate-default-text: var(--color-amber-700);
+
+  /* Comments section */
+  --color-comments-section-bg: oklch(from var(--color-violet-50) l c h / 50%);
+  --color-comments-section-border: oklch(from var(--color-violet-200) l c h / 50%);
+  --color-comments-badge-bg: var(--color-violet-200);
+  --color-comments-badge-text: var(--color-violet-700);
+  --color-comments-expanded-bg: var(--color-violet-500);
+  --color-comments-expanded-text: var(--color-white);
+  --color-comments-expanded-badge-bg: oklch(from var(--color-white) l c h / 20%);
+  --color-comments-collapsed-bg: var(--color-violet-100);
+  --color-comments-collapsed-text: var(--color-violet-600);
+  --color-comments-collapsed-hover: var(--color-violet-200);
+
+  /* Segmented toggle */
+  --color-segment-bg: oklch(from var(--color-white) l c h / 50%);
+
   /* Brand gradient */
   --gradient-brand: linear-gradient(to bottom right, var(--color-violet-500), var(--color-purple-600));
 }
@@ -177,6 +205,34 @@
   /* Search highlight */
   --color-highlight-bg: var(--color-violet-300);
   --color-highlight-text: var(--color-violet-900);
+
+  /* Due date section (expanded panel) */
+  --color-duedate-section-bg: oklch(from var(--color-amber-950) l c h / 50%);
+  --color-duedate-section-border: oklch(from var(--color-amber-800) l c h / 50%);
+  --color-duedate-btn-bg: var(--color-gray-800);
+  --color-duedate-btn-text: var(--color-gray-300);
+  --color-duedate-btn-hover: var(--color-gray-700);
+  --color-duedate-btn-selected-bg: var(--color-amber-800);
+  --color-duedate-btn-selected-text: var(--color-amber-200);
+  --color-duedate-expanded-bg: var(--color-yellow-600);
+  --color-duedate-expanded-text: var(--color-amber-100);
+  --color-duedate-default-bg: var(--color-amber-900);
+  --color-duedate-default-text: var(--color-amber-300);
+
+  /* Comments section */
+  --color-comments-section-bg: oklch(from var(--color-violet-950) l c h / 50%);
+  --color-comments-section-border: oklch(from var(--color-violet-800) l c h / 50%);
+  --color-comments-badge-bg: var(--color-violet-800);
+  --color-comments-badge-text: var(--color-violet-200);
+  --color-comments-expanded-bg: var(--color-violet-600);
+  --color-comments-expanded-text: var(--color-white);
+  --color-comments-expanded-badge-bg: oklch(from var(--color-white) l c h / 20%);
+  --color-comments-collapsed-bg: var(--color-violet-900);
+  --color-comments-collapsed-text: var(--color-violet-300);
+  --color-comments-collapsed-hover: var(--color-violet-800);
+
+  /* Segmented toggle */
+  --color-segment-bg: oklch(from var(--color-gray-700) l c h / 50%);
 
   /* Brand gradient */
   --gradient-brand: linear-gradient(to bottom right, var(--color-violet-600), var(--color-purple-700));
@@ -265,6 +321,34 @@
   /* Search highlight */
   --color-highlight: var(--color-highlight-bg);
   --color-highlight-foreground: var(--color-highlight-text);
+
+  /* Due date section */
+  --color-duedate-section: var(--color-duedate-section-bg);
+  --color-duedate-section-border: var(--color-duedate-section-border);
+  --color-duedate-btn: var(--color-duedate-btn-bg);
+  --color-duedate-btn-foreground: var(--color-duedate-btn-text);
+  --color-duedate-btn-hover: var(--color-duedate-btn-hover);
+  --color-duedate-btn-selected: var(--color-duedate-btn-selected-bg);
+  --color-duedate-btn-selected-foreground: var(--color-duedate-btn-selected-text);
+  --color-duedate-expanded: var(--color-duedate-expanded-bg);
+  --color-duedate-expanded-foreground: var(--color-duedate-expanded-text);
+  --color-duedate-default: var(--color-duedate-default-bg);
+  --color-duedate-default-foreground: var(--color-duedate-default-text);
+
+  /* Comments section */
+  --color-comments-section: var(--color-comments-section-bg);
+  --color-comments-section-border: var(--color-comments-section-border);
+  --color-comments-badge: var(--color-comments-badge-bg);
+  --color-comments-badge-foreground: var(--color-comments-badge-text);
+  --color-comments-expanded: var(--color-comments-expanded-bg);
+  --color-comments-expanded-foreground: var(--color-comments-expanded-text);
+  --color-comments-expanded-badge: var(--color-comments-expanded-badge-bg);
+  --color-comments-collapsed: var(--color-comments-collapsed-bg);
+  --color-comments-collapsed-foreground: var(--color-comments-collapsed-text);
+  --color-comments-collapsed-hover: var(--color-comments-collapsed-hover);
+
+  /* Segmented toggle */
+  --color-segment: var(--color-segment-bg);
 }
 
 /* Brand gradient utility class */
