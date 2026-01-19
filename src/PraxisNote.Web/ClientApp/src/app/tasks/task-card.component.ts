@@ -44,6 +44,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               (keydown.escape)="cancelEdit()"
               (blur)="saveEdit()"
               rows="1"
+              aria-label="Edit task title. Press Enter to save, Escape to cancel."
               class="w-full text-sm text-foreground bg-transparent border-0 outline-none resize-none p-0 leading-normal"
             ></textarea>
           } @else {
