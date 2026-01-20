@@ -77,6 +77,7 @@ interface ColumnConfig {
           (click)="scrollToColumn(0)"
           role="tab"
           [attr.aria-selected]="activeColumn() === 0"
+          [attr.tabindex]="activeColumn() === 0 ? 0 : -1"
           aria-label="Go to Todo column"
         >
           <span
@@ -93,6 +94,7 @@ interface ColumnConfig {
           (click)="scrollToColumn(1)"
           role="tab"
           [attr.aria-selected]="activeColumn() === 1"
+          [attr.tabindex]="activeColumn() === 1 ? 0 : -1"
           aria-label="Go to In Progress column"
         >
           <span
@@ -109,6 +111,7 @@ interface ColumnConfig {
           (click)="scrollToColumn(2)"
           role="tab"
           [attr.aria-selected]="activeColumn() === 2"
+          [attr.tabindex]="activeColumn() === 2 ? 0 : -1"
           aria-label="Go to Done column"
         >
           <span
