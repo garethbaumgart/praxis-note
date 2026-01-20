@@ -81,10 +81,10 @@ interface ColumnConfig {
         >
           <span
             class="block w-full rounded-full transition-all"
-            [class.h-1.5]="activeColumn() === 0"
+            [class.h-2]="activeColumn() === 0"
             [class.h-1]="activeColumn() !== 0"
-            [class.bg-indicator-todo-active]="activeColumn() === 0"
-            [class.bg-indicator-todo-inactive]="activeColumn() !== 0"
+            [class.bg-slate-500]="activeColumn() === 0"
+            [class.bg-slate-300]="activeColumn() !== 0"
           ></span>
         </button>
         <button
@@ -97,10 +97,10 @@ interface ColumnConfig {
         >
           <span
             class="block w-full rounded-full transition-all"
-            [class.h-1.5]="activeColumn() === 1"
+            [class.h-2]="activeColumn() === 1"
             [class.h-1]="activeColumn() !== 1"
-            [class.bg-indicator-inprogress-active]="activeColumn() === 1"
-            [class.bg-indicator-inprogress-inactive]="activeColumn() !== 1"
+            [class.bg-sky-500]="activeColumn() === 1"
+            [class.bg-sky-300]="activeColumn() !== 1"
           ></span>
         </button>
         <button
@@ -113,19 +113,19 @@ interface ColumnConfig {
         >
           <span
             class="block w-full rounded-full transition-all"
-            [class.h-1.5]="activeColumn() === 2"
+            [class.h-2]="activeColumn() === 2"
             [class.h-1]="activeColumn() !== 2"
-            [class.bg-indicator-done-active]="activeColumn() === 2"
-            [class.bg-indicator-done-inactive]="activeColumn() !== 2"
+            [class.bg-emerald-500]="activeColumn() === 2"
+            [class.bg-emerald-300]="activeColumn() !== 2"
           ></span>
         </button>
       </div>
 
       <!-- Mobile: Horizontal swipe navigation -->
-      <div #mobileScrollContainer role="region" aria-label="Task columns" class="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+      <div #mobileScrollContainer role="region" aria-label="Task columns" class="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4">
         @for (col of columnConfigs(); track col.status) {
           <app-column
-            class="flex-none w-full snap-center"
+            class="flex-none w-screen px-4 snap-center"
             [status]="col.status"
             [label]="col.label"
             [showSkeleton]="!taskService.initialLoadComplete()"
@@ -210,7 +210,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly activeColumn = signal(0);
   readonly columnLabels = ['Todo', 'In Progress', 'Done'] as const;
 
-  private scrollObserver: IntersectionObserver | null = null;
+  private scrollListener: (() => void) | null = null;
   readonly todoSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly inProgressSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly doneSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
@@ -313,30 +313,30 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.scrollObserver?.disconnect();
-    this.scrollObserver = null;
+    if (this.scrollListener) {
+      const container = this.mobileScrollContainer()?.nativeElement;
+      container?.removeEventListener('scroll', this.scrollListener);
+      this.scrollListener = null;
+    }
   }
 
   private setupScrollObserver(): void {
     const container = this.mobileScrollContainer()?.nativeElement;
     if (!container) return;
 
-    this.scrollObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            const index = Array.from(container.children).indexOf(entry.target as Element);
-            if (index >= 0) {
-              this.activeColumn.set(index);
-            }
-          }
-        });
-      },
-      { root: container, threshold: 0.5 }
-    );
+    // Calculate active column based on scroll position
+    this.scrollListener = () => {
+      const scrollLeft = container.scrollLeft;
+      const columnWidth = container.children[0]?.clientWidth || container.clientWidth;
+      const newIndex = Math.round(scrollLeft / columnWidth);
+      const clampedIndex = Math.max(0, Math.min(newIndex, 2));
 
-    // Observe all column elements
-    Array.from(container.children).forEach((col) => this.scrollObserver?.observe(col));
+      if (this.activeColumn() !== clampedIndex) {
+        this.activeColumn.set(clampedIndex);
+      }
+    };
+
+    container.addEventListener('scroll', this.scrollListener, { passive: true });
   }
 
   scrollToColumn(index: number): void {
