@@ -106,23 +106,44 @@ interface ColumnConfig {
         }
       </div>
 
-      <!-- Mobile: Column indicator dots -->
-      <div class="flex md:hidden justify-center gap-1 py-4">
-        @for (col of columnLabels; track col; let i = $index) {
-          <button
-            type="button"
-            class="p-2"
-            (click)="scrollToColumn(i)"
-            [attr.aria-label]="'Go to ' + col + ' column'"
-            [attr.aria-current]="i === activeColumn() ? 'true' : null"
-          >
-            <span
-              class="block w-2 h-2 rounded-full transition-colors"
-              [class.bg-primary]="i === activeColumn()"
-              [class.bg-foreground-muted/30]="i !== activeColumn()"
-            ></span>
-          </button>
-        }
+      <!-- Mobile: Segmented column indicator -->
+      <div class="flex md:hidden gap-1 py-3" role="tablist" aria-label="Column navigation">
+        <button
+          type="button"
+          class="flex-1 rounded-full transition-all"
+          [class.h-1.5]="activeColumn() === 0"
+          [class.h-1]="activeColumn() !== 0"
+          [class.bg-indicator-todo-active]="activeColumn() === 0"
+          [class.bg-indicator-todo-inactive]="activeColumn() !== 0"
+          (click)="scrollToColumn(0)"
+          role="tab"
+          [attr.aria-selected]="activeColumn() === 0"
+          aria-label="Go to Todo column"
+        ></button>
+        <button
+          type="button"
+          class="flex-1 rounded-full transition-all"
+          [class.h-1.5]="activeColumn() === 1"
+          [class.h-1]="activeColumn() !== 1"
+          [class.bg-indicator-inprogress-active]="activeColumn() === 1"
+          [class.bg-indicator-inprogress-inactive]="activeColumn() !== 1"
+          (click)="scrollToColumn(1)"
+          role="tab"
+          [attr.aria-selected]="activeColumn() === 1"
+          aria-label="Go to In Progress column"
+        ></button>
+        <button
+          type="button"
+          class="flex-1 rounded-full transition-all"
+          [class.h-1.5]="activeColumn() === 2"
+          [class.h-1]="activeColumn() !== 2"
+          [class.bg-indicator-done-active]="activeColumn() === 2"
+          [class.bg-indicator-done-inactive]="activeColumn() !== 2"
+          (click)="scrollToColumn(2)"
+          role="tab"
+          [attr.aria-selected]="activeColumn() === 2"
+          aria-label="Go to Done column"
+        ></button>
       </div>
 
       <!-- Desktop: Grid layout -->

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Column Indicators - Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#ffffff',
+            'surface-muted': '#f8fafc',
+            foreground: '#1e293b',
+            'foreground-muted': '#64748b',
+            border: '#e2e8f0',
+            todo: '#f0f9ff',
+            'todo-foreground': '#0369a1',
+            inprogress: '#fefce8',
+            'inprogress-foreground': '#a16207',
+            done: '#f0fdf4',
+            'done-foreground': '#15803d',
+            interactive: '#6366f1',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .phone-frame {
+      width: 375px;
+      height: 667px;
+      border: 8px solid #1e293b;
+      border-radius: 32px;
+      overflow: hidden;
+      background: #f8fafc;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <h1 class="text-2xl font-bold mb-2">Mobile Column Indicators</h1>
+  <p class="text-gray-600 mb-8">Replace side hints with dot indicators below search to show which column is active</p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+
+    <!-- Option 1: Simple dots -->
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-1">Option 1: Simple Dots</h2>
+      <p class="text-sm text-gray-500 mb-4">Minimal dots, active dot is filled</p>
+
+      <div class="phone-frame mx-auto">
+        <div class="bg-surface p-4">
+          <!-- Search bar -->
+          <div class="flex items-center gap-2 bg-surface-muted rounded-lg px-3 py-2 border border-border">
+            <i class="pi pi-search text-foreground-muted text-sm"></i>
+            <input type="text" placeholder="Search tasks..." class="bg-transparent text-sm flex-1 outline-none">
+          </div>
+
+          <!-- Dot indicators -->
+          <div class="flex justify-center gap-2 mt-3">
+            <div class="w-2 h-2 rounded-full bg-foreground-muted/30"></div>
+            <div class="w-2 h-2 rounded-full bg-foreground"></div>
+            <div class="w-2 h-2 rounded-full bg-foreground-muted/30"></div>
+          </div>
+        </div>
+
+        <!-- Column -->
+        <div class="p-4">
+          <div class="bg-inprogress rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="pi pi-clock text-inprogress-foreground text-sm"></i>
+              <span class="text-xs font-medium uppercase text-inprogress-foreground">In Progress</span>
+              <span class="text-xs text-inprogress-foreground/60">2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Working on feature</p>
+              </div>
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Review PR comments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm">
+        <p class="text-green-600">+ Clean, minimal design</p>
+        <p class="text-green-600">+ Familiar pattern (carousels)</p>
+        <p class="text-red-600">- No indication of which column is which</p>
+      </div>
+    </div>
+
+    <!-- Option 2: Color-coded dots -->
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-1">Option 2: Color-coded Dots</h2>
+      <p class="text-sm text-gray-500 mb-4">Dots match column colors, active is larger</p>
+
+      <div class="phone-frame mx-auto">
+        <div class="bg-surface p-4">
+          <!-- Search bar -->
+          <div class="flex items-center gap-2 bg-surface-muted rounded-lg px-3 py-2 border border-border">
+            <i class="pi pi-search text-foreground-muted text-sm"></i>
+            <input type="text" placeholder="Search tasks..." class="bg-transparent text-sm flex-1 outline-none">
+          </div>
+
+          <!-- Dot indicators - color coded -->
+          <div class="flex justify-center items-center gap-2 mt-3">
+            <div class="w-2 h-2 rounded-full bg-sky-500/40"></div>
+            <div class="w-3 h-3 rounded-full bg-amber-500 ring-2 ring-amber-500/30"></div>
+            <div class="w-2 h-2 rounded-full bg-green-500/40"></div>
+          </div>
+        </div>
+
+        <!-- Column -->
+        <div class="p-4">
+          <div class="bg-inprogress rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="pi pi-clock text-inprogress-foreground text-sm"></i>
+              <span class="text-xs font-medium uppercase text-inprogress-foreground">In Progress</span>
+              <span class="text-xs text-inprogress-foreground/60">2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Working on feature</p>
+              </div>
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Review PR comments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm">
+        <p class="text-green-600">+ Visual connection to column colors</p>
+        <p class="text-green-600">+ Easy to identify which column</p>
+        <p class="text-green-600">+ Active state is clear</p>
+        <p class="text-red-600">- Slightly more visual complexity</p>
+      </div>
+    </div>
+
+    <!-- Option 3: Pills with labels -->
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-1">Option 3: Mini Pills with Labels</h2>
+      <p class="text-sm text-gray-500 mb-4">Small labeled pills, active one highlighted</p>
+
+      <div class="phone-frame mx-auto">
+        <div class="bg-surface p-4">
+          <!-- Search bar -->
+          <div class="flex items-center gap-2 bg-surface-muted rounded-lg px-3 py-2 border border-border">
+            <i class="pi pi-search text-foreground-muted text-sm"></i>
+            <input type="text" placeholder="Search tasks..." class="bg-transparent text-sm flex-1 outline-none">
+          </div>
+
+          <!-- Pill indicators -->
+          <div class="flex justify-center gap-1 mt-3">
+            <span class="px-2 py-0.5 text-[10px] rounded-full text-foreground-muted bg-surface-muted">Todo</span>
+            <span class="px-2 py-0.5 text-[10px] rounded-full text-amber-700 bg-amber-100 font-medium">In Progress</span>
+            <span class="px-2 py-0.5 text-[10px] rounded-full text-foreground-muted bg-surface-muted">Done</span>
+          </div>
+        </div>
+
+        <!-- Column -->
+        <div class="p-4">
+          <div class="bg-inprogress rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="pi pi-clock text-inprogress-foreground text-sm"></i>
+              <span class="text-xs font-medium uppercase text-inprogress-foreground">In Progress</span>
+              <span class="text-xs text-inprogress-foreground/60">2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Working on feature</p>
+              </div>
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Review PR comments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm">
+        <p class="text-green-600">+ Very clear which column is active</p>
+        <p class="text-green-600">+ Can tap to navigate directly</p>
+        <p class="text-red-600">- Takes more vertical space</p>
+        <p class="text-red-600">- May feel redundant with column header</p>
+      </div>
+    </div>
+
+    <!-- Option 4: Dots with task counts -->
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-1">Option 4: Dots with Task Counts</h2>
+      <p class="text-sm text-gray-500 mb-4">Color dots show count inside when active</p>
+
+      <div class="phone-frame mx-auto">
+        <div class="bg-surface p-4">
+          <!-- Search bar -->
+          <div class="flex items-center gap-2 bg-surface-muted rounded-lg px-3 py-2 border border-border">
+            <i class="pi pi-search text-foreground-muted text-sm"></i>
+            <input type="text" placeholder="Search tasks..." class="bg-transparent text-sm flex-1 outline-none">
+          </div>
+
+          <!-- Dot indicators with counts -->
+          <div class="flex justify-center items-center gap-3 mt-3">
+            <div class="w-5 h-5 rounded-full bg-sky-100 flex items-center justify-center">
+              <span class="text-[9px] text-sky-600">3</span>
+            </div>
+            <div class="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center ring-2 ring-amber-400/30">
+              <span class="text-[10px] text-white font-medium">2</span>
+            </div>
+            <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+              <span class="text-[9px] text-green-600">5</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column -->
+        <div class="p-4">
+          <div class="bg-inprogress rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="pi pi-clock text-inprogress-foreground text-sm"></i>
+              <span class="text-xs font-medium uppercase text-inprogress-foreground">In Progress</span>
+              <span class="text-xs text-inprogress-foreground/60">2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Working on feature</p>
+              </div>
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Review PR comments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm">
+        <p class="text-green-600">+ Shows task distribution at a glance</p>
+        <p class="text-green-600">+ Color-coded for recognition</p>
+        <p class="text-green-600">+ Useful information density</p>
+        <p class="text-red-600">- More complex to implement</p>
+      </div>
+    </div>
+
+    <!-- Option 5: Segmented bar (Recommended) -->
+    <div class="bg-white rounded-lg p-6 shadow-sm border-2 border-green-500">
+      <h2 class="text-lg font-semibold mb-1">Option 5: Segmented Progress Bar (Recommended)</h2>
+      <p class="text-sm text-gray-500 mb-4">Thin bar showing position, color matches column</p>
+
+      <div class="phone-frame mx-auto">
+        <div class="bg-surface p-4">
+          <!-- Search bar -->
+          <div class="flex items-center gap-2 bg-surface-muted rounded-lg px-3 py-2 border border-border">
+            <i class="pi pi-search text-foreground-muted text-sm"></i>
+            <input type="text" placeholder="Search tasks..." class="bg-transparent text-sm flex-1 outline-none">
+          </div>
+
+          <!-- Segmented bar indicator -->
+          <div class="flex gap-1 mt-3">
+            <div class="flex-1 h-1 rounded-full bg-sky-200"></div>
+            <div class="flex-1 h-1.5 rounded-full bg-amber-400"></div>
+            <div class="flex-1 h-1 rounded-full bg-green-200"></div>
+          </div>
+        </div>
+
+        <!-- Column -->
+        <div class="p-4">
+          <div class="bg-inprogress rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="pi pi-clock text-inprogress-foreground text-sm"></i>
+              <span class="text-xs font-medium uppercase text-inprogress-foreground">In Progress</span>
+              <span class="text-xs text-inprogress-foreground/60">2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Working on feature</p>
+              </div>
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Review PR comments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm">
+        <p class="text-green-600">+ Minimal vertical space</p>
+        <p class="text-green-600">+ Color matches column theme</p>
+        <p class="text-green-600">+ Clear position indication</p>
+        <p class="text-green-600">+ Modern, clean aesthetic</p>
+        <p class="text-red-600">- May be subtle for some users</p>
+      </div>
+    </div>
+
+    <!-- Option 6: Icon dots -->
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-1">Option 6: Icon Indicators</h2>
+      <p class="text-sm text-gray-500 mb-4">Small icons matching column headers</p>
+
+      <div class="phone-frame mx-auto">
+        <div class="bg-surface p-4">
+          <!-- Search bar -->
+          <div class="flex items-center gap-2 bg-surface-muted rounded-lg px-3 py-2 border border-border">
+            <i class="pi pi-search text-foreground-muted text-sm"></i>
+            <input type="text" placeholder="Search tasks..." class="bg-transparent text-sm flex-1 outline-none">
+          </div>
+
+          <!-- Icon indicators -->
+          <div class="flex justify-center items-center gap-4 mt-3">
+            <i class="pi pi-lightbulb text-sky-300 text-sm"></i>
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-amber-100">
+              <i class="pi pi-clock text-amber-600 text-sm"></i>
+            </div>
+            <i class="pi pi-check-circle text-green-300 text-sm"></i>
+          </div>
+        </div>
+
+        <!-- Column -->
+        <div class="p-4">
+          <div class="bg-inprogress rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="pi pi-clock text-inprogress-foreground text-sm"></i>
+              <span class="text-xs font-medium uppercase text-inprogress-foreground">In Progress</span>
+              <span class="text-xs text-inprogress-foreground/60">2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Working on feature</p>
+              </div>
+              <div class="bg-white rounded-md p-3 border border-yellow-200">
+                <p class="text-sm">Review PR comments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm">
+        <p class="text-green-600">+ Uses existing column icons</p>
+        <p class="text-green-600">+ Visual consistency with headers</p>
+        <p class="text-red-600">- Icons may be too detailed at small size</p>
+        <p class="text-red-600">- Less conventional pattern</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mt-8 p-4 bg-green-50 rounded-lg border border-green-200">
+    <h3 class="font-semibold text-green-800">Recommendation: Option 5 (Segmented Progress Bar)</h3>
+    <p class="text-sm text-green-700 mt-1">
+      The segmented bar is the most space-efficient option while still providing clear visual feedback.
+      The color-coding connects it to the column theme, and the slightly taller active segment provides
+      clear indication of the current position. It's also tappable for direct navigation.
+    </p>
+  </div>
+</body>
+</html>
