@@ -6,6 +6,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
 {
     public partial class AddNotificationNordColorPalette : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql("""
@@ -20,11 +21,13 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                 """);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Nord-inspired color palette';
+                WHERE "Title" = 'Nord-inspired color palette'
+                  AND "CreatedAt" = '2026-01-20T11:05:00Z';
                 """);
         }
     }
