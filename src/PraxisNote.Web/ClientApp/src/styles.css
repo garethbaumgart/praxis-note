@@ -17,241 +17,246 @@
    Semantic Color Tokens
    ======================================== */
 @layer theme {
-  /* Light Mode */
+  /* Light Mode - Nord-inspired palette */
   :root {
-  /* Backgrounds */
-  --color-bg-base: var(--color-white);
-  --color-bg-subtle: var(--color-gray-50);
-  --color-bg-muted: var(--color-gray-100);
+  /* Backgrounds - Snow Storm */
+  --color-bg-base: #eceff4;         /* Snow Storm 3 */
+  --color-bg-subtle: #e5e9f0;       /* Snow Storm 2 */
+  --color-bg-muted: #d8dee9;        /* Snow Storm 1 */
 
-  /* Text */
-  --color-text-primary: var(--color-gray-900);
-  --color-text-secondary: var(--color-gray-600);
-  --color-text-muted: var(--color-gray-400);
+  /* Text - Polar Night */
+  --color-text-primary: #2e3440;    /* Polar Night 1 */
+  --color-text-secondary: #4c566a;  /* Polar Night 4 */
+  --color-text-muted: #7b88a1;      /* Lighter muted */
 
   /* Borders */
-  --color-border-default: var(--color-gray-200);
-  --color-border-muted-base: var(--color-gray-100);
+  --color-border-default: #d8dee9;
+  --color-border-muted-base: #e5e9f0;
 
-  /* Primary accent (violet) */
-  --color-primary-bg: var(--color-violet-100);
-  --color-primary-bg-hover: var(--color-violet-200);
-  --color-primary-text: var(--color-violet-600);
-  --color-primary-solid: var(--color-violet-600);
-  --color-primary-solid-hover: var(--color-violet-700);
+  /* Primary accent - Frost blue */
+  --color-primary-bg: rgba(94, 129, 172, 0.15);
+  --color-primary-bg-hover: rgba(94, 129, 172, 0.25);
+  --color-primary-text: #5e81ac;
+  --color-primary-solid: #5e81ac;
+  --color-primary-solid-hover: #81a1c1;
 
-  /* Status columns */
-  --color-todo-bg: var(--color-slate-100);
-  --color-todo-bg-hover: var(--color-slate-200);
-  --color-todo-text: var(--color-slate-600);
-  --color-todo-text-muted: var(--color-slate-400);
-  --color-todo-border: var(--color-slate-200);
+  /* Status columns - Nord Aurora & Frost */
+  --color-todo-bg: #e5e9f0;         /* Snow Storm 2 */
+  --color-todo-bg-hover: #d8dee9;   /* Snow Storm 1 */
+  --color-todo-text: #5e81ac;       /* Frost blue */
+  --color-todo-text-muted: #81a1c1;
+  --color-todo-border: #81a1c1;
 
-  --color-inprogress-bg: var(--color-sky-100);
-  --color-inprogress-bg-hover: var(--color-sky-200);
-  --color-inprogress-text: var(--color-sky-700);
-  --color-inprogress-text-muted: var(--color-sky-500);
-  --color-inprogress-border: var(--color-sky-200);
+  --color-inprogress-bg: rgba(208, 135, 112, 0.15);   /* Aurora orange */
+  --color-inprogress-bg-hover: rgba(208, 135, 112, 0.25);
+  --color-inprogress-text: #d08770;
+  --color-inprogress-text-muted: rgba(208, 135, 112, 0.7);
+  --color-inprogress-border: #d08770;
 
-  --color-done-bg: var(--color-emerald-100);
-  --color-done-bg-hover: var(--color-emerald-200);
-  --color-done-text: var(--color-emerald-700);
-  --color-done-text-muted: var(--color-emerald-500);
-  --color-done-border: var(--color-emerald-200);
+  --color-done-bg: rgba(163, 190, 140, 0.15);   /* Aurora green */
+  --color-done-bg-hover: rgba(163, 190, 140, 0.25);
+  --color-done-text: #a3be8c;
+  --color-done-text-muted: rgba(163, 190, 140, 0.7);
+  --color-done-border: #a3be8c;
 
-  --color-archive-bg: var(--color-violet-100);
-  --color-archive-bg-hover: var(--color-violet-200);
-  --color-archive-text: var(--color-violet-700);
-  --color-archive-text-muted: var(--color-violet-500);
-  --color-archive-border: var(--color-violet-200);
+  --color-archive-bg: rgba(180, 142, 173, 0.15);   /* Aurora purple */
+  --color-archive-bg-hover: rgba(180, 142, 173, 0.25);
+  --color-archive-text: #b48ead;
+  --color-archive-text-muted: rgba(180, 142, 173, 0.7);
+  --color-archive-border: #b48ead;
 
-  /* Mobile column indicator - matches column background colors */
-  --indicator-todo-active: var(--color-slate-500);
-  --indicator-todo-inactive: var(--color-slate-300);
-  --indicator-inprogress-active: var(--color-sky-500);
-  --indicator-inprogress-inactive: var(--color-sky-300);
-  --indicator-done-active: var(--color-emerald-500);
-  --indicator-done-inactive: var(--color-emerald-300);
+  /* Mobile column indicator - matches column colors */
+  --indicator-todo-active: #5e81ac;
+  --indicator-todo-inactive: #81a1c1;
+  --indicator-inprogress-active: #d08770;
+  --indicator-inprogress-inactive: rgba(208, 135, 112, 0.5);
+  --indicator-done-active: #a3be8c;
+  --indicator-done-inactive: rgba(163, 190, 140, 0.5);
 
-  /* Notification types */
-  --color-feature-bg: var(--color-purple-100);
-  --color-feature-text: var(--color-purple-800);
-  --color-bugfix-bg: var(--color-red-100);
-  --color-bugfix-text: var(--color-red-800);
-  --color-improvement-bg: var(--color-blue-100);
-  --color-improvement-text: var(--color-blue-800);
+  /* Notification types - Aurora colors */
+  --color-feature-bg: rgba(180, 142, 173, 0.2);   /* Aurora purple */
+  --color-feature-text: #b48ead;
+  --color-bugfix-bg: rgba(191, 97, 106, 0.2);     /* Aurora red */
+  --color-bugfix-text: #bf616a;
+  --color-improvement-bg: rgba(94, 129, 172, 0.2); /* Frost blue */
+  --color-improvement-text: #5e81ac;
 
-  /* Date urgency */
-  --color-overdue-bg: var(--color-rose-100);
-  --color-overdue-text: var(--color-rose-600);
-  --color-due-today-bg: var(--color-amber-100);
-  --color-due-today-text: var(--color-amber-700);
-  --color-due-soon-bg: var(--color-amber-50);
-  --color-due-soon-text: var(--color-amber-600);
-  --color-due-later-bg: var(--color-slate-100);
-  --color-due-later-text: var(--color-slate-600);
-  --color-due-done-bg: var(--color-slate-100);
-  --color-due-done-text: var(--color-slate-400);
+  /* Date urgency - Aurora colors */
+  --color-overdue-bg: rgba(191, 97, 106, 0.15);
+  --color-overdue-text: #bf616a;                   /* Aurora red */
+  --color-due-today-bg: rgba(208, 135, 112, 0.15);
+  --color-due-today-text: #d08770;                 /* Aurora orange */
+  --color-due-soon-bg: rgba(235, 203, 139, 0.15);
+  --color-due-soon-text: #c9a227;                  /* Darkened Aurora yellow for contrast */
+  --color-due-later-bg: #e5e9f0;
+  --color-due-later-text: #4c566a;
+  --color-due-done-bg: #e5e9f0;
+  --color-due-done-text: #7b88a1;
 
-  /* Danger/destructive */
-  --color-danger-base: var(--color-rose-600);
-  --color-danger-hover-base: var(--color-rose-500);
-  --color-danger-bg-base: var(--color-rose-100);
+  /* Danger/destructive - Aurora red */
+  --color-danger-base: #bf616a;
+  --color-danger-hover-base: #d08770;
+  --color-danger-bg-base: rgba(191, 97, 106, 0.15);
 
-  /* Interactive accent (for sort buttons, checkmarks, etc.) */
-  --color-interactive-bg: var(--color-violet-100);
-  --color-interactive-text: var(--color-violet-600);
+  /* Interactive accent - Frost blue */
+  --color-interactive-bg: rgba(94, 129, 172, 0.15);
+  --color-interactive-text: #5e81ac;
 
-  /* Search highlight */
-  --color-highlight-bg: var(--color-violet-200);
-  --color-highlight-text: var(--color-violet-900);
+  /* Search highlight - Frost */
+  --color-highlight-bg: rgba(136, 192, 208, 0.4);  /* Frost cyan */
+  --color-highlight-text: #2e3440;
 
-  /* Due date section (expanded panel) */
-  --color-duedate-section-bg: oklch(from var(--color-amber-50) l c h / 50%);
-  --color-duedate-section-border-base: oklch(from var(--color-amber-200) l c h / 50%);
-  --color-duedate-btn-bg: var(--color-white);
-  --color-duedate-btn-text: var(--color-gray-600);
-  --color-duedate-btn-hover-base: var(--color-gray-100);
-  --color-duedate-btn-selected-bg: var(--color-amber-200);
-  --color-duedate-btn-selected-text: var(--color-amber-800);
-  --color-duedate-expanded-bg: var(--color-yellow-500);
-  --color-duedate-expanded-text: var(--color-amber-100);
-  --color-duedate-default-bg: var(--color-amber-100);
-  --color-duedate-default-text: var(--color-amber-700);
+  /* Due date section (expanded panel) - Aurora yellow */
+  --color-duedate-section-bg: rgba(235, 203, 139, 0.2);
+  --color-duedate-section-border-base: rgba(235, 203, 139, 0.4);
+  --color-duedate-btn-bg: #eceff4;
+  --color-duedate-btn-text: #4c566a;
+  --color-duedate-btn-hover-base: #d8dee9;
+  --color-duedate-btn-selected-bg: rgba(235, 203, 139, 0.5);
+  --color-duedate-btn-selected-text: #5e4a00;
+  --color-duedate-expanded-bg: #ebcb8b;
+  --color-duedate-expanded-text: #3b3000;
+  --color-duedate-default-bg: rgba(235, 203, 139, 0.3);
+  --color-duedate-default-text: #5e4a00;
 
-  /* Comments section */
-  --color-comments-section-bg: oklch(from var(--color-violet-50) l c h / 50%);
-  --color-comments-section-border-base: oklch(from var(--color-violet-200) l c h / 50%);
-  --color-comments-badge-bg: var(--color-violet-200);
-  --color-comments-badge-text: var(--color-violet-700);
-  --color-comments-expanded-bg: var(--color-violet-500);
-  --color-comments-expanded-text: var(--color-white);
-  --color-comments-expanded-badge-bg: oklch(from var(--color-white) l c h / 20%);
-  --color-comments-collapsed-bg: var(--color-violet-100);
-  --color-comments-collapsed-text: var(--color-violet-600);
-  --color-comments-collapsed-hover-base: var(--color-violet-200);
+  /* Comments section - Frost blue */
+  --color-comments-section-bg: rgba(94, 129, 172, 0.1);
+  --color-comments-section-border-base: rgba(94, 129, 172, 0.3);
+  --color-comments-badge-bg: rgba(94, 129, 172, 0.3);
+  --color-comments-badge-text: #5e81ac;
+  --color-comments-expanded-bg: #5e81ac;
+  --color-comments-expanded-text: #eceff4;
+  --color-comments-expanded-badge-bg: rgba(236, 239, 244, 0.2);
+  --color-comments-collapsed-bg: rgba(94, 129, 172, 0.15);
+  --color-comments-collapsed-text: #5e81ac;
+  --color-comments-collapsed-hover-base: rgba(94, 129, 172, 0.25);
 
   /* Segmented toggle */
-  --color-segment-bg: oklch(from var(--color-white) l c h / 50%);
+  --color-segment-bg: rgba(236, 239, 244, 0.5);
 
-  /* Brand gradient */
-  --gradient-brand: linear-gradient(to bottom right, var(--color-violet-500), var(--color-purple-600));
+  /* Brand gradient - Frost blue */
+  --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
 }
 
-  /* Dark Mode */
+  /* Dark Mode - Nord Polar Night */
   [data-theme="dark"] {
-  --color-bg-base: var(--color-gray-900);
-  --color-bg-subtle: var(--color-gray-800);
-  --color-bg-muted: var(--color-gray-700);
+  /* Backgrounds - Polar Night */
+  --color-bg-base: #2e3440;         /* Polar Night 1 */
+  --color-bg-subtle: #3b4252;       /* Polar Night 2 */
+  --color-bg-muted: #434c5e;        /* Polar Night 3 */
 
-  --color-text-primary: var(--color-gray-100);
-  --color-text-secondary: var(--color-gray-400);
-  --color-text-muted: var(--color-gray-500);
+  /* Text - Snow Storm */
+  --color-text-primary: #eceff4;    /* Snow Storm 3 */
+  --color-text-secondary: #d8dee9;  /* Snow Storm 1 */
+  --color-text-muted: #4c566a;      /* Polar Night 4 */
 
-  --color-border-default: var(--color-gray-700);
-  --color-border-muted-base: var(--color-gray-800);
+  /* Borders */
+  --color-border-default: #4c566a;
+  --color-border-muted-base: #3b4252;
 
-  --color-primary-bg: var(--color-violet-900);
-  --color-primary-bg-hover: var(--color-violet-800);
-  --color-primary-text: var(--color-violet-400);
-  --color-primary-solid: var(--color-violet-600);
-  --color-primary-solid-hover: var(--color-violet-500);
+  /* Primary accent - Frost blue */
+  --color-primary-bg: rgba(94, 129, 172, 0.2);
+  --color-primary-bg-hover: rgba(94, 129, 172, 0.3);
+  --color-primary-text: #88c0d0;     /* Frost cyan */
+  --color-primary-solid: #5e81ac;
+  --color-primary-solid-hover: #81a1c1;
 
-  --color-todo-bg: var(--color-slate-800);
-  --color-todo-bg-hover: var(--color-slate-700);
-  --color-todo-text: var(--color-slate-400);
-  --color-todo-text-muted: var(--color-slate-500);
-  --color-todo-border: var(--color-slate-700);
+  /* Status columns - Polar Night & Aurora */
+  --color-todo-bg: #3b4252;          /* Polar Night 2 */
+  --color-todo-bg-hover: #434c5e;    /* Polar Night 3 */
+  --color-todo-text: #88c0d0;        /* Frost cyan */
+  --color-todo-text-muted: #81a1c1;
+  --color-todo-border: #4c566a;
 
-  --color-inprogress-bg: var(--color-sky-900);
-  --color-inprogress-bg-hover: var(--color-sky-800);
-  --color-inprogress-text: var(--color-sky-400);
-  --color-inprogress-text-muted: var(--color-sky-500);
-  --color-inprogress-border: var(--color-sky-800);
+  --color-inprogress-bg: rgba(208, 135, 112, 0.2);    /* Aurora orange */
+  --color-inprogress-bg-hover: rgba(208, 135, 112, 0.3);
+  --color-inprogress-text: #d08770;
+  --color-inprogress-text-muted: rgba(208, 135, 112, 0.7);
+  --color-inprogress-border: rgba(208, 135, 112, 0.4);
 
-  --color-done-bg: var(--color-emerald-900);
-  --color-done-bg-hover: var(--color-emerald-800);
-  --color-done-text: var(--color-emerald-400);
-  --color-done-text-muted: var(--color-emerald-500);
-  --color-done-border: var(--color-emerald-800);
+  --color-done-bg: rgba(163, 190, 140, 0.2);    /* Aurora green */
+  --color-done-bg-hover: rgba(163, 190, 140, 0.3);
+  --color-done-text: #a3be8c;
+  --color-done-text-muted: rgba(163, 190, 140, 0.7);
+  --color-done-border: rgba(163, 190, 140, 0.4);
 
-  --color-archive-bg: var(--color-violet-900);
-  --color-archive-bg-hover: var(--color-violet-800);
-  --color-archive-text: var(--color-violet-400);
-  --color-archive-text-muted: var(--color-violet-500);
-  --color-archive-border: var(--color-violet-800);
+  --color-archive-bg: rgba(180, 142, 173, 0.2);    /* Aurora purple */
+  --color-archive-bg-hover: rgba(180, 142, 173, 0.3);
+  --color-archive-text: #b48ead;
+  --color-archive-text-muted: rgba(180, 142, 173, 0.7);
+  --color-archive-border: rgba(180, 142, 173, 0.4);
 
-  /* Mobile column indicator - matches column background colors */
-  --indicator-todo-active: var(--color-slate-400);
-  --indicator-todo-inactive: var(--color-slate-600);
-  --indicator-inprogress-active: var(--color-sky-400);
-  --indicator-inprogress-inactive: var(--color-sky-600);
-  --indicator-done-active: var(--color-emerald-400);
-  --indicator-done-inactive: var(--color-emerald-600);
+  /* Mobile column indicator - matches column colors */
+  --indicator-todo-active: #88c0d0;
+  --indicator-todo-inactive: #4c566a;
+  --indicator-inprogress-active: #d08770;
+  --indicator-inprogress-inactive: rgba(208, 135, 112, 0.4);
+  --indicator-done-active: #a3be8c;
+  --indicator-done-inactive: rgba(163, 190, 140, 0.4);
 
-  /* Notification types */
-  --color-feature-bg: var(--color-purple-900);
-  --color-feature-text: var(--color-purple-200);
-  --color-bugfix-bg: var(--color-red-900);
-  --color-bugfix-text: var(--color-red-200);
-  --color-improvement-bg: var(--color-blue-900);
-  --color-improvement-text: var(--color-blue-200);
+  /* Notification types - Aurora colors */
+  --color-feature-bg: rgba(180, 142, 173, 0.25);   /* Aurora purple */
+  --color-feature-text: #b48ead;
+  --color-bugfix-bg: rgba(191, 97, 106, 0.25);     /* Aurora red */
+  --color-bugfix-text: #bf616a;
+  --color-improvement-bg: rgba(136, 192, 208, 0.25); /* Frost cyan */
+  --color-improvement-text: #88c0d0;
 
-  /* Date urgency */
-  --color-overdue-bg: var(--color-rose-900);
-  --color-overdue-text: var(--color-rose-300);
-  --color-due-today-bg: var(--color-amber-900);
-  --color-due-today-text: var(--color-amber-300);
-  --color-due-soon-bg: var(--color-amber-950);
-  --color-due-soon-text: var(--color-amber-400);
-  --color-due-later-bg: var(--color-slate-800);
-  --color-due-later-text: var(--color-slate-400);
-  --color-due-done-bg: var(--color-slate-800);
-  --color-due-done-text: var(--color-slate-500);
+  /* Date urgency - Aurora colors */
+  --color-overdue-bg: rgba(191, 97, 106, 0.2);
+  --color-overdue-text: #bf616a;                    /* Aurora red */
+  --color-due-today-bg: rgba(208, 135, 112, 0.2);
+  --color-due-today-text: #d08770;                  /* Aurora orange */
+  --color-due-soon-bg: rgba(235, 203, 139, 0.2);
+  --color-due-soon-text: #ebcb8b;                   /* Aurora yellow */
+  --color-due-later-bg: #3b4252;
+  --color-due-later-text: #d8dee9;
+  --color-due-done-bg: #3b4252;
+  --color-due-done-text: #4c566a;
 
-  /* Danger/destructive */
-  --color-danger-base: var(--color-rose-400);
-  --color-danger-hover-base: var(--color-rose-300);
-  --color-danger-bg-base: var(--color-rose-900);
+  /* Danger/destructive - Aurora red */
+  --color-danger-base: #bf616a;
+  --color-danger-hover-base: #d08770;
+  --color-danger-bg-base: rgba(191, 97, 106, 0.2);
 
-  /* Interactive accent (for sort buttons, checkmarks, etc.) */
-  --color-interactive-bg: var(--color-violet-900);
-  --color-interactive-text: var(--color-violet-400);
+  /* Interactive accent - Frost cyan */
+  --color-interactive-bg: rgba(136, 192, 208, 0.2);
+  --color-interactive-text: #88c0d0;
 
-  /* Search highlight */
-  --color-highlight-bg: var(--color-violet-300);
-  --color-highlight-text: var(--color-violet-900);
+  /* Search highlight - Frost cyan */
+  --color-highlight-bg: rgba(136, 192, 208, 0.5);
+  --color-highlight-text: #eceff4;
 
-  /* Due date section (expanded panel) */
-  --color-duedate-section-bg: oklch(from var(--color-amber-950) l c h / 50%);
-  --color-duedate-section-border-base: oklch(from var(--color-amber-800) l c h / 50%);
-  --color-duedate-btn-bg: var(--color-gray-800);
-  --color-duedate-btn-text: var(--color-gray-300);
-  --color-duedate-btn-hover-base: var(--color-gray-700);
-  --color-duedate-btn-selected-bg: var(--color-amber-800);
-  --color-duedate-btn-selected-text: var(--color-amber-200);
-  --color-duedate-expanded-bg: var(--color-yellow-600);
-  --color-duedate-expanded-text: var(--color-amber-100);
-  --color-duedate-default-bg: var(--color-amber-900);
-  --color-duedate-default-text: var(--color-amber-300);
+  /* Due date section (expanded panel) - Aurora yellow */
+  --color-duedate-section-bg: rgba(235, 203, 139, 0.15);
+  --color-duedate-section-border-base: rgba(235, 203, 139, 0.3);
+  --color-duedate-btn-bg: #3b4252;
+  --color-duedate-btn-text: #d8dee9;
+  --color-duedate-btn-hover-base: #434c5e;
+  --color-duedate-btn-selected-bg: rgba(235, 203, 139, 0.4);
+  --color-duedate-btn-selected-text: #ebcb8b;
+  --color-duedate-expanded-bg: #ebcb8b;
+  --color-duedate-expanded-text: #2e3440;
+  --color-duedate-default-bg: rgba(235, 203, 139, 0.25);
+  --color-duedate-default-text: #ebcb8b;
 
-  /* Comments section */
-  --color-comments-section-bg: oklch(from var(--color-violet-950) l c h / 50%);
-  --color-comments-section-border-base: oklch(from var(--color-violet-800) l c h / 50%);
-  --color-comments-badge-bg: var(--color-violet-800);
-  --color-comments-badge-text: var(--color-violet-200);
-  --color-comments-expanded-bg: var(--color-violet-600);
-  --color-comments-expanded-text: var(--color-white);
-  --color-comments-expanded-badge-bg: oklch(from var(--color-white) l c h / 20%);
-  --color-comments-collapsed-bg: var(--color-violet-900);
-  --color-comments-collapsed-text: var(--color-violet-300);
-  --color-comments-collapsed-hover-base: var(--color-violet-800);
+  /* Comments section - Frost blue */
+  --color-comments-section-bg: rgba(94, 129, 172, 0.15);
+  --color-comments-section-border-base: rgba(94, 129, 172, 0.3);
+  --color-comments-badge-bg: rgba(94, 129, 172, 0.4);
+  --color-comments-badge-text: #88c0d0;
+  --color-comments-expanded-bg: #5e81ac;
+  --color-comments-expanded-text: #eceff4;
+  --color-comments-expanded-badge-bg: rgba(236, 239, 244, 0.2);
+  --color-comments-collapsed-bg: rgba(94, 129, 172, 0.2);
+  --color-comments-collapsed-text: #88c0d0;
+  --color-comments-collapsed-hover-base: rgba(94, 129, 172, 0.3);
 
   /* Segmented toggle */
-  --color-segment-bg: oklch(from var(--color-gray-700) l c h / 50%);
+  --color-segment-bg: rgba(67, 76, 94, 0.5);
 
-  /* Brand gradient */
-  --gradient-brand: linear-gradient(to bottom right, var(--color-violet-600), var(--color-purple-700));
+  /* Brand gradient - Frost blue */
+  --gradient-brand: linear-gradient(to bottom right, #5e81ac, #88c0d0);
   }
 }
 
