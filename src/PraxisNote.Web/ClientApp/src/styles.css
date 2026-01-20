@@ -65,11 +65,11 @@
   --color-archive-text-muted: var(--color-violet-500);
   --color-archive-border: var(--color-violet-200);
 
-  /* Mobile column indicator */
-  --indicator-todo-active: var(--color-sky-500);
-  --indicator-todo-inactive: var(--color-sky-300);
-  --indicator-inprogress-active: var(--color-amber-500);
-  --indicator-inprogress-inactive: var(--color-amber-300);
+  /* Mobile column indicator - matches column background colors */
+  --indicator-todo-active: var(--color-slate-500);
+  --indicator-todo-inactive: var(--color-slate-300);
+  --indicator-inprogress-active: var(--color-sky-500);
+  --indicator-inprogress-inactive: var(--color-sky-300);
   --indicator-done-active: var(--color-emerald-500);
   --indicator-done-inactive: var(--color-emerald-300);
 
@@ -181,11 +181,11 @@
   --color-archive-text-muted: var(--color-violet-500);
   --color-archive-border: var(--color-violet-800);
 
-  /* Mobile column indicator */
-  --indicator-todo-active: var(--color-sky-400);
-  --indicator-todo-inactive: var(--color-sky-600);
-  --indicator-inprogress-active: var(--color-amber-400);
-  --indicator-inprogress-inactive: var(--color-amber-600);
+  /* Mobile column indicator - matches column background colors */
+  --indicator-todo-active: var(--color-slate-400);
+  --indicator-todo-inactive: var(--color-slate-600);
+  --indicator-inprogress-active: var(--color-sky-400);
+  --indicator-inprogress-inactive: var(--color-sky-600);
   --indicator-done-active: var(--color-emerald-400);
   --indicator-done-inactive: var(--color-emerald-600);
 

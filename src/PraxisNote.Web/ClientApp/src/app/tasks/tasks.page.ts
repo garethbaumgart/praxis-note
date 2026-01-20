@@ -83,8 +83,8 @@ interface ColumnConfig {
             class="block w-full rounded-full transition-all"
             [class.h-2]="activeColumn() === 0"
             [class.h-1]="activeColumn() !== 0"
-            [class.bg-slate-500]="activeColumn() === 0"
-            [class.bg-slate-300]="activeColumn() !== 0"
+            [class.bg-indicator-todo-active]="activeColumn() === 0"
+            [class.bg-indicator-todo-inactive]="activeColumn() !== 0"
           ></span>
         </button>
         <button
@@ -99,8 +99,8 @@ interface ColumnConfig {
             class="block w-full rounded-full transition-all"
             [class.h-2]="activeColumn() === 1"
             [class.h-1]="activeColumn() !== 1"
-            [class.bg-sky-500]="activeColumn() === 1"
-            [class.bg-sky-300]="activeColumn() !== 1"
+            [class.bg-indicator-inprogress-active]="activeColumn() === 1"
+            [class.bg-indicator-inprogress-inactive]="activeColumn() !== 1"
           ></span>
         </button>
         <button
@@ -115,8 +115,8 @@ interface ColumnConfig {
             class="block w-full rounded-full transition-all"
             [class.h-2]="activeColumn() === 2"
             [class.h-1]="activeColumn() !== 2"
-            [class.bg-emerald-500]="activeColumn() === 2"
-            [class.bg-emerald-300]="activeColumn() !== 2"
+            [class.bg-indicator-done-active]="activeColumn() === 2"
+            [class.bg-indicator-done-inactive]="activeColumn() !== 2"
           ></span>
         </button>
       </div>
