@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Palette Options - Task Screen Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <style>
+    .task-screen {
+      width: 100%;
+      max-width: 900px;
+      height: 400px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .column {
+      flex: 1;
+      min-width: 0;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-6">
+  <h1 class="text-3xl font-bold mb-2">Color Palette Options</h1>
+  <p class="text-gray-600 mb-8">10 different color schemes for light and dark mode. Each palette shows the Tasks screen.</p>
+
+  <!-- Palette 1: Ocean Breeze -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 1: Ocean Breeze</h2>
+    <p class="text-gray-500 mb-4">Cool blues and teals with warm accents. Calm and professional.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #f0f9ff;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #e0f2fe;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #0284c7;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #0284c7;">Todo</span>
+                <span class="text-xs" style="color: #0284c7; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #bae6fd;">
+                  <p class="text-sm" style="color: #1e3a5f;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #bae6fd;">
+                  <p class="text-sm" style="color: #1e3a5f;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #fef3c7;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #d97706;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #d97706;">In Progress</span>
+                <span class="text-xs" style="color: #d97706; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #fcd34d;">
+                  <p class="text-sm" style="color: #1e3a5f;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #d1fae5;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #059669;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #059669;">Done</span>
+                <span class="text-xs" style="color: #059669; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #6ee7b7;">
+                  <p class="text-sm" style="color: #1e3a5f;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #0c1929;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #0c4a6e;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #7dd3fc;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #7dd3fc;">Todo</span>
+                <span class="text-xs" style="color: #7dd3fc; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #1e3a5f; border-color: #0369a1;">
+                  <p class="text-sm" style="color: #e0f2fe;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #1e3a5f; border-color: #0369a1;">
+                  <p class="text-sm" style="color: #e0f2fe;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #78350f;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #fcd34d;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fcd34d;">In Progress</span>
+                <span class="text-xs" style="color: #fcd34d; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #451a03; border-color: #b45309;">
+                  <p class="text-sm" style="color: #fef3c7;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #064e3b;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #6ee7b7;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #6ee7b7;">Done</span>
+                <span class="text-xs" style="color: #6ee7b7; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #022c22; border-color: #047857;">
+                  <p class="text-sm" style="color: #d1fae5;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 2: Slate & Violet -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 2: Slate & Violet</h2>
+    <p class="text-gray-500 mb-4">Modern grayscale with purple accents. Sophisticated and focused.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #f8fafc;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #ede9fe;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #7c3aed;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #7c3aed;">Todo</span>
+                <span class="text-xs" style="color: #7c3aed; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #c4b5fd;">
+                  <p class="text-sm" style="color: #1e293b;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #c4b5fd;">
+                  <p class="text-sm" style="color: #1e293b;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #fce7f3;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #db2777;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #db2777;">In Progress</span>
+                <span class="text-xs" style="color: #db2777; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #f9a8d4;">
+                  <p class="text-sm" style="color: #1e293b;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #e2e8f0;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #475569;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #475569;">Done</span>
+                <span class="text-xs" style="color: #475569; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #cbd5e1;">
+                  <p class="text-sm" style="color: #1e293b;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #0f172a;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #2e1065;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #c4b5fd;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #c4b5fd;">Todo</span>
+                <span class="text-xs" style="color: #c4b5fd; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #1e1b4b; border-color: #5b21b6;">
+                  <p class="text-sm" style="color: #e0e7ff;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #1e1b4b; border-color: #5b21b6;">
+                  <p class="text-sm" style="color: #e0e7ff;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #831843;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #fbcfe8;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fbcfe8;">In Progress</span>
+                <span class="text-xs" style="color: #fbcfe8; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #500724; border-color: #be185d;">
+                  <p class="text-sm" style="color: #fce7f3;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #1e293b;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #94a3b8;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #94a3b8;">Done</span>
+                <span class="text-xs" style="color: #94a3b8; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #0f172a; border-color: #475569;">
+                  <p class="text-sm" style="color: #e2e8f0;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 3: Forest -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 3: Forest</h2>
+    <p class="text-gray-500 mb-4">Earth tones with greens and warm browns. Natural and grounded.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #faf5f0;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #dcfce7;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #15803d;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #15803d;">Todo</span>
+                <span class="text-xs" style="color: #15803d; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #86efac;">
+                  <p class="text-sm" style="color: #1c1917;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #86efac;">
+                  <p class="text-sm" style="color: #1c1917;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #fed7aa;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #c2410c;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #c2410c;">In Progress</span>
+                <span class="text-xs" style="color: #c2410c; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #fdba74;">
+                  <p class="text-sm" style="color: #1c1917;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #e7e5e4;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #78716c;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #78716c;">Done</span>
+                <span class="text-xs" style="color: #78716c; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #d6d3d1;">
+                  <p class="text-sm" style="color: #1c1917;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #1a1a18;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #14532d;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #86efac;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #86efac;">Todo</span>
+                <span class="text-xs" style="color: #86efac; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #052e16; border-color: #166534;">
+                  <p class="text-sm" style="color: #dcfce7;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #052e16; border-color: #166534;">
+                  <p class="text-sm" style="color: #dcfce7;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #7c2d12;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #fdba74;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fdba74;">In Progress</span>
+                <span class="text-xs" style="color: #fdba74; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #431407; border-color: #9a3412;">
+                  <p class="text-sm" style="color: #fed7aa;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #292524;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #a8a29e;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #a8a29e;">Done</span>
+                <span class="text-xs" style="color: #a8a29e; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #1c1917; border-color: #57534e;">
+                  <p class="text-sm" style="color: #e7e5e4;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 4: Midnight -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 4: Midnight</h2>
+    <p class="text-gray-500 mb-4">Deep blues with subtle color variations. Elegant and easy on the eyes.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #f1f5f9;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #dbeafe;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #2563eb;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #2563eb;">Todo</span>
+                <span class="text-xs" style="color: #2563eb; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #93c5fd;">
+                  <p class="text-sm" style="color: #1e3a8a;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #93c5fd;">
+                  <p class="text-sm" style="color: #1e3a8a;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #e0e7ff;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #4f46e5;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #4f46e5;">In Progress</span>
+                <span class="text-xs" style="color: #4f46e5; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #a5b4fc;">
+                  <p class="text-sm" style="color: #1e3a8a;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #c7d2fe;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #3730a3;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #3730a3;">Done</span>
+                <span class="text-xs" style="color: #3730a3; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #818cf8;">
+                  <p class="text-sm" style="color: #1e3a8a;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #020617;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #1e3a8a;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #93c5fd;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #93c5fd;">Todo</span>
+                <span class="text-xs" style="color: #93c5fd; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #172554; border-color: #1d4ed8;">
+                  <p class="text-sm" style="color: #dbeafe;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #172554; border-color: #1d4ed8;">
+                  <p class="text-sm" style="color: #dbeafe;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #312e81;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #a5b4fc;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #a5b4fc;">In Progress</span>
+                <span class="text-xs" style="color: #a5b4fc; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #1e1b4b; border-color: #4338ca;">
+                  <p class="text-sm" style="color: #e0e7ff;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #3730a3;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #c7d2fe;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #c7d2fe;">Done</span>
+                <span class="text-xs" style="color: #c7d2fe; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #1e1b4b; border-color: #4f46e5;">
+                  <p class="text-sm" style="color: #c7d2fe;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 5: Sunset -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 5: Sunset</h2>
+    <p class="text-gray-500 mb-4">Warm gradient from coral to purple. Vibrant and energetic.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #fff7ed;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #ffe4e6;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #e11d48;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #e11d48;">Todo</span>
+                <span class="text-xs" style="color: #e11d48; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #fda4af;">
+                  <p class="text-sm" style="color: #4c0519;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #fda4af;">
+                  <p class="text-sm" style="color: #4c0519;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #ffedd5;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #ea580c;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #ea580c;">In Progress</span>
+                <span class="text-xs" style="color: #ea580c; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #fdba74;">
+                  <p class="text-sm" style="color: #4c0519;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #f3e8ff;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #9333ea;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #9333ea;">Done</span>
+                <span class="text-xs" style="color: #9333ea; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #d8b4fe;">
+                  <p class="text-sm" style="color: #4c0519;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #1c1017;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #881337;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #fda4af;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fda4af;">Todo</span>
+                <span class="text-xs" style="color: #fda4af; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #4c0519; border-color: #be123c;">
+                  <p class="text-sm" style="color: #ffe4e6;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #4c0519; border-color: #be123c;">
+                  <p class="text-sm" style="color: #ffe4e6;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #9a3412;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #fed7aa;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fed7aa;">In Progress</span>
+                <span class="text-xs" style="color: #fed7aa; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #431407; border-color: #c2410c;">
+                  <p class="text-sm" style="color: #ffedd5;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #6b21a8;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #e9d5ff;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #e9d5ff;">Done</span>
+                <span class="text-xs" style="color: #e9d5ff; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #3b0764; border-color: #7e22ce;">
+                  <p class="text-sm" style="color: #f3e8ff;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 6: Minimal Gray -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 6: Minimal Gray</h2>
+    <p class="text-gray-500 mb-4">Monochrome with subtle tints. Clean and distraction-free.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #fafafa;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #f5f5f5;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #525252;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #525252;">Todo</span>
+                <span class="text-xs" style="color: #525252; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #e5e5e5;">
+                  <p class="text-sm" style="color: #171717;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #e5e5e5;">
+                  <p class="text-sm" style="color: #171717;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #e5e5e5;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #404040;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #404040;">In Progress</span>
+                <span class="text-xs" style="color: #404040; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #d4d4d4;">
+                  <p class="text-sm" style="color: #171717;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #d4d4d4;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #262626;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #262626;">Done</span>
+                <span class="text-xs" style="color: #262626; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #a3a3a3;">
+                  <p class="text-sm" style="color: #171717;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #0a0a0a;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #171717;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #a3a3a3;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #a3a3a3;">Todo</span>
+                <span class="text-xs" style="color: #a3a3a3; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #0a0a0a; border-color: #262626;">
+                  <p class="text-sm" style="color: #e5e5e5;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #0a0a0a; border-color: #262626;">
+                  <p class="text-sm" style="color: #e5e5e5;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #262626;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #d4d4d4;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #d4d4d4;">In Progress</span>
+                <span class="text-xs" style="color: #d4d4d4; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #171717; border-color: #404040;">
+                  <p class="text-sm" style="color: #f5f5f5;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #404040;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #e5e5e5;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #e5e5e5;">Done</span>
+                <span class="text-xs" style="color: #e5e5e5; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #262626; border-color: #525252;">
+                  <p class="text-sm" style="color: #fafafa;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 7: Teal & Coral -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 7: Teal & Coral</h2>
+    <p class="text-gray-500 mb-4">Complementary colors that pop. Fresh and modern.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #f0fdfa;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #ccfbf1;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #0d9488;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #0d9488;">Todo</span>
+                <span class="text-xs" style="color: #0d9488; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #5eead4;">
+                  <p class="text-sm" style="color: #134e4a;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #5eead4;">
+                  <p class="text-sm" style="color: #134e4a;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #fef2f2;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #ef4444;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #ef4444;">In Progress</span>
+                <span class="text-xs" style="color: #ef4444; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #fca5a5;">
+                  <p class="text-sm" style="color: #134e4a;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #99f6e4;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #0f766e;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #0f766e;">Done</span>
+                <span class="text-xs" style="color: #0f766e; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #2dd4bf;">
+                  <p class="text-sm" style="color: #134e4a;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #042f2e;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #115e59;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #5eead4;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #5eead4;">Todo</span>
+                <span class="text-xs" style="color: #5eead4; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #134e4a; border-color: #0d9488;">
+                  <p class="text-sm" style="color: #ccfbf1;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #134e4a; border-color: #0d9488;">
+                  <p class="text-sm" style="color: #ccfbf1;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #7f1d1d;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #fca5a5;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fca5a5;">In Progress</span>
+                <span class="text-xs" style="color: #fca5a5; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #450a0a; border-color: #b91c1c;">
+                  <p class="text-sm" style="color: #fee2e2;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #0f766e;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #99f6e4;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #99f6e4;">Done</span>
+                <span class="text-xs" style="color: #99f6e4; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #115e59; border-color: #14b8a6;">
+                  <p class="text-sm" style="color: #ccfbf1;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 8: Nord -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 8: Nord-Inspired</h2>
+    <p class="text-gray-500 mb-4">Arctic, bluish color palette. Popular with developers.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #eceff4;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #d8dee9;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                <span class="text-xs" style="color: #5e81ac; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #eceff4; border-color: #81a1c1;">
+                  <p class="text-sm" style="color: #2e3440;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #eceff4; border-color: #81a1c1;">
+                  <p class="text-sm" style="color: #2e3440;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #ebcb8b40;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                <span class="text-xs" style="color: #d08770; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #eceff4; border-color: #ebcb8b;">
+                  <p class="text-sm" style="color: #2e3440;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #a3be8c40;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                <span class="text-xs" style="color: #a3be8c; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #eceff4; border-color: #a3be8c;">
+                  <p class="text-sm" style="color: #2e3440;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #2e3440;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #3b4252;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                <span class="text-xs" style="color: #88c0d0; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: #4c566a;">
+                  <p class="text-sm" style="color: #eceff4;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: #4c566a;">
+                  <p class="text-sm" style="color: #eceff4;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #d0877030;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #ebcb8b;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #ebcb8b;">In Progress</span>
+                <span class="text-xs" style="color: #ebcb8b; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: #d08770;">
+                  <p class="text-sm" style="color: #eceff4;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #a3be8c30;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                <span class="text-xs" style="color: #a3be8c; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: #a3be8c;">
+                  <p class="text-sm" style="color: #eceff4;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 9: Rose Gold -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 9: Rose Gold</h2>
+    <p class="text-gray-500 mb-4">Soft pinks with gold accents. Elegant and premium feel.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #fdf2f8;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #fce7f3;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #be185d;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #be185d;">Todo</span>
+                <span class="text-xs" style="color: #be185d; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #f9a8d4;">
+                  <p class="text-sm" style="color: #831843;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #f9a8d4;">
+                  <p class="text-sm" style="color: #831843;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #fef3c7;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #b45309;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #b45309;">In Progress</span>
+                <span class="text-xs" style="color: #b45309; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #fcd34d;">
+                  <p class="text-sm" style="color: #831843;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #fbcfe8;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #9d174d;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #9d174d;">Done</span>
+                <span class="text-xs" style="color: #9d174d; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #ec4899;">
+                  <p class="text-sm" style="color: #831843;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #1f1318;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #831843;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #fbcfe8;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fbcfe8;">Todo</span>
+                <span class="text-xs" style="color: #fbcfe8; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #500724; border-color: #9d174d;">
+                  <p class="text-sm" style="color: #fce7f3;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #500724; border-color: #9d174d;">
+                  <p class="text-sm" style="color: #fce7f3;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #78350f;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #fde68a;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fde68a;">In Progress</span>
+                <span class="text-xs" style="color: #fde68a; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #451a03; border-color: #92400e;">
+                  <p class="text-sm" style="color: #fef3c7;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #9d174d;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #fce7f3;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #fce7f3;">Done</span>
+                <span class="text-xs" style="color: #fce7f3; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #831843; border-color: #be185d;">
+                  <p class="text-sm" style="color: #fdf2f8;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Palette 10: Cyber -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-1">Palette 10: Cyber</h2>
+    <p class="text-gray-500 mb-4">Neon accents on dark backgrounds. Bold and futuristic.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Light Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Light Mode</h3>
+        <div class="task-screen flex" style="background: #f5f3ff;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #ddd6fe;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #7c3aed;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #7c3aed;">Todo</span>
+                <span class="text-xs" style="color: #7c3aed; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #a78bfa;">
+                  <p class="text-sm" style="color: #1e1b4b;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #a78bfa;">
+                  <p class="text-sm" style="color: #1e1b4b;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #a5f3fc;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #0891b2;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #0891b2;">In Progress</span>
+                <span class="text-xs" style="color: #0891b2; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #22d3ee;">
+                  <p class="text-sm" style="color: #1e1b4b;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #d9f99d;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #65a30d;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #65a30d;">Done</span>
+                <span class="text-xs" style="color: #65a30d; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #ffffff; border-color: #a3e635;">
+                  <p class="text-sm" style="color: #1e1b4b;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Mode -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Dark Mode</h3>
+        <div class="task-screen flex" style="background: #030712;">
+          <!-- Todo Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #1e1b4b; border: 1px solid #7c3aed;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-lightbulb text-sm" style="color: #a78bfa;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #a78bfa;">Todo</span>
+                <span class="text-xs" style="color: #a78bfa; opacity: 0.6;">3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #0c0a1d; border-color: #5b21b6;">
+                  <p class="text-sm" style="color: #ddd6fe;">Design new feature</p>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #0c0a1d; border-color: #5b21b6;">
+                  <p class="text-sm" style="color: #ddd6fe;">Review requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- In Progress Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #083344; border: 1px solid #06b6d4;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-clock text-sm" style="color: #22d3ee;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #22d3ee;">In Progress</span>
+                <span class="text-xs" style="color: #22d3ee; opacity: 0.6;">2</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #042f2e; border-color: #0891b2;">
+                  <p class="text-sm" style="color: #a5f3fc;">Build API endpoint</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Done Column -->
+          <div class="column p-3">
+            <div class="h-full rounded-lg p-3" style="background: #1a2e05; border: 1px solid #84cc16;">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-check-circle text-sm" style="color: #a3e635;"></i>
+                <span class="text-xs font-medium uppercase" style="color: #a3e635;">Done</span>
+                <span class="text-xs" style="color: #a3e635; opacity: 0.6;">5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="rounded-md p-2 border" style="background: #0f1b05; border-color: #65a30d;">
+                  <p class="text-sm" style="color: #d9f99d;">Setup project</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="mt-12 p-6 bg-white rounded-lg shadow-sm">
+    <h2 class="text-xl font-bold mb-4">Summary</h2>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b">
+          <th class="text-left py-2">Palette</th>
+          <th class="text-left py-2">Style</th>
+          <th class="text-left py-2">Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b"><td class="py-2">1. Ocean Breeze</td><td>Cool blues/teals</td><td>Professional, calm workspaces</td></tr>
+        <tr class="border-b"><td class="py-2">2. Slate & Violet</td><td>Gray + purple accents</td><td>Modern, sophisticated look</td></tr>
+        <tr class="border-b"><td class="py-2">3. Forest</td><td>Greens + earth tones</td><td>Natural, grounded feel</td></tr>
+        <tr class="border-b"><td class="py-2">4. Midnight</td><td>Deep blues throughout</td><td>Focused, immersive experience</td></tr>
+        <tr class="border-b"><td class="py-2">5. Sunset</td><td>Coral to purple gradient</td><td>Energetic, creative teams</td></tr>
+        <tr class="border-b"><td class="py-2">6. Minimal Gray</td><td>Pure monochrome</td><td>Distraction-free productivity</td></tr>
+        <tr class="border-b"><td class="py-2">7. Teal & Coral</td><td>Complementary colors</td><td>Fresh, modern startups</td></tr>
+        <tr class="border-b"><td class="py-2">8. Nord-Inspired</td><td>Arctic blue palette</td><td>Developers, code-focused</td></tr>
+        <tr class="border-b"><td class="py-2">9. Rose Gold</td><td>Soft pinks + gold</td><td>Premium, elegant aesthetic</td></tr>
+        <tr class="border-b"><td class="py-2">10. Cyber</td><td>Neon on dark</td><td>Bold, futuristic style</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>
