@@ -69,12 +69,66 @@ interface ColumnConfig {
         }
       </div>
 
+      <!-- Mobile: Segmented column indicator -->
+      <div class="flex md:hidden gap-1 py-1" role="tablist" aria-label="Column navigation">
+        <button
+          type="button"
+          class="flex-1 py-3"
+          (click)="scrollToColumn(0)"
+          role="tab"
+          [attr.aria-selected]="activeColumn() === 0"
+          [attr.tabindex]="activeColumn() === 0 ? 0 : -1"
+          aria-label="Go to Todo column"
+        >
+          <span
+            class="block w-full rounded-full transition-all"
+            [class.h-2]="activeColumn() === 0"
+            [class.h-1]="activeColumn() !== 0"
+            [class.bg-indicator-todo-active]="activeColumn() === 0"
+            [class.bg-indicator-todo-inactive]="activeColumn() !== 0"
+          ></span>
+        </button>
+        <button
+          type="button"
+          class="flex-1 py-3"
+          (click)="scrollToColumn(1)"
+          role="tab"
+          [attr.aria-selected]="activeColumn() === 1"
+          [attr.tabindex]="activeColumn() === 1 ? 0 : -1"
+          aria-label="Go to In Progress column"
+        >
+          <span
+            class="block w-full rounded-full transition-all"
+            [class.h-2]="activeColumn() === 1"
+            [class.h-1]="activeColumn() !== 1"
+            [class.bg-indicator-inprogress-active]="activeColumn() === 1"
+            [class.bg-indicator-inprogress-inactive]="activeColumn() !== 1"
+          ></span>
+        </button>
+        <button
+          type="button"
+          class="flex-1 py-3"
+          (click)="scrollToColumn(2)"
+          role="tab"
+          [attr.aria-selected]="activeColumn() === 2"
+          [attr.tabindex]="activeColumn() === 2 ? 0 : -1"
+          aria-label="Go to Done column"
+        >
+          <span
+            class="block w-full rounded-full transition-all"
+            [class.h-2]="activeColumn() === 2"
+            [class.h-1]="activeColumn() !== 2"
+            [class.bg-indicator-done-active]="activeColumn() === 2"
+            [class.bg-indicator-done-inactive]="activeColumn() !== 2"
+          ></span>
+        </button>
+      </div>
+
       <!-- Mobile: Horizontal swipe navigation -->
-      <div #mobileScrollContainer role="region" aria-label="Task columns" class="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
-        @for (col of columnConfigs(); track col.status; let last = $last) {
+      <div #mobileScrollContainer role="region" aria-label="Task columns" class="flex md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4">
+        @for (col of columnConfigs(); track col.status) {
           <app-column
-            class="flex-none w-full snap-center"
-            [class.pr-4]="!last"
+            class="flex-none w-screen px-4 snap-center"
             [status]="col.status"
             [label]="col.label"
             [showSkeleton]="!taskService.initialLoadComplete()"
@@ -103,25 +157,6 @@ interface ColumnConfig {
             [showSortMenu]="activeSortMenu() === col.status"
             (onSortMenuToggle)="toggleSortMenu(col.status)"
           />
-        }
-      </div>
-
-      <!-- Mobile: Column indicator dots -->
-      <div class="flex md:hidden justify-center gap-1 py-4">
-        @for (col of columnLabels; track col; let i = $index) {
-          <button
-            type="button"
-            class="p-2"
-            (click)="scrollToColumn(i)"
-            [attr.aria-label]="'Go to ' + col + ' column'"
-            [attr.aria-current]="i === activeColumn() ? 'true' : null"
-          >
-            <span
-              class="block w-2 h-2 rounded-full transition-colors"
-              [class.bg-primary]="i === activeColumn()"
-              [class.bg-foreground-muted/30]="i !== activeColumn()"
-            ></span>
-          </button>
         }
       </div>
 
@@ -178,7 +213,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly activeColumn = signal(0);
   readonly columnLabels = ['Todo', 'In Progress', 'Done'] as const;
 
-  private scrollObserver: IntersectionObserver | null = null;
+  private scrollListener: (() => void) | null = null;
   readonly todoSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly inProgressSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly doneSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
@@ -281,30 +316,30 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.scrollObserver?.disconnect();
-    this.scrollObserver = null;
+    if (this.scrollListener) {
+      const container = this.mobileScrollContainer()?.nativeElement;
+      container?.removeEventListener('scroll', this.scrollListener);
+      this.scrollListener = null;
+    }
   }
 
   private setupScrollObserver(): void {
     const container = this.mobileScrollContainer()?.nativeElement;
     if (!container) return;
 
-    this.scrollObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            const index = Array.from(container.children).indexOf(entry.target as Element);
-            if (index >= 0) {
-              this.activeColumn.set(index);
-            }
-          }
-        });
-      },
-      { root: container, threshold: 0.5 }
-    );
+    // Calculate active column based on scroll position
+    this.scrollListener = () => {
+      const scrollLeft = container.scrollLeft;
+      const columnWidth = container.children[0]?.clientWidth || container.clientWidth;
+      const newIndex = Math.round(scrollLeft / columnWidth);
+      const clampedIndex = Math.max(0, Math.min(newIndex, 2));
 
-    // Observe all column elements
-    Array.from(container.children).forEach((col) => this.scrollObserver?.observe(col));
+      if (this.activeColumn() !== clampedIndex) {
+        this.activeColumn.set(clampedIndex);
+      }
+    };
+
+    container.addEventListener('scroll', this.scrollListener, { passive: true });
   }
 
   scrollToColumn(index: number): void {

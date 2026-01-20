@@ -65,6 +65,14 @@
   --color-archive-text-muted: var(--color-violet-500);
   --color-archive-border: var(--color-violet-200);
 
+  /* Mobile column indicator - matches column background colors */
+  --indicator-todo-active: var(--color-slate-500);
+  --indicator-todo-inactive: var(--color-slate-300);
+  --indicator-inprogress-active: var(--color-sky-500);
+  --indicator-inprogress-inactive: var(--color-sky-300);
+  --indicator-done-active: var(--color-emerald-500);
+  --indicator-done-inactive: var(--color-emerald-300);
+
   /* Notification types */
   --color-feature-bg: var(--color-purple-100);
   --color-feature-text: var(--color-purple-800);
@@ -172,6 +180,14 @@
   --color-archive-text: var(--color-violet-400);
   --color-archive-text-muted: var(--color-violet-500);
   --color-archive-border: var(--color-violet-800);
+
+  /* Mobile column indicator - matches column background colors */
+  --indicator-todo-active: var(--color-slate-400);
+  --indicator-todo-inactive: var(--color-slate-600);
+  --indicator-inprogress-active: var(--color-sky-400);
+  --indicator-inprogress-inactive: var(--color-sky-600);
+  --indicator-done-active: var(--color-emerald-400);
+  --indicator-done-inactive: var(--color-emerald-600);
 
   /* Notification types */
   --color-feature-bg: var(--color-purple-900);
@@ -288,6 +304,14 @@
   --color-archive-foreground: var(--color-archive-text);
   --color-archive-foreground-muted: var(--color-archive-text-muted);
   --color-archive-border: var(--color-archive-border);
+
+  /* Mobile column indicator */
+  --color-indicator-todo-active: var(--indicator-todo-active);
+  --color-indicator-todo-inactive: var(--indicator-todo-inactive);
+  --color-indicator-inprogress-active: var(--indicator-inprogress-active);
+  --color-indicator-inprogress-inactive: var(--indicator-inprogress-inactive);
+  --color-indicator-done-active: var(--indicator-done-active);
+  --color-indicator-done-inactive: var(--indicator-done-inactive);
 
   /* Notification types */
   --color-feature: var(--color-feature-bg);
