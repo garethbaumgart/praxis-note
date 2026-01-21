@@ -43,7 +43,7 @@
   /* Status columns - All with consistent tinted backgrounds */
   --color-todo-bg: rgba(136, 192, 208, 0.12);      /* Frost cyan tint */
   --color-todo-bg-hover: rgba(136, 192, 208, 0.18);
-  --color-todo-text: #0b7285;       /* Darker cyan for light mode contrast */
+  --color-todo-text: #0b7285;       /* Non-Nord darker cyan for light mode contrast (WCAG accessibility) */
   --color-todo-text-muted: #1098ad;
   --color-todo-border: rgba(136, 192, 208, 0.35);
 
