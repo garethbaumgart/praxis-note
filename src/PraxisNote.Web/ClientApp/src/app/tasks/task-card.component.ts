@@ -14,7 +14,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
   imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
   template: `
     <div
-      class="bg-surface rounded-md py-2 px-3 border transition-colors group"
+      class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
       [class.border-todo-border]="task().status === 'Todo'"
       [class.border-inprogress-border]="task().status === 'InProgress'"
       [class.border-done-border]="task().status === 'Done'"

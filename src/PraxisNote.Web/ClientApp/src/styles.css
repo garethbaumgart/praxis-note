@@ -17,12 +17,12 @@
    Semantic Color Tokens
    ======================================== */
 @layer theme {
-  /* Light Mode - Nord-inspired palette */
+  /* Light Mode - Variation 9: Soft Warm White base + Frost-tinted columns */
   :root {
-  /* Backgrounds - Snow Storm */
-  --color-bg-base: #eceff4;         /* Snow Storm 3 */
-  --color-bg-subtle: #e5e9f0;       /* Snow Storm 2 */
-  --color-bg-muted: #d8dee9;        /* Snow Storm 1 */
+  /* Backgrounds - Soft warm white for easier on the eyes */
+  --color-bg-base: #fafaf8;         /* Soft warm white - page background */
+  --color-bg-subtle: #ffffff;       /* Pure white - elevated surfaces (cards) */
+  --color-bg-muted: #eceff4;        /* Snow Storm 3 */
 
   /* Text - Polar Night */
   --color-text-primary: #2e3440;    /* Polar Night 1 */
@@ -30,8 +30,8 @@
   --color-text-muted: #7b88a1;      /* Lighter muted */
 
   /* Borders */
-  --color-border-default: #d8dee9;
-  --color-border-muted-base: #e5e9f0;
+  --color-border-default: #e5e9f0;
+  --color-border-muted-base: #eceff4;
 
   /* Primary accent - Frost blue */
   --color-primary-bg: rgba(94, 129, 172, 0.15);
@@ -40,30 +40,30 @@
   --color-primary-solid: #5e81ac;
   --color-primary-solid-hover: #81a1c1;
 
-  /* Status columns - Nord Aurora & Frost */
-  --color-todo-bg: #e5e9f0;         /* Snow Storm 2 */
-  --color-todo-bg-hover: #d8dee9;   /* Snow Storm 1 */
+  /* Status columns - All with consistent tinted backgrounds */
+  --color-todo-bg: rgba(94, 129, 172, 0.1);      /* Frost blue tint */
+  --color-todo-bg-hover: rgba(94, 129, 172, 0.15);
   --color-todo-text: #5e81ac;       /* Frost blue */
   --color-todo-text-muted: #81a1c1;
-  --color-todo-border: #81a1c1;
+  --color-todo-border: rgba(94, 129, 172, 0.2);
 
-  --color-inprogress-bg: rgba(208, 135, 112, 0.15);   /* Aurora orange */
-  --color-inprogress-bg-hover: rgba(208, 135, 112, 0.25);
+  --color-inprogress-bg: rgba(208, 135, 112, 0.1);   /* Aurora orange */
+  --color-inprogress-bg-hover: rgba(208, 135, 112, 0.15);
   --color-inprogress-text: #d08770;
   --color-inprogress-text-muted: rgba(208, 135, 112, 0.7);
-  --color-inprogress-border: #d08770;
+  --color-inprogress-border: rgba(208, 135, 112, 0.2);
 
-  --color-done-bg: rgba(163, 190, 140, 0.15);   /* Aurora green */
-  --color-done-bg-hover: rgba(163, 190, 140, 0.25);
+  --color-done-bg: rgba(163, 190, 140, 0.1);   /* Aurora green */
+  --color-done-bg-hover: rgba(163, 190, 140, 0.15);
   --color-done-text: #a3be8c;
   --color-done-text-muted: rgba(163, 190, 140, 0.7);
-  --color-done-border: #a3be8c;
+  --color-done-border: rgba(163, 190, 140, 0.2);
 
-  --color-archive-bg: rgba(180, 142, 173, 0.15);   /* Aurora purple */
-  --color-archive-bg-hover: rgba(180, 142, 173, 0.25);
+  --color-archive-bg: rgba(180, 142, 173, 0.1);   /* Aurora purple */
+  --color-archive-bg-hover: rgba(180, 142, 173, 0.15);
   --color-archive-text: #b48ead;
   --color-archive-text-muted: rgba(180, 142, 173, 0.7);
-  --color-archive-border: #b48ead;
+  --color-archive-border: rgba(180, 142, 173, 0.2);
 
   /* Mobile column indicator - matches column colors */
   --indicator-todo-active: #5e81ac;
@@ -138,12 +138,12 @@
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
 }
 
-  /* Dark Mode - Nord Polar Night */
+  /* Dark Mode - Option 3: Darker base + tinted columns */
   [data-theme="dark"] {
-  /* Backgrounds - Polar Night */
-  --color-bg-base: #2e3440;         /* Polar Night 1 */
-  --color-bg-subtle: #3b4252;       /* Polar Night 2 */
-  --color-bg-muted: #434c5e;        /* Polar Night 3 */
+  /* Backgrounds - Darker Polar Night for more contrast */
+  --color-bg-base: #242933;         /* Darker than Polar Night 1 */
+  --color-bg-subtle: #2e3440;       /* Polar Night 1 */
+  --color-bg-muted: #3b4252;        /* Polar Night 2 */
 
   /* Text - Snow Storm */
   --color-text-primary: #eceff4;    /* Snow Storm 3 */
@@ -151,8 +151,8 @@
   --color-text-muted: #4c566a;      /* Polar Night 4 */
 
   /* Borders */
-  --color-border-default: #4c566a;
-  --color-border-muted-base: #3b4252;
+  --color-border-default: #3b4252;
+  --color-border-muted-base: #2e3440;
 
   /* Primary accent - Frost blue */
   --color-primary-bg: rgba(94, 129, 172, 0.2);
@@ -161,30 +161,30 @@
   --color-primary-solid: #5e81ac;
   --color-primary-solid-hover: #81a1c1;
 
-  /* Status columns - Polar Night & Aurora */
-  --color-todo-bg: #3b4252;          /* Polar Night 2 */
-  --color-todo-bg-hover: #434c5e;    /* Polar Night 3 */
+  /* Status columns - All with consistent tinted backgrounds */
+  --color-todo-bg: rgba(136, 192, 208, 0.08);   /* Frost cyan tint */
+  --color-todo-bg-hover: rgba(136, 192, 208, 0.12);
   --color-todo-text: #88c0d0;        /* Frost cyan */
   --color-todo-text-muted: #81a1c1;
-  --color-todo-border: #4c566a;
+  --color-todo-border: rgba(136, 192, 208, 0.15);
 
-  --color-inprogress-bg: rgba(208, 135, 112, 0.2);    /* Aurora orange */
-  --color-inprogress-bg-hover: rgba(208, 135, 112, 0.3);
+  --color-inprogress-bg: rgba(208, 135, 112, 0.1);    /* Aurora orange */
+  --color-inprogress-bg-hover: rgba(208, 135, 112, 0.15);
   --color-inprogress-text: #d08770;
   --color-inprogress-text-muted: rgba(208, 135, 112, 0.7);
-  --color-inprogress-border: rgba(208, 135, 112, 0.4);
+  --color-inprogress-border: rgba(208, 135, 112, 0.15);
 
-  --color-done-bg: rgba(163, 190, 140, 0.2);    /* Aurora green */
-  --color-done-bg-hover: rgba(163, 190, 140, 0.3);
+  --color-done-bg: rgba(163, 190, 140, 0.1);    /* Aurora green */
+  --color-done-bg-hover: rgba(163, 190, 140, 0.15);
   --color-done-text: #a3be8c;
   --color-done-text-muted: rgba(163, 190, 140, 0.7);
-  --color-done-border: rgba(163, 190, 140, 0.4);
+  --color-done-border: rgba(163, 190, 140, 0.15);
 
-  --color-archive-bg: rgba(180, 142, 173, 0.2);    /* Aurora purple */
-  --color-archive-bg-hover: rgba(180, 142, 173, 0.3);
+  --color-archive-bg: rgba(180, 142, 173, 0.1);    /* Aurora purple */
+  --color-archive-bg-hover: rgba(180, 142, 173, 0.15);
   --color-archive-text: #b48ead;
   --color-archive-text-muted: rgba(180, 142, 173, 0.7);
-  --color-archive-border: rgba(180, 142, 173, 0.4);
+  --color-archive-border: rgba(180, 142, 173, 0.15);
 
   /* Mobile column indicator - matches column colors */
   --indicator-todo-active: #88c0d0;

@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Option 3 Variations - Nord Theme</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 50; }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2 text-gray-800">Option 3 Variations</h1>
+    <p class="text-gray-600 mb-8">Variations on the "White base + Frost-tinted columns" theme. All use Nord colors.</p>
+
+    <!-- ==================== VARIATION 1 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 1: Subtle Tints (Current)</h2>
+      <p class="text-sm text-gray-500 mb-4">Current implementation - light rgba tints with matching subtle borders.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #ffffff;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(94, 129, 172, 0.1); border-color: rgba(94, 129, 172, 0.2);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(94, 129, 172, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.1); border-color: rgba(208, 135, 112, 0.2);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(208, 135, 112, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.1); border-color: rgba(163, 190, 140, 0.2);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(163, 190, 140, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(136, 192, 208, 0.08); border-color: rgba(136, 192, 208, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(136, 192, 208, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.1); border-color: rgba(208, 135, 112, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(208, 135, 112, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.1); border-color: rgba(163, 190, 140, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(163, 190, 140, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 2 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 2: Stronger Tints</h2>
+      <p class="text-sm text-gray-500 mb-4">More saturated column backgrounds for stronger visual distinction.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #ffffff;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(94, 129, 172, 0.15); border-color: rgba(94, 129, 172, 0.3);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(94, 129, 172, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.15); border-color: rgba(208, 135, 112, 0.3);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(208, 135, 112, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.15); border-color: rgba(163, 190, 140, 0.3);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(163, 190, 140, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(136, 192, 208, 0.12); border-color: rgba(136, 192, 208, 0.25);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(136, 192, 208, 0.25);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.15); border-color: rgba(208, 135, 112, 0.25);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(208, 135, 112, 0.25);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.15); border-color: rgba(163, 190, 140, 0.25);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(163, 190, 140, 0.25);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 3 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 3: Left Border Accent</h2>
+      <p class="text-sm text-gray-500 mb-4">Neutral column backgrounds with bold left border accent for status indication.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #ffffff;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border-l-4" style="background: #f8fafc; border-left-color: #5e81ac; border-top: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border-l-4" style="background: #f8fafc; border-left-color: #d08770; border-top: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border-l-4" style="background: #f8fafc; border-left-color: #a3be8c; border-top: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border-l-4" style="background: #2e3440; border-left-color: #88c0d0; border-top: 1px solid #3b4252; border-right: 1px solid #3b4252; border-bottom: 1px solid #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #3b4252; border-color: #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border-l-4" style="background: #2e3440; border-left-color: #d08770; border-top: 1px solid #3b4252; border-right: 1px solid #3b4252; border-bottom: 1px solid #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #3b4252; border-color: #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border-l-4" style="background: #2e3440; border-left-color: #a3be8c; border-top: 1px solid #3b4252; border-right: 1px solid #3b4252; border-bottom: 1px solid #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #3b4252; border-color: #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 4 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 4: Header Pill + Tinted Columns</h2>
+      <p class="text-sm text-gray-500 mb-4">Colored header pills on tinted column backgrounds for double emphasis.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #ffffff;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(94, 129, 172, 0.08); border-color: rgba(94, 129, 172, 0.15);">
+                <div class="inline-flex items-center gap-2 mb-3 px-2 py-1 rounded-full" style="background: rgba(94, 129, 172, 0.2);">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(94, 129, 172, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.08); border-color: rgba(208, 135, 112, 0.15);">
+                <div class="inline-flex items-center gap-2 mb-3 px-2 py-1 rounded-full" style="background: rgba(208, 135, 112, 0.2);">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(208, 135, 112, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.08); border-color: rgba(163, 190, 140, 0.15);">
+                <div class="inline-flex items-center gap-2 mb-3 px-2 py-1 rounded-full" style="background: rgba(163, 190, 140, 0.2);">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(163, 190, 140, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(136, 192, 208, 0.06); border-color: rgba(136, 192, 208, 0.12);">
+                <div class="inline-flex items-center gap-2 mb-3 px-2 py-1 rounded-full" style="background: rgba(136, 192, 208, 0.15);">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(136, 192, 208, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.06); border-color: rgba(208, 135, 112, 0.12);">
+                <div class="inline-flex items-center gap-2 mb-3 px-2 py-1 rounded-full" style="background: rgba(208, 135, 112, 0.15);">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(208, 135, 112, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.06); border-color: rgba(163, 190, 140, 0.12);">
+                <div class="inline-flex items-center gap-2 mb-3 px-2 py-1 rounded-full" style="background: rgba(163, 190, 140, 0.15);">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(163, 190, 140, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 5 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 5: No Column Border</h2>
+      <p class="text-sm text-gray-500 mb-4">Tinted backgrounds without borders - cleaner, more minimal look.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #ffffff;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3" style="background: rgba(94, 129, 172, 0.1);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(94, 129, 172, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3" style="background: rgba(208, 135, 112, 0.1);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(208, 135, 112, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3" style="background: rgba(163, 190, 140, 0.1);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(163, 190, 140, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3" style="background: rgba(136, 192, 208, 0.08);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(136, 192, 208, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3" style="background: rgba(208, 135, 112, 0.1);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(208, 135, 112, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3" style="background: rgba(163, 190, 140, 0.1);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(163, 190, 140, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 6 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 6: Top Border Accent</h2>
+      <p class="text-sm text-gray-500 mb-4">Bold top border with neutral column background - clean status indicator at top.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #ffffff;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border-t-4" style="background: #f8fafc; border-top-color: #5e81ac; border-left: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border-t-4" style="background: #f8fafc; border-top-color: #d08770; border-left: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border-t-4" style="background: #f8fafc; border-top-color: #a3be8c; border-left: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border-t-4" style="background: #2e3440; border-top-color: #88c0d0; border-left: 1px solid #3b4252; border-right: 1px solid #3b4252; border-bottom: 1px solid #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #3b4252; border-color: #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border-t-4" style="background: #2e3440; border-top-color: #d08770; border-left: 1px solid #3b4252; border-right: 1px solid #3b4252; border-bottom: 1px solid #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #3b4252; border-color: #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border-t-4" style="background: #2e3440; border-top-color: #a3be8c; border-left: 1px solid #3b4252; border-right: 1px solid #3b4252; border-bottom: 1px solid #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #3b4252; border-color: #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 7 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 7: Gradient Tint (Top to Bottom)</h2>
+      <p class="text-sm text-gray-500 mb-4">Subtle gradient from tinted top to transparent bottom.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #ffffff;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: linear-gradient(to bottom, rgba(94, 129, 172, 0.15), rgba(94, 129, 172, 0.03)); border-color: rgba(94, 129, 172, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(94, 129, 172, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: linear-gradient(to bottom, rgba(208, 135, 112, 0.15), rgba(208, 135, 112, 0.03)); border-color: rgba(208, 135, 112, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(208, 135, 112, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: linear-gradient(to bottom, rgba(163, 190, 140, 0.15), rgba(163, 190, 140, 0.03)); border-color: rgba(163, 190, 140, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border" style="border-color: rgba(163, 190, 140, 0.2);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: linear-gradient(to bottom, rgba(136, 192, 208, 0.12), rgba(136, 192, 208, 0.02)); border-color: rgba(136, 192, 208, 0.12);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(136, 192, 208, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: linear-gradient(to bottom, rgba(208, 135, 112, 0.12), rgba(208, 135, 112, 0.02)); border-color: rgba(208, 135, 112, 0.12);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(208, 135, 112, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: linear-gradient(to bottom, rgba(163, 190, 140, 0.12), rgba(163, 190, 140, 0.02)); border-color: rgba(163, 190, 140, 0.12);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(163, 190, 140, 0.15);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 8 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 8: Colored Card Borders</h2>
+      <p class="text-sm text-gray-500 mb-4">Neutral column backgrounds with status-colored borders on task cards.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #ffffff;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: #f8fafc; border-color: #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border-l-4" style="border-left-color: #5e81ac; border-top: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: #f8fafc; border-color: #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border-l-4" style="border-left-color: #d08770; border-top: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: #f8fafc; border-color: #e5e9f0;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="bg-white rounded-md p-2 shadow-sm border-l-4" style="border-left-color: #a3be8c; border-top: 1px solid #e5e9f0; border-right: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0;">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: #2e3440; border-color: #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border-l-4" style="background: #3b4252; border-left-color: #88c0d0; border-top: 1px solid #4c566a; border-right: 1px solid #4c566a; border-bottom: 1px solid #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: #2e3440; border-color: #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border-l-4" style="background: #3b4252; border-left-color: #d08770; border-top: 1px solid #4c566a; border-right: 1px solid #4c566a; border-bottom: 1px solid #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: #2e3440; border-color: #3b4252;">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border-l-4" style="background: #3b4252; border-left-color: #a3be8c; border-top: 1px solid #4c566a; border-right: 1px solid #4c566a; border-bottom: 1px solid #4c566a;">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 9 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 9: Soft Warm White Base (Recommended)</h2>
+      <p class="text-sm text-gray-500 mb-4">Slightly warm off-white base instead of pure white - easier on the eyes, more cohesive with Nord's warm tones.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #fafaf8;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(94, 129, 172, 0.1); border-color: rgba(94, 129, 172, 0.2);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 shadow-sm border" style="background: #ffffff; border-color: rgba(94, 129, 172, 0.25);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.1); border-color: rgba(208, 135, 112, 0.2);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 shadow-sm border" style="background: #ffffff; border-color: rgba(208, 135, 112, 0.25);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.1); border-color: rgba(163, 190, 140, 0.2);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 shadow-sm border" style="background: #ffffff; border-color: rgba(163, 190, 140, 0.25);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(136, 192, 208, 0.08); border-color: rgba(136, 192, 208, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(136, 192, 208, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.1); border-color: rgba(208, 135, 112, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(208, 135, 112, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.1); border-color: rgba(163, 190, 140, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(163, 190, 140, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIATION 10 ==================== -->
+    <div class="mb-12">
+      <h2 class="text-xl font-semibold mb-2 text-gray-700">Variation 10: Snow Storm Base</h2>
+      <p class="text-sm text-gray-500 mb-4">Uses Nord's Snow Storm #eceff4 as base - more integrated with the Nord palette.</p>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Light Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Light Mode</div>
+          <div class="p-4" style="background: #eceff4;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(94, 129, 172, 0.12); border-color: rgba(94, 129, 172, 0.25);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #5e81ac;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #5e81ac;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 shadow-sm border" style="background: #ffffff; border-color: rgba(94, 129, 172, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.12); border-color: rgba(208, 135, 112, 0.25);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 shadow-sm border" style="background: #ffffff; border-color: rgba(208, 135, 112, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.12); border-color: rgba(163, 190, 140, 0.25);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 shadow-sm border" style="background: #ffffff; border-color: rgba(163, 190, 140, 0.3);">
+                  <span class="text-sm" style="color: #2e3440;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <div class="bg-gray-800 text-white text-xs px-3 py-1">Dark Mode</div>
+          <div class="p-4" style="background: #242933;">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Todo -->
+              <div class="rounded-lg p-3 border" style="background: rgba(136, 192, 208, 0.08); border-color: rgba(136, 192, 208, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-lightbulb text-sm" style="color: #88c0d0;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #88c0d0;">Todo</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(136, 192, 208, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- In Progress -->
+              <div class="rounded-lg p-3 border" style="background: rgba(208, 135, 112, 0.1); border-color: rgba(208, 135, 112, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-clock text-sm" style="color: #d08770;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #d08770;">In Progress</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(208, 135, 112, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+              <!-- Done -->
+              <div class="rounded-lg p-3 border" style="background: rgba(163, 190, 140, 0.1); border-color: rgba(163, 190, 140, 0.15);">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-check-circle text-sm" style="color: #a3be8c;"></i>
+                  <span class="text-xs font-medium uppercase" style="color: #a3be8c;">Done</span>
+                </div>
+                <div class="rounded-md p-2 border" style="background: #2e3440; border-color: rgba(163, 190, 140, 0.2);">
+                  <span class="text-sm" style="color: #eceff4;">Task item</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SUMMARY ==================== -->
+    <div class="mt-12 p-6 bg-white rounded-xl shadow-lg">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800">Summary</h2>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left py-2 font-medium">Variation</th>
+            <th class="text-left py-2 font-medium">Column Style</th>
+            <th class="text-left py-2 font-medium">Card Style</th>
+            <th class="text-left py-2 font-medium">Best For</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-600">
+          <tr class="border-b">
+            <td class="py-2">1. Subtle Tints (Current)</td>
+            <td>Light rgba tint + matching border</td>
+            <td>White with colored border</td>
+            <td>Balanced, gentle color coding</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2">2. Stronger Tints</td>
+            <td>More saturated tint + border</td>
+            <td>White with colored border</td>
+            <td>More visible status distinction</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2">3. Left Border Accent</td>
+            <td>Neutral + bold left border</td>
+            <td>White with neutral border</td>
+            <td>Minimal with strong status cue</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2">4. Header Pill + Tint</td>
+            <td>Light tint + header pill</td>
+            <td>White with colored border</td>
+            <td>Double emphasis on headers</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2">5. No Column Border</td>
+            <td>Tint only, no border</td>
+            <td>White with colored border</td>
+            <td>Cleaner, more minimal</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2">6. Top Border Accent</td>
+            <td>Neutral + bold top border</td>
+            <td>White with neutral border</td>
+            <td>Modern, clean status indicator</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2">7. Gradient Tint</td>
+            <td>Gradient from tint to clear</td>
+            <td>White with colored border</td>
+            <td>Subtle, sophisticated look</td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-2">8. Colored Card Borders</td>
+            <td>Neutral background</td>
+            <td>Left border accent on cards</td>
+            <td>Status emphasis on tasks</td>
+          </tr>
+          <tr class="border-b bg-blue-50">
+            <td class="py-2 font-medium">9. Soft Warm White (Rec.)</td>
+            <td>Tint + border on warm base</td>
+            <td>Pure white with colored border</td>
+            <td>Easier on eyes, cohesive</td>
+          </tr>
+          <tr>
+            <td class="py-2">10. Snow Storm Base</td>
+            <td>Tint on Nord Snow Storm</td>
+            <td>Pure white with colored border</td>
+            <td>True Nord aesthetic</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</body>
+</html>
