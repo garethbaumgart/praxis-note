@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { Subject, debounceTime } from 'rxjs';
 import { Task } from './task.model';
+import { TaskTag } from './tag.model';
 import { ToastService } from '../shared/services/toast.service';
 
 interface PendingDeletion {
@@ -135,6 +136,7 @@ export class TaskService {
       completedAt: status === 'Done' ? now : null,
       comments: [],
       dueDate: null,
+      tags: [],
     };
 
     // Optimistic update - add task immediately
@@ -572,6 +574,57 @@ export class TaskService {
       error: () => {
         this.toast.error('Failed to update priority');
         this.loadTasks();
+      },
+    });
+  }
+
+  addTagToTask(taskId: string, tag: TaskTag): void {
+    // Optimistic update
+    this._tasks.update(tasks =>
+      tasks.map(t =>
+        t.id === taskId
+          ? { ...t, tags: [...t.tags, tag].sort((a, b) => a.name.localeCompare(b.name)) }
+          : t
+      )
+    );
+
+    this.http.post(`/api/tasks/${taskId}/tags/${tag.id}`, {}).subscribe({
+      error: () => {
+        // Revert on error
+        this._tasks.update(tasks =>
+          tasks.map(t =>
+            t.id === taskId ? { ...t, tags: t.tags.filter(tg => tg.id !== tag.id) } : t
+          )
+        );
+        this.toast.error('Failed to add tag');
+      },
+    });
+  }
+
+  removeTagFromTask(taskId: string, tagId: string): void {
+    const task = this._tasks().find(t => t.id === taskId);
+    const removedTag = task?.tags.find(t => t.id === tagId);
+
+    // Optimistic update
+    this._tasks.update(tasks =>
+      tasks.map(t =>
+        t.id === taskId ? { ...t, tags: t.tags.filter(tg => tg.id !== tagId) } : t
+      )
+    );
+
+    this.http.delete(`/api/tasks/${taskId}/tags/${tagId}`).subscribe({
+      error: () => {
+        // Revert on error
+        if (removedTag) {
+          this._tasks.update(tasks =>
+            tasks.map(t =>
+              t.id === taskId
+                ? { ...t, tags: [...t.tags, removedTag].sort((a, b) => a.name.localeCompare(b.name)) }
+                : t
+            )
+          );
+        }
+        this.toast.error('Failed to remove tag');
       },
     });
   }

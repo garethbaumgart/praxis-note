@@ -1,3 +1,5 @@
+import { TaskTag } from './tag.model';
+
 export type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 
 export interface Comment {
@@ -18,4 +20,5 @@ export interface Task {
   completedAt: string | null;
   comments: Comment[];
   dueDate: string | null;
+  tags: TaskTag[];
 }

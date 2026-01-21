@@ -134,6 +134,18 @@
   /* Segmented toggle */
   --color-segment-bg: rgba(236, 239, 244, 0.5);
 
+  /* Tags section - Aurora purple */
+  --color-tags-section-bg: rgba(180, 142, 173, 0.1);
+  --color-tags-section-border-base: rgba(180, 142, 173, 0.3);
+  --color-tags-collapsed-bg: rgba(180, 142, 173, 0.15);
+  --color-tags-collapsed-text: #b48ead;
+  --color-tags-collapsed-hover-base: rgba(180, 142, 173, 0.25);
+  --color-tags-expanded-bg: #b48ead;
+  --color-tags-expanded-text: #eceff4;
+  --color-tags-badge-bg: rgba(180, 142, 173, 0.3);
+  --color-tags-badge-text: #b48ead;
+  --color-tags-expanded-badge-bg: rgba(236, 239, 244, 0.2);
+
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
 }
@@ -254,6 +266,18 @@
 
   /* Segmented toggle */
   --color-segment-bg: rgba(67, 76, 94, 0.5);
+
+  /* Tags section - Aurora purple */
+  --color-tags-section-bg: rgba(180, 142, 173, 0.15);
+  --color-tags-section-border-base: rgba(180, 142, 173, 0.3);
+  --color-tags-collapsed-bg: rgba(180, 142, 173, 0.2);
+  --color-tags-collapsed-text: #b48ead;
+  --color-tags-collapsed-hover-base: rgba(180, 142, 173, 0.3);
+  --color-tags-expanded-bg: #b48ead;
+  --color-tags-expanded-text: #eceff4;
+  --color-tags-badge-bg: rgba(180, 142, 173, 0.4);
+  --color-tags-badge-text: #b48ead;
+  --color-tags-expanded-badge-bg: rgba(236, 239, 244, 0.2);
 
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #88c0d0);
@@ -378,6 +402,18 @@
 
   /* Segmented toggle */
   --color-segment: var(--color-segment-bg);
+
+  /* Tags section */
+  --color-tags-section: var(--color-tags-section-bg);
+  --color-tags-section-border: var(--color-tags-section-border-base);
+  --color-tags-collapsed: var(--color-tags-collapsed-bg);
+  --color-tags-collapsed-foreground: var(--color-tags-collapsed-text);
+  --color-tags-collapsed-hover: var(--color-tags-collapsed-hover-base);
+  --color-tags-expanded: var(--color-tags-expanded-bg);
+  --color-tags-expanded-foreground: var(--color-tags-expanded-text);
+  --color-tags-badge: var(--color-tags-badge-bg);
+  --color-tags-badge-foreground: var(--color-tags-badge-text);
+  --color-tags-expanded-badge: var(--color-tags-expanded-badge-bg);
 }
 
 /* Brand gradient utility class */

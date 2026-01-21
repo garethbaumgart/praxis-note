@@ -1,17 +1,19 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, HostListener } from '@angular/core';
 import { Task, TaskStatus, Comment } from './task.model';
+import { Tag, TaskTag } from './tag.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
 import { HighlightPipe } from '../shared/pipes/highlight.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 import { DatePickerPopoverComponent } from './date-picker-popover.component';
+import { TagPickerPopoverComponent } from './tag-picker-popover.component';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
+  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent, TagPickerPopoverComponent],
   template: `
     <div
       class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
@@ -176,6 +178,37 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               }
             } @else if (task().comments.length > 0) {
               <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-comments-badge text-[9px] text-comments-badge-foreground font-medium">{{ task().comments.length }}</span>
+            }
+          </button>
+
+          <!-- Tags tab -->
+          <button
+            type="button"
+            class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7"
+            [class.px-3]="isTagsPill()"
+            [class.gap-1.5]="isTagsPill()"
+            [class.bg-tags-expanded]="isTagsPill()"
+            [class.text-tags-expanded-foreground]="isTagsPill()"
+            [class.font-medium]="isTagsPill()"
+            [class.w-7]="!isTagsPill()"
+            [class.bg-tags-collapsed]="isTagsCircleWithTags()"
+            [class.text-tags-collapsed-foreground]="isTagsCircleWithTags()"
+            [class.hover:bg-tags-collapsed-hover]="isTagsCircleWithTags()"
+            [class.bg-foreground-muted/10]="isTagsCircleEmpty()"
+            [class.text-foreground-muted/40]="isTagsCircleEmpty()"
+            [class.hover:bg-foreground-muted/20]="isTagsCircleEmpty()"
+            (click)="toggleTab('tags'); $event.stopPropagation()"
+            [attr.aria-label]="tagsExpanded() ? 'Hide tags' : 'Show tags'"
+            [attr.aria-expanded]="tagsExpanded()"
+          >
+            <i class="pi pi-tag"></i>
+            @if (tagsExpanded()) {
+              <span>Tags</span>
+              @if (task().tags.length > 0) {
+                <span class="bg-tags-expanded-badge px-1.5 rounded-full">{{ task().tags.length }}</span>
+              }
+            } @else if (task().tags.length > 0) {
+              <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-tags-badge text-[9px] text-tags-badge-foreground font-medium">{{ task().tags.length }}</span>
             }
           </button>
 
@@ -362,6 +395,54 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             </div>
           </div>
         }
+
+        <!-- Tags expanded content -->
+        @if (tagsExpanded()) {
+          <div class="mt-2 p-2 bg-tags-section rounded-lg border border-tags-section-border relative">
+            <!-- Existing tags as pills -->
+            @if (task().tags.length > 0) {
+              <div class="flex flex-wrap gap-1 mb-2">
+                @for (tag of task().tags; track tag.id) {
+                  <span
+                    class="group/tag inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full text-white"
+                    [style.background-color]="tag.color"
+                  >
+                    {{ tag.name }}
+                    <button
+                      type="button"
+                      class="opacity-60 hover:opacity-100 transition-opacity"
+                      (click)="removeTag(tag.id); $event.stopPropagation()"
+                      [attr.aria-label]="'Remove tag: ' + tag.name"
+                    >
+                      <i class="pi pi-times text-[10px]"></i>
+                    </button>
+                  </span>
+                }
+              </div>
+            }
+
+            <!-- Add tag button -->
+            <button
+              type="button"
+              class="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors"
+              (click)="showTagPicker.set(!showTagPicker()); $event.stopPropagation()"
+              aria-label="Add tag"
+            >
+              <i class="pi pi-plus text-[10px]"></i>
+              <span>Add tag</span>
+            </button>
+
+            @if (showTagPicker()) {
+              <app-tag-picker-popover
+                [allTags]="allTags()"
+                [selectedTags]="task().tags"
+                (onSelect)="addExistingTag($event)"
+                (onCreate)="createAndAddTag($event)"
+                (onClose)="showTagPicker.set(false)"
+              />
+            }
+          </div>
+        }
     </div>
   `,
 })
@@ -377,6 +458,7 @@ export class TaskCardComponent {
   readonly task = input.required<Task>();
   readonly searchQuery = input('');
   readonly isArchive = input(false);
+  readonly allTags = input<Tag[]>([]);
 
   readonly onEdit = output<string>();
   readonly onDelete = output<void>();
@@ -387,6 +469,9 @@ export class TaskCardComponent {
   readonly onClearDueDate = output<void>();
   readonly onTogglePriority = output<void>();
   readonly onStatusChange = output<TaskStatus>();
+  readonly onAddTag = output<Tag>();
+  readonly onRemoveTag = output<string>();
+  readonly onCreateTag = output<{ name: string; color: string }>();
 
   readonly editing = signal(false);
   readonly editTitle = signal('');
@@ -404,12 +489,16 @@ export class TaskCardComponent {
   readonly confirmingCommentDeleteId = signal<string | null>(null);
 
   // Tab selection state (Google Home style - one tab at a time)
-  readonly selectedTab = signal<'dueDate' | 'comments' | null>(null);
+  readonly selectedTab = signal<'dueDate' | 'comments' | 'tags' | null>(null);
   readonly dueDateExpanded = computed(() => this.selectedTab() === 'dueDate');
   readonly commentsExpanded = computed(() => this.selectedTab() === 'comments');
+  readonly tagsExpanded = computed(() => this.selectedTab() === 'tags');
 
   // Date picker popover state
   readonly showDatePicker = signal(false);
+
+  // Tag picker popover state
+  readonly showTagPicker = signal(false);
 
   // Due date display calculations
   private readonly daysDiff = computed(() => {
@@ -456,6 +545,11 @@ export class TaskCardComponent {
   readonly isCommentsPill = computed(() => this.commentsExpanded());
   readonly isCommentsCircleWithComments = computed(() => !this.commentsExpanded() && this.task().comments.length > 0);
   readonly isCommentsCircleEmpty = computed(() => !this.commentsExpanded() && this.task().comments.length === 0);
+
+  // Tags tab state computeds
+  readonly isTagsPill = computed(() => this.tagsExpanded());
+  readonly isTagsCircleWithTags = computed(() => !this.tagsExpanded() && this.task().tags.length > 0);
+  readonly isTagsCircleEmpty = computed(() => !this.tagsExpanded() && this.task().tags.length === 0);
 
   // Status button computeds - derive from previousStatus()/nextStatus() to avoid duplication
   readonly isPrevStatusTodo = computed(() => this.previousStatus() === 'Todo');
@@ -540,6 +634,7 @@ export class TaskCardComponent {
   private closeExpanded(): void {
     this.selectedTab.set(null);
     this.showDatePicker.set(false);
+    this.showTagPicker.set(false);
   }
 
   /** Type-safe helper for accessing textarea value from events */
@@ -604,16 +699,18 @@ export class TaskCardComponent {
   }
 
   // Tab toggle method (Google Home style - one tab at a time)
-  toggleTab(tab: 'dueDate' | 'comments'): void {
+  toggleTab(tab: 'dueDate' | 'comments' | 'tags'): void {
     const currentTab = this.selectedTab();
     if (currentTab === tab) {
       // Clicking the same tab collapses it
       this.selectedTab.set(null);
       this.showDatePicker.set(false);
+      this.showTagPicker.set(false);
     } else {
       // Switch to the new tab
       this.selectedTab.set(tab);
       this.showDatePicker.set(false);
+      this.showTagPicker.set(false);
 
       // Auto-focus the add comment input when expanding comments
       if (tab === 'comments') {
@@ -806,5 +903,20 @@ export class TaskCardComponent {
 
   moveToNextStatus(): void {
     this.onStatusChange.emit(this.nextStatus());
+  }
+
+  // Tag methods
+  addExistingTag(tag: Tag): void {
+    this.onAddTag.emit(tag);
+    this.showTagPicker.set(false);
+  }
+
+  removeTag(tagId: string): void {
+    this.onRemoveTag.emit(tagId);
+  }
+
+  createAndAddTag(data: { name: string; color: string }): void {
+    this.onCreateTag.emit(data);
+    this.showTagPicker.set(false);
   }
 }

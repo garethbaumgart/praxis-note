@@ -1,10 +1,12 @@
 using Microsoft.Extensions.Options;
+using PraxisNote.Application.Features.Tags;
+using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
 using TaskStatus = PraxisNote.Domain.ValueObjects.TaskStatus;
 
 namespace PraxisNote.Application.Features.Tasks;
 
-public sealed class GetUserTasks(ITaskRepository taskRepository, IOptions<TaskSettings> settings)
+public sealed class GetUserTasks(ITaskRepository taskRepository, ITagRepository tagRepository, IOptions<TaskSettings> settings)
 {
     private readonly TaskSettings _settings = settings.Value;
 
@@ -13,6 +15,9 @@ public sealed class GetUserTasks(ITaskRepository taskRepository, IOptions<TaskSe
     public async Task<IReadOnlyList<TaskDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
         var tasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var tags = await tagRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var tagLookup = tags.ToDictionary(t => t.Id);
+
         var archiveThreshold = DateTimeOffset.UtcNow.AddDays(-_settings.ArchiveThresholdDays);
 
         var filteredTasks = query.IncludeArchived
@@ -42,7 +47,13 @@ public sealed class GetUserTasks(ITaskRepository taskRepository, IOptions<TaskSe
                     .OrderByDescending(c => c.CreatedAt)
                     .Select(c => new CommentDto(c.Id, c.Content, c.CreatedAt, c.UpdatedAt))
                     .ToList(),
-                t.DueDate?.Date))
+                t.DueDate?.Date,
+                t.TagIds
+                    .Where(tagId => tagLookup.ContainsKey(tagId))
+                    .Select(tagId => tagLookup[tagId])
+                    .Select(tag => new TaskTagDto(tag.Id, tag.Name, tag.Color))
+                    .OrderBy(tag => tag.Name)
+                    .ToList()))
             .ToList();
     }
 }
