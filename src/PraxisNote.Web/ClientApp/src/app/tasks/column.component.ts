@@ -216,6 +216,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
               <app-task-card
                 [task]="task"
                 [searchQuery]="searchQuery()"
+                [isArchive]="showArchive()"
                 (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
                 (onDelete)="onDeleteTask.emit(task.id)"
                 (onAddComment)="onAddComment.emit({ taskId: task.id, content: $event })"
