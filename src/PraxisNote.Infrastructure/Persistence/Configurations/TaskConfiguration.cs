@@ -53,20 +53,20 @@ public sealed class TaskConfiguration : IEntityTypeConfiguration<TaskItem>
                 .HasMaxLength(100);
         });
 
-        // LabelIds stored as JSON array - use backing field which is HashSet<Guid>
-        var labelIdsComparer = new ValueComparer<HashSet<Guid>>(
+        // TagIds stored as JSON array - use backing field which is HashSet<Guid>
+        var tagIdsComparer = new ValueComparer<HashSet<Guid>>(
             (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SetEquals(c2)),
             c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
             c => c == null ? new HashSet<Guid>() : c.ToHashSet());
 
-        builder.Property<HashSet<Guid>>("_labelIds")
-            .HasColumnName("LabelIds")
+        builder.Property<HashSet<Guid>>("_tagIds")
+            .HasColumnName("TagIds")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
                 v => JsonSerializer.Deserialize<HashSet<Guid>>(v, JsonSerializerOptions.Default) ?? new HashSet<Guid>())
-            .Metadata.SetValueComparer(labelIdsComparer);
+            .Metadata.SetValueComparer(tagIdsComparer);
 
-        builder.Ignore(t => t.LabelIds);
+        builder.Ignore(t => t.TagIds);
 
         // Comments stored as JSONB array - use backing field which is List<Comment>
         var commentsComparer = new ValueComparer<List<Comment>>(

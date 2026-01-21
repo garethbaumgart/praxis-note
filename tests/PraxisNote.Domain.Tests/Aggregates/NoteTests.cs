@@ -21,7 +21,7 @@ public class NoteTests
         Assert.Equal(_validUserId, note.UserId);
         Assert.Equal(string.Empty, note.Content);
         Assert.Empty(note.Checkboxes);
-        Assert.Empty(note.LabelIds);
+        Assert.Empty(note.TagIds);
     }
 
     [Fact]
@@ -463,122 +463,122 @@ public class NoteTests
 
     #endregion
 
-    #region Label Tests
+    #region Tag Tests
 
     [Fact]
-    public void AddLabel_WithValidLabelId_AddsToLabelIds()
+    public void AddTag_WithValidTagId_AddsToTagIds()
     {
         // Arrange
         var note = Note.Create(_validUserId);
-        var labelId = Guid.NewGuid();
+        var tagId = Guid.NewGuid();
 
         // Act
-        note.AddLabel(labelId);
+        note.AddTag(tagId);
 
         // Assert
-        Assert.Contains(labelId, note.LabelIds);
-        Assert.Single(note.LabelIds);
+        Assert.Contains(tagId, note.TagIds);
+        Assert.Single(note.TagIds);
     }
 
     [Fact]
-    public void AddLabel_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
+    public void AddTag_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
         var note = Note.Create(_validUserId);
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => note.AddLabel(Guid.Empty));
+        Assert.Throws<ArgumentOutOfRangeException>(() => note.AddTag(Guid.Empty));
     }
 
     [Fact]
-    public void AddLabel_SameLabelTwice_OnlyAddsOnce()
+    public void AddTag_SameTagTwice_OnlyAddsOnce()
     {
         // Arrange
         var note = Note.Create(_validUserId);
-        var labelId = Guid.NewGuid();
+        var tagId = Guid.NewGuid();
 
         // Act
-        note.AddLabel(labelId);
-        note.AddLabel(labelId);
+        note.AddTag(tagId);
+        note.AddTag(tagId);
 
         // Assert
-        Assert.Single(note.LabelIds);
+        Assert.Single(note.TagIds);
     }
 
     [Fact]
-    public void AddLabel_UpdatesUpdatedAt()
+    public void AddTag_UpdatesUpdatedAt()
     {
         // Arrange
         var note = Note.Create(_validUserId);
         var originalUpdatedAt = note.UpdatedAt;
 
         // Act
-        note.AddLabel(Guid.NewGuid());
+        note.AddTag(Guid.NewGuid());
 
         // Assert
         Assert.True(note.UpdatedAt >= originalUpdatedAt);
     }
 
     [Fact]
-    public void RemoveLabel_ExistingLabel_RemovesFromLabelIds()
+    public void RemoveTag_ExistingTag_RemovesFromTagIds()
     {
         // Arrange
         var note = Note.Create(_validUserId);
-        var labelId = Guid.NewGuid();
-        note.AddLabel(labelId);
+        var tagId = Guid.NewGuid();
+        note.AddTag(tagId);
 
         // Act
-        note.RemoveLabel(labelId);
+        note.RemoveTag(tagId);
 
         // Assert
-        Assert.DoesNotContain(labelId, note.LabelIds);
-        Assert.Empty(note.LabelIds);
+        Assert.DoesNotContain(tagId, note.TagIds);
+        Assert.Empty(note.TagIds);
     }
 
     [Fact]
-    public void RemoveLabel_NonExistentLabel_DoesNotThrow()
+    public void RemoveTag_NonExistentTag_DoesNotThrow()
     {
         // Arrange
         var note = Note.Create(_validUserId);
         var originalUpdatedAt = note.UpdatedAt;
 
         // Act - should not throw
-        note.RemoveLabel(Guid.NewGuid());
+        note.RemoveTag(Guid.NewGuid());
 
         // Assert - UpdatedAt should not change since nothing was removed
         Assert.Equal(originalUpdatedAt, note.UpdatedAt);
     }
 
     [Fact]
-    public void HasLabel_WhenLabelExists_ReturnsTrue()
+    public void HasTag_WhenTagExists_ReturnsTrue()
     {
         // Arrange
         var note = Note.Create(_validUserId);
-        var labelId = Guid.NewGuid();
-        note.AddLabel(labelId);
+        var tagId = Guid.NewGuid();
+        note.AddTag(tagId);
 
         // Act & Assert
-        Assert.True(note.HasLabel(labelId));
+        Assert.True(note.HasTag(tagId));
     }
 
     [Fact]
-    public void HasLabel_WhenLabelDoesNotExist_ReturnsFalse()
+    public void HasTag_WhenTagDoesNotExist_ReturnsFalse()
     {
         // Arrange
         var note = Note.Create(_validUserId);
 
         // Act & Assert
-        Assert.False(note.HasLabel(Guid.NewGuid()));
+        Assert.False(note.HasTag(Guid.NewGuid()));
     }
 
     [Fact]
-    public void Create_HasEmptyLabelIds()
+    public void Create_HasEmptyTagIds()
     {
         // Act
         var note = Note.Create(_validUserId);
 
         // Assert
-        Assert.Empty(note.LabelIds);
+        Assert.Empty(note.TagIds);
     }
 
     #endregion

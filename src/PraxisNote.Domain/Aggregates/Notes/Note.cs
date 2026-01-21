@@ -10,13 +10,13 @@ namespace PraxisNote.Domain.Aggregates.Notes;
 /// Key design decisions:
 /// - Content is stored as an opaque string (format-agnostic: TipTap, ProseMirror, Markdown, etc.)
 /// - Checkboxes are maintained as a separate collection, synced by the application layer
-/// - Labels stored as IDs only (aggregates don't reference other aggregates)
+/// - Tags stored as IDs only (aggregates don't reference other aggregates)
 /// - Editor plugin choice is deferred to infrastructure layer
 /// </remarks>
 public sealed class Note : AggregateRoot
 {
     private readonly List<Checkbox> _checkboxes = [];
-    private readonly HashSet<Guid> _labelIds = [];
+    private readonly HashSet<Guid> _tagIds = [];
 
     /// <summary>
     /// The user who owns this note.
@@ -34,12 +34,12 @@ public sealed class Note : AggregateRoot
     public IReadOnlyCollection<Checkbox> Checkboxes => _checkboxes.AsReadOnly();
 
     /// <summary>
-    /// IDs of labels assigned to this note.
+    /// IDs of tags assigned to this note.
     /// </summary>
     /// <remarks>
-    /// When a checkbox becomes a task, the task inherits these labels at creation time.
+    /// When a checkbox becomes a task, the task inherits these tags at creation time.
     /// </remarks>
-    public IReadOnlyCollection<Guid> LabelIds => _labelIds.AsReadOnly();
+    public IReadOnlyCollection<Guid> TagIds => _tagIds.AsReadOnly();
 
     /// <summary>
     /// When this note was created.
@@ -178,42 +178,42 @@ public sealed class Note : AggregateRoot
 
     #endregion
 
-    #region Label Management
+    #region Tag Management
 
     /// <summary>
-    /// Adds a label to this note.
+    /// Adds a tag to this note.
     /// </summary>
     /// <remarks>
-    /// Idempotent - adding the same label twice has no effect.
+    /// Idempotent - adding the same tag twice has no effect.
     /// </remarks>
-    public void AddLabel(Guid labelId)
+    public void AddTag(Guid tagId)
     {
-        ArgumentOutOfRangeException.ThrowIfEqual(labelId, Guid.Empty, nameof(labelId));
+        ArgumentOutOfRangeException.ThrowIfEqual(tagId, Guid.Empty, nameof(tagId));
 
-        if (_labelIds.Add(labelId))
+        if (_tagIds.Add(tagId))
         {
             UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 
     /// <summary>
-    /// Removes a label from this note.
+    /// Removes a tag from this note.
     /// </summary>
     /// <remarks>
-    /// Idempotent - removing a non-existent label has no effect.
+    /// Idempotent - removing a non-existent tag has no effect.
     /// </remarks>
-    public void RemoveLabel(Guid labelId)
+    public void RemoveTag(Guid tagId)
     {
-        if (_labelIds.Remove(labelId))
+        if (_tagIds.Remove(tagId))
         {
             UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 
     /// <summary>
-    /// Returns true if this note has the specified label.
+    /// Returns true if this note has the specified tag.
     /// </summary>
-    public bool HasLabel(Guid labelId) => _labelIds.Contains(labelId);
+    public bool HasTag(Guid tagId) => _tagIds.Contains(tagId);
 
     #endregion
 }

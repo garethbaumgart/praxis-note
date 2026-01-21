@@ -310,122 +310,122 @@ public class TaskItemTests
 
     #endregion
 
-    #region Label Tests
+    #region Tag Tests
 
     [Fact]
-    public void AddLabel_WithValidLabelId_AddsToLabelIds()
+    public void AddTag_WithValidTagId_AddsToTagIds()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
-        var labelId = Guid.NewGuid();
+        var tagId = Guid.NewGuid();
 
         // Act
-        task.AddLabel(labelId);
+        task.AddTag(tagId);
 
         // Assert
-        Assert.Contains(labelId, task.LabelIds);
-        Assert.Single(task.LabelIds);
+        Assert.Contains(tagId, task.TagIds);
+        Assert.Single(task.TagIds);
     }
 
     [Fact]
-    public void AddLabel_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
+    public void AddTag_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => task.AddLabel(Guid.Empty));
+        Assert.Throws<ArgumentOutOfRangeException>(() => task.AddTag(Guid.Empty));
     }
 
     [Fact]
-    public void AddLabel_SameLabelTwice_OnlyAddsOnce()
+    public void AddTag_SameTagTwice_OnlyAddsOnce()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
-        var labelId = Guid.NewGuid();
+        var tagId = Guid.NewGuid();
 
         // Act
-        task.AddLabel(labelId);
-        task.AddLabel(labelId);
+        task.AddTag(tagId);
+        task.AddTag(tagId);
 
         // Assert
-        Assert.Single(task.LabelIds);
+        Assert.Single(task.TagIds);
     }
 
     [Fact]
-    public void AddLabel_UpdatesUpdatedAt()
+    public void AddTag_UpdatesUpdatedAt()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
         var originalUpdatedAt = task.UpdatedAt;
 
         // Act
-        task.AddLabel(Guid.NewGuid());
+        task.AddTag(Guid.NewGuid());
 
         // Assert
         Assert.True(task.UpdatedAt >= originalUpdatedAt);
     }
 
     [Fact]
-    public void RemoveLabel_ExistingLabel_RemovesFromLabelIds()
+    public void RemoveTag_ExistingTag_RemovesFromTagIds()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
-        var labelId = Guid.NewGuid();
-        task.AddLabel(labelId);
+        var tagId = Guid.NewGuid();
+        task.AddTag(tagId);
 
         // Act
-        task.RemoveLabel(labelId);
+        task.RemoveTag(tagId);
 
         // Assert
-        Assert.DoesNotContain(labelId, task.LabelIds);
-        Assert.Empty(task.LabelIds);
+        Assert.DoesNotContain(tagId, task.TagIds);
+        Assert.Empty(task.TagIds);
     }
 
     [Fact]
-    public void RemoveLabel_NonExistentLabel_DoesNotThrow()
+    public void RemoveTag_NonExistentTag_DoesNotThrow()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
         var originalUpdatedAt = task.UpdatedAt;
 
         // Act - should not throw
-        task.RemoveLabel(Guid.NewGuid());
+        task.RemoveTag(Guid.NewGuid());
 
         // Assert - UpdatedAt should not change since nothing was removed
         Assert.Equal(originalUpdatedAt, task.UpdatedAt);
     }
 
     [Fact]
-    public void HasLabel_WhenLabelExists_ReturnsTrue()
+    public void HasTag_WhenTagExists_ReturnsTrue()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
-        var labelId = Guid.NewGuid();
-        task.AddLabel(labelId);
+        var tagId = Guid.NewGuid();
+        task.AddTag(tagId);
 
         // Act & Assert
-        Assert.True(task.HasLabel(labelId));
+        Assert.True(task.HasTag(tagId));
     }
 
     [Fact]
-    public void HasLabel_WhenLabelDoesNotExist_ReturnsFalse()
+    public void HasTag_WhenTagDoesNotExist_ReturnsFalse()
     {
         // Arrange
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
 
         // Act & Assert
-        Assert.False(task.HasLabel(Guid.NewGuid()));
+        Assert.False(task.HasTag(Guid.NewGuid()));
     }
 
     [Fact]
-    public void CreateStandalone_HasEmptyLabelIds()
+    public void CreateStandalone_HasEmptyTagIds()
     {
         // Act
         var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
 
         // Assert
-        Assert.Empty(task.LabelIds);
+        Assert.Empty(task.TagIds);
     }
 
     #endregion

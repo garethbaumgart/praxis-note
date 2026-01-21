@@ -33,7 +33,7 @@ export class SidebarComponent {
     { path: '/home', label: 'Home', icon: 'pi-home', enabled: true },
     { path: '/notes', label: 'Notes', icon: 'pi-file-edit', enabled: false },
     { path: '/tasks', label: 'Tasks', icon: 'pi-check-square', enabled: true },
-    { path: '/labels', label: 'Labels', icon: 'pi-tags', enabled: false },
+    { path: '/tags', label: 'Tags', icon: 'pi-tags', enabled: false },
   ];
 
   protected isActive(path: string): boolean {
