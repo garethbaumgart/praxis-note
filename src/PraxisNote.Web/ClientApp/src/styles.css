@@ -41,11 +41,11 @@
   --color-primary-solid-hover: #81a1c1;
 
   /* Status columns - All with consistent tinted backgrounds */
-  --color-todo-bg: rgba(94, 129, 172, 0.1);      /* Frost blue tint */
-  --color-todo-bg-hover: rgba(94, 129, 172, 0.15);
-  --color-todo-text: #5e81ac;       /* Frost blue */
-  --color-todo-text-muted: #81a1c1;
-  --color-todo-border: rgba(94, 129, 172, 0.2);
+  --color-todo-bg: rgba(136, 192, 208, 0.12);      /* Frost cyan tint */
+  --color-todo-bg-hover: rgba(136, 192, 208, 0.18);
+  --color-todo-text: #0b7285;       /* Darker cyan for light mode contrast */
+  --color-todo-text-muted: #1098ad;
+  --color-todo-border: rgba(136, 192, 208, 0.35);
 
   --color-inprogress-bg: rgba(208, 135, 112, 0.1);   /* Aurora orange */
   --color-inprogress-bg-hover: rgba(208, 135, 112, 0.15);
@@ -66,8 +66,8 @@
   --color-archive-border: rgba(180, 142, 173, 0.2);
 
   /* Mobile column indicator - matches column colors */
-  --indicator-todo-active: #5e81ac;
-  --indicator-todo-inactive: #81a1c1;
+  --indicator-todo-active: #0b7285;
+  --indicator-todo-inactive: #1098ad;
   --indicator-inprogress-active: #d08770;
   --indicator-inprogress-inactive: rgba(208, 135, 112, 0.5);
   --indicator-done-active: #a3be8c;
@@ -162,11 +162,11 @@
   --color-primary-solid-hover: #81a1c1;
 
   /* Status columns - All with consistent tinted backgrounds */
-  --color-todo-bg: rgba(136, 192, 208, 0.08);   /* Frost cyan tint */
-  --color-todo-bg-hover: rgba(136, 192, 208, 0.12);
+  --color-todo-bg: rgba(136, 192, 208, 0.12);   /* Frost cyan tint */
+  --color-todo-bg-hover: rgba(136, 192, 208, 0.18);
   --color-todo-text: #88c0d0;        /* Frost cyan */
   --color-todo-text-muted: #81a1c1;
-  --color-todo-border: rgba(136, 192, 208, 0.15);
+  --color-todo-border: rgba(136, 192, 208, 0.25);
 
   --color-inprogress-bg: rgba(208, 135, 112, 0.1);    /* Aurora orange */
   --color-inprogress-bg-hover: rgba(208, 135, 112, 0.15);
