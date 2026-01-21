@@ -14,10 +14,11 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
   imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
   template: `
     <div
-      class="bg-surface rounded-md py-2 px-3 border transition-colors group"
+      class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
       [class.border-todo-border]="task().status === 'Todo'"
       [class.border-inprogress-border]="task().status === 'InProgress'"
-      [class.border-done-border]="task().status === 'Done'"
+      [class.border-done-border]="task().status === 'Done' && !isArchive()"
+      [class.border-archive-border]="task().status === 'Done' && isArchive()"
     >
       <!-- Task content -->
       <div class="flex items-start gap-2">
@@ -72,7 +73,8 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                   <span
                     class="text-xs transition-opacity md:group-hover:opacity-0"
                     [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
-                    [class.text-done-foreground-muted]="task().status === 'Done'"
+                    [class.text-done-foreground-muted]="task().status === 'Done' && !isArchive()"
+                    [class.text-archive-foreground-muted]="task().status === 'Done' && isArchive()"
                   >{{ time }}</span>
                   <!-- Mobile: always visible delete button -->
                   <button
@@ -374,6 +376,7 @@ export class TaskCardComponent {
 
   readonly task = input.required<Task>();
   readonly searchQuery = input('');
+  readonly isArchive = input(false);
 
   readonly onEdit = output<string>();
   readonly onDelete = output<void>();
