@@ -15,8 +15,8 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
   template: `
     <div
       class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
-      [class.border-todo-border]="task().status === 'Todo'"
-      [class.border-inprogress-border]="task().status === 'InProgress'"
+      [class.border-todo-border]="task().status === 'Todo' && !isArchive()"
+      [class.border-inprogress-border]="task().status === 'InProgress' && !isArchive()"
       [class.border-done-border]="task().status === 'Done' && !isArchive()"
       [class.border-archive-border]="isArchive()"
     >
@@ -72,7 +72,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 <div class="relative flex items-center gap-2">
                   <span
                     class="text-xs transition-opacity md:group-hover:opacity-0"
-                    [class.text-inprogress-foreground-muted]="task().status === 'InProgress'"
+                    [class.text-inprogress-foreground-muted]="task().status === 'InProgress' && !isArchive()"
                     [class.text-done-foreground-muted]="task().status === 'Done' && !isArchive()"
                     [class.text-archive-foreground-muted]="isArchive()"
                   >{{ time }}</span>
