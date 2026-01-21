@@ -1,39 +1,39 @@
-using PraxisNote.Domain.Aggregates.Labels;
+using PraxisNote.Domain.Aggregates.Tags;
 
 namespace PraxisNote.Domain.Tests.Aggregates;
 
-public class LabelTests
+public class TagTests
 {
     private readonly Guid _validUserId = Guid.NewGuid();
 
     [Fact]
-    public void Create_WithValidInputs_ReturnsLabelWithCorrectProperties()
+    public void Create_WithValidInputs_ReturnsTagWithCorrectProperties()
     {
         // Arrange
         var name = "Work";
 
         // Act
-        var label = Label.Create(_validUserId, name);
+        var tag = Tag.Create(_validUserId, name);
 
         // Assert
-        Assert.NotEqual(Guid.Empty, label.Id);
-        Assert.Equal(_validUserId, label.UserId);
-        Assert.Equal(name, label.Name);
-        Assert.True(label.CreatedAt <= DateTimeOffset.UtcNow);
+        Assert.NotEqual(Guid.Empty, tag.Id);
+        Assert.Equal(_validUserId, tag.UserId);
+        Assert.Equal(name, tag.Name);
+        Assert.True(tag.CreatedAt <= DateTimeOffset.UtcNow);
     }
 
     [Fact]
     public void Create_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => Label.Create(Guid.Empty, "Work"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Tag.Create(Guid.Empty, "Work"));
     }
 
     [Fact]
     public void Create_WithNullName_ThrowsArgumentNullException()
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentNullException>(() => Label.Create(_validUserId, null!));
+        Assert.Throws<ArgumentNullException>(() => Tag.Create(_validUserId, null!));
     }
 
     [Theory]
@@ -42,30 +42,30 @@ public class LabelTests
     public void Create_WithEmptyOrWhitespaceName_ThrowsArgumentException(string invalidName)
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentException>(() => Label.Create(_validUserId, invalidName));
+        Assert.Throws<ArgumentException>(() => Tag.Create(_validUserId, invalidName));
     }
 
     [Fact]
     public void Rename_WithValidName_UpdatesName()
     {
         // Arrange
-        var label = Label.Create(_validUserId, "Old Name");
+        var tag = Tag.Create(_validUserId, "Old Name");
 
         // Act
-        label.Rename("New Name");
+        tag.Rename("New Name");
 
         // Assert
-        Assert.Equal("New Name", label.Name);
+        Assert.Equal("New Name", tag.Name);
     }
 
     [Fact]
     public void Rename_WithNullName_ThrowsArgumentNullException()
     {
         // Arrange
-        var label = Label.Create(_validUserId, "Valid Name");
+        var tag = Tag.Create(_validUserId, "Valid Name");
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => label.Rename(null!));
+        Assert.Throws<ArgumentNullException>(() => tag.Rename(null!));
     }
 
     [Theory]
@@ -74,9 +74,9 @@ public class LabelTests
     public void Rename_WithEmptyOrWhitespaceName_ThrowsArgumentException(string invalidName)
     {
         // Arrange
-        var label = Label.Create(_validUserId, "Valid Name");
+        var tag = Tag.Create(_validUserId, "Valid Name");
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => label.Rename(invalidName));
+        Assert.Throws<ArgumentException>(() => tag.Rename(invalidName));
     }
 }

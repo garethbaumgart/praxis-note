@@ -13,11 +13,11 @@ namespace PraxisNote.Domain.Aggregates.Tasks;
 /// Key design decisions:
 /// - Status changes update relevant timestamps (StartedAt, CompletedAt)
 /// - UpdatedAt is modified on any state change
-/// - Labels stored as IDs only via LabelIds property (aggregates don't reference other aggregates)
+/// - Tags stored as IDs only via TagIds property (aggregates don't reference other aggregates)
 /// </remarks>
 public sealed class TaskItem : AggregateRoot
 {
-    private readonly HashSet<Guid> _labelIds = [];
+    private readonly HashSet<Guid> _tagIds = [];
     private readonly List<Comment> _comments = [];
 
     /// <summary>
@@ -80,13 +80,13 @@ public sealed class TaskItem : AggregateRoot
     public DateTimeOffset? CompletedAt { get; private set; }
 
     /// <summary>
-    /// IDs of labels assigned to this task.
+    /// IDs of tags assigned to this task.
     /// </summary>
     /// <remarks>
     /// Stored as IDs only - aggregates don't hold references to other aggregates.
-    /// The application layer joins with Label entities for display.
+    /// The application layer joins with Tag entities for display.
     /// </remarks>
-    public IReadOnlyCollection<Guid> LabelIds => _labelIds.AsReadOnly();
+    public IReadOnlyCollection<Guid> TagIds => _tagIds.AsReadOnly();
 
     /// <summary>
     /// Comments on this task for tracking progress.
@@ -235,43 +235,43 @@ public sealed class TaskItem : AggregateRoot
     }
 
     /// <summary>
-    /// Adds a label to this task.
+    /// Adds a tag to this task.
     /// </summary>
-    /// <param name="labelId">The ID of the label to add.</param>
+    /// <param name="tagId">The ID of the tag to add.</param>
     /// <remarks>
-    /// Idempotent - adding the same label twice has no effect.
-    /// Does not validate that the label exists or belongs to the same user.
+    /// Idempotent - adding the same tag twice has no effect.
+    /// Does not validate that the tag exists or belongs to the same user.
     /// That validation should happen in the application layer.
     /// </remarks>
-    public void AddLabel(Guid labelId)
+    public void AddTag(Guid tagId)
     {
-        ArgumentOutOfRangeException.ThrowIfEqual(labelId, Guid.Empty, nameof(labelId));
+        ArgumentOutOfRangeException.ThrowIfEqual(tagId, Guid.Empty, nameof(tagId));
 
-        if (_labelIds.Add(labelId))
+        if (_tagIds.Add(tagId))
         {
             UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 
     /// <summary>
-    /// Removes a label from this task.
+    /// Removes a tag from this task.
     /// </summary>
-    /// <param name="labelId">The ID of the label to remove.</param>
+    /// <param name="tagId">The ID of the tag to remove.</param>
     /// <remarks>
-    /// Idempotent - removing a non-existent label has no effect.
+    /// Idempotent - removing a non-existent tag has no effect.
     /// </remarks>
-    public void RemoveLabel(Guid labelId)
+    public void RemoveTag(Guid tagId)
     {
-        if (_labelIds.Remove(labelId))
+        if (_tagIds.Remove(tagId))
         {
             UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 
     /// <summary>
-    /// Returns true if this task has the specified label.
+    /// Returns true if this task has the specified tag.
     /// </summary>
-    public bool HasLabel(Guid labelId) => _labelIds.Contains(labelId);
+    public bool HasTag(Guid tagId) => _tagIds.Contains(tagId);
 
     /// <summary>
     /// Returns true if this task was created from a note checkbox.
