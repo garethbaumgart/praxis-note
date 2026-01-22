@@ -547,7 +547,7 @@ export class TaskCardComponent {
   readonly isCommentsCircleEmpty = computed(() => !this.commentsExpanded() && this.task().comments.length === 0);
 
   // Tags - safe accessor that defaults to empty array
-  readonly taskTags = computed(() => this.taskTags() ?? []);
+  readonly taskTags = computed(() => this.task().tags ?? []);
 
   // Tags tab state computeds
   readonly isTagsPill = computed(() => this.tagsExpanded());
