@@ -578,39 +578,42 @@ export class TaskService {
     });
   }
 
-  addTagToTask(taskId: string, tag: TaskTag): void {
+  addTagToTask(taskId: string, tag: TaskTag, onSuccess?: () => void, onError?: () => void): void {
     const task = this._tasks().find(t => t.id === taskId);
     if (!task) return;
 
     // Prevent duplicate tag adds
     if (task.tags.some(t => t.id === tag.id)) return;
 
-    // Capture previous tags for proper rollback
-    const previousTags = [...task.tags];
-
     // Optimistic update
     this._tasks.update(tasks =>
       tasks.map(t =>
         t.id === taskId
-          ? { ...t, tags: [...previousTags, tag].sort((a, b) => a.name.localeCompare(b.name)) }
+          ? { ...t, tags: [...t.tags, tag].sort((a, b) => a.name.localeCompare(b.name)) }
           : t
       )
     );
 
     this.http.post(`/api/tasks/${taskId}/tags/${tag.id}`, {}).subscribe({
+      next: () => {
+        onSuccess?.();
+      },
       error: () => {
-        // Revert to previous tags on error
+        // Remove only the failed tag from current list (preserves any tags added in-flight)
         this._tasks.update(tasks =>
           tasks.map(t =>
-            t.id === taskId ? { ...t, tags: previousTags } : t
+            t.id === taskId
+              ? { ...t, tags: t.tags.filter(tg => tg.id !== tag.id).sort((a, b) => a.name.localeCompare(b.name)) }
+              : t
           )
         );
         this.toast.error('Failed to add tag');
+        onError?.();
       },
     });
   }
 
-  removeTagFromTask(taskId: string, tagId: string): void {
+  removeTagFromTask(taskId: string, tagId: string, onSuccess?: () => void, onError?: () => void): void {
     const task = this._tasks().find(t => t.id === taskId);
     const removedTag = task?.tags.find(t => t.id === tagId);
 
@@ -622,6 +625,9 @@ export class TaskService {
     );
 
     this.http.delete(`/api/tasks/${taskId}/tags/${tagId}`).subscribe({
+      next: () => {
+        onSuccess?.();
+      },
       error: () => {
         // Revert on error
         if (removedTag) {
@@ -634,6 +640,7 @@ export class TaskService {
           );
         }
         this.toast.error('Failed to remove tag');
+        onError?.();
       },
     });
   }

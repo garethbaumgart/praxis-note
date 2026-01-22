@@ -514,13 +514,19 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
 
   addTag(taskId: string, tag: Tag): void {
     const taskTag: TaskTag = { id: tag.id, name: tag.name, color: tag.color };
-    this.taskService.addTagToTask(taskId, taskTag);
-    this.tagService.incrementUsageCount(tag.id);
+    this.taskService.addTagToTask(
+      taskId,
+      taskTag,
+      () => this.tagService.incrementUsageCount(tag.id)
+    );
   }
 
   removeTag(taskId: string, tagId: string): void {
-    this.taskService.removeTagFromTask(taskId, tagId);
-    this.tagService.decrementUsageCount(tagId);
+    this.taskService.removeTagFromTask(
+      taskId,
+      tagId,
+      () => this.tagService.decrementUsageCount(tagId)
+    );
   }
 
   createTag(taskId: string, name: string, color: string): void {
@@ -528,8 +534,11 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     this.tagService.createTag(name, color).subscribe({
       next: (tag) => {
         // Add the newly created tag to the task
-        this.taskService.addTagToTask(taskId, tag);
-        this.tagService.incrementUsageCount(tag.id);
+        this.taskService.addTagToTask(
+          taskId,
+          tag,
+          () => this.tagService.incrementUsageCount(tag.id)
+        );
       },
       // Error is already handled by TagService
     });
