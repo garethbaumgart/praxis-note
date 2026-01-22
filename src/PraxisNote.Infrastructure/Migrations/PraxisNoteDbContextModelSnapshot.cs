@@ -79,38 +79,6 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.ToTable("FeatureNotifications");
                 });
 
-            modelBuilder.Entity("PraxisNote.Domain.Aggregates.Tags.Tag", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "Name")
-                        .IsUnique();
-
-                    b.ToTable("Tags");
-                });
-
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.Tasks.TaskItem", b =>
                 {
                     b.Property<Guid>("Id")
