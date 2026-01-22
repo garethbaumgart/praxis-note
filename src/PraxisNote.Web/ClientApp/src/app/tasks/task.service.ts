@@ -581,7 +581,8 @@ export class TaskService {
   addTagToTask(taskId: string, tag: TaskTag, onSuccess?: () => void, onError?: () => void): void {
     // Check if tag already exists on task
     const task = this._tasks().find(t => t.id === taskId);
-    if (task?.tags.some(t => t.id === tag.id)) {
+    const existingTags = task?.tags ?? [];
+    if (existingTags.some(t => t.id === tag.id)) {
       return; // Tag already on task
     }
 
@@ -589,7 +590,7 @@ export class TaskService {
     this._tasks.update(tasks =>
       tasks.map(t =>
         t.id === taskId
-          ? { ...t, tags: [...t.tags, tag] }
+          ? { ...t, tags: [...(t.tags ?? []), tag] }
           : t
       )
     );
@@ -603,7 +604,7 @@ export class TaskService {
         this._tasks.update(tasks =>
           tasks.map(t =>
             t.id === taskId
-              ? { ...t, tags: t.tags.filter(tg => tg.id !== tag.id) }
+              ? { ...t, tags: (t.tags ?? []).filter(tg => tg.id !== tag.id) }
               : t
           )
         );
@@ -615,13 +616,13 @@ export class TaskService {
 
   removeTagFromTask(taskId: string, tagId: string, onSuccess?: () => void, onError?: () => void): void {
     const task = this._tasks().find(t => t.id === taskId);
-    const removedTag = task?.tags.find(t => t.id === tagId);
+    const removedTag = (task?.tags ?? []).find(t => t.id === tagId);
 
     // Optimistic update
     this._tasks.update(tasks =>
       tasks.map(t =>
         t.id === taskId
-          ? { ...t, tags: t.tags.filter(tg => tg.id !== tagId) }
+          ? { ...t, tags: (t.tags ?? []).filter(tg => tg.id !== tagId) }
           : t
       )
     );
@@ -636,7 +637,7 @@ export class TaskService {
           this._tasks.update(tasks =>
             tasks.map(t =>
               t.id === taskId
-                ? { ...t, tags: [...t.tags, removedTag] }
+                ? { ...t, tags: [...(t.tags ?? []), removedTag] }
                 : t
             )
           );
