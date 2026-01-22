@@ -1,6 +1,6 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, HostListener } from '@angular/core';
 import { Task, TaskStatus, Comment } from './task.model';
-import { Tag, TaskTag } from './tag.model';
+import { Tag } from './tag.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
 import { HighlightPipe } from '../shared/pipes/highlight.pipe';

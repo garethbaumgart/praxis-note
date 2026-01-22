@@ -524,13 +524,14 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   createTag(taskId: string, name: string, color: string): void {
-    // Create the tag first, then add it to the task
-    // The TagService will handle the API call and optimistic update
-    this.tagService.createTag(name, color);
-
-    // After creation, we need to add the tag to the task
-    // Since createTag is async, we'll add it optimistically using the temp ID pattern
-    // For simplicity, we'll reload tags after the API call completes
-    // The user can re-add the tag after it's created
+    // Create the tag first, then add it to the task when creation succeeds
+    this.tagService.createTag(name, color).subscribe({
+      next: (tag) => {
+        // Add the newly created tag to the task
+        this.taskService.addTagToTask(taskId, tag);
+        this.tagService.incrementUsageCount(tag.id);
+      },
+      // Error is already handled by TagService
+    });
   }
 }

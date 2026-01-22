@@ -579,21 +579,30 @@ export class TaskService {
   }
 
   addTagToTask(taskId: string, tag: TaskTag): void {
+    const task = this._tasks().find(t => t.id === taskId);
+    if (!task) return;
+
+    // Prevent duplicate tag adds
+    if (task.tags.some(t => t.id === tag.id)) return;
+
+    // Capture previous tags for proper rollback
+    const previousTags = [...task.tags];
+
     // Optimistic update
     this._tasks.update(tasks =>
       tasks.map(t =>
         t.id === taskId
-          ? { ...t, tags: [...t.tags, tag].sort((a, b) => a.name.localeCompare(b.name)) }
+          ? { ...t, tags: [...previousTags, tag].sort((a, b) => a.name.localeCompare(b.name)) }
           : t
       )
     );
 
     this.http.post(`/api/tasks/${taskId}/tags/${tag.id}`, {}).subscribe({
       error: () => {
-        // Revert on error
+        // Revert to previous tags on error
         this._tasks.update(tasks =>
           tasks.map(t =>
-            t.id === taskId ? { ...t, tags: t.tags.filter(tg => tg.id !== tag.id) } : t
+            t.id === taskId ? { ...t, tags: previousTags } : t
           )
         );
         this.toast.error('Failed to add tag');

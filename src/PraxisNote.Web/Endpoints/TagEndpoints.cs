@@ -79,6 +79,23 @@ public static class TagEndpoints
             return Results.Unauthorized();
         }
 
+        // Validate that at least one field is being updated
+        if (string.IsNullOrWhiteSpace(request.Name) && string.IsNullOrWhiteSpace(request.Color))
+        {
+            return Results.BadRequest(new { error = "Name or color is required" });
+        }
+
+        // Validate individual fields if provided
+        if (request.Name is not null && string.IsNullOrWhiteSpace(request.Name))
+        {
+            return Results.BadRequest(new { error = "Name cannot be empty" });
+        }
+
+        if (request.Color is not null && string.IsNullOrWhiteSpace(request.Color))
+        {
+            return Results.BadRequest(new { error = "Color cannot be empty" });
+        }
+
         var command = new UpdateTag.Command(id, userId.Value, request.Name, request.Color);
         var result = await updateTag.ExecuteAsync(command, cancellationToken);
 

@@ -32,9 +32,12 @@ public static class TaskTagEndpoints
 
         if (!result.Success)
         {
-            return result.Error?.Contains("not found") == true
-                ? Results.NotFound(new { error = result.Error })
-                : Results.BadRequest(new { error = result.Error });
+            return result.Error switch
+            {
+                AddTagToTask.ErrorCode.TaskNotFound or AddTagToTask.ErrorCode.TagNotFound
+                    => Results.NotFound(new { error = result.Message }),
+                _ => Results.BadRequest(new { error = result.Message }),
+            };
         }
 
         return Results.NoContent();

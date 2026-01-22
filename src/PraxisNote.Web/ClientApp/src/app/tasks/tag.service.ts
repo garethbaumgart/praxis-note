@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Tag } from './tag.model';
+import { Observable, Subject } from 'rxjs';
+import { Tag, TaskTag } from './tag.model';
 import { ToastService } from '../shared/services/toast.service';
 
 @Injectable({ providedIn: 'root' })
@@ -27,27 +28,38 @@ export class TagService {
     });
   }
 
-  createTag(name: string, color: string): void {
+  /**
+   * Creates a new tag and returns an Observable that emits the created TaskTag
+   * when the server confirms the creation.
+   */
+  createTag(name: string, color: string): Observable<TaskTag> {
     const tempId = crypto.randomUUID();
     const newTag: Tag = { id: tempId, name, color, usageCount: 0 };
+    const result$ = new Subject<TaskTag>();
 
     // Optimistic update
     this._tags.update(tags => [...tags, newTag].sort((a, b) => a.name.localeCompare(b.name)));
 
     this.http.post<{ id: string }>('/api/tags', { name, color }).subscribe({
-      next: (result) => {
+      next: (response) => {
         // Update temp ID with real ID
         this._tags.update(tags =>
-          tags.map(t => (t.id === tempId ? { ...t, id: result.id } : t))
+          tags.map(t => (t.id === tempId ? { ...t, id: response.id } : t))
         );
+        // Emit the created tag with the real ID
+        result$.next({ id: response.id, name, color });
+        result$.complete();
       },
       error: (err) => {
         // Remove optimistic tag
         this._tags.update(tags => tags.filter(t => t.id !== tempId));
         const message = err?.error?.error || 'Failed to create tag';
         this.toast.error(message);
+        result$.error(err);
       },
     });
+
+    return result$.asObservable();
   }
 
   updateTag(id: string, name?: string, color?: string): void {
