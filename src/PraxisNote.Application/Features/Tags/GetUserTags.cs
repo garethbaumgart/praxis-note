@@ -10,13 +10,7 @@ public sealed class GetUserTags(ITagRepository tagRepository, ITaskRepository ta
     public async Task<IReadOnlyList<TagDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
         var tags = await tagRepository.GetByUserIdAsync(query.UserId, cancellationToken);
-        var tasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
-
-        // Count tag usage across all tasks
-        var usageCounts = tasks
-            .SelectMany(t => t.TagIds)
-            .GroupBy(tagId => tagId)
-            .ToDictionary(g => g.Key, g => g.Count());
+        var usageCounts = await taskRepository.GetTagUsageCountsAsync(query.UserId, cancellationToken);
 
         return tags
             .Select(t => new TagDto(
