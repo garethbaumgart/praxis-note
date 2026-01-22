@@ -204,11 +204,11 @@ import { TagPickerPopoverComponent } from './tag-picker-popover.component';
             <i class="pi pi-tag"></i>
             @if (tagsExpanded()) {
               <span>Tags</span>
-              @if (task().tags.length > 0) {
-                <span class="bg-tags-expanded-badge px-1.5 rounded-full">{{ task().tags.length }}</span>
+              @if (taskTags().length > 0) {
+                <span class="bg-tags-expanded-badge px-1.5 rounded-full">{{ taskTags().length }}</span>
               }
-            } @else if (task().tags.length > 0) {
-              <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-tags-badge text-[9px] text-tags-badge-foreground font-medium">{{ task().tags.length }}</span>
+            } @else if (taskTags().length > 0) {
+              <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-tags-badge text-[9px] text-tags-badge-foreground font-medium">{{ taskTags().length }}</span>
             }
           </button>
 
@@ -400,9 +400,9 @@ import { TagPickerPopoverComponent } from './tag-picker-popover.component';
         @if (tagsExpanded()) {
           <div class="mt-2 p-2 bg-tags-section rounded-lg border border-tags-section-border relative">
             <!-- Existing tags as pills -->
-            @if (task().tags.length > 0) {
+            @if (taskTags().length > 0) {
               <div class="flex flex-wrap gap-1 mb-2">
-                @for (tag of task().tags; track tag.id) {
+                @for (tag of taskTags(); track tag.id) {
                   <span
                     class="group/tag inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full text-white"
                     [style.background-color]="tag.color"
@@ -435,7 +435,7 @@ import { TagPickerPopoverComponent } from './tag-picker-popover.component';
             @if (showTagPicker()) {
               <app-tag-picker-popover
                 [allTags]="allTags()"
-                [selectedTags]="task().tags"
+                [selectedTags]="taskTags()"
                 (onSelect)="addExistingTag($event)"
                 (onCreate)="createAndAddTag($event)"
                 (onClose)="showTagPicker.set(false)"
@@ -546,10 +546,13 @@ export class TaskCardComponent {
   readonly isCommentsCircleWithComments = computed(() => !this.commentsExpanded() && this.task().comments.length > 0);
   readonly isCommentsCircleEmpty = computed(() => !this.commentsExpanded() && this.task().comments.length === 0);
 
+  // Tags - safe accessor that defaults to empty array
+  readonly taskTags = computed(() => this.taskTags() ?? []);
+
   // Tags tab state computeds
   readonly isTagsPill = computed(() => this.tagsExpanded());
-  readonly isTagsCircleWithTags = computed(() => !this.tagsExpanded() && this.task().tags.length > 0);
-  readonly isTagsCircleEmpty = computed(() => !this.tagsExpanded() && this.task().tags.length === 0);
+  readonly isTagsCircleWithTags = computed(() => !this.tagsExpanded() && this.taskTags().length > 0);
+  readonly isTagsCircleEmpty = computed(() => !this.tagsExpanded() && this.taskTags().length === 0);
 
   // Status button computeds - derive from previousStatus()/nextStatus() to avoid duplication
   readonly isPrevStatusTodo = computed(() => this.previousStatus() === 'Todo');
