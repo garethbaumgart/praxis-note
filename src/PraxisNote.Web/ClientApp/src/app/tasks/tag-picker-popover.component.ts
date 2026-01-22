@@ -6,61 +6,66 @@ import { Tag, TaskTag } from './tag.model';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="absolute left-0 top-full mt-1 z-50 w-56 bg-surface rounded-lg shadow-lg border border-border p-2">
+    <div class="absolute left-0 top-full mt-1 z-50 w-56 bg-surface rounded-lg shadow-lg border border-border overflow-hidden">
       <!-- Search/Create input -->
-      <div class="relative mb-2">
-        <i class="pi pi-search absolute left-2 top-1/2 -translate-y-1/2 text-xs text-foreground-muted/50"></i>
-        <input
-          #searchInput
-          type="text"
-          placeholder="Search or create..."
-          [value]="searchText()"
-          (input)="searchText.set(asInput($event).value)"
-          (keydown.enter)="onEnter(); $event.preventDefault()"
-          (keydown.escape)="onClose.emit(); $event.stopPropagation()"
-          (keydown.arrowDown)="selectNext(); $event.preventDefault()"
-          (keydown.arrowUp)="selectPrevious(); $event.preventDefault()"
-          class="w-full h-8 pl-7 pr-2 text-sm text-foreground bg-surface-muted rounded border-0 focus:outline-none focus:ring-1 focus:ring-primary"
-          aria-label="Search or create tags"
-        >
+      <div class="p-2 border-b border-border">
+        <div class="relative">
+          <i class="pi pi-search absolute left-2 top-1/2 -translate-y-1/2 text-xs text-foreground-muted/50"></i>
+          <input
+            #searchInput
+            type="text"
+            placeholder="Search or create tag..."
+            [value]="searchText()"
+            (input)="searchText.set(asInput($event).value)"
+            (keydown.enter)="onEnter(); $event.preventDefault()"
+            (keydown.escape)="onClose.emit(); $event.stopPropagation()"
+            (keydown.arrowDown)="selectNext(); $event.preventDefault()"
+            (keydown.arrowUp)="selectPrevious(); $event.preventDefault()"
+            class="w-full h-8 pl-7 pr-2 text-sm text-foreground bg-surface-muted rounded border-0 focus:outline-none focus:ring-1 focus:ring-primary"
+            aria-label="Search or create tags"
+          >
+        </div>
       </div>
 
       <!-- Tag list -->
-      <div class="max-h-48 overflow-y-auto">
+      <div class="max-h-48 overflow-y-auto py-1">
         @if (filteredAvailableTags().length === 0 && !canCreate()) {
-          <p class="text-xs text-foreground-muted py-2 text-center">No tags available</p>
+          <p class="text-xs text-foreground-muted py-3 text-center">No tags available</p>
+        } @else if (filteredAvailableTags().length === 0 && canCreate()) {
+          <p class="text-xs text-foreground-muted py-2 text-center">No matching tags</p>
         } @else {
           @for (tag of filteredAvailableTags(); track tag.id; let i = $index) {
             <button
               type="button"
-              class="w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-left transition-colors"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left transition-colors"
               [class.bg-surface-hover]="selectedIndex() === i"
               [class.hover:bg-surface-hover]="selectedIndex() !== i"
               (click)="selectTag(tag); $event.stopPropagation()"
               (mouseenter)="selectedIndex.set(i)"
             >
-              <span class="w-2 h-2 rounded-full bg-tag shrink-0"></span>
-              <span class="flex-1 truncate">{{ tag.name }}</span>
+              <span class="flex-1 truncate" [innerHTML]="highlightMatch(tag.name)"></span>
               <span class="text-xs text-foreground-muted">{{ tag.usageCount }}</span>
-            </button>
-          }
-
-          <!-- Create option -->
-          @if (canCreate()) {
-            <button
-              type="button"
-              class="w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-left transition-colors border-t border-border mt-1 pt-2"
-              [class.bg-surface-hover]="selectedIndex() === filteredAvailableTags().length"
-              [class.hover:bg-surface-hover]="selectedIndex() !== filteredAvailableTags().length"
-              (click)="createTag(); $event.stopPropagation()"
-              (mouseenter)="selectedIndex.set(filteredAvailableTags().length)"
-            >
-              <i class="pi pi-plus text-xs text-primary"></i>
-              <span class="text-primary">Create "{{ searchText().trim() }}"</span>
             </button>
           }
         }
       </div>
+
+      <!-- Create option (sticky at bottom) -->
+      @if (canCreate()) {
+        <div class="border-t border-border px-3 py-2" [class.bg-primary/5]="filteredAvailableTags().length === 0">
+          <button
+            type="button"
+            class="w-full flex items-center justify-center gap-2 py-1 rounded text-sm transition-colors text-primary hover:text-primary-hover"
+            [class.font-medium]="filteredAvailableTags().length === 0"
+            (click)="createTag(); $event.stopPropagation()"
+            (mouseenter)="selectedIndex.set(filteredAvailableTags().length)"
+          >
+            <i class="pi pi-plus text-xs"></i>
+            <span>Create "<strong>{{ searchText().trim() }}</strong>"</span>
+            <kbd class="ml-1 text-[10px] px-1 py-0.5 bg-surface-muted rounded text-foreground-muted">↵</kbd>
+          </button>
+        </div>
+      }
     </div>
   `,
 })
@@ -165,5 +170,27 @@ export class TagPickerPopoverComponent {
       this.searchText.set('');
       this.selectedIndex.set(0);
     }
+  }
+
+  /** Highlight matching portion of tag name */
+  highlightMatch(tagName: string): string {
+    const query = this.searchText().toLowerCase().trim();
+    if (!query) return this.escapeHtml(tagName);
+
+    const lowerName = tagName.toLowerCase();
+    const index = lowerName.indexOf(query);
+    if (index === -1) return this.escapeHtml(tagName);
+
+    const before = tagName.slice(0, index);
+    const match = tagName.slice(index, index + query.length);
+    const after = tagName.slice(index + query.length);
+
+    return `${this.escapeHtml(before)}<mark class="bg-warning/30 text-foreground px-0.5 rounded">${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
+  }
+
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 }
