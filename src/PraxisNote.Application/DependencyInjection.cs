@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Features.Notifications;
+using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Application.Features.Users;
 
@@ -27,6 +28,16 @@ public static class DependencyInjection
         // Due date use cases
         services.AddScoped<SetDueDate>();
         services.AddScoped<ClearDueDate>();
+
+        // Task-Tag use cases
+        services.AddScoped<AddTagToTask>();
+        services.AddScoped<RemoveTagFromTask>();
+
+        // Tag use cases
+        services.AddScoped<GetUserTags>();
+        services.AddScoped<CreateTag>();
+        services.AddScoped<UpdateTag>();
+        services.AddScoped<DeleteTag>();
 
         // User use cases
         services.AddScoped<LoginOrRegisterUser>();

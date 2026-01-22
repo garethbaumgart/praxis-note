@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Tags - Many Tags Overflow Handling</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#eceff4',
+            'surface-subtle': '#e5e9f0',
+            'surface-hover': '#d8dee9',
+            foreground: '#2e3440',
+            'foreground-muted': '#4c566a',
+            border: '#d8dee9',
+            primary: '#5e81ac',
+            danger: '#bf616a',
+            todo: '#d8dee9',
+            'todo-foreground': '#4c566a',
+            'todo-border': '#c8ced9',
+            inprogress: '#81a1c1',
+            'inprogress-foreground': '#2e3440',
+            'inprogress-border': '#5e81ac',
+            done: '#a3be8c',
+            'done-foreground': '#2e3440',
+            'done-border': '#8fbcbb',
+            tag: '#b48ead',
+            'tag-foreground': '#2e3440',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .mockup-section { margin-bottom: 3rem; }
+    .mockup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; }
+    .mockup-card { background: #f8fafc; border-radius: 12px; padding: 1rem; }
+    .task-card { background: #e5e9f0; border-radius: 6px; padding: 8px 12px; border: 1px solid #d8dee9; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Option 2: Many Tags Overflow Handling</h1>
+    <p class="text-gray-600 mb-8">How to keep the UX clean when tasks have many tags.</p>
+
+    <!-- ============================================ -->
+    <!-- PROBLEM: Uncontrolled Wrapping -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">The Problem: Uncontrolled Wrapping</h2>
+      <p class="text-gray-600 mb-4 text-sm">Without limits, many tags wrap and create visual clutter.</p>
+      <div class="mockup-grid">
+
+        <div class="mockup-card bg-red-50 border-2 border-red-200">
+          <div class="mockup-label text-red-700 text-xs font-medium mb-2">Problem - Too Many Tags</div>
+          <div class="p-3 rounded-lg bg-inprogress/30">
+            <div class="task-card border-inprogress-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Review the authentication flow and security</p>
+                <span class="text-xs text-foreground-muted/60 shrink-0">2h</span>
+              </div>
+
+              <!-- Many tags - wraps uncontrolled -->
+              <div class="mt-1.5 flex items-start gap-2">
+                <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60 mt-0.5">
+                  <i class="pi pi-tag text-xs"></i>
+                </span>
+                <div class="flex items-center gap-1 flex-wrap flex-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Backend</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Security</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Authentication</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">API</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Q1-2026</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">High Priority</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Code Review</span>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">
+                  <i class="pi pi-calendar"></i>
+                  <span>Tomorrow</span>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-red-600 mt-2">Tags wrap to 3+ lines. Card becomes too tall. Visual clutter.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SOLUTION A: Limit + Overflow Count (Recommended) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Solution A: Limit Visible + Overflow Count (Recommended)</h2>
+      <p class="text-gray-600 mb-4 text-sm">Show first 2-3 tags, then "+N" for the rest. Click to expand.</p>
+      <div class="mockup-grid">
+
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700 text-xs font-medium mb-2">Recommended - Collapsed (3 visible)</div>
+          <div class="p-3 rounded-lg bg-inprogress/30">
+            <div class="task-card border-inprogress-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Review the authentication flow and security</p>
+                <span class="text-xs text-foreground-muted/60 shrink-0">2h</span>
+              </div>
+
+              <!-- Limited to 3 tags + overflow -->
+              <div class="mt-1.5 flex items-center gap-2">
+                <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60">
+                  <i class="pi pi-tag text-xs"></i>
+                </span>
+                <div class="flex items-center gap-1 flex-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Backend</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Security</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Auth</span>
+                  <button class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-tag/10 hover:text-tag transition-colors">
+                    +4
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">
+                  <i class="pi pi-calendar"></i>
+                  <span>Tomorrow</span>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Shows 3 tags + "+4" overflow. Clean, scannable. Single row.</p>
+        </div>
+
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700 text-xs font-medium mb-2">Recommended - Expanded</div>
+          <div class="p-3 rounded-lg bg-inprogress/30">
+            <div class="task-card border-inprogress-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Review the authentication flow and security</p>
+                <span class="text-xs text-foreground-muted/60 shrink-0">2h</span>
+              </div>
+
+              <!-- Expanded - all tags visible -->
+              <div class="mt-1.5 flex items-start gap-2">
+                <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60 mt-0.5">
+                  <i class="pi pi-tag text-xs"></i>
+                </span>
+                <div class="flex items-center gap-1 flex-wrap flex-1">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">
+                    Backend
+                    <button class="text-tag/50 hover:text-danger"><i class="pi pi-times text-[8px]"></i></button>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">
+                    Security
+                    <button class="text-tag/50 hover:text-danger"><i class="pi pi-times text-[8px]"></i></button>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">
+                    Auth
+                    <button class="text-tag/50 hover:text-danger"><i class="pi pi-times text-[8px]"></i></button>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">
+                    API
+                    <button class="text-tag/50 hover:text-danger"><i class="pi pi-times text-[8px]"></i></button>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">
+                    Q1-2026
+                    <button class="text-tag/50 hover:text-danger"><i class="pi pi-times text-[8px]"></i></button>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">
+                    High Priority
+                    <button class="text-tag/50 hover:text-danger"><i class="pi pi-times text-[8px]"></i></button>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">
+                    Code Review
+                    <button class="text-tag/50 hover:text-danger"><i class="pi pi-times text-[8px]"></i></button>
+                  </span>
+                  <button class="inline-flex items-center justify-center w-5 h-5 rounded-full text-foreground-muted/30 hover:text-tag hover:bg-tag/10">
+                    <i class="pi pi-plus text-[9px]"></i>
+                  </button>
+                  <button class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-foreground-muted/20 ml-auto">
+                    <i class="pi pi-chevron-up text-[8px] mr-0.5"></i> Less
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">
+                  <i class="pi pi-calendar"></i>
+                  <span>Tomorrow</span>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Clicked +4: All tags shown with X buttons. "Less" to collapse.</p>
+        </div>
+
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700 text-xs font-medium mb-2">Recommended - Few Tags (No Overflow)</div>
+          <div class="p-3 rounded-lg bg-todo/30">
+            <div class="task-card border-todo-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Fix login validation bug</p>
+              </div>
+
+              <!-- 2 tags - no overflow needed -->
+              <div class="mt-1.5 flex items-center gap-2">
+                <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60">
+                  <i class="pi pi-tag text-xs"></i>
+                </span>
+                <div class="flex items-center gap-1 flex-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Bug</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Auth</span>
+                  <button class="inline-flex items-center justify-center w-5 h-5 rounded-full text-foreground-muted/30 hover:text-tag hover:bg-tag/10">
+                    <i class="pi pi-plus text-[9px]"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-calendar text-xs"></i>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">3 or fewer tags: All visible, plus button for adding.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SOLUTION B: Horizontal Scroll -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Solution B: Horizontal Scroll</h2>
+      <p class="text-gray-600 mb-4 text-sm">Tags in a horizontally scrollable container. Always single line.</p>
+      <div class="mockup-grid">
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Horizontal Scroll - Many Tags</div>
+          <div class="p-3 rounded-lg bg-inprogress/30">
+            <div class="task-card border-inprogress-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Review the authentication flow and security</p>
+                <span class="text-xs text-foreground-muted/60 shrink-0">2h</span>
+              </div>
+
+              <!-- Horizontal scroll -->
+              <div class="mt-1.5 flex items-center gap-2">
+                <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60">
+                  <i class="pi pi-tag text-xs"></i>
+                </span>
+                <div class="flex items-center gap-1 overflow-x-auto hide-scrollbar flex-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Backend</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Security</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Authentication</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">API</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Q1-2026</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">High Priority</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Code Review</span>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">
+                  <i class="pi pi-calendar"></i>
+                  <span>Tomorrow</span>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Swipe/scroll to see more. Always single line height.</p>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">With Fade Gradient</div>
+          <div class="p-3 rounded-lg bg-inprogress/30">
+            <div class="task-card border-inprogress-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Review the authentication flow and security</p>
+                <span class="text-xs text-foreground-muted/60 shrink-0">2h</span>
+              </div>
+
+              <!-- With fade gradient indicator -->
+              <div class="mt-1.5 flex items-center gap-2">
+                <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60">
+                  <i class="pi pi-tag text-xs"></i>
+                </span>
+                <div class="relative flex-1 overflow-hidden">
+                  <div class="flex items-center gap-1 overflow-x-auto hide-scrollbar">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Backend</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Security</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Authentication</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">API</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium whitespace-nowrap">Q1-2026</span>
+                  </div>
+                  <!-- Fade gradient on right -->
+                  <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-surface-subtle to-transparent pointer-events-none"></div>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">
+                  <i class="pi pi-calendar"></i>
+                  <span>Tomorrow</span>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Fade gradient hints at more content. Swipe to reveal.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SOLUTION C: Two-Row Max -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Solution C: Two-Row Maximum</h2>
+      <p class="text-gray-600 mb-4 text-sm">Allow wrapping to max 2 rows, then overflow count.</p>
+      <div class="mockup-grid">
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Max 2 Rows + Overflow</div>
+          <div class="p-3 rounded-lg bg-inprogress/30">
+            <div class="task-card border-inprogress-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Review the authentication flow and security</p>
+                <span class="text-xs text-foreground-muted/60 shrink-0">2h</span>
+              </div>
+
+              <!-- Two rows max -->
+              <div class="mt-1.5 flex items-start gap-2">
+                <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60 mt-0.5">
+                  <i class="pi pi-tag text-xs"></i>
+                </span>
+                <div class="flex items-center gap-1 flex-wrap flex-1 max-h-[44px] overflow-hidden">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Backend</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Security</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Auth</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">API</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Q1</span>
+                  <button class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-tag/10 hover:text-tag">
+                    +2
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">
+                  <i class="pi pi-calendar"></i>
+                  <span>Tomorrow</span>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Allows some wrapping (2 rows max) with overflow for the rest.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SOLUTION D: Compact Single Tag + Count -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Solution D: Single Tag + Count</h2>
+      <p class="text-gray-600 mb-4 text-sm">Show only first tag + total count. Most compact option.</p>
+      <div class="mockup-grid">
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">First Tag + Count</div>
+          <div class="p-3 rounded-lg bg-inprogress/30">
+            <div class="task-card border-inprogress-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Review the authentication flow and security</p>
+                <span class="text-xs text-foreground-muted/60 shrink-0">2h</span>
+              </div>
+
+              <!-- Single tag + count -->
+              <div class="mt-1.5 flex items-center gap-2">
+                <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60">
+                  <i class="pi pi-tag text-xs"></i>
+                </span>
+                <div class="flex items-center gap-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag font-medium">Backend</span>
+                  <button class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-tag/10 hover:text-tag">
+                    +6 more
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">
+                  <i class="pi pi-calendar"></i>
+                  <span>Tomorrow</span>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Most compact. Only shows primary tag. Click "+6 more" to see all.</p>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Just Count (Ultra Minimal)</div>
+          <div class="p-3 rounded-lg bg-inprogress/30">
+            <div class="task-card border-inprogress-border">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/30">
+                  <i class="pi pi-flag text-sm"></i>
+                </button>
+                <p class="text-sm text-foreground flex-1">Review the authentication flow and security</p>
+                <span class="text-xs text-foreground-muted/60 shrink-0">2h</span>
+              </div>
+
+              <!-- Just icon + count -->
+              <div class="mt-1.5 flex items-center gap-2">
+                <button class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-tag/10 text-tag hover:bg-tag/20 transition-colors">
+                  <i class="pi pi-tag text-[9px]"></i>
+                  <span>7 tags</span>
+                  <i class="pi pi-chevron-down text-[8px]"></i>
+                </button>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1.5">
+                <button class="flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">
+                  <i class="pi pi-calendar"></i>
+                  <span>Tomorrow</span>
+                </button>
+                <button class="relative flex items-center justify-center w-7 h-7 rounded-full bg-foreground-muted/10 text-foreground-muted/40">
+                  <i class="pi pi-comment text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Ultra minimal. Just shows "7 tags" badge. Click to expand.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- COMPARISON TABLE -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Comparison: Overflow Strategies</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm bg-white rounded-lg border border-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Solution</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Visible Tags</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Pros</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Cons</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="bg-emerald-50">
+              <td class="px-4 py-3 font-medium text-emerald-700">A. Limit + Overflow (Recommended)</td>
+              <td class="px-4 py-3 text-gray-600">3 tags + "+N"</td>
+              <td class="px-4 py-3 text-gray-600">Predictable height, scannable, expandable</td>
+              <td class="px-4 py-3 text-gray-600">May hide important tags</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">B. Horizontal Scroll</td>
+              <td class="px-4 py-3 text-gray-600">All (scrollable)</td>
+              <td class="px-4 py-3 text-gray-600">All tags accessible, fixed height</td>
+              <td class="px-4 py-3 text-gray-600">Hidden content, requires interaction</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">C. Two-Row Max</td>
+              <td class="px-4 py-3 text-gray-600">~5-6 + "+N"</td>
+              <td class="px-4 py-3 text-gray-600">Shows more tags, bounded height</td>
+              <td class="px-4 py-3 text-gray-600">Variable height, slightly complex</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">D. Single Tag + Count</td>
+              <td class="px-4 py-3 text-gray-600">1 tag + "+N more"</td>
+              <td class="px-4 py-3 text-gray-600">Most compact, predictable</td>
+              <td class="px-4 py-3 text-gray-600">Least informative at a glance</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- RECOMMENDATION -->
+    <!-- ============================================ -->
+    <div class="mockup-section bg-emerald-50 rounded-xl p-6 border-2 border-emerald-200">
+      <h2 class="text-xl font-semibold text-emerald-800 mb-4">Recommendation: Solution A - Limit + Overflow Count</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Why This Solution?</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>* Predictable card height (always single row)</li>
+            <li>* Shows enough tags to be useful (3 is the sweet spot)</li>
+            <li>* Clear affordance that more exist (+4 is clickable)</li>
+            <li>* Expanded state allows full management</li>
+            <li>* Consistent with how other apps handle this (Jira, GitHub)</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Implementation Rules</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>* Show max 3 tags in collapsed state</li>
+            <li>* If 4+ tags: show 3 + "+N" button</li>
+            <li>* Click +N expands to show all with X buttons</li>
+            <li>* Expanded state shows "Less" button to collapse</li>
+            <li>* Plus button always visible for adding</li>
+            <li>* Tags ordered by most recent? Or alphabetical?</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

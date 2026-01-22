@@ -1,17 +1,19 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, HostListener } from '@angular/core';
 import { Task, TaskStatus, Comment } from './task.model';
+import { Tag, TaskTag } from './tag.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
 import { HighlightPipe } from '../shared/pipes/highlight.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 import { DatePickerPopoverComponent } from './date-picker-popover.component';
+import { TagPickerPopoverComponent } from './tag-picker-popover.component';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
+  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent, TagPickerPopoverComponent],
   template: `
     <div
       class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
@@ -110,6 +112,80 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           </div>
         </div>
 
+        <!-- Inline tags row (when tags exist) -->
+        @if (hasInlineTags()) {
+          <div class="mt-2 flex items-start gap-2">
+            <!-- Tag icon (aligned with flag) -->
+            <div class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/40">
+              <i class="pi pi-tag text-sm"></i>
+            </div>
+            <!-- Tags pills -->
+            <div class="flex-1 min-w-0 flex flex-wrap items-center gap-1">
+              @for (tag of visibleTags(); track tag.id) {
+                <span
+                  class="group/tag inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-tag text-tag-foreground"
+                  [class.pr-1]="inlineTagsExpanded()"
+                >
+                  {{ tag.name }}
+                  @if (inlineTagsExpanded()) {
+                    <button
+                      type="button"
+                      class="opacity-50 group-hover/tag:opacity-100 hover:text-danger transition-opacity"
+                      (click)="removeTag(tag.id); $event.stopPropagation()"
+                      [attr.aria-label]="'Remove tag ' + tag.name"
+                    >
+                      <i class="pi pi-times text-[10px]"></i>
+                    </button>
+                  }
+                </span>
+              }
+              @if (overflowCount() > 0) {
+                <!-- Overflow button to expand -->
+                <button
+                  type="button"
+                  class="px-2 py-0.5 rounded-full text-xs bg-tag/50 text-tag-foreground hover:bg-tag transition-colors"
+                  (click)="inlineTagsExpanded.set(true); $event.stopPropagation()"
+                  [attr.aria-label]="'Show ' + overflowCount() + ' more tags'"
+                >
+                  +{{ overflowCount() }}
+                </button>
+              }
+              @if (inlineTagsExpanded()) {
+                <!-- Add tag button when expanded -->
+                <button
+                  type="button"
+                  class="w-5 h-5 rounded-full flex items-center justify-center bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20 transition-colors"
+                  (click)="showTagPicker.set(true); $event.stopPropagation()"
+                  aria-label="Add tag"
+                >
+                  <i class="pi pi-plus text-[10px]"></i>
+                </button>
+                <!-- Collapse button when expanded -->
+                <button
+                  type="button"
+                  class="w-5 h-5 rounded-full flex items-center justify-center bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20 transition-colors"
+                  (click)="inlineTagsExpanded.set(false); $event.stopPropagation()"
+                  aria-label="Collapse tags"
+                >
+                  <i class="pi pi-chevron-up text-[10px]"></i>
+                </button>
+              }
+            </div>
+          </div>
+          <!-- Tag picker popover for inline tags -->
+          @if (showTagPicker() && inlineTagsExpanded()) {
+            <div class="relative mt-1 ml-7">
+              <app-tag-picker-popover
+                [allTags]="allTags()"
+                [existingTagIds]="existingTagIds()"
+                (onSelect)="addTag($event)"
+                (onCreate)="createAndAddTag($event)"
+                (onClose)="showTagPicker.set(false)"
+              />
+            </div>
+          }
+        }
+
         <!-- Tab bar - Google Home style -->
         <div class="mt-2 flex items-center gap-1.5 relative">
           <!-- Due Date tab -->
@@ -178,6 +254,39 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-comments-badge text-[9px] text-comments-badge-foreground font-medium">{{ task().comments.length }}</span>
             }
           </button>
+
+          <!-- Tags tab (only show when no inline tags) -->
+          @if (!hasInlineTags()) {
+            <button
+              type="button"
+              class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7"
+              [class.px-3]="isTagsPill()"
+              [class.gap-1.5]="isTagsPill()"
+              [class.bg-tags-expanded]="isTagsPill()"
+              [class.text-tags-expanded-foreground]="isTagsPill()"
+              [class.font-medium]="isTagsPill()"
+              [class.w-7]="!isTagsPill()"
+              [class.bg-tags-collapsed]="isTagsCircleWithTags()"
+              [class.text-tags-collapsed-foreground]="isTagsCircleWithTags()"
+              [class.hover:bg-tags-collapsed-hover]="isTagsCircleWithTags()"
+              [class.bg-foreground-muted/10]="isTagsCircleEmpty()"
+              [class.text-foreground-muted/40]="isTagsCircleEmpty()"
+              [class.hover:bg-foreground-muted/20]="isTagsCircleEmpty()"
+              (click)="toggleTab('tags'); $event.stopPropagation()"
+              [attr.aria-label]="tagsExpanded() ? 'Hide tags' : 'Show tags'"
+              [attr.aria-expanded]="tagsExpanded()"
+            >
+              <i class="pi pi-tag"></i>
+              @if (tagsExpanded()) {
+                <span>Tags</span>
+                @if (taskTags().length > 0) {
+                  <span class="bg-tags-expanded-badge px-1.5 rounded-full">{{ taskTags().length }}</span>
+                }
+              } @else if (taskTags().length > 0) {
+                <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-tags-badge text-[9px] text-tags-badge-foreground font-medium">{{ taskTags().length }}</span>
+              }
+            </button>
+          }
 
           <!-- Mobile status change buttons (spacer pushes to right) -->
           <div class="flex-1"></div>
@@ -362,6 +471,52 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             </div>
           </div>
         }
+
+        <!-- Tags expanded content (only show when using tab-based UI) -->
+        @if (tagsExpanded() && !hasInlineTags()) {
+          <div class="mt-2 p-2 bg-tags-section rounded-lg border border-tags-section-border relative">
+            <!-- Existing tags -->
+            @if (taskTags().length > 0) {
+              <div class="flex flex-wrap gap-1.5 mb-2">
+                @for (tag of taskTags(); track tag.id) {
+                  <span class="group/tag inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-tag text-tag-foreground">
+                    {{ tag.name }}
+                    <button
+                      type="button"
+                      class="opacity-50 group-hover/tag:opacity-100 hover:text-danger transition-opacity"
+                      (click)="removeTag(tag.id); $event.stopPropagation()"
+                      [attr.aria-label]="'Remove tag ' + tag.name"
+                    >
+                      <i class="pi pi-times text-[10px]"></i>
+                    </button>
+                  </span>
+                }
+              </div>
+            }
+
+            <!-- Add tag button -->
+            <button
+              type="button"
+              class="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors"
+              (click)="showTagPicker.set(true); $event.stopPropagation()"
+              aria-label="Add tag"
+            >
+              <i class="pi pi-plus text-[10px]"></i>
+              <span>Add tag</span>
+            </button>
+
+            <!-- Tag picker popover -->
+            @if (showTagPicker()) {
+              <app-tag-picker-popover
+                [allTags]="allTags()"
+                [existingTagIds]="existingTagIds()"
+                (onSelect)="addTag($event)"
+                (onCreate)="createAndAddTag($event)"
+                (onClose)="showTagPicker.set(false)"
+              />
+            }
+          </div>
+        }
     </div>
   `,
 })
@@ -377,6 +532,7 @@ export class TaskCardComponent {
   readonly task = input.required<Task>();
   readonly searchQuery = input('');
   readonly isArchive = input(false);
+  readonly allTags = input<Tag[]>([]);
 
   readonly onEdit = output<string>();
   readonly onDelete = output<void>();
@@ -387,6 +543,9 @@ export class TaskCardComponent {
   readonly onClearDueDate = output<void>();
   readonly onTogglePriority = output<void>();
   readonly onStatusChange = output<TaskStatus>();
+  readonly onAddTag = output<TaskTag>();
+  readonly onRemoveTag = output<string>();
+  readonly onCreateTag = output<string>();
 
   readonly editing = signal(false);
   readonly editTitle = signal('');
@@ -404,12 +563,49 @@ export class TaskCardComponent {
   readonly confirmingCommentDeleteId = signal<string | null>(null);
 
   // Tab selection state (Google Home style - one tab at a time)
-  readonly selectedTab = signal<'dueDate' | 'comments' | null>(null);
+  readonly selectedTab = signal<'dueDate' | 'comments' | 'tags' | null>(null);
   readonly dueDateExpanded = computed(() => this.selectedTab() === 'dueDate');
   readonly commentsExpanded = computed(() => this.selectedTab() === 'comments');
+  readonly tagsExpanded = computed(() => this.selectedTab() === 'tags');
 
   // Date picker popover state
   readonly showDatePicker = signal(false);
+
+  // Tag picker popover state
+  readonly showTagPicker = signal(false);
+
+  // Inline tags expansion state (for overflow handling)
+  readonly inlineTagsExpanded = signal(false);
+
+  // Safe accessor for tags that defaults to empty array
+  readonly taskTags = computed(() => this.task().tags ?? []);
+
+  // Maximum visible tags before showing "+N" overflow
+  private readonly MAX_VISIBLE_TAGS = 3;
+
+  // Visible tags (first 3 when collapsed, all when expanded)
+  readonly visibleTags = computed(() => {
+    const tags = this.taskTags();
+    if (this.inlineTagsExpanded() || tags.length <= this.MAX_VISIBLE_TAGS) {
+      return tags;
+    }
+    return tags.slice(0, this.MAX_VISIBLE_TAGS);
+  });
+
+  // Overflow count (remaining tags not shown)
+  readonly overflowCount = computed(() => {
+    const tags = this.taskTags();
+    if (this.inlineTagsExpanded() || tags.length <= this.MAX_VISIBLE_TAGS) {
+      return 0;
+    }
+    return tags.length - this.MAX_VISIBLE_TAGS;
+  });
+
+  // Whether to show the inline tags row (when task has tags)
+  readonly hasInlineTags = computed(() => this.taskTags().length > 0);
+
+  // Existing tag IDs for filtering in picker
+  readonly existingTagIds = computed(() => this.taskTags().map(t => t.id));
 
   // Due date display calculations
   private readonly daysDiff = computed(() => {
@@ -456,6 +652,11 @@ export class TaskCardComponent {
   readonly isCommentsPill = computed(() => this.commentsExpanded());
   readonly isCommentsCircleWithComments = computed(() => !this.commentsExpanded() && this.task().comments.length > 0);
   readonly isCommentsCircleEmpty = computed(() => !this.commentsExpanded() && this.task().comments.length === 0);
+
+  // Tags tab state computeds
+  readonly isTagsPill = computed(() => this.tagsExpanded());
+  readonly isTagsCircleWithTags = computed(() => !this.tagsExpanded() && this.taskTags().length > 0);
+  readonly isTagsCircleEmpty = computed(() => !this.tagsExpanded() && this.taskTags().length === 0);
 
   // Status button computeds - derive from previousStatus()/nextStatus() to avoid duplication
   readonly isPrevStatusTodo = computed(() => this.previousStatus() === 'Todo');
@@ -517,7 +718,9 @@ export class TaskCardComponent {
   /** Close expanded tabs when clicking outside the task card */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
-    if (!this.initialized || !this.selectedTab()) return;
+    if (!this.initialized) return;
+    // Check if anything is expanded (tab or inline tags)
+    if (!this.selectedTab() && !this.inlineTagsExpanded()) return;
 
     const target = event.target;
     // Guard for non-Node targets (e.g., SVG elements in some browsers)
@@ -531,7 +734,7 @@ export class TaskCardComponent {
   /** Close expanded tabs when pressing Escape */
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
-    if (this.selectedTab()) {
+    if (this.selectedTab() || this.inlineTagsExpanded()) {
       this.closeExpanded();
     }
   }
@@ -540,6 +743,8 @@ export class TaskCardComponent {
   private closeExpanded(): void {
     this.selectedTab.set(null);
     this.showDatePicker.set(false);
+    this.showTagPicker.set(false);
+    this.inlineTagsExpanded.set(false);
   }
 
   /** Type-safe helper for accessing textarea value from events */
@@ -604,16 +809,18 @@ export class TaskCardComponent {
   }
 
   // Tab toggle method (Google Home style - one tab at a time)
-  toggleTab(tab: 'dueDate' | 'comments'): void {
+  toggleTab(tab: 'dueDate' | 'comments' | 'tags'): void {
     const currentTab = this.selectedTab();
     if (currentTab === tab) {
       // Clicking the same tab collapses it
       this.selectedTab.set(null);
       this.showDatePicker.set(false);
+      this.showTagPicker.set(false);
     } else {
       // Switch to the new tab
       this.selectedTab.set(tab);
       this.showDatePicker.set(false);
+      this.showTagPicker.set(false);
 
       // Auto-focus the add comment input when expanding comments
       if (tab === 'comments') {
@@ -806,5 +1013,20 @@ export class TaskCardComponent {
 
   moveToNextStatus(): void {
     this.onStatusChange.emit(this.nextStatus());
+  }
+
+  // Tag methods
+  addTag(tag: TaskTag): void {
+    this.onAddTag.emit(tag);
+    this.showTagPicker.set(false);
+  }
+
+  removeTag(tagId: string): void {
+    this.onRemoveTag.emit(tagId);
+  }
+
+  createAndAddTag(name: string): void {
+    this.onCreateTag.emit(name);
+    this.showTagPicker.set(false);
   }
 }
