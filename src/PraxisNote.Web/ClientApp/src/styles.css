@@ -640,3 +640,37 @@
 .compact-datepicker table {
   font-size: 0.75rem;
 }
+
+/* ========================================
+   PrimeNG Chip - Tag styling (slim variant)
+   ======================================== */
+
+/* Base chip styling - narrow with minimal padding */
+.p-chip {
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 0 6px 0 8px;
+  border-radius: 9999px;
+  gap: 4px;
+  height: 18px;
+  align-items: center;
+}
+
+/* Remove icon */
+.p-chip .p-chip-remove-icon {
+  font-size: 10px;
+  color: var(--color-tag-text);
+  opacity: 0.5;
+}
+
+.p-chip .p-chip-remove-icon:hover {
+  color: var(--color-danger-text);
+  opacity: 1;
+}
+
+/* Label text */
+.p-chip .p-chip-label {
+  line-height: 1;
+}

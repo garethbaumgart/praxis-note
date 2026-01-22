@@ -6,7 +6,14 @@ import { Tag, TaskTag } from './tag.model';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="absolute left-0 top-full mt-1 z-50 w-56 bg-surface rounded-lg shadow-lg border border-border overflow-hidden">
+    <div
+      class="w-56 bg-surface rounded-lg shadow-lg border border-border overflow-hidden"
+      [class.absolute]="position() === 'below'"
+      [class.left-0]="position() === 'below'"
+      [class.top-full]="position() === 'below'"
+      [class.mt-1]="position() === 'below'"
+      [class.z-50]="position() === 'below'"
+    >
       <!-- Search/Create input -->
       <div class="p-2 border-b border-border">
         <div class="relative">
@@ -76,6 +83,8 @@ export class TagPickerPopoverComponent {
 
   readonly allTags = input.required<Tag[]>();
   readonly existingTagIds = input<string[]>([]);
+  /** Position mode: 'below' positions absolutely below parent, 'static' lets parent control positioning */
+  readonly position = input<'below' | 'static'>('below');
 
   readonly onSelect = output<TaskTag>();
   readonly onCreate = output<string>();

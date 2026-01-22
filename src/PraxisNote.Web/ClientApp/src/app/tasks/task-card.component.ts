@@ -8,12 +8,13 @@ import { DeleteConfirmationService } from '../shared/services/delete-confirmatio
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 import { DatePickerPopoverComponent } from './date-picker-popover.component';
 import { TagPickerPopoverComponent } from './tag-picker-popover.component';
+import { Chip } from 'primeng/chip';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent, TagPickerPopoverComponent],
+  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent, TagPickerPopoverComponent, Chip],
   template: `
     <div
       class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
@@ -114,66 +115,57 @@ import { TagPickerPopoverComponent } from './tag-picker-popover.component';
 
         <!-- Inline tags row (when tags exist) -->
         @if (hasInlineTags()) {
-          <div class="mt-2 flex items-start gap-2">
+          <div class="mt-1.5 flex items-center gap-2">
             <!-- Tag icon (aligned with flag) -->
-            <div class="shrink-0 w-5 h-5 flex items-center justify-center text-foreground-muted/40">
-              <i class="pi pi-tag text-sm"></i>
-            </div>
+            <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60">
+              <i class="pi pi-tag text-xs"></i>
+            </span>
             <!-- Tags pills -->
             <div class="flex-1 min-w-0 flex flex-wrap items-center gap-1">
               @for (tag of visibleTags(); track tag.id) {
-                <span
-                  class="group/tag inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-tag text-tag-foreground"
-                  [class.pr-1]="inlineTagsExpanded()"
-                >
-                  {{ tag.name }}
-                  @if (inlineTagsExpanded()) {
-                    <button
-                      type="button"
-                      class="opacity-50 group-hover/tag:opacity-100 hover:text-danger transition-opacity"
-                      (click)="removeTag(tag.id); $event.stopPropagation()"
-                      [attr.aria-label]="'Remove tag ' + tag.name"
-                    >
-                      <i class="pi pi-times text-[10px]"></i>
-                    </button>
-                  }
-                </span>
+                <p-chip
+                  [label]="tag.name"
+                  [removable]="true"
+                  (onRemove)="removeTag(tag.id)"
+                  styleClass="text-[10px] bg-tag text-tag-foreground"
+                />
               }
               @if (overflowCount() > 0) {
                 <!-- Overflow button to expand -->
                 <button
                   type="button"
-                  class="px-2 py-0.5 rounded-full text-xs bg-tag/50 text-tag-foreground hover:bg-tag transition-colors"
+                  class="px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-tag/10 hover:text-tag transition-colors"
                   (click)="inlineTagsExpanded.set(true); $event.stopPropagation()"
                   [attr.aria-label]="'Show ' + overflowCount() + ' more tags'"
                 >
                   +{{ overflowCount() }}
                 </button>
               }
-              @if (inlineTagsExpanded()) {
-                <!-- Add tag button when expanded -->
+              <!-- Add tag button (always visible) -->
+              <button
+                type="button"
+                class="w-5 h-5 rounded-full flex items-center justify-center text-foreground-muted/30 hover:text-tag hover:bg-tag/10 transition-colors"
+                (click)="showTagPicker.set(true); $event.stopPropagation()"
+                aria-label="Add tag"
+              >
+                <i class="pi pi-plus text-[9px]"></i>
+              </button>
+              <!-- Collapse/"Less" button (only when expanded and has overflow) -->
+              @if (inlineTagsExpanded() && taskTags().length > 3) {
                 <button
                   type="button"
-                  class="w-5 h-5 rounded-full flex items-center justify-center bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20 transition-colors"
-                  (click)="showTagPicker.set(true); $event.stopPropagation()"
-                  aria-label="Add tag"
-                >
-                  <i class="pi pi-plus text-[10px]"></i>
-                </button>
-                <!-- Collapse button when expanded -->
-                <button
-                  type="button"
-                  class="w-5 h-5 rounded-full flex items-center justify-center bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20 transition-colors"
+                  class="ml-auto px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-foreground-muted/20 transition-colors flex items-center gap-0.5"
                   (click)="inlineTagsExpanded.set(false); $event.stopPropagation()"
-                  aria-label="Collapse tags"
+                  aria-label="Show fewer tags"
                 >
-                  <i class="pi pi-chevron-up text-[10px]"></i>
+                  <i class="pi pi-chevron-up text-[8px]"></i>
+                  <span>Less</span>
                 </button>
               }
             </div>
           </div>
           <!-- Tag picker popover for inline tags -->
-          @if (showTagPicker() && inlineTagsExpanded()) {
+          @if (showTagPicker()) {
             <div class="relative mt-1 ml-7">
               <app-tag-picker-popover
                 [allTags]="allTags()"
@@ -255,37 +247,69 @@ import { TagPickerPopoverComponent } from './tag-picker-popover.component';
             }
           </button>
 
-          <!-- Tags tab (only show when no inline tags) -->
+          <!-- Tags tab (only show when no inline tags - used for first tag add) -->
           @if (!hasInlineTags()) {
-            <button
-              type="button"
-              class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7"
-              [class.px-3]="isTagsPill()"
-              [class.gap-1.5]="isTagsPill()"
-              [class.bg-tags-expanded]="isTagsPill()"
-              [class.text-tags-expanded-foreground]="isTagsPill()"
-              [class.font-medium]="isTagsPill()"
-              [class.w-7]="!isTagsPill()"
-              [class.bg-tags-collapsed]="isTagsCircleWithTags()"
-              [class.text-tags-collapsed-foreground]="isTagsCircleWithTags()"
-              [class.hover:bg-tags-collapsed-hover]="isTagsCircleWithTags()"
-              [class.bg-foreground-muted/10]="isTagsCircleEmpty()"
-              [class.text-foreground-muted/40]="isTagsCircleEmpty()"
-              [class.hover:bg-foreground-muted/20]="isTagsCircleEmpty()"
-              (click)="toggleTab('tags'); $event.stopPropagation()"
-              [attr.aria-label]="tagsExpanded() ? 'Hide tags' : 'Show tags'"
-              [attr.aria-expanded]="tagsExpanded()"
-            >
-              <i class="pi pi-tag"></i>
-              @if (tagsExpanded()) {
-                <span>Tags</span>
-                @if (taskTags().length > 0) {
-                  <span class="bg-tags-expanded-badge px-1.5 rounded-full">{{ taskTags().length }}</span>
-                }
-              } @else if (taskTags().length > 0) {
-                <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-tags-badge text-[9px] text-tags-badge-foreground font-medium">{{ taskTags().length }}</span>
+            <div class="relative">
+              <button
+                type="button"
+                class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7 w-7"
+                [class.bg-tag/30]="showTagPicker()"
+                [class.text-tag]="showTagPicker()"
+                [class.bg-foreground-muted/10]="!showTagPicker()"
+                [class.text-foreground-muted/40]="!showTagPicker()"
+                [class.hover:bg-foreground-muted/20]="!showTagPicker()"
+                (click)="onTagButtonClick(); $event.stopPropagation()"
+                aria-label="Add tag"
+                [attr.aria-expanded]="showTagPicker()"
+              >
+                <i class="pi pi-tag"></i>
+              </button>
+              <!-- Tooltip bubble for first tag add (positioned above the button) -->
+              @if (showTagPicker()) {
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 w-44">
+                  <!-- Tooltip content -->
+                  <div class="bg-surface rounded-lg p-2 shadow-lg border border-border">
+                    <input
+                      #firstTagInput
+                      type="text"
+                      placeholder="Type tag name..."
+                      [value]="firstTagSearch()"
+                      (input)="firstTagSearch.set(asInput($event).value)"
+                      (keydown.enter)="onFirstTagEnter(); $event.preventDefault()"
+                      (keydown.escape)="showTagPicker.set(false); $event.stopPropagation()"
+                      class="w-full text-sm px-2 py-1.5 bg-surface-muted rounded text-center outline-none focus:ring-1 focus:ring-primary"
+                      aria-label="Type tag name"
+                    >
+                    <!-- Tag suggestions as horizontal pills -->
+                    @if (tooltipSuggestions().length > 0) {
+                      <div class="flex flex-wrap justify-center gap-1 mt-2">
+                        @for (tag of tooltipSuggestions(); track tag.id) {
+                          <p-chip
+                            [label]="tag.name"
+                            styleClass="text-[10px] bg-tag text-tag-foreground cursor-pointer hover:opacity-80"
+                            (click)="addTag({ id: tag.id, name: tag.name }); $event.stopPropagation()"
+                          />
+                        }
+                      </div>
+                    }
+                    <!-- Create new tag option -->
+                    @if (canCreateFirstTag()) {
+                      <div class="flex justify-center mt-2">
+                        <button
+                          type="button"
+                          class="text-xs text-primary hover:text-primary-hover transition-colors"
+                          (click)="createAndAddTag(firstTagSearch().trim()); $event.stopPropagation()"
+                        >
+                          + Create "{{ firstTagSearch().trim() }}"
+                        </button>
+                      </div>
+                    }
+                  </div>
+                  <!-- Arrow pointing down -->
+                  <div class="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-surface border-r border-b border-border transform rotate-45"></div>
+                </div>
               }
-            </button>
+            </div>
           }
 
           <!-- Mobile status change buttons (spacer pushes to right) -->
@@ -472,51 +496,6 @@ import { TagPickerPopoverComponent } from './tag-picker-popover.component';
           </div>
         }
 
-        <!-- Tags expanded content (only show when using tab-based UI) -->
-        @if (tagsExpanded() && !hasInlineTags()) {
-          <div class="mt-2 p-2 bg-tags-section rounded-lg border border-tags-section-border relative">
-            <!-- Existing tags -->
-            @if (taskTags().length > 0) {
-              <div class="flex flex-wrap gap-1.5 mb-2">
-                @for (tag of taskTags(); track tag.id) {
-                  <span class="group/tag inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-tag text-tag-foreground">
-                    {{ tag.name }}
-                    <button
-                      type="button"
-                      class="opacity-50 group-hover/tag:opacity-100 hover:text-danger transition-opacity"
-                      (click)="removeTag(tag.id); $event.stopPropagation()"
-                      [attr.aria-label]="'Remove tag ' + tag.name"
-                    >
-                      <i class="pi pi-times text-[10px]"></i>
-                    </button>
-                  </span>
-                }
-              </div>
-            }
-
-            <!-- Add tag button -->
-            <button
-              type="button"
-              class="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors"
-              (click)="showTagPicker.set(true); $event.stopPropagation()"
-              aria-label="Add tag"
-            >
-              <i class="pi pi-plus text-[10px]"></i>
-              <span>Add tag</span>
-            </button>
-
-            <!-- Tag picker popover -->
-            @if (showTagPicker()) {
-              <app-tag-picker-popover
-                [allTags]="allTags()"
-                [existingTagIds]="existingTagIds()"
-                (onSelect)="addTag($event)"
-                (onCreate)="createAndAddTag($event)"
-                (onClose)="showTagPicker.set(false)"
-              />
-            }
-          </div>
-        }
     </div>
   `,
 })
@@ -606,6 +585,29 @@ export class TaskCardComponent {
 
   // Existing tag IDs for filtering in picker
   readonly existingTagIds = computed(() => this.taskTags().map(t => t.id));
+
+  // First tag tooltip state
+  readonly firstTagSearch = signal('');
+  readonly firstTagInput = viewChild<ElementRef<HTMLInputElement>>('firstTagInput');
+
+  // Filtered suggestions for first tag tooltip (max 4)
+  readonly tooltipSuggestions = computed(() => {
+    const query = this.firstTagSearch().toLowerCase().trim();
+    const available = this.allTags();
+    if (!query) return available.slice(0, 4);
+    return available
+      .filter(tag => tag.name.toLowerCase().includes(query))
+      .slice(0, 4);
+  });
+
+  // Can create new tag with current search text
+  readonly canCreateFirstTag = computed(() => {
+    const query = this.firstTagSearch().trim();
+    if (!query) return false;
+    return !this.allTags().some(tag =>
+      tag.name.toLowerCase() === query.toLowerCase()
+    );
+  });
 
   // Due date display calculations
   private readonly daysDiff = computed(() => {
@@ -755,6 +757,11 @@ export class TaskCardComponent {
   /** Type-safe helper for keyboard events */
   asKeyboardEvent(event: Event): KeyboardEvent {
     return event as KeyboardEvent;
+  }
+
+  /** Type-safe helper for accessing input value from events */
+  asInput(event: Event): HTMLInputElement {
+    return event.target as HTMLInputElement;
   }
 
   private formatTime(dateStr: string, type: 'elapsed' | 'completed'): string {
@@ -1016,9 +1023,51 @@ export class TaskCardComponent {
   }
 
   // Tag methods
+  onTagButtonClick(): void {
+    // Tag button in tab bar only renders when no tags exist (first tag add)
+    // Toggle the tooltip picker and close any expanded tabs
+    const wasOpen = this.showTagPicker();
+    this.showTagPicker.set(!wasOpen);
+    this.selectedTab.set(null);
+
+    // Focus the input when opening
+    if (!wasOpen) {
+      this.firstTagSearch.set('');
+      afterNextRender(() => {
+        this.firstTagInput()?.nativeElement.focus();
+      }, { injector: this.injector });
+    }
+  }
+
+  onFirstTagEnter(): void {
+    const query = this.firstTagSearch().trim();
+    const suggestions = this.tooltipSuggestions();
+
+    // If there's an exact match, select it
+    const exactMatch = suggestions.find(t =>
+      t.name.toLowerCase() === query.toLowerCase()
+    );
+    if (exactMatch) {
+      this.addTag({ id: exactMatch.id, name: exactMatch.name });
+      return;
+    }
+
+    // If can create, create it
+    if (this.canCreateFirstTag()) {
+      this.createAndAddTag(query);
+      return;
+    }
+
+    // If there's a single suggestion, select it
+    if (suggestions.length === 1) {
+      this.addTag({ id: suggestions[0].id, name: suggestions[0].name });
+    }
+  }
+
   addTag(tag: TaskTag): void {
     this.onAddTag.emit(tag);
     this.showTagPicker.set(false);
+    this.firstTagSearch.set('');
   }
 
   removeTag(tagId: string): void {
@@ -1028,5 +1077,6 @@ export class TaskCardComponent {
   createAndAddTag(name: string): void {
     this.onCreateTag.emit(name);
     this.showTagPicker.set(false);
+    this.firstTagSearch.set('');
   }
 }

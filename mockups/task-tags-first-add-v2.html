@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tags - First Tag Add UX v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        surface: '#eceff4',
+                        'surface-subtle': '#e5e9f0',
+                        'surface-hover': '#d8dee9',
+                        foreground: '#2e3440',
+                        'foreground-muted': '#4c566a',
+                        border: '#d8dee9',
+                        primary: '#5e81ac',
+                        danger: '#bf616a',
+                        warning: '#ebcb8b',
+                        tag: '#b48ead',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .task-card { background: #e5e9f0; border-radius: 6px; padding: 8px 12px; border: 1px solid #d8dee9; }
+        .popover { background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .recommended { border: 2px solid #10b981; }
+        .modal-overlay { background: rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl font-bold mb-2">Adding First Tag - More Options (v2)</h1>
+        <p class="text-gray-600 mb-8">Alternative approaches for the "add first tag" experience</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            <!-- Option A: Command Palette Style -->
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold mb-1">A: Command Palette</h2>
+                <p class="text-sm text-gray-500 mb-4">Centered overlay like VS Code / Spotlight</p>
+
+                <div class="p-4 rounded-lg bg-gray-800 relative min-h-[200px] flex items-center justify-center">
+                    <!-- Dimmed background task -->
+                    <div class="absolute inset-4 opacity-30">
+                        <div class="task-card">
+                            <p class="text-sm">Review quarterly report</p>
+                        </div>
+                    </div>
+                    <!-- Command palette -->
+                    <div class="popover w-72 rounded-xl overflow-hidden z-10 shadow-2xl">
+                        <div class="p-3 border-b bg-gray-50">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-tag text-tag text-sm"></i>
+                                <input type="text" placeholder="Add tag..." class="flex-1 bg-transparent text-sm outline-none font-medium" autofocus>
+                            </div>
+                        </div>
+                        <div class="py-2 max-h-40">
+                            <div class="px-3 py-1 text-[10px] text-gray-500 uppercase">Suggestions</div>
+                            <button class="w-full px-3 py-2 text-left text-sm hover:bg-primary/10 flex items-center gap-2 bg-primary/5">
+                                <span class="w-2 h-2 rounded-full bg-tag"></span>
+                                Work
+                                <span class="ml-auto text-xs text-gray-400">8 tasks</span>
+                            </button>
+                            <button class="w-full px-3 py-2 text-left text-sm hover:bg-primary/10 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-tag"></span>
+                                Personal
+                            </button>
+                        </div>
+                        <div class="px-3 py-2 bg-gray-50 border-t text-xs text-gray-500 flex justify-between">
+                            <span>↵ select</span>
+                            <span>esc close</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Focused, distraction-free</p>
+                    <p class="text-green-600">✓ Keyboard-friendly</p>
+                    <p class="text-amber-600">○ Modal breaks flow slightly</p>
+                </div>
+            </div>
+
+            <!-- Option B: Tooltip-style Bubble -->
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold mb-1">B: Tooltip Bubble</h2>
+                <p class="text-sm text-gray-500 mb-4">Small bubble pointing to the tag icon</p>
+
+                <div class="p-4 rounded-lg bg-gray-50">
+                    <div class="task-card relative">
+                        <div class="flex items-start gap-2 mb-2">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                                <i class="pi pi-flag text-sm"></i>
+                            </div>
+                            <p class="text-sm flex-1">Review quarterly report</p>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button class="h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs flex items-center gap-1.5">
+                                <i class="pi pi-calendar"></i>
+                                <span>Tomorrow</span>
+                            </button>
+                            <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
+                                <i class="pi pi-comment text-xs"></i>
+                            </button>
+                            <div class="relative">
+                                <button class="w-7 h-7 rounded-full bg-tag/30 text-tag flex items-center justify-center">
+                                    <i class="pi pi-tag text-xs"></i>
+                                </button>
+                                <!-- Tooltip bubble with arrow -->
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44">
+                                    <div class="popover rounded-lg p-2 border">
+                                        <input type="text" placeholder="Type tag name..." class="w-full text-sm px-2 py-1 bg-gray-50 rounded outline-none text-center">
+                                        <div class="flex justify-center gap-1 mt-2">
+                                            <span class="px-2 py-0.5 rounded text-[10px] bg-tag/20 text-tag cursor-pointer hover:bg-tag/30">Work</span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] bg-tag/20 text-tag cursor-pointer hover:bg-tag/30">Q4</span>
+                                        </div>
+                                    </div>
+                                    <!-- Arrow -->
+                                    <div class="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-white border-r border-b transform rotate-45"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Close to trigger</p>
+                    <p class="text-green-600">✓ Lightweight feel</p>
+                    <p class="text-red-500">✗ Limited space</p>
+                    <p class="text-red-500">✗ May clip at edges</p>
+                </div>
+            </div>
+
+            <!-- Option C: Icon Transforms to Input -->
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold mb-1">C: Icon → Input Transform</h2>
+                <p class="text-sm text-gray-500 mb-4">Tag icon expands into an input field inline</p>
+
+                <div class="p-4 rounded-lg bg-gray-50 space-y-4">
+                    <div>
+                        <div class="text-[10px] text-gray-500 mb-1">Before click:</div>
+                        <div class="task-card">
+                            <div class="flex items-start gap-2 mb-2">
+                                <div class="w-5 h-5"></div>
+                                <p class="text-sm flex-1">Review quarterly report</p>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button class="h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">Tomorrow</button>
+                                <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
+                                    <i class="pi pi-comment text-xs"></i>
+                                </button>
+                                <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center">
+                                    <i class="pi pi-tag text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-gray-500 mb-1">After click (expands):</div>
+                        <div class="task-card">
+                            <div class="flex items-start gap-2 mb-2">
+                                <div class="w-5 h-5"></div>
+                                <p class="text-sm flex-1">Review quarterly report</p>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button class="h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">Tomorrow</button>
+                                <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
+                                    <i class="pi pi-comment text-xs"></i>
+                                </button>
+                                <!-- Expanded input -->
+                                <div class="flex-1 flex items-center gap-1 h-7 px-2 rounded-full bg-tag/20 border border-tag/40">
+                                    <i class="pi pi-tag text-tag text-xs"></i>
+                                    <input type="text" placeholder="Add tag..." class="flex-1 bg-transparent text-sm outline-none min-w-0">
+                                    <button class="text-gray-400 hover:text-gray-600">
+                                        <i class="pi pi-times text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Smooth transform animation</p>
+                    <p class="text-green-600">✓ Stays in same row</p>
+                    <p class="text-green-600">✓ No popover needed</p>
+                    <p class="text-amber-600">○ Where do suggestions go?</p>
+                </div>
+            </div>
+
+            <!-- Option D: Bottom Sheet (Mobile Pattern) -->
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold mb-1">D: Bottom Sheet</h2>
+                <p class="text-sm text-gray-500 mb-4">Panel slides up from bottom (mobile pattern)</p>
+
+                <div class="p-4 rounded-lg bg-gray-800 relative min-h-[240px] overflow-hidden">
+                    <!-- Task in background -->
+                    <div class="opacity-50 mb-20">
+                        <div class="task-card">
+                            <p class="text-sm">Review quarterly report</p>
+                        </div>
+                    </div>
+                    <!-- Bottom sheet -->
+                    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl">
+                        <div class="flex justify-center pt-2 pb-1">
+                            <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="pi pi-tag text-tag"></i>
+                                <span class="font-medium">Add Tag</span>
+                            </div>
+                            <input type="text" placeholder="Search or create tag..." class="w-full px-3 py-2 bg-gray-100 rounded-lg text-sm outline-none mb-3">
+                            <div class="flex flex-wrap gap-2">
+                                <button class="px-3 py-1.5 rounded-full text-sm bg-tag/20 text-tag">Work</button>
+                                <button class="px-3 py-1.5 rounded-full text-sm bg-tag/20 text-tag">Personal</button>
+                                <button class="px-3 py-1.5 rounded-full text-sm bg-tag/20 text-tag">Q4</button>
+                                <button class="px-3 py-1.5 rounded-full text-sm bg-gray-100 text-gray-600">+ Create</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Lots of space</p>
+                    <p class="text-green-600">✓ Touch-friendly</p>
+                    <p class="text-green-600">✓ Familiar mobile pattern</p>
+                    <p class="text-red-500">✗ Heavyweight for desktop</p>
+                </div>
+            </div>
+
+            <!-- Option E: Inline Pill Input -->
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold mb-1">E: Inline Pill Input</h2>
+                <p class="text-sm text-gray-500 mb-4">Empty pill placeholder you can click and type into</p>
+
+                <div class="p-4 rounded-lg bg-gray-50 space-y-4">
+                    <div>
+                        <div class="text-[10px] text-gray-500 mb-1">Idle (shows dashed placeholder):</div>
+                        <div class="task-card">
+                            <div class="flex items-start gap-2 mb-2">
+                                <div class="w-5 h-5"></div>
+                                <p class="text-sm flex-1">Review quarterly report</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <span class="w-5 h-5 flex items-center justify-center text-tag/40">
+                                    <i class="pi pi-tag text-xs"></i>
+                                </span>
+                                <button class="px-2 py-0.5 rounded-full text-[10px] border border-dashed border-tag/40 text-tag/60 hover:border-tag hover:text-tag hover:bg-tag/5">
+                                    + Add tag
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-gray-500 mb-1">Clicked (editable pill):</div>
+                        <div class="task-card">
+                            <div class="flex items-start gap-2 mb-2">
+                                <div class="w-5 h-5"></div>
+                                <p class="text-sm flex-1">Review quarterly report</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <span class="w-5 h-5 flex items-center justify-center text-tag/60">
+                                    <i class="pi pi-tag text-xs"></i>
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag border border-tag/40 flex items-center gap-1">
+                                    <input type="text" class="bg-transparent outline-none w-12" placeholder="tag..." autofocus>
+                                </span>
+                            </div>
+                            <!-- Suggestions appear below -->
+                            <div class="ml-7 mt-1 flex gap-1">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-600 cursor-pointer hover:bg-tag/20 hover:text-tag">Work</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-600 cursor-pointer hover:bg-tag/20 hover:text-tag">Personal</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Visually matches where tags will appear</p>
+                    <p class="text-green-600">✓ Minimal state change</p>
+                    <p class="text-green-600">✓ Clear affordance</p>
+                </div>
+            </div>
+
+            <!-- Option F: Side Panel -->
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold mb-1">F: Side Panel</h2>
+                <p class="text-sm text-gray-500 mb-4">Panel slides in from right side</p>
+
+                <div class="p-4 rounded-lg bg-gray-100 relative min-h-[200px] flex">
+                    <!-- Main content -->
+                    <div class="flex-1 pr-2">
+                        <div class="task-card opacity-75">
+                            <p class="text-sm">Review quarterly report</p>
+                            <div class="flex gap-1 mt-2">
+                                <span class="h-6 px-2 rounded-full bg-amber-100 text-amber-700 text-xs flex items-center">Tomorrow</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Side panel -->
+                    <div class="w-40 bg-white rounded-lg shadow-lg p-3 border-l-2 border-tag">
+                        <div class="flex items-center gap-1 mb-2 text-tag font-medium text-sm">
+                            <i class="pi pi-tag text-xs"></i>
+                            Tags
+                        </div>
+                        <input type="text" placeholder="Search..." class="w-full text-xs px-2 py-1 bg-gray-50 rounded mb-2 outline-none">
+                        <div class="space-y-1">
+                            <button class="w-full text-left text-xs px-2 py-1 rounded hover:bg-tag/10">Work</button>
+                            <button class="w-full text-left text-xs px-2 py-1 rounded hover:bg-tag/10">Personal</button>
+                            <button class="w-full text-left text-xs px-2 py-1 rounded hover:bg-tag/10">Q4</button>
+                        </div>
+                        <button class="w-full text-xs text-primary mt-2 pt-2 border-t">+ Create new</button>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Lots of room for tags</p>
+                    <p class="text-green-600">✓ Doesn't cover task</p>
+                    <p class="text-red-500">✗ Takes horizontal space</p>
+                    <p class="text-red-500">✗ Complex for simple action</p>
+                </div>
+            </div>
+
+            <!-- Option G: Floating Search Bar -->
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold mb-1">G: Floating Search Bar</h2>
+                <p class="text-sm text-gray-500 mb-4">Search bar floats above the task card</p>
+
+                <div class="p-4 rounded-lg bg-gray-50 relative">
+                    <!-- Floating search -->
+                    <div class="popover rounded-full px-3 py-2 flex items-center gap-2 mb-3 shadow-lg border-2 border-tag/30">
+                        <i class="pi pi-tag text-tag text-sm"></i>
+                        <input type="text" placeholder="Type to search or create tag..." class="flex-1 text-sm outline-none bg-transparent">
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i class="pi pi-times text-sm"></i>
+                        </button>
+                    </div>
+                    <!-- Task card -->
+                    <div class="task-card">
+                        <div class="flex items-start gap-2 mb-2">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                                <i class="pi pi-flag text-sm"></i>
+                            </div>
+                            <p class="text-sm flex-1">Review quarterly report</p>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button class="h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs">Tomorrow</button>
+                            <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
+                                <i class="pi pi-comment text-xs"></i>
+                            </button>
+                            <button class="w-7 h-7 rounded-full bg-tag/20 text-tag flex items-center justify-center">
+                                <i class="pi pi-tag text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Suggestions below search -->
+                    <div class="flex gap-1 mt-2 ml-1">
+                        <span class="px-2 py-1 rounded-full text-xs bg-white shadow border cursor-pointer hover:bg-tag/10">Work</span>
+                        <span class="px-2 py-1 rounded-full text-xs bg-white shadow border cursor-pointer hover:bg-tag/10">Personal</span>
+                        <span class="px-2 py-1 rounded-full text-xs bg-white shadow border cursor-pointer hover:bg-tag/10">Q4</span>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Prominent search</p>
+                    <p class="text-green-600">✓ Suggestions visible</p>
+                    <p class="text-green-600">✓ Doesn't obscure task</p>
+                    <p class="text-amber-600">○ Floaty/disconnected feel</p>
+                </div>
+            </div>
+
+            <!-- Option H: Replace Action Bar Temporarily -->
+            <div class="bg-white rounded-lg p-6 recommended">
+                <h2 class="text-lg font-semibold mb-1">H: Replace Action Bar</h2>
+                <p class="text-sm text-green-600 font-medium mb-2">✓ Recommended</p>
+                <p class="text-sm text-gray-500 mb-4">Action bar transforms into tag search while adding</p>
+
+                <div class="p-4 rounded-lg bg-gray-50 space-y-4">
+                    <div>
+                        <div class="text-[10px] text-gray-500 mb-1">Normal state:</div>
+                        <div class="task-card">
+                            <div class="flex items-start gap-2 mb-2">
+                                <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                                    <i class="pi pi-flag text-sm"></i>
+                                </div>
+                                <p class="text-sm flex-1">Review quarterly report</p>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button class="h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs flex items-center gap-1.5">
+                                    <i class="pi pi-calendar"></i> Tomorrow
+                                </button>
+                                <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
+                                    <i class="pi pi-comment text-xs"></i>
+                                </button>
+                                <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center">
+                                    <i class="pi pi-tag text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-gray-500 mb-1">Tag mode (replaces action bar):</div>
+                        <div class="task-card">
+                            <div class="flex items-start gap-2 mb-2">
+                                <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                                    <i class="pi pi-flag text-sm"></i>
+                                </div>
+                                <p class="text-sm flex-1">Review quarterly report</p>
+                            </div>
+                            <!-- Replaced with tag search -->
+                            <div class="flex items-center gap-2 h-7">
+                                <div class="flex-1 flex items-center gap-2 px-2 bg-tag/10 rounded-full border border-tag/30">
+                                    <i class="pi pi-tag text-tag text-xs"></i>
+                                    <input type="text" placeholder="Search or create tag..." class="flex-1 bg-transparent text-sm outline-none py-1">
+                                </div>
+                                <button class="shrink-0 text-gray-400 hover:text-gray-600 text-xs">
+                                    Cancel
+                                </button>
+                            </div>
+                            <!-- Suggestions -->
+                            <div class="flex gap-1 mt-2">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag cursor-pointer hover:bg-tag/30">Work</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag cursor-pointer hover:bg-tag/30">Personal</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-tag/20 text-tag cursor-pointer hover:bg-tag/30">Q4</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] text-primary cursor-pointer hover:bg-primary/10">+ New</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Search is prominent at top</p>
+                    <p class="text-green-600">✓ No extra vertical space</p>
+                    <p class="text-green-600">✓ Suggestions below input</p>
+                    <p class="text-green-600">✓ Clean cancel action</p>
+                </div>
+            </div>
+
+            <!-- Option I: Just Show Tags Row Always -->
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold mb-1">I: Always Show Tag Row</h2>
+                <p class="text-sm text-gray-500 mb-4">Tag row always visible with "+ Add" placeholder</p>
+
+                <div class="p-4 rounded-lg bg-gray-50">
+                    <div class="task-card">
+                        <div class="flex items-start gap-2 mb-2">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                                <i class="pi pi-flag text-sm"></i>
+                            </div>
+                            <p class="text-sm flex-1">Review quarterly report</p>
+                        </div>
+                        <!-- Always visible tag row -->
+                        <div class="flex items-center gap-2 mt-1.5 mb-2">
+                            <span class="w-5 h-5 flex items-center justify-center text-tag/40">
+                                <i class="pi pi-tag text-xs"></i>
+                            </span>
+                            <button class="flex items-center gap-1 text-[10px] text-foreground-muted/50 hover:text-tag transition-colors">
+                                <i class="pi pi-plus text-[8px]"></i>
+                                <span>Add tag</span>
+                            </button>
+                        </div>
+                        <!-- Action bar (no tag icon needed) -->
+                        <div class="flex items-center gap-1.5">
+                            <button class="h-7 px-3 rounded-full bg-amber-100 text-amber-700 text-xs flex items-center gap-1.5">
+                                <i class="pi pi-calendar"></i> Tomorrow
+                            </button>
+                            <button class="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
+                                <i class="pi pi-comment text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs space-y-1 mt-4">
+                    <p class="text-green-600">✓ Always discoverable</p>
+                    <p class="text-green-600">✓ No icon in action bar</p>
+                    <p class="text-green-600">✓ Consistent position</p>
+                    <p class="text-amber-600">○ Uses space even when empty</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Recommendation -->
+        <div class="mt-8 p-6 bg-green-50 rounded-lg border-2 border-green-200">
+            <h3 class="font-semibold text-green-800 mb-3">Recommendation: Option H - Replace Action Bar</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <p class="text-sm text-green-700 mb-2">Why this works:</p>
+                    <ul class="text-sm text-green-700 list-disc list-inside space-y-1">
+                        <li>Search input is at the TOP (not bottom)</li>
+                        <li>Doesn't add vertical space - replaces existing row</li>
+                        <li>Tag suggestions appear BELOW the input</li>
+                        <li>Clear cancel action to exit</li>
+                        <li>Smooth transition animation possible</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-sm text-green-700 mb-2">Implementation:</p>
+                    <ul class="text-sm text-green-700 list-disc list-inside space-y-1">
+                        <li>Click tag icon → Action bar transforms</li>
+                        <li>Due date, comments buttons hidden temporarily</li>
+                        <li>Full-width search input with tag icon</li>
+                        <li>Suggestions as clickable pills below</li>
+                        <li>Cancel button or click-outside to close</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
