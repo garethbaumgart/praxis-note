@@ -19,6 +19,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Kanban Board** - Drag-and-drop task management with inline creation
 - ✅ **Due Dates** - Set due dates with visual urgency indicators (overdue, today, tomorrow, this week)
 - ✅ **Task Comments** - Add comments to tasks with click-to-edit
+- ✅ **Task Tags** - Organize tasks with reusable tags, displayed inline with expandable overflow
 - ✅ **Google OAuth** - Secure authentication with user accounts
 - 🚧 **Note-First Workflow** - Capture thoughts in rich text notes
 - 🚧 **Automatic Task Extraction** - Checkboxes in notes become tasks on your board
