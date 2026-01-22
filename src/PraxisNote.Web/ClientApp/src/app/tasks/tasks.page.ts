@@ -2,8 +2,10 @@ import { Component, HostListener, inject, OnInit, AfterViewInit, OnDestroy, view
 import { isPlatformBrowser } from '@angular/common';
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
+import { TagService } from './tag.service';
 import { ColumnComponent } from './column.component';
 import { Task, TaskStatus } from './task.model';
+import { Tag, TaskTag } from './tag.model';
 import { ToastService } from '../shared/services/toast.service';
 
 type SortMode = 'manual' | 'dueDate' | 'priority';
@@ -136,6 +138,7 @@ interface ColumnConfig {
             [archiveCount]="col.archiveCount ?? 0"
             [doneCount]="col.doneCount ?? 0"
             [showArchive]="col.showArchive ?? false"
+            [allTags]="tagService.tags()"
             (onArchiveToggle)="toggleArchive()"
             (onDrop)="drop($event, col.status)"
             (onEditTask)="updateTask($event.id, $event.title)"
@@ -148,6 +151,9 @@ interface ColumnConfig {
             (onClearDueDate)="clearDueDate($event.taskId)"
             (onTogglePriority)="togglePriority($event.taskId)"
             (onStatusChange)="changeStatus($event.taskId, $event.status)"
+            (onAddTag)="addTag($event.taskId, $event.tag)"
+            (onRemoveTag)="removeTag($event.taskId, $event.tagId)"
+            (onCreateTag)="createTag($event.taskId, $event.name, $event.color)"
             (onSortModeChange)="col.sortModeSignal.set($event)"
             [showSortMenu]="activeSortMenu() === col.status"
             (onSortMenuToggle)="toggleSortMenu(col.status)"
@@ -172,6 +178,7 @@ interface ColumnConfig {
             [archiveCount]="col.archiveCount ?? 0"
             [doneCount]="col.doneCount ?? 0"
             [showArchive]="col.showArchive ?? false"
+            [allTags]="tagService.tags()"
             (onArchiveToggle)="toggleArchive()"
             (onDrop)="drop($event, col.status)"
             (onEditTask)="updateTask($event.id, $event.title)"
@@ -184,6 +191,9 @@ interface ColumnConfig {
             (onClearDueDate)="clearDueDate($event.taskId)"
             (onTogglePriority)="togglePriority($event.taskId)"
             (onStatusChange)="changeStatus($event.taskId, $event.status)"
+            (onAddTag)="addTag($event.taskId, $event.tag)"
+            (onRemoveTag)="removeTag($event.taskId, $event.tagId)"
+            (onCreateTag)="createTag($event.taskId, $event.name, $event.color)"
             (onSortModeChange)="col.sortModeSignal.set($event)"
             [showSortMenu]="activeSortMenu() === col.status"
             (onSortMenuToggle)="toggleSortMenu(col.status)"
@@ -195,6 +205,7 @@ interface ColumnConfig {
 })
 export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly taskService = inject(TaskService);
+  readonly tagService = inject(TagService);
   private readonly toastService = inject(ToastService);
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -302,6 +313,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.taskService.loadTasks();
     this.taskService.loadArchivedCount();
+    this.tagService.loadTags();
   }
 
   ngAfterViewInit(): void {
@@ -498,5 +510,37 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.taskService.changeStatus(task.id, targetStatus, event.currentIndex);
     }
+  }
+
+  addTag(taskId: string, tag: Tag): void {
+    const taskTag: TaskTag = { id: tag.id, name: tag.name, color: tag.color };
+    this.taskService.addTagToTask(
+      taskId,
+      taskTag,
+      () => this.tagService.incrementUsageCount(tag.id)
+    );
+  }
+
+  removeTag(taskId: string, tagId: string): void {
+    this.taskService.removeTagFromTask(
+      taskId,
+      tagId,
+      () => this.tagService.decrementUsageCount(tagId)
+    );
+  }
+
+  createTag(taskId: string, name: string, color: string): void {
+    // Create the tag first, then add it to the task when creation succeeds
+    this.tagService.createTag(name, color).subscribe({
+      next: (tag) => {
+        // Add the newly created tag to the task
+        this.taskService.addTagToTask(
+          taskId,
+          tag,
+          () => this.tagService.incrementUsageCount(tag.id)
+        );
+      },
+      // Error is already handled by TagService
+    });
   }
 }

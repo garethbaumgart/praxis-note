@@ -1,3 +1,5 @@
+using PraxisNote.Application.Features.Tags;
+
 namespace PraxisNote.Application.Features.Tasks;
 
 public record TaskDto(
@@ -10,7 +12,8 @@ public record TaskDto(
     DateTimeOffset? StartedAt,
     DateTimeOffset? CompletedAt,
     IReadOnlyList<CommentDto> Comments,
-    DateOnly? DueDate);
+    DateOnly? DueDate,
+    IReadOnlyList<TaskTagDto> Tags);
 
 public record CommentDto(
     Guid Id,

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Tags - Hybrid Approach Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#ffffff',
+            'surface-muted': '#f8fafc',
+            foreground: '#1e293b',
+            'foreground-muted': '#64748b',
+            border: '#e2e8f0',
+            todo: '#e0f2fe',
+            'todo-foreground': '#0369a1',
+            'todo-border': '#7dd3fc',
+            inprogress: '#fef3c7',
+            'inprogress-border': '#fcd34d',
+            done: '#dcfce7',
+            'done-border': '#86efac',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .task-card {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      width: 300px;
+    }
+    .task-card-todo { border: 1px solid #7dd3fc; }
+    .task-card-inprogress { border: 1px solid #fcd34d; }
+    .task-card-done { border: 1px solid #86efac; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <h1 class="text-2xl font-bold mb-2">Task Tags - Hybrid Approach</h1>
+  <p class="text-gray-600 mb-8">Combining Option 2 (tag icon in metadata) + Option 3 (inline tags when present)</p>
+
+  <div class="space-y-12">
+
+    <!-- Variation A: Simple Icon becomes Tags -->
+    <div class="bg-white rounded-xl p-6 shadow-sm">
+      <h2 class="text-xl font-bold mb-1">Variation A: Icon Transforms to Tags</h2>
+      <p class="text-gray-500 mb-6">No tags = tag icon in metadata row. Has tags = tags shown inline, icon disappears.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- No tags -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">No tags</h3>
+          <div class="task-card task-card-todo">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag text-gray-300 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Update documentation</p>
+                <!-- Metadata row with tag icon -->
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">
+                    <i class="pi pi-calendar text-[10px]"></i>
+                    Jan 25
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                    <i class="pi pi-comment text-[10px]"></i>
+                    2
+                  </span>
+                  <button class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors">
+                    <i class="pi pi-tag text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Tag icon in metadata row</p>
+        </div>
+
+        <!-- With tags -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">With tags</h3>
+          <div class="task-card task-card-inprogress">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag-fill text-red-500 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Implement user authentication</p>
+                <!-- Tags row (between title and metadata) -->
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="tag" style="background: #dbeafe; color: #1d4ed8;">Backend</span>
+                  <span class="tag" style="background: #fef3c7; color: #b45309;">Priority</span>
+                  <button class="w-5 h-5 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="pi pi-plus text-[10px]"></i>
+                  </button>
+                </div>
+                <!-- Metadata row (no tag icon) -->
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
+                    <i class="pi pi-calendar text-[10px]"></i>
+                    Jan 28
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                    <i class="pi pi-comment text-[10px]"></i>
+                    5
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Tags inline, icon gone</p>
+        </div>
+
+        <!-- Many tags -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">Many tags</h3>
+          <div class="task-card task-card-done">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag text-gray-300 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Setup CI/CD pipeline</p>
+                <!-- Tags row -->
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="tag" style="background: #dbeafe; color: #1d4ed8;">Backend</span>
+                  <span class="tag" style="background: #dcfce7; color: #15803d;">DevOps</span>
+                  <span class="tag" style="background: #f3e8ff; color: #7c3aed;">Sprint 3</span>
+                  <span class="tag" style="background: #fee2e2; color: #dc2626;">Urgent</span>
+                  <button class="w-5 h-5 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="pi pi-plus text-[10px]"></i>
+                  </button>
+                </div>
+                <!-- Metadata row -->
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                    <i class="pi pi-comment text-[10px]"></i>
+                    3
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Tags wrap naturally</p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <p class="text-green-600">+ Clean when no tags</p>
+          <p class="text-green-600">+ Tags always visible when present</p>
+          <p class="text-green-600">+ Consistent add button placement</p>
+        </div>
+        <div>
+          <p class="text-red-600">- Tag icon disappears (inconsistent?)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variation B: Icon Stays in Metadata -->
+    <div class="bg-white rounded-xl p-6 shadow-sm">
+      <h2 class="text-xl font-bold mb-1">Variation B: Icon Always in Metadata</h2>
+      <p class="text-gray-500 mb-6">Tag icon always in metadata row. When tags exist, they appear above AND icon shows count.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- No tags -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">No tags</h3>
+          <div class="task-card task-card-todo">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag text-gray-300 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Update documentation</p>
+                <!-- Metadata row -->
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">
+                    <i class="pi pi-calendar text-[10px]"></i>
+                    Jan 25
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                    <i class="pi pi-comment text-[10px]"></i>
+                    2
+                  </span>
+                  <button class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors">
+                    <i class="pi pi-tag text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Click tag icon to add</p>
+        </div>
+
+        <!-- With tags -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">With tags</h3>
+          <div class="task-card task-card-inprogress">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag-fill text-red-500 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Implement user authentication</p>
+                <!-- Tags row -->
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="tag" style="background: #dbeafe; color: #1d4ed8;">Backend</span>
+                  <span class="tag" style="background: #fef3c7; color: #b45309;">Priority</span>
+                </div>
+                <!-- Metadata row with count -->
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
+                    <i class="pi pi-calendar text-[10px]"></i>
+                    Jan 28
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                    <i class="pi pi-comment text-[10px]"></i>
+                    5
+                  </span>
+                  <button class="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors">
+                    <i class="pi pi-tag text-[10px]"></i>
+                    <span>2</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Icon shows count, click to manage</p>
+        </div>
+
+        <!-- Adding tag -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">Adding via icon click</h3>
+          <div class="task-card task-card-inprogress relative">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag-fill text-red-500 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Implement user authentication</p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="tag" style="background: #dbeafe; color: #1d4ed8;">Backend</span>
+                  <span class="tag" style="background: #fef3c7; color: #b45309;">Priority</span>
+                </div>
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
+                    <i class="pi pi-calendar text-[10px]"></i>
+                    Jan 28
+                  </span>
+                  <button class="inline-flex items-center gap-1 text-xs text-blue-600">
+                    <i class="pi pi-tag text-[10px]"></i>
+                    <span>2</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Dropdown from icon -->
+            <div class="absolute right-0 top-full mt-1 w-52 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+              <div class="p-2 border-b border-gray-100">
+                <input type="text" placeholder="Search or create..." class="w-full text-xs border border-gray-200 rounded px-2 py-1.5 outline-none focus:border-blue-400">
+              </div>
+              <div class="p-1 max-h-40 overflow-y-auto">
+                <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left">
+                  <span class="w-2 h-2 rounded-full" style="background: #10b981;"></span>
+                  <span class="text-xs">Frontend</span>
+                </button>
+                <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left">
+                  <span class="w-2 h-2 rounded-full" style="background: #8b5cf6;"></span>
+                  <span class="text-xs">Sprint 3</span>
+                </button>
+                <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left">
+                  <span class="w-2 h-2 rounded-full" style="background: #ef4444;"></span>
+                  <span class="text-xs">Bug</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Popover from tag icon</p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <p class="text-green-600">+ Consistent icon placement</p>
+          <p class="text-green-600">+ Count badge is informative</p>
+          <p class="text-green-600">+ Single entry point for tag management</p>
+        </div>
+        <div>
+          <p class="text-red-600">- Two places showing tag info (redundant?)</p>
+          <p class="text-red-600">- Must click icon to add more tags</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variation C: Recommended Hybrid -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-500">
+      <h2 class="text-xl font-bold mb-1">Variation C: Best of Both (Recommended)</h2>
+      <p class="text-gray-500 mb-6">No tags = clickable tag icon in metadata. Has tags = inline tags with + button, NO icon in metadata.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- No tags, no metadata -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">No tags, no metadata</h3>
+          <div class="task-card task-card-todo">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag text-gray-300 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Quick task</p>
+                <!-- Only tag icon when nothing else -->
+                <div class="flex items-center gap-3 mt-2">
+                  <button class="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-blue-500 transition-colors">
+                    <i class="pi pi-tag text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Subtle tag icon</p>
+        </div>
+
+        <!-- No tags, has metadata -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">No tags, has metadata</h3>
+          <div class="task-card task-card-todo">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag text-gray-300 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Review PR comments</p>
+                <!-- Metadata with tag icon -->
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">
+                    <i class="pi pi-calendar text-[10px]"></i>
+                    Jan 25
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                    <i class="pi pi-comment text-[10px]"></i>
+                    2
+                  </span>
+                  <button class="inline-flex items-center text-xs text-gray-300 hover:text-blue-500 transition-colors">
+                    <i class="pi pi-tag text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Tag icon with other metadata</p>
+        </div>
+
+        <!-- Has tags -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">Has tags</h3>
+          <div class="task-card task-card-inprogress">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag-fill text-red-500 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Implement auth</p>
+                <!-- Tags row with + -->
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="tag" style="background: #dbeafe; color: #1d4ed8;">Backend</span>
+                  <span class="tag" style="background: #fef3c7; color: #b45309;">Priority</span>
+                  <button class="w-5 h-5 rounded-full bg-gray-100 hover:bg-blue-100 flex items-center justify-center text-gray-400 hover:text-blue-600 transition-colors">
+                    <i class="pi pi-plus text-[10px]"></i>
+                  </button>
+                </div>
+                <!-- Metadata row - NO tag icon -->
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
+                    <i class="pi pi-calendar text-[10px]"></i>
+                    Jan 28
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                    <i class="pi pi-comment text-[10px]"></i>
+                    5
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Tags visible, + to add more</p>
+        </div>
+
+        <!-- Has tags, no other metadata -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500 mb-3">Tags only</h3>
+          <div class="task-card task-card-done">
+            <div class="flex items-start gap-2">
+              <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                <i class="pi pi-flag text-gray-300 text-xs"></i>
+              </button>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">Setup project</p>
+                <!-- Tags row only -->
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="tag" style="background: #dcfce7; color: #15803d;">DevOps</span>
+                  <button class="w-5 h-5 rounded-full bg-gray-100 hover:bg-blue-100 flex items-center justify-center text-gray-400 hover:text-blue-600 transition-colors">
+                    <i class="pi pi-plus text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Clean, just tags</p>
+        </div>
+      </div>
+
+      <!-- Adding flow -->
+      <div class="mt-8 border-t border-gray-100 pt-6">
+        <h3 class="text-sm font-medium text-gray-700 mb-4">Adding tags flow</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- From icon (no tags) -->
+          <div>
+            <h4 class="text-xs font-medium text-gray-500 mb-3">Click tag icon (when no tags)</h4>
+            <div class="task-card task-card-todo relative">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                  <i class="pi pi-flag text-gray-300 text-xs"></i>
+                </button>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-foreground">Review PR comments</p>
+                  <div class="flex items-center gap-3 mt-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">
+                      <i class="pi pi-calendar text-[10px]"></i>
+                      Jan 25
+                    </span>
+                    <button class="inline-flex items-center text-xs text-blue-500">
+                      <i class="pi pi-tag text-[10px]"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- Autocomplete dropdown -->
+              <div class="absolute left-2 right-2 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                <div class="p-2 border-b border-gray-100">
+                  <input type="text" placeholder="Search or create tag..." autofocus class="w-full text-xs border border-gray-200 rounded px-2 py-1.5 outline-none focus:border-blue-400">
+                </div>
+                <div class="max-h-36 overflow-y-auto">
+                  <button class="w-full flex items-center gap-2 px-3 py-2 hover:bg-blue-50 text-left">
+                    <span class="w-2 h-2 rounded-full" style="background: #3b82f6;"></span>
+                    <span class="text-sm">Backend</span>
+                    <span class="text-xs text-gray-400 ml-auto">4 tasks</span>
+                  </button>
+                  <button class="w-full flex items-center gap-2 px-3 py-2 hover:bg-blue-50 text-left">
+                    <span class="w-2 h-2 rounded-full" style="background: #10b981;"></span>
+                    <span class="text-sm">Frontend</span>
+                    <span class="text-xs text-gray-400 ml-auto">3 tasks</span>
+                  </button>
+                  <button class="w-full flex items-center gap-2 px-3 py-2 hover:bg-blue-50 text-left">
+                    <span class="w-2 h-2 rounded-full" style="background: #f59e0b;"></span>
+                    <span class="text-sm">Priority</span>
+                    <span class="text-xs text-gray-400 ml-auto">2 tasks</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- From + button (has tags) -->
+          <div>
+            <h4 class="text-xs font-medium text-gray-500 mb-3">Click + button (when has tags)</h4>
+            <div class="task-card task-card-inprogress relative">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                  <i class="pi pi-flag-fill text-red-500 text-xs"></i>
+                </button>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-foreground">Implement auth</p>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                    <span class="tag" style="background: #dbeafe; color: #1d4ed8;">Backend</span>
+                    <span class="tag" style="background: #fef3c7; color: #b45309;">Priority</span>
+                    <!-- Inline input after + click -->
+                    <input type="text" value="sec" class="h-5 w-16 text-[11px] border border-blue-400 rounded-full px-2 outline-none">
+                  </div>
+                  <div class="flex items-center gap-3 mt-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
+                      <i class="pi pi-calendar text-[10px]"></i>
+                      Jan 28
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <!-- Autocomplete below tags -->
+              <div class="absolute left-2 right-2 top-[68px] bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                <div class="max-h-32 overflow-y-auto">
+                  <button class="w-full flex items-center gap-2 px-3 py-2 bg-blue-50 text-left">
+                    <span class="w-2 h-2 rounded-full" style="background: #ef4444;"></span>
+                    <span class="text-sm">Security</span>
+                  </button>
+                  <button class="w-full flex items-center gap-2 px-3 py-2 hover:bg-blue-50 text-left">
+                    <span class="w-2 h-2 rounded-full" style="background: #10b981;"></span>
+                    <span class="text-sm">Second Review</span>
+                  </button>
+                </div>
+                <div class="border-t border-gray-100 p-2">
+                  <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 text-left">
+                    <i class="pi pi-plus text-xs text-blue-600"></i>
+                    <span class="text-sm text-blue-600">Create "sec"</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Removing tags -->
+      <div class="mt-8 border-t border-gray-100 pt-6">
+        <h3 class="text-sm font-medium text-gray-700 mb-4">Removing tags</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h4 class="text-xs font-medium text-gray-500 mb-3">Click tag to remove (with confirmation)</h4>
+            <div class="task-card task-card-inprogress">
+              <div class="flex items-start gap-2">
+                <button class="shrink-0 w-5 h-5 flex items-center justify-center">
+                  <i class="pi pi-flag-fill text-red-500 text-xs"></i>
+                </button>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-foreground">Implement auth</p>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                    <span class="tag" style="background: #dbeafe; color: #1d4ed8;">Backend</span>
+                    <!-- Tag with X on hover -->
+                    <span class="tag ring-2 ring-red-300" style="background: #fef3c7; color: #b45309;">
+                      Priority
+                      <button class="ml-0.5 hover:text-red-600">
+                        <i class="pi pi-times text-[8px]"></i>
+                      </button>
+                    </span>
+                    <button class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                      <i class="pi pi-plus text-[10px]"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">Hover tag → X appears → click to remove</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-green-50 rounded-lg">
+        <h4 class="font-medium text-green-800 mb-2">Why this approach works best:</h4>
+        <ul class="text-sm text-green-700 space-y-1">
+          <li>• <strong>No tags:</strong> Subtle tag icon doesn't clutter, but provides clear affordance</li>
+          <li>• <strong>Has tags:</strong> Tags always visible, + button is right there for quick adds</li>
+          <li>• <strong>No redundancy:</strong> Icon OR inline tags, never both</li>
+          <li>• <strong>Consistent:</strong> Autocomplete works the same from both entry points</li>
+          <li>• <strong>Mobile-friendly:</strong> + button is always tappable when tags exist</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Mobile Adaptation -->
+    <div class="bg-white rounded-xl p-6 shadow-sm">
+      <h2 class="text-xl font-bold mb-1">Mobile Adaptation</h2>
+      <p class="text-gray-500 mb-6">How Variation C works on mobile</p>
+
+      <div class="flex gap-6 flex-wrap">
+        <div class="w-72 border border-gray-200 rounded-2xl p-3 bg-gray-50">
+          <h3 class="text-xs font-medium text-gray-500 mb-3">No tags - tap icon</h3>
+          <div class="task-card task-card-todo !w-full">
+            <div class="flex items-start gap-2">
+              <i class="pi pi-flag text-gray-300 text-xs mt-1"></i>
+              <div class="flex-1">
+                <p class="text-sm font-medium">Quick task</p>
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="text-xs text-gray-400">
+                    <i class="pi pi-calendar text-[10px]"></i> Jan 25
+                  </span>
+                  <button class="text-gray-400">
+                    <i class="pi pi-tag text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-72 border border-gray-200 rounded-2xl p-3 bg-gray-50">
+          <h3 class="text-xs font-medium text-gray-500 mb-3">Has tags - tap + to add</h3>
+          <div class="task-card task-card-inprogress !w-full">
+            <div class="flex items-start gap-2">
+              <i class="pi pi-flag-fill text-red-500 text-xs mt-1"></i>
+              <div class="flex-1">
+                <p class="text-sm font-medium">Implement auth</p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="tag" style="background: #dbeafe; color: #1d4ed8;">Backend</span>
+                  <button class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                    <i class="pi pi-plus text-xs"></i>
+                  </button>
+                </div>
+                <div class="flex items-center gap-3 mt-2">
+                  <span class="text-xs text-gray-400">
+                    <i class="pi pi-calendar text-[10px]"></i> Jan 28
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
