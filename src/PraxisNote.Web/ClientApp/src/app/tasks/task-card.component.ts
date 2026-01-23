@@ -151,7 +151,7 @@ import { Chip } from 'primeng/chip';
                     (input)="firstTagSearch.set(asInput($event).value)"
                     (keydown.enter)="onFirstTagEnter(); $event.preventDefault()"
                     (keydown.escape)="showTagPicker.set(false); $event.stopPropagation()"
-                    class="w-full h-6 px-2 text-xs bg-surface-muted rounded-full border-0 outline-none focus:ring-1 focus:ring-primary"
+                    class="w-full h-6 px-2 text-xs bg-surface-muted rounded-full border-0 outline-none"
                     aria-label="Search or create tag"
                   >
                   <!-- Dropdown suggestions -->
