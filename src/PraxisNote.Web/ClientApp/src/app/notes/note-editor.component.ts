@@ -90,10 +90,14 @@ export class NoteEditorComponent {
   readonly content = signal('');
 
   constructor() {
-    // Sync content when note changes
+    // Sync content when note changes or dialog opens
     effect(() => {
+      const isVisible = this.visible();
       const n = this.note();
-      this.content.set(n?.content ?? '');
+      // Reset content when dialog opens (whether editing or creating new)
+      if (isVisible) {
+        this.content.set(n?.content ?? '');
+      }
     });
   }
 

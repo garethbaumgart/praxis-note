@@ -14,21 +14,9 @@ import { ToastService } from '../shared/services/toast.service';
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <!-- Header -->
-      <div class="flex items-center justify-between gap-4 mb-6">
-        <div class="flex items-center gap-3">
-          <h1 class="text-lg font-semibold text-foreground">Notes</h1>
-          <span class="text-sm text-foreground-muted">{{ noteCount() }} notes</span>
-        </div>
-
-        <button
-          type="button"
-          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity"
-          (click)="openNewNote()"
-          aria-label="Create new note"
-        >
-          <i class="pi pi-plus text-xs"></i>
-          <span class="hidden sm:inline">New Note</span>
-        </button>
+      <div class="flex items-center gap-3 mb-6">
+        <h1 class="text-lg font-semibold text-foreground">Notes</h1>
+        <span class="text-sm text-foreground-muted">{{ noteCount() }} notes</span>
       </div>
 
       <!-- Search -->

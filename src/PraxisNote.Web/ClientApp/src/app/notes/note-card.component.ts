@@ -1,10 +1,13 @@
-import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, inject, DestroyRef } from '@angular/core';
 import { Note } from './note.model';
+import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
+import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 
 @Component({
   selector: 'app-note-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DeleteConfirmButtonComponent],
   template: `
     <div
       class="note-card bg-surface-subtle rounded-md border border-border hover:shadow-lg transition-all cursor-pointer group"
@@ -68,14 +71,21 @@ import { Note } from './note.model';
 
         <!-- Hover actions -->
         <div class="card-actions flex items-center gap-1">
-          <button
-            type="button"
-            class="p-1.5 text-foreground-muted hover:text-danger rounded transition-colors"
-            (click)="onDelete.emit(); $event.stopPropagation()"
-            aria-label="Delete note"
-          >
-            <i class="pi pi-trash text-xs"></i>
-          </button>
+          @if (confirmingDelete()) {
+            <app-delete-confirm-button
+              ariaLabel="Confirm delete note"
+              (onConfirm)="confirmDelete()"
+            />
+          } @else {
+            <button
+              type="button"
+              class="p-1.5 text-foreground-muted hover:text-danger rounded transition-colors"
+              (click)="startDeleteConfirm(); $event.stopPropagation()"
+              aria-label="Delete note"
+            >
+              <i class="pi pi-trash text-xs"></i>
+            </button>
+          }
         </div>
       </div>
     </div>
@@ -129,9 +139,14 @@ import { Note } from './note.model';
   `],
 })
 export class NoteCardComponent {
+  private readonly deleteConfirmation = inject(DeleteConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly note = input.required<Note>();
   readonly onOpen = output<void>();
   readonly onDelete = output<void>();
+
+  readonly confirmingDelete = signal(false);
 
   private readonly maxVisibleCheckboxes = 4;
   private readonly maxVisibleTags = 3;
@@ -151,6 +166,26 @@ export class NoteCardComponent {
   readonly hiddenTagCount = computed(() =>
     Math.max(0, this.note().tags.length - this.maxVisibleTags)
   );
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.deleteConfirmation.cleanup();
+    });
+  }
+
+  startDeleteConfirm(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(true);
+    this.deleteConfirmation.start(() => {
+      this.confirmingDelete.set(false);
+    });
+  }
+
+  confirmDelete(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(false);
+    this.onDelete.emit();
+  }
 
   formatRelativeTime(dateString: string): string {
     const date = new Date(dateString);

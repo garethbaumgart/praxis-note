@@ -100,8 +100,11 @@ test.describe('Notes', () => {
     const noteCard = page.locator('.note-card').filter({ hasText: 'Delete me' });
     await noteCard.hover();
 
-    // Click the delete button
+    // Click the delete button to start confirmation
     await noteCard.getByLabel('Delete note').click();
+
+    // Click confirm to actually delete
+    await noteCard.getByLabel('Confirm delete note').click();
 
     // Verify the note is no longer visible
     await expect(page.getByText('Delete me')).not.toBeVisible();
