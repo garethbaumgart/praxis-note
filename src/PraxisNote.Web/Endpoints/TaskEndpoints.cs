@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using PraxisNote.Application.Features.Tasks;
+using PraxisNote.Web.Extensions;
 
 namespace PraxisNote.Web.Endpoints;
 
@@ -27,7 +28,7 @@ public static class TaskEndpoints
         CancellationToken cancellationToken,
         bool includeArchived = false)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -44,7 +45,7 @@ public static class TaskEndpoints
         GetArchivedCount getArchivedCount,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -62,7 +63,7 @@ public static class TaskEndpoints
         CreateTask createTask,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -86,7 +87,7 @@ public static class TaskEndpoints
         UpdateTask updateTask,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -110,7 +111,7 @@ public static class TaskEndpoints
         ChangeTaskStatus changeStatus,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -133,7 +134,7 @@ public static class TaskEndpoints
         [FromServices] ToggleTaskPriority togglePriority,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -151,7 +152,7 @@ public static class TaskEndpoints
         DeleteTask deleteTask,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -169,7 +170,7 @@ public static class TaskEndpoints
         ReorderTasks reorderTasks,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -186,12 +187,6 @@ public static class TaskEndpoints
         return result.Success
             ? Results.NoContent()
             : Results.BadRequest(new { error = result.Error });
-    }
-
-    private static Guid? GetUserId(ClaimsPrincipal user)
-    {
-        var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        return Guid.TryParse(userIdString, out var userId) ? userId : null;
     }
 }
 

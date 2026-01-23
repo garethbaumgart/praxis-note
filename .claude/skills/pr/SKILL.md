@@ -57,7 +57,14 @@ Once tests pass:
 
 After the PR is created, **actively monitor** and address feedback:
 
-1. **Self code review**: Review the PR diff using `gh pr diff` and add comments for any issues found using `gh pr comment` or `gh api`
+1. **Self code review**: Review the PR diff using `gh pr diff` and look for:
+   - Code duplication that could be extracted (DRY principle)
+   - Performance improvements without added complexity
+   - Patterns that don't match existing codebase conventions
+   - Missing null guards or error handling
+   - Accessibility issues (missing aria-labels on icon-only buttons)
+
+   **Apply good refactoring opportunities** you identify - don't defer them to future PRs unless they require significant architectural changes. Add comments for any issues found using `gh pr comment` or `gh api`
 2. **Wait for CI**: Monitor GitHub Actions for completion using `gh pr checks`
 3. **Check for warnings**: Review action logs AND annotations for any warnings (not just failures)
    - Use `gh api repos/{owner}/{repo}/check-runs/{job_id}/annotations` to fetch annotations
@@ -74,6 +81,12 @@ After the PR is created, **actively monitor** and address feedback:
      - **If addressing**: Add a thumbs up reaction using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
      - **If not addressing**: Reply to the comment explaining why (e.g., out of scope, matches existing patterns, deferred to follow-up)
    - **For high-level feedback in PR comments**: Reply to the comment addressing each suggestion - either confirm you'll fix it or explain why not
+   - **Apply good refactoring suggestions**: When reviewers suggest refactoring (e.g., extracting duplicated code, improving efficiency), evaluate and apply them if they:
+     - Reduce code duplication (DRY principle)
+     - Improve performance without adding complexity
+     - Follow existing patterns in the codebase
+     - Are straightforward to implement
+   - Do NOT defer refactoring suggestions to "future PRs" unless they are truly out of scope or require significant architectural changes
    - Commit, push, and verify the fix resolves the comment
 6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
 

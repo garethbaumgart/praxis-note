@@ -1,5 +1,6 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, HostListener } from '@angular/core';
 import { Task, TaskStatus, Comment } from './task.model';
+import { Tag, TaskTag } from './tag.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
 import { HighlightPipe } from '../shared/pipes/highlight.pipe';
@@ -110,6 +111,102 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
           </div>
         </div>
 
+        <!-- Inline tags row (when tags exist OR adding first tag) -->
+        @if (hasInlineTags() || showTagPicker()) {
+          <div class="mt-1.5 flex flex-wrap items-center gap-1">
+              @for (tag of visibleTags(); track tag.id) {
+                <span class="tag-badge">
+                  {{ tag.name }}
+                  <button
+                    type="button"
+                    class="tag-badge-remove"
+                    (click)="removeTag(tag.id); $event.stopPropagation()"
+                    [attr.aria-label]="'Remove tag ' + tag.name"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </span>
+              }
+              @if (overflowCount() > 0 && !showTagPicker()) {
+                <!-- Overflow button to expand -->
+                <button
+                  type="button"
+                  class="px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-tag/10 hover:text-tag transition-colors"
+                  (click)="inlineTagsExpanded.set(true); $event.stopPropagation()"
+                  [attr.aria-label]="'Show ' + overflowCount() + ' more tags'"
+                >
+                  +{{ overflowCount() }}
+                </button>
+              }
+              <!-- Inline search input (when adding tag) -->
+              @if (showTagPicker()) {
+                <div class="flex-1 min-w-[100px] relative">
+                  <input
+                    #inlineTagInput
+                    type="text"
+                    [placeholder]="hasInlineTags() ? 'Add tag...' : 'Add first tag...'"
+                    [value]="firstTagSearch()"
+                    (input)="firstTagSearch.set(asInput($event).value)"
+                    (keydown.enter)="onFirstTagEnter(); $event.preventDefault()"
+                    (keydown.escape)="showTagPicker.set(false); $event.stopPropagation()"
+                    class="w-full h-6 px-2 text-xs bg-surface-muted rounded-full border-0 outline-none"
+                    aria-label="Search or create tag"
+                  >
+                  <!-- Dropdown suggestions -->
+                  @if (tooltipSuggestions().length > 0 || canCreateFirstTag()) {
+                    <div class="absolute left-0 top-full mt-1 w-48 bg-surface rounded-lg shadow-lg border border-border py-1 z-50">
+                      @for (tag of tooltipSuggestions(); track tag.id) {
+                        <button
+                          type="button"
+                          class="w-full px-3 py-1.5 text-left text-xs hover:bg-surface-hover transition-colors flex items-center justify-between"
+                          (click)="addTag({ id: tag.id, name: tag.name }); $event.stopPropagation()"
+                        >
+                          <span [innerHTML]="highlightMatch(tag.name)"></span>
+                          <span class="text-foreground-muted">{{ tag.usageCount }}</span>
+                        </button>
+                      }
+                      @if (canCreateFirstTag()) {
+                        @if (tooltipSuggestions().length > 0) {
+                          <div class="border-t border-border my-1"></div>
+                        }
+                        <button
+                          type="button"
+                          class="w-full px-3 py-1.5 text-left text-xs text-primary hover:bg-surface-hover transition-colors"
+                          (click)="createAndAddTag(firstTagSearch().trim()); $event.stopPropagation()"
+                        >
+                          <i class="pi pi-plus text-[10px] mr-1"></i>
+                          Create "{{ firstTagSearch().trim() }}"
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <!-- Add tag button (when not adding) -->
+                <button
+                  type="button"
+                  class="w-5 h-5 rounded-full flex items-center justify-center text-foreground-muted/30 hover:text-tag hover:bg-tag/10 transition-colors"
+                  (click)="openInlineTagInput(); $event.stopPropagation()"
+                  aria-label="Add tag"
+                >
+                  <i class="pi pi-plus text-[9px]"></i>
+                </button>
+              }
+              <!-- Collapse/"Less" button (only when expanded and has overflow) -->
+              @if (inlineTagsExpanded() && taskTags().length > 3 && !showTagPicker()) {
+                <button
+                  type="button"
+                  class="ml-auto px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-foreground-muted/20 transition-colors flex items-center gap-0.5"
+                  (click)="inlineTagsExpanded.set(false); $event.stopPropagation()"
+                  aria-label="Show fewer tags"
+                >
+                  <i class="pi pi-chevron-up text-[8px]"></i>
+                  <span>Less</span>
+                </button>
+              }
+          </div>
+        }
+
         <!-- Tab bar - Google Home style -->
         <div class="mt-2 flex items-center gap-1.5 relative">
           <!-- Due Date tab -->
@@ -178,6 +275,18 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-comments-badge text-[9px] text-comments-badge-foreground font-medium">{{ task().comments.length }}</span>
             }
           </button>
+
+          <!-- Tags tab (only show when no inline tags and not adding - clicking shows inline row) -->
+          @if (!hasInlineTags() && !showTagPicker()) {
+            <button
+              type="button"
+              class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7 w-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20"
+              (click)="openInlineTagInput(); $event.stopPropagation()"
+              aria-label="Add tag"
+            >
+              <i class="pi pi-tag"></i>
+            </button>
+          }
 
           <!-- Mobile status change buttons (spacer pushes to right) -->
           <div class="flex-1"></div>
@@ -362,6 +471,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             </div>
           </div>
         }
+
     </div>
   `,
 })
@@ -377,6 +487,7 @@ export class TaskCardComponent {
   readonly task = input.required<Task>();
   readonly searchQuery = input('');
   readonly isArchive = input(false);
+  readonly allTags = input<Tag[]>([]);
 
   readonly onEdit = output<string>();
   readonly onDelete = output<void>();
@@ -387,6 +498,9 @@ export class TaskCardComponent {
   readonly onClearDueDate = output<void>();
   readonly onTogglePriority = output<void>();
   readonly onStatusChange = output<TaskStatus>();
+  readonly onAddTag = output<TaskTag>();
+  readonly onRemoveTag = output<string>();
+  readonly onCreateTag = output<string>();
 
   readonly editing = signal(false);
   readonly editTitle = signal('');
@@ -404,12 +518,72 @@ export class TaskCardComponent {
   readonly confirmingCommentDeleteId = signal<string | null>(null);
 
   // Tab selection state (Google Home style - one tab at a time)
-  readonly selectedTab = signal<'dueDate' | 'comments' | null>(null);
+  readonly selectedTab = signal<'dueDate' | 'comments' | 'tags' | null>(null);
   readonly dueDateExpanded = computed(() => this.selectedTab() === 'dueDate');
   readonly commentsExpanded = computed(() => this.selectedTab() === 'comments');
 
   // Date picker popover state
   readonly showDatePicker = signal(false);
+
+  // Tag picker popover state
+  readonly showTagPicker = signal(false);
+
+  // Inline tags expansion state (for overflow handling)
+  readonly inlineTagsExpanded = signal(false);
+
+  // Safe accessor for tags that defaults to empty array
+  readonly taskTags = computed(() => this.task().tags ?? []);
+
+  // Maximum visible tags before showing "+N" overflow
+  private readonly MAX_VISIBLE_TAGS = 3;
+
+  // Visible tags (first 3 when collapsed, all when expanded)
+  readonly visibleTags = computed(() => {
+    const tags = this.taskTags();
+    if (this.inlineTagsExpanded() || tags.length <= this.MAX_VISIBLE_TAGS) {
+      return tags;
+    }
+    return tags.slice(0, this.MAX_VISIBLE_TAGS);
+  });
+
+  // Overflow count (remaining tags not shown)
+  readonly overflowCount = computed(() => {
+    const tags = this.taskTags();
+    if (this.inlineTagsExpanded() || tags.length <= this.MAX_VISIBLE_TAGS) {
+      return 0;
+    }
+    return tags.length - this.MAX_VISIBLE_TAGS;
+  });
+
+  // Whether to show the inline tags row (when task has tags)
+  readonly hasInlineTags = computed(() => this.taskTags().length > 0);
+
+  // Existing tag IDs for filtering in picker
+  readonly existingTagIds = computed(() => this.taskTags().map(t => t.id));
+
+  // First tag tooltip state
+  readonly firstTagSearch = signal('');
+  readonly inlineTagInput = viewChild<ElementRef<HTMLInputElement>>('inlineTagInput');
+
+  // Filtered suggestions for first tag tooltip (max 4)
+  readonly tooltipSuggestions = computed(() => {
+    const query = this.firstTagSearch().toLowerCase().trim();
+    const existingIds = new Set(this.taskTags().map(t => t.id));
+    const available = this.allTags().filter(tag => !existingIds.has(tag.id));
+    if (!query) return available.slice(0, 4);
+    return available
+      .filter(tag => tag.name.toLowerCase().includes(query))
+      .slice(0, 4);
+  });
+
+  // Can create new tag with current search text
+  readonly canCreateFirstTag = computed(() => {
+    const query = this.firstTagSearch().trim();
+    if (!query) return false;
+    return !this.allTags().some(tag =>
+      tag.name.toLowerCase() === query.toLowerCase()
+    );
+  });
 
   // Due date display calculations
   private readonly daysDiff = computed(() => {
@@ -514,14 +688,26 @@ export class TaskCardComponent {
     }, { injector: this.injector });
   }
 
-  /** Close expanded tabs when clicking outside the task card */
+  /** Close expanded tabs when clicking outside the task card, or close tag picker when clicking outside it */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
-    if (!this.initialized || !this.selectedTab()) return;
+    if (!this.initialized) return;
 
     const target = event.target;
     // Guard for non-Node targets (e.g., SVG elements in some browsers)
     if (!(target instanceof Node)) return;
+
+    // Close tag picker if clicking outside the tag picker area
+    if (this.showTagPicker()) {
+      const tagPickerContainer = this.inlineTagInput()?.nativeElement.closest('.relative');
+      if (tagPickerContainer && !tagPickerContainer.contains(target)) {
+        this.showTagPicker.set(false);
+        this.firstTagSearch.set('');
+      }
+    }
+
+    // Check if anything else is expanded (tab or inline tags)
+    if (!this.selectedTab() && !this.inlineTagsExpanded()) return;
 
     if (!this.elementRef.nativeElement.contains(target)) {
       this.closeExpanded();
@@ -531,7 +717,7 @@ export class TaskCardComponent {
   /** Close expanded tabs when pressing Escape */
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
-    if (this.selectedTab()) {
+    if (this.selectedTab() || this.inlineTagsExpanded() || this.showTagPicker()) {
       this.closeExpanded();
     }
   }
@@ -540,6 +726,8 @@ export class TaskCardComponent {
   private closeExpanded(): void {
     this.selectedTab.set(null);
     this.showDatePicker.set(false);
+    this.showTagPicker.set(false);
+    this.inlineTagsExpanded.set(false);
   }
 
   /** Type-safe helper for accessing textarea value from events */
@@ -550,6 +738,11 @@ export class TaskCardComponent {
   /** Type-safe helper for keyboard events */
   asKeyboardEvent(event: Event): KeyboardEvent {
     return event as KeyboardEvent;
+  }
+
+  /** Type-safe helper for accessing input value from events */
+  asInput(event: Event): HTMLInputElement {
+    return event.target as HTMLInputElement;
   }
 
   private formatTime(dateStr: string, type: 'elapsed' | 'completed'): string {
@@ -604,16 +797,18 @@ export class TaskCardComponent {
   }
 
   // Tab toggle method (Google Home style - one tab at a time)
-  toggleTab(tab: 'dueDate' | 'comments'): void {
+  toggleTab(tab: 'dueDate' | 'comments' | 'tags'): void {
     const currentTab = this.selectedTab();
     if (currentTab === tab) {
       // Clicking the same tab collapses it
       this.selectedTab.set(null);
       this.showDatePicker.set(false);
+      this.showTagPicker.set(false);
     } else {
       // Switch to the new tab
       this.selectedTab.set(tab);
       this.showDatePicker.set(false);
+      this.showTagPicker.set(false);
 
       // Auto-focus the add comment input when expanding comments
       if (tab === 'comments') {
@@ -806,5 +1001,87 @@ export class TaskCardComponent {
 
   moveToNextStatus(): void {
     this.onStatusChange.emit(this.nextStatus());
+  }
+
+  // Tag methods
+  openInlineTagInput(): void {
+    // Open inline tag input and close any expanded tabs
+    this.showTagPicker.set(true);
+    this.selectedTab.set(null);
+    this.firstTagSearch.set('');
+
+    // Focus the input after render
+    afterNextRender(() => {
+      this.inlineTagInput()?.nativeElement.focus();
+    }, { injector: this.injector });
+  }
+
+  onFirstTagEnter(): void {
+    const query = this.firstTagSearch().trim();
+    const suggestions = this.tooltipSuggestions();
+
+    // If there's an exact match, select it
+    const exactMatch = suggestions.find(t =>
+      t.name.toLowerCase() === query.toLowerCase()
+    );
+    if (exactMatch) {
+      this.addTag({ id: exactMatch.id, name: exactMatch.name });
+      return;
+    }
+
+    // If can create, create it
+    if (this.canCreateFirstTag()) {
+      this.createAndAddTag(query);
+      return;
+    }
+
+    // If there's a single suggestion, select it
+    if (suggestions.length === 1) {
+      this.addTag({ id: suggestions[0].id, name: suggestions[0].name });
+    }
+  }
+
+  addTag(tag: TaskTag): void {
+    // Guard against duplicates
+    if (this.taskTags().some(t => t.id === tag.id)) {
+      this.showTagPicker.set(false);
+      this.firstTagSearch.set('');
+      return;
+    }
+    this.onAddTag.emit(tag);
+    this.showTagPicker.set(false);
+    this.firstTagSearch.set('');
+  }
+
+  removeTag(tagId: string): void {
+    this.onRemoveTag.emit(tagId);
+  }
+
+  createAndAddTag(name: string): void {
+    this.onCreateTag.emit(name);
+    this.showTagPicker.set(false);
+    this.firstTagSearch.set('');
+  }
+
+  /** Highlight matching portion of tag name in dropdown */
+  highlightMatch(tagName: string): string {
+    const query = this.firstTagSearch().toLowerCase().trim();
+    if (!query) return this.escapeHtml(tagName);
+
+    const lowerName = tagName.toLowerCase();
+    const index = lowerName.indexOf(query);
+    if (index === -1) return this.escapeHtml(tagName);
+
+    const before = tagName.slice(0, index);
+    const match = tagName.slice(index, index + query.length);
+    const after = tagName.slice(index + query.length);
+
+    return `${this.escapeHtml(before)}<mark class="search-highlight">${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
+  }
+
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 }

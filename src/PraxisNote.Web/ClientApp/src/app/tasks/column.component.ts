@@ -3,6 +3,7 @@ import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/
 import { TaskCardComponent } from './task-card.component';
 import { TaskCardSkeletonComponent } from './task-card-skeleton.component';
 import { Task, TaskStatus } from './task.model';
+import { Tag, TaskTag } from './tag.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 
 type SortMode = 'manual' | 'dueDate' | 'priority';
@@ -217,6 +218,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
                 [task]="task"
                 [searchQuery]="searchQuery()"
                 [isArchive]="showArchive()"
+                [allTags]="allTags()"
                 (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
                 (onDelete)="onDeleteTask.emit(task.id)"
                 (onAddComment)="onAddComment.emit({ taskId: task.id, content: $event })"
@@ -226,6 +228,9 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
                 (onClearDueDate)="onClearDueDate.emit({ taskId: task.id })"
                 (onTogglePriority)="onTogglePriority.emit({ taskId: task.id })"
                 (onStatusChange)="onStatusChange.emit({ taskId: task.id, status: $event })"
+                (onAddTag)="onAddTag.emit({ taskId: task.id, tag: $event })"
+                (onRemoveTag)="onRemoveTag.emit({ taskId: task.id, tagId: $event })"
+                (onCreateTag)="onCreateTag.emit({ taskId: task.id, name: $event })"
               />
               <div
                 *cdkDragPlaceholder
@@ -266,6 +271,7 @@ export class ColumnComponent {
   readonly showSortMenu = input(false);
   readonly showSkeleton = input(false);
   readonly searchQuery = input('');
+  readonly allTags = input<Tag[]>([]);
 
   readonly onDrop = output<CdkDragDrop<Task[]>>();
   readonly onArchiveToggle = output<void>();
@@ -279,6 +285,9 @@ export class ColumnComponent {
   readonly onClearDueDate = output<{ taskId: string }>();
   readonly onTogglePriority = output<{ taskId: string }>();
   readonly onStatusChange = output<{ taskId: string; status: TaskStatus }>();
+  readonly onAddTag = output<{ taskId: string; tag: TaskTag }>();
+  readonly onRemoveTag = output<{ taskId: string; tagId: string }>();
+  readonly onCreateTag = output<{ taskId: string; name: string }>();
   readonly onSortModeChange = output<SortMode>();
   readonly onSortMenuToggle = output<void>();
 

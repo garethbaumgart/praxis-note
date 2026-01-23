@@ -105,6 +105,7 @@
   /* Search highlight - Frost */
   --color-highlight-bg: rgba(136, 192, 208, 0.4);  /* Frost cyan */
   --color-highlight-text: #2e3440;
+  --color-highlight-underline: #88c0d0;            /* Frost cyan for underline */
 
   /* Due date section (expanded panel) - Aurora yellow */
   --color-duedate-section-bg: rgba(235, 203, 139, 0.2);
@@ -133,6 +134,20 @@
 
   /* Segmented toggle */
   --color-segment-bg: rgba(236, 239, 244, 0.5);
+
+  /* Tags section - Aurora green */
+  --color-tags-section-bg: rgba(163, 190, 140, 0.1);
+  --color-tags-section-border-base: rgba(163, 190, 140, 0.3);
+  --color-tags-badge-bg: rgba(163, 190, 140, 0.3);
+  --color-tags-badge-text: #a3be8c;
+  --color-tags-expanded-bg: #a3be8c;
+  --color-tags-expanded-text: #2e3440;
+  --color-tags-expanded-badge-bg: rgba(46, 52, 64, 0.2);
+  --color-tags-collapsed-bg: rgba(163, 190, 140, 0.15);
+  --color-tags-collapsed-text: #a3be8c;
+  --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.25);
+  --color-tag-bg: rgba(163, 190, 140, 0.5);
+  --color-tag-text: #4a6638;
 
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
@@ -226,6 +241,7 @@
   /* Search highlight - Frost cyan */
   --color-highlight-bg: rgba(136, 192, 208, 0.5);
   --color-highlight-text: #eceff4;
+  --color-highlight-underline: #88c0d0;            /* Frost cyan for underline */
 
   /* Due date section (expanded panel) - Aurora yellow */
   --color-duedate-section-bg: rgba(235, 203, 139, 0.15);
@@ -254,6 +270,20 @@
 
   /* Segmented toggle */
   --color-segment-bg: rgba(67, 76, 94, 0.5);
+
+  /* Tags section - Aurora green */
+  --color-tags-section-bg: rgba(163, 190, 140, 0.15);
+  --color-tags-section-border-base: rgba(163, 190, 140, 0.3);
+  --color-tags-badge-bg: rgba(163, 190, 140, 0.4);
+  --color-tags-badge-text: #a3be8c;
+  --color-tags-expanded-bg: #a3be8c;
+  --color-tags-expanded-text: #2e3440;
+  --color-tags-expanded-badge-bg: rgba(46, 52, 64, 0.2);
+  --color-tags-collapsed-bg: rgba(163, 190, 140, 0.2);
+  --color-tags-collapsed-text: #a3be8c;
+  --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.3);
+  --color-tag-bg: rgba(163, 190, 140, 0.5);
+  --color-tag-text: #a3be8c;
 
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #88c0d0);
@@ -378,6 +408,20 @@
 
   /* Segmented toggle */
   --color-segment: var(--color-segment-bg);
+
+  /* Tags section */
+  --color-tags-section: var(--color-tags-section-bg);
+  --color-tags-section-border: var(--color-tags-section-border-base);
+  --color-tags-badge: var(--color-tags-badge-bg);
+  --color-tags-badge-foreground: var(--color-tags-badge-text);
+  --color-tags-expanded: var(--color-tags-expanded-bg);
+  --color-tags-expanded-foreground: var(--color-tags-expanded-text);
+  --color-tags-expanded-badge: var(--color-tags-expanded-badge-bg);
+  --color-tags-collapsed: var(--color-tags-collapsed-bg);
+  --color-tags-collapsed-foreground: var(--color-tags-collapsed-text);
+  --color-tags-collapsed-hover: var(--color-tags-collapsed-hover-base);
+  --color-tag: var(--color-tag-bg);
+  --color-tag-foreground: var(--color-tag-text);
 }
 
 /* Brand gradient utility class */
@@ -597,4 +641,47 @@
 /* Calendar table spacing */
 .compact-datepicker table {
   font-size: 0.75rem;
+}
+
+/* ========================================
+   PrimeNG Chip - Tag styling (slim variant)
+   ======================================== */
+
+/* Tag badge styling */
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px 2px 8px;
+  border-radius: 9999px;
+  height: 18px;
+  line-height: 1;
+}
+
+.tag-badge-remove {
+  font-size: 10px;
+  color: var(--color-tag-text);
+  opacity: 0.5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.tag-badge-remove:hover {
+  color: var(--color-danger-text);
+  opacity: 1;
+}
+
+/* Search highlight - underline style */
+.search-highlight {
+  background: transparent;
+  color: var(--color-accent-foreground);
+  text-decoration: underline;
+  text-decoration-color: var(--color-highlight-underline);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 2px;
 }
