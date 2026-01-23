@@ -674,6 +674,16 @@
   opacity: 1;
 }
 
+/* Tag badge done state - greyed out */
+.tag-badge-done {
+  background: var(--color-due-done-bg);
+  color: var(--color-due-done-text);
+}
+
+.tag-badge-done .tag-badge-remove {
+  color: var(--color-due-done-text);
+}
+
 /* Search highlight - underline style */
 .search-highlight {
   background: transparent;
