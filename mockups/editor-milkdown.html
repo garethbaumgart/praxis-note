@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milkdown - Markdown-First Editor Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <style>
+    /* Milkdown Editor Styles */
+    .milkdown {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.7;
+      color: #1e293b;
+    }
+    .milkdown h1 { font-size: 2em; font-weight: 700; margin: 1em 0 0.5em; }
+    .milkdown h2 { font-size: 1.5em; font-weight: 600; margin: 1em 0 0.5em; }
+    .milkdown h3 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.5em; }
+    .milkdown p { margin: 0.5em 0; }
+    .milkdown ul, .milkdown ol { padding-left: 1.5em; margin: 0.5em 0; }
+    .milkdown blockquote {
+      border-left: 4px solid #6366f1;
+      padding-left: 1em;
+      margin: 1em 0;
+      color: #64748b;
+      font-style: italic;
+    }
+    .milkdown code {
+      background: #f1f5f9;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9em;
+    }
+    .milkdown pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+    .milkdown pre code {
+      background: none;
+      padding: 0;
+    }
+    .milkdown a { color: #6366f1; text-decoration: underline; }
+
+    /* Task List (GFM style) */
+    .milkdown .task-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .milkdown .task-list-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75em;
+      margin: 0.5em 0;
+    }
+    .milkdown .task-list-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      accent-color: #6366f1;
+      cursor: pointer;
+    }
+    .milkdown .task-list-item.checked {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+
+    /* Markdown syntax highlighting (when visible) */
+    .md-syntax {
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Slash command menu */
+    .slash-menu {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 0;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      min-width: 220px;
+    }
+    .slash-menu-item {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .slash-menu-item:hover, .slash-menu-item.active {
+      background: #f1f5f9;
+    }
+    .slash-menu-item i { width: 20px; color: #64748b; }
+    .slash-menu-item .label { color: #1e293b; font-size: 14px; }
+    .slash-menu-item .shortcut {
+      margin-left: auto;
+      font-size: 12px;
+      color: #94a3b8;
+      font-family: monospace;
+    }
+
+    /* Floating toolbar */
+    .floating-toolbar {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 4px;
+      display: flex;
+      gap: 2px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .floating-toolbar button {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: #e2e8f0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .floating-toolbar button:hover { background: rgba(255,255,255,0.1); }
+    .floating-toolbar button.active { background: #6366f1; }
+
+    /* Markdown preview toggle */
+    .preview-toggle {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 2px;
+      display: inline-flex;
+    }
+    .preview-toggle button {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #64748b;
+      transition: all 0.15s;
+    }
+    .preview-toggle button.active {
+      background: white;
+      color: #1e293b;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Milkdown</h1>
+    <p class="text-gray-600 mb-8">Plugin-driven WYSIWYG Markdown editor built on ProseMirror. Markdown-first with WYSIWYG rendering.</p>
+
+    <!-- ============================================ -->
+    <!-- EDITOR OVERVIEW -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Key Features</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Markdown Native:</strong> Write Markdown, see WYSIWYG</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>GFM Task Lists:</strong> Native checkbox support via - [ ] syntax</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Plugin System:</strong> Composable, headless architecture</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>ProseMirror:</strong> Same foundation as TipTap</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Portable:</strong> Content is standard Markdown</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>TypeScript:</strong> Full TypeScript support</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Considerations</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Angular:</strong> No official wrapper, needs manual setup</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Bundle Size:</strong> ~50KB min+gzip (with plugins)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Learning Curve:</strong> Plugin composition takes time</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Newer:</strong> Smaller community than TipTap/Quill</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Output:</strong> Markdown string (native)</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- WYSIWYG MODE -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">WYSIWYG Mode (Default)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <span class="text-xs text-gray-500">Live preview - Markdown rendered as you type</span>
+          <div class="preview-toggle">
+            <button class="active">WYSIWYG</button>
+            <button>Source</button>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="milkdown max-w-2xl" contenteditable="true">
+            <h2>Sprint Planning Ideas</h2>
+            <p>Review the authentication flow and gather requirements for the new dashboard feature.</p>
+
+            <h3>Action Items</h3>
+            <ul class="task-list">
+              <li class="task-list-item">
+                <input type="checkbox">
+                <span>Review the authentication flow documentation</span>
+              </li>
+              <li class="task-list-item checked">
+                <input type="checkbox" checked>
+                <span>Schedule meeting with security team</span>
+              </li>
+              <li class="task-list-item">
+                <input type="checkbox">
+                <span>Draft API contract for new endpoints</span>
+              </li>
+            </ul>
+
+            <blockquote>Need to consider backward compatibility with v2 API clients...</blockquote>
+
+            <p>Here's a code example:</p>
+            <pre><code>const auth = await authenticate(user);
+if (!auth.valid) throw new Error('Unauthorized');</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MARKDOWN SOURCE -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Markdown Source (Toggle View)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <span class="text-xs text-gray-500">Raw Markdown - the actual stored content</span>
+          <div class="preview-toggle">
+            <button>WYSIWYG</button>
+            <button class="active">Source</button>
+          </div>
+        </div>
+
+        <pre class="p-6 text-sm bg-gray-900 text-gray-100 overflow-x-auto"><code>## Sprint Planning Ideas
+
+Review the authentication flow and gather requirements for the new dashboard feature.
+
+### Action Items
+
+- [ ] Review the authentication flow documentation
+- [x] Schedule meeting with security team
+- [ ] Draft API contract for new endpoints
+
+> Need to consider backward compatibility with v2 API clients...
+
+Here's a code example:
+
+```javascript
+const auth = await authenticate(user);
+if (!auth.valid) throw new Error('Unauthorized');
+```</code></pre>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SLASH COMMANDS -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Slash Commands (Type /)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Insert blocks via slash commands</div>
+
+        <div class="p-6 relative">
+          <div class="milkdown max-w-2xl">
+            <p>Type / to insert blocks:</p>
+            <p class="text-gray-400">/</p>
+          </div>
+
+          <!-- Slash menu -->
+          <div class="slash-menu absolute top-20 left-6">
+            <div class="slash-menu-item">
+              <i class="pi pi-paragraph"></i>
+              <span class="label">Paragraph</span>
+              <span class="shortcut">/p</span>
+            </div>
+            <div class="slash-menu-item active">
+              <i class="pi pi-check-square"></i>
+              <span class="label">Task List</span>
+              <span class="shortcut">/task</span>
+            </div>
+            <div class="slash-menu-item">
+              <i class="pi pi-hashtag"></i>
+              <span class="label">Heading 1</span>
+              <span class="shortcut">/h1</span>
+            </div>
+            <div class="slash-menu-item">
+              <i class="pi pi-list"></i>
+              <span class="label">Bullet List</span>
+              <span class="shortcut">/ul</span>
+            </div>
+            <div class="slash-menu-item">
+              <i class="pi pi-quote-right"></i>
+              <span class="label">Blockquote</span>
+              <span class="shortcut">/quote</span>
+            </div>
+            <div class="slash-menu-item">
+              <i class="pi pi-code"></i>
+              <span class="label">Code Block</span>
+              <span class="shortcut">/code</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MARKDOWN SHORTCUTS -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Markdown Shortcuts</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Type Markdown syntax for instant formatting</div>
+
+        <div class="p-6">
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-medium text-gray-700 mb-3">Type This:</h4>
+              <div class="space-y-2 font-mono text-sm">
+                <div class="p-2 bg-gray-100 rounded"><span class="md-syntax">##</span> Heading 2</div>
+                <div class="p-2 bg-gray-100 rounded"><span class="md-syntax">- [ ]</span> Task item</div>
+                <div class="p-2 bg-gray-100 rounded"><span class="md-syntax">- [x]</span> Completed task</div>
+                <div class="p-2 bg-gray-100 rounded"><span class="md-syntax">**</span>bold<span class="md-syntax">**</span></div>
+                <div class="p-2 bg-gray-100 rounded"><span class="md-syntax">></span> Quote text</div>
+                <div class="p-2 bg-gray-100 rounded"><span class="md-syntax">```</span>code block<span class="md-syntax">```</span></div>
+              </div>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-700 mb-3">See This:</h4>
+              <div class="space-y-2 text-sm milkdown">
+                <div class="p-2 bg-gray-50 rounded"><h2 style="margin:0; font-size: 1.25em;">Heading 2</h2></div>
+                <div class="p-2 bg-gray-50 rounded flex items-center gap-2">
+                  <input type="checkbox" style="width:16px;height:16px;accent-color:#6366f1;">
+                  <span>Task item</span>
+                </div>
+                <div class="p-2 bg-gray-50 rounded flex items-center gap-2">
+                  <input type="checkbox" checked style="width:16px;height:16px;accent-color:#6366f1;">
+                  <span class="line-through text-gray-400">Completed task</span>
+                </div>
+                <div class="p-2 bg-gray-50 rounded"><strong>bold</strong></div>
+                <div class="p-2 bg-gray-50 rounded border-l-4 border-indigo-500 pl-3 text-gray-500 italic">Quote text</div>
+                <div class="p-2 bg-gray-900 rounded text-gray-100 font-mono">code block</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-emerald-50 border-t border-emerald-200">
+          <p class="text-sm text-emerald-800"><strong>Markdown Power:</strong> Users familiar with Markdown can type <code class="bg-emerald-100 px-1 rounded">- [ ]</code> to instantly create a checkbox. Fast and natural!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TASK LIST GFM -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">GFM Task Lists (GitHub Flavored Markdown)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="p-6">
+          <div class="milkdown max-w-xl">
+            <h3>Project Checklist</h3>
+            <ul class="task-list">
+              <li class="task-list-item checked">
+                <input type="checkbox" checked>
+                <span>Setup project repository</span>
+              </li>
+              <li class="task-list-item checked">
+                <input type="checkbox" checked>
+                <span>Configure CI/CD pipeline</span>
+              </li>
+              <li class="task-list-item">
+                <input type="checkbox">
+                <span>Implement user authentication</span>
+              </li>
+              <li class="task-list-item">
+                <input type="checkbox">
+                <span>Design database schema</span>
+              </li>
+              <li class="task-list-item">
+                <input type="checkbox">
+                <span>Create API documentation</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="p-4 bg-gray-50 border-t border-gray-200">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">5 items · 2 completed (40%)</span>
+            <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+              <i class="pi pi-arrow-right text-sm"></i>
+              Convert to Tasks
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MARKDOWN OUTPUT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Markdown Output Format</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Content stored as standard Markdown</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>## Sprint Planning Ideas
+
+Review the authentication flow and gather requirements for the new dashboard feature.
+
+### Action Items
+
+- [ ] Review the authentication flow documentation
+- [x] Schedule meeting with security team
+- [ ] Draft API contract for new endpoints
+
+> Need to consider backward compatibility with v2 API clients...</code></pre>
+        <div class="p-4 bg-gray-50 border-t border-gray-200">
+          <p class="text-sm text-gray-600"><strong>Portability:</strong> Standard Markdown means content can be opened in any Markdown editor, synced to GitHub, exported easily. However, parsing checkboxes requires regex on the Markdown string.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CHECKBOX EXTRACTION -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Checkbox Extraction from Markdown</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Parsing GFM task list syntax</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>// checkbox-extractor.ts
+export interface ExtractedCheckbox {
+  id: string;
+  text: string;
+  isChecked: boolean;
+  lineNumber: number;
+}
+
+export function extractCheckboxes(markdown: string): ExtractedCheckbox[] {
+  const lines = markdown.split('\n');
+  const checkboxes: ExtractedCheckbox[] = [];
+
+  // GFM task list regex: - [ ] or - [x]
+  const taskRegex = /^(\s*)-\s+\[([ xX])\]\s+(.+)$/;
+
+  lines.forEach((line, index) => {
+    const match = line.match(taskRegex);
+    if (match) {
+      checkboxes.push({
+        id: `line-${index}`, // Or generate UUID
+        text: match[3].trim(),
+        isChecked: match[2].toLowerCase() === 'x',
+        lineNumber: index,
+      });
+    }
+  });
+
+  return checkboxes;
+}
+
+// Usage
+const markdown = `## Tasks
+- [ ] First task
+- [x] Completed task
+- [ ] Third task`;
+
+const checkboxes = extractCheckboxes(markdown);
+// [
+//   { id: 'line-1', text: 'First task', isChecked: false, lineNumber: 1 },
+//   { id: 'line-2', text: 'Completed task', isChecked: true, lineNumber: 2 },
+//   { id: 'line-3', text: 'Third task', isChecked: false, lineNumber: 3 },
+// ]</code></pre>
+        <div class="p-4 bg-amber-50 border-t border-amber-200">
+          <p class="text-sm text-amber-800"><strong>Note:</strong> Using line numbers as IDs is fragile - if the user edits above a checkbox, the line number changes. A more robust approach would be to assign stable IDs via a custom Milkdown plugin.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ANGULAR INTEGRATION -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Angular Integration</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Manual Milkdown setup with Angular</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>// note-editor.component.ts
+import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, input, output, inject, NgZone } from '@angular/core';
+import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core';
+import { commonmark } from '@milkdown/preset-commonmark';
+import { gfm } from '@milkdown/preset-gfm'; // For task lists
+import { listener, listenerCtx } from '@milkdown/plugin-listener';
+import { slash } from '@milkdown/plugin-slash';
+
+@Component({
+  selector: 'app-note-editor',
+  standalone: true,
+  template: `&lt;div #editorContainer class="milkdown-editor"&gt;&lt;/div&gt;`
+})
+export class NoteEditorComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('editorContainer') editorContainer!: ElementRef;
+
+  readonly initialContent = input&lt;string&gt;('');
+  readonly contentChange = output&lt;string&gt;();
+
+  private editor!: Editor;
+  private ngZone = inject(NgZone);
+
+  async ngAfterViewInit() {
+    this.ngZone.runOutsideAngular(async () => {
+      this.editor = await Editor.make()
+        .config((ctx) => {
+          ctx.set(rootCtx, this.editorContainer.nativeElement);
+          ctx.set(defaultValueCtx, this.initialContent());
+          ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
+            this.ngZone.run(() => {
+              this.contentChange.emit(markdown);
+            });
+          });
+        })
+        .use(commonmark)
+        .use(gfm) // Enables task lists
+        .use(listener)
+        .use(slash)
+        .create();
+    });
+  }
+
+  ngOnDestroy() {
+    this.editor?.destroy();
+  }
+
+  // Get current markdown content
+  getMarkdown(): string {
+    return this.editor.action((ctx) => {
+      return ctx.get(serializerCtx)(ctx.get(editorViewCtx).state.doc);
+    });
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- INTEGRATION WITH NOTE LAYOUT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Integration: Split View with Milkdown</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" style="height: 500px;">
+        <div class="flex h-full">
+          <!-- Notes List Panel -->
+          <div class="w-72 border-r border-gray-200 flex flex-col bg-gray-50">
+            <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+              <h2 class="font-semibold text-gray-800">Notes</h2>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white text-indigo-600">
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-1">
+              <div class="p-3 rounded-lg bg-indigo-100 border border-indigo-200 cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Sprint Planning Ideas</h3>
+                <p class="text-xs text-gray-500 mt-1 line-clamp-2">Review the authentication...</p>
+                <span class="text-[10px] text-gray-400 mt-1">3 tasks</span>
+              </div>
+              <div class="p-3 rounded-lg hover:bg-white cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Meeting Notes</h3>
+                <p class="text-xs text-gray-500 mt-1">Discussed roadmap...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Milkdown Editor Panel -->
+          <div class="flex-1 flex flex-col">
+            <!-- Header with mode toggle -->
+            <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+              <div class="preview-toggle">
+                <button class="active">WYSIWYG</button>
+                <button>Markdown</button>
+              </div>
+              <div class="flex items-center gap-1">
+                <button class="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-100 text-gray-500 text-xs">
+                  <i class="pi pi-tag text-xs"></i>
+                  Tags
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500">
+                  <i class="pi pi-ellipsis-v text-sm"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Editor Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+              <div class="milkdown max-w-2xl mx-auto" contenteditable="true">
+                <h2 style="margin-top:0;">Sprint Planning Ideas</h2>
+                <p>Review the authentication flow and gather requirements.</p>
+                <h3>Action Items</h3>
+                <ul class="task-list">
+                  <li class="task-list-item">
+                    <input type="checkbox">
+                    <span>Review auth documentation</span>
+                  </li>
+                  <li class="task-list-item checked">
+                    <input type="checkbox" checked>
+                    <span>Schedule meeting</span>
+                  </li>
+                  <li class="task-list-item">
+                    <input type="checkbox">
+                    <span>Draft API contract</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+              <span class="text-xs text-gray-500">3 tasks · 1 completed</span>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700">
+                <i class="pi pi-arrow-right text-xs"></i>
+                Create Tasks
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- VERDICT -->
+    <!-- ============================================ -->
+    <div class="bg-purple-50 rounded-xl p-6 border-2 border-purple-200">
+      <h2 class="text-xl font-semibold text-purple-800 mb-4">Milkdown Verdict</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-purple-600 mb-1">8/10</div>
+          <div class="text-sm text-gray-600">Flexibility</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-amber-600 mb-1">6/10</div>
+          <div class="text-sm text-gray-600">Ease of Use</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-green-600 mb-1">9/10</div>
+          <div class="text-sm text-gray-600">Task List Support</div>
+        </div>
+      </div>
+      <p class="mt-4 text-purple-800"><strong>Great Choice for Markdown Users:</strong> Milkdown excels if your users prefer Markdown. The GFM task list syntax (<code>- [ ]</code>) is intuitive for developers. Content is portable standard Markdown. However, checkbox ID stability requires custom work, and Angular integration is manual.</p>
+    </div>
+
+  </div>
+</body>
+</html>

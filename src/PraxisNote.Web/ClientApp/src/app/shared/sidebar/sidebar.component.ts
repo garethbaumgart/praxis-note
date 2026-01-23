@@ -31,7 +31,7 @@ export class SidebarComponent {
 
   protected readonly navItems: NavItem[] = [
     { path: '/home', label: 'Home', icon: 'pi-home', enabled: true },
-    { path: '/notes', label: 'Notes', icon: 'pi-file-edit', enabled: false },
+    { path: '/notes', label: 'Notes', icon: 'pi-file-edit', enabled: true },
     { path: '/tasks', label: 'Tasks', icon: 'pi-check-square', enabled: true },
     { path: '/tags', label: 'Tags', icon: 'pi-tags', enabled: false },
   ];

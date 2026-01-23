@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TipTap Editor - Interactive Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <!-- TipTap CSS -->
+  <style>
+    /* TipTap ProseMirror Base Styles */
+    .ProseMirror {
+      outline: none;
+      min-height: 300px;
+    }
+    .ProseMirror p {
+      margin: 0.5em 0;
+    }
+    .ProseMirror h1 { font-size: 2em; font-weight: bold; margin: 0.67em 0; }
+    .ProseMirror h2 { font-size: 1.5em; font-weight: bold; margin: 0.75em 0; }
+    .ProseMirror h3 { font-size: 1.17em; font-weight: bold; margin: 0.83em 0; }
+    .ProseMirror ul, .ProseMirror ol { padding-left: 1.5em; margin: 0.5em 0; }
+    .ProseMirror li { margin: 0.25em 0; }
+    .ProseMirror blockquote {
+      border-left: 3px solid #e2e8f0;
+      padding-left: 1em;
+      margin: 1em 0;
+      color: #64748b;
+    }
+    .ProseMirror code {
+      background: #f1f5f9;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    .ProseMirror pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+    .ProseMirror pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+    .ProseMirror a {
+      color: #6366f1;
+      text-decoration: underline;
+    }
+    .ProseMirror img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    /* Task List (Checkbox) Extension */
+    .ProseMirror ul[data-type="taskList"] {
+      list-style: none;
+      padding-left: 0;
+    }
+    .ProseMirror ul[data-type="taskList"] li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5em;
+    }
+    .ProseMirror ul[data-type="taskList"] li > label {
+      flex-shrink: 0;
+      margin-top: 0.25em;
+    }
+    .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #6366f1;
+      cursor: pointer;
+    }
+    .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+
+    /* Placeholder */
+    .ProseMirror p.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      float: left;
+      color: #94a3b8;
+      pointer-events: none;
+      height: 0;
+    }
+
+    /* Selection highlight */
+    .ProseMirror ::selection {
+      background: #c7d2fe;
+    }
+
+    /* Bubble Menu */
+    .bubble-menu {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 4px;
+      display: flex;
+      gap: 2px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .bubble-menu button {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: #e2e8f0;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .bubble-menu button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .bubble-menu button.is-active {
+      background: #6366f1;
+    }
+
+    /* Floating Menu (slash commands) */
+    .floating-menu {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 0;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      min-width: 200px;
+    }
+    .floating-menu-item {
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .floating-menu-item:hover {
+      background: #f1f5f9;
+    }
+    .floating-menu-item i {
+      width: 20px;
+      color: #64748b;
+    }
+    .floating-menu-item span {
+      color: #1e293b;
+      font-size: 14px;
+    }
+    .floating-menu-item small {
+      color: #94a3b8;
+      font-size: 12px;
+      margin-left: auto;
+    }
+
+    /* Semantic colors */
+    :root {
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --foreground: #1e293b;
+      --foreground-muted: #94a3b8;
+      --border: #e2e8f0;
+      --primary: #6366f1;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">TipTap Editor</h1>
+    <p class="text-gray-600 mb-8">Headless, extensible rich text editor built on ProseMirror. Full control over UI and functionality.</p>
+
+    <!-- ============================================ -->
+    <!-- EDITOR OVERVIEW -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Key Features</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Headless:</strong> Complete control over UI - no forced styles</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Extensible:</strong> 50+ official extensions, easy custom extensions</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Task Lists:</strong> Built-in checkbox extension perfect for notes</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Collaboration:</strong> Real-time collab via Y.js integration</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>TypeScript:</strong> Full TypeScript support</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Framework Support:</strong> Vue, React, Angular wrappers available</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Considerations</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Bundle Size:</strong> ~45KB min+gzip (core + common extensions)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Learning Curve:</strong> ProseMirror concepts needed for custom extensions</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Angular:</strong> Uses ngx-tiptap wrapper (community maintained)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Output:</strong> JSON (native), HTML, Markdown (with extension)</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TOOLBAR STYLES -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Toolbar Variations</h2>
+
+      <div class="grid gap-6">
+        <!-- Fixed Toolbar -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Fixed Toolbar (Top)</div>
+          <div class="border-b border-gray-200 p-2 flex items-center gap-1 flex-wrap">
+            <div class="flex items-center gap-1 pr-2 border-r border-gray-200">
+              <select class="px-2 py-1.5 bg-gray-50 border border-gray-200 rounded text-sm">
+                <option>Paragraph</option>
+                <option>Heading 1</option>
+                <option>Heading 2</option>
+                <option>Heading 3</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-1 px-2 border-r border-gray-200">
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 font-bold">B</button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 italic">I</button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 line-through">S</button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 underline">U</button>
+            </div>
+            <div class="flex items-center gap-1 px-2 border-r border-gray-200">
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">
+                <i class="pi pi-list text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">
+                <i class="pi pi-list-check text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded bg-indigo-100 text-indigo-600" title="Task List (Checkbox)">
+                <i class="pi pi-check-square text-sm"></i>
+              </button>
+            </div>
+            <div class="flex items-center gap-1 px-2 border-r border-gray-200">
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">
+                <i class="pi pi-link text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">
+                <i class="pi pi-image text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">
+                <i class="pi pi-code text-sm"></i>
+              </button>
+            </div>
+            <div class="flex items-center gap-1 px-2">
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">
+                <i class="pi pi-undo text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">
+                <i class="pi pi-refresh text-sm"></i>
+              </button>
+            </div>
+          </div>
+          <div class="p-6 ProseMirror" contenteditable="true">
+            <h2>Sprint Planning Ideas</h2>
+            <p>Review the authentication flow and gather requirements for the new dashboard feature.</p>
+            <h3>Action Items</h3>
+            <ul data-type="taskList">
+              <li data-checked="false">
+                <label><input type="checkbox"></label>
+                <div>Review the authentication flow documentation</div>
+              </li>
+              <li data-checked="true">
+                <label><input type="checkbox" checked></label>
+                <div>Schedule meeting with security team</div>
+              </li>
+              <li data-checked="false">
+                <label><input type="checkbox"></label>
+                <div>Draft API contract for new endpoints</div>
+              </li>
+            </ul>
+            <p>Additional notes about the implementation...</p>
+          </div>
+        </div>
+
+        <!-- Bubble Menu (Selection-based) -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Bubble Menu (Appears on Selection)</div>
+          <div class="p-6 relative">
+            <!-- Simulated bubble menu -->
+            <div class="bubble-menu absolute top-16 left-32 z-10">
+              <button class="is-active font-bold">B</button>
+              <button class="italic">I</button>
+              <button class="line-through">S</button>
+              <div class="w-px h-6 bg-gray-600 mx-1"></div>
+              <button><i class="pi pi-link text-xs"></i></button>
+              <button><i class="pi pi-code text-xs"></i></button>
+            </div>
+
+            <div class="ProseMirror" contenteditable="true">
+              <p>This is some text. <span class="bg-indigo-200">Select text to see the bubble menu</span> appear with formatting options.</p>
+              <p>The bubble menu provides a distraction-free writing experience while still giving quick access to formatting.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slash Commands -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Slash Commands (Type "/" to trigger)</div>
+          <div class="p-6 relative">
+            <!-- Simulated slash menu -->
+            <div class="floating-menu absolute top-24 left-6 z-10">
+              <div class="floating-menu-item">
+                <i class="pi pi-paragraph"></i>
+                <span>Paragraph</span>
+                <small>Text</small>
+              </div>
+              <div class="floating-menu-item bg-gray-100">
+                <i class="pi pi-check-square"></i>
+                <span>Task List</span>
+                <small>Checkbox</small>
+              </div>
+              <div class="floating-menu-item">
+                <i class="pi pi-list"></i>
+                <span>Bullet List</span>
+              </div>
+              <div class="floating-menu-item">
+                <i class="pi pi-hashtag"></i>
+                <span>Heading 1</span>
+              </div>
+              <div class="floating-menu-item">
+                <i class="pi pi-code"></i>
+                <span>Code Block</span>
+              </div>
+              <div class="floating-menu-item">
+                <i class="pi pi-minus"></i>
+                <span>Divider</span>
+              </div>
+            </div>
+
+            <div class="ProseMirror" contenteditable="true">
+              <p>Type "/" at the start of a line to see available blocks:</p>
+              <p>/</p>
+              <p>This is the Notion-style slash command menu. Perfect for keyboard-driven workflows.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TASK LIST EXTENSION DEMO -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Task List Extension (Key for Notes)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="p-6">
+          <div class="ProseMirror">
+            <h3>Project Checklist</h3>
+            <ul data-type="taskList">
+              <li data-checked="true">
+                <label><input type="checkbox" checked></label>
+                <div>Setup project repository</div>
+              </li>
+              <li data-checked="true">
+                <label><input type="checkbox" checked></label>
+                <div>Configure CI/CD pipeline</div>
+              </li>
+              <li data-checked="false">
+                <label><input type="checkbox"></label>
+                <div>Implement user authentication</div>
+              </li>
+              <li data-checked="false">
+                <label><input type="checkbox"></label>
+                <div>Design database schema</div>
+              </li>
+              <li data-checked="false">
+                <label><input type="checkbox"></label>
+                <div>Create API documentation</div>
+              </li>
+            </ul>
+            <p>Nested task lists are also supported:</p>
+            <ul data-type="taskList">
+              <li data-checked="false">
+                <label><input type="checkbox"></label>
+                <div>Parent task
+                  <ul data-type="taskList" style="margin-top: 0.5em;">
+                    <li data-checked="true">
+                      <label><input type="checkbox" checked></label>
+                      <div>Sub-task 1</div>
+                    </li>
+                    <li data-checked="false">
+                      <label><input type="checkbox"></label>
+                      <div>Sub-task 2</div>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="p-4 bg-gray-50 border-t border-gray-200">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">5 tasks · 2 completed (40%)</span>
+            <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+              <i class="pi pi-arrow-right text-sm"></i>
+              Convert Unchecked to Tasks
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- JSON OUTPUT EXAMPLE -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">JSON Output Format</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">TipTap stores content as JSON (ProseMirror document format)</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Sprint Planning Ideas" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "Review the authentication flow..." }]
+    },
+    {
+      "type": "taskList",
+      "content": [
+        {
+          "type": "taskItem",
+          "attrs": { "checked": false },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Review auth docs" }]
+            }
+          ]
+        },
+        {
+          "type": "taskItem",
+          "attrs": { "checked": true },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Schedule meeting" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- INTEGRATION WITH NOTE LAYOUT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Integration: Split View Layout with TipTap</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" style="height: 500px;">
+        <div class="flex h-full">
+          <!-- Notes List Panel -->
+          <div class="w-72 border-r border-gray-200 flex flex-col bg-gray-50">
+            <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+              <h2 class="font-semibold text-gray-800">Notes</h2>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white text-indigo-600">
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-1">
+              <div class="p-3 rounded-lg bg-indigo-100 border border-indigo-200 cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Sprint Planning Ideas</h3>
+                <p class="text-xs text-gray-500 mt-1 line-clamp-2">Review the authentication flow...</p>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="px-1.5 py-0.5 text-[10px] rounded bg-purple-100 text-purple-700">work</span>
+                  <span class="text-[10px] text-gray-400">3 tasks</span>
+                </div>
+              </div>
+              <div class="p-3 rounded-lg hover:bg-white cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Meeting Notes</h3>
+                <p class="text-xs text-gray-500 mt-1">Discussed roadmap priorities...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TipTap Editor Panel -->
+          <div class="flex-1 flex flex-col">
+            <!-- Minimal Bubble-style Toolbar -->
+            <div class="p-2 border-b border-gray-200 flex items-center justify-between">
+              <div class="flex items-center gap-1">
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 font-bold text-sm">B</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 italic text-sm">I</button>
+                <div class="w-px h-5 bg-gray-200 mx-1"></div>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500">
+                  <i class="pi pi-list text-sm"></i>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center rounded bg-indigo-100 text-indigo-600" title="Add Task Item">
+                  <i class="pi pi-check-square text-sm"></i>
+                </button>
+              </div>
+              <div class="flex items-center gap-1">
+                <button class="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-100 text-gray-500 text-xs">
+                  <i class="pi pi-tag text-xs"></i>
+                  Tags
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500">
+                  <i class="pi pi-ellipsis-v text-sm"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Editor Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+              <input type="text" value="Sprint Planning Ideas" class="w-full text-2xl font-bold text-gray-800 bg-transparent outline-none mb-1">
+              <div class="flex items-center gap-3 text-xs text-gray-400 mb-4">
+                <span>Updated 2 hours ago</span>
+                <span class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">work</span>
+              </div>
+
+              <div class="ProseMirror text-gray-700">
+                <p>Review the authentication flow and gather requirements for the new dashboard feature.</p>
+                <h3>Action Items</h3>
+                <ul data-type="taskList">
+                  <li data-checked="false">
+                    <label><input type="checkbox"></label>
+                    <div>Review the authentication flow documentation</div>
+                  </li>
+                  <li data-checked="true">
+                    <label><input type="checkbox" checked></label>
+                    <div>Schedule meeting with security team</div>
+                  </li>
+                  <li data-checked="false">
+                    <label><input type="checkbox"></label>
+                    <div>Draft API contract for new endpoints</div>
+                  </li>
+                </ul>
+                <p>Need to consider backward compatibility with v2 API clients...</p>
+              </div>
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+              <span class="text-xs text-gray-500">3 tasks · 1 completed</span>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700">
+                <i class="pi pi-arrow-right text-xs"></i>
+                Create Tasks
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ANGULAR INTEGRATION CODE -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Angular Integration Example</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Using ngx-tiptap with Angular Signals</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>// note-editor.component.ts
+import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Editor } from '@tiptap/core';
+import { NgxTiptapModule } from 'ngx-tiptap';
+import StarterKit from '@tiptap/starter-kit';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+
+@Component({
+  selector: 'app-note-editor',
+  standalone: true,
+  imports: [NgxTiptapModule],
+  template: `
+    &lt;div class="editor-toolbar"&gt;
+      &lt;button (click)="toggleBold()" [class.active]="editor.isActive('bold')"&gt;B&lt;/button&gt;
+      &lt;button (click)="toggleTaskList()"&gt;Checkbox&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;tiptap-editor [editor]="editor" (contentChange)="onContentChange($event)"&gt;&lt;/tiptap-editor&gt;
+  `
+})
+export class NoteEditorComponent {
+  readonly content = input&lt;string&gt;('');
+  readonly contentChange = output&lt;string&gt;();
+
+  editor = new Editor({
+    extensions: [
+      StarterKit,
+      TaskList,
+      TaskItem.configure({ nested: true }),
+    ],
+    content: this.content(),
+    onUpdate: ({ editor }) => {
+      this.contentChange.emit(JSON.stringify(editor.getJSON()));
+    },
+  });
+
+  toggleBold() {
+    this.editor.chain().focus().toggleBold().run();
+  }
+
+  toggleTaskList() {
+    this.editor.chain().focus().toggleTaskList().run();
+  }
+
+  // Extract checkboxes for syncing with domain
+  getCheckboxes(): Checkbox[] {
+    const doc = this.editor.getJSON();
+    return this.extractTaskItems(doc);
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- VERDICT -->
+    <!-- ============================================ -->
+    <div class="bg-emerald-50 rounded-xl p-6 border-2 border-emerald-200">
+      <h2 class="text-xl font-semibold text-emerald-800 mb-4">TipTap Verdict</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-emerald-600 mb-1">9/10</div>
+          <div class="text-sm text-gray-600">Flexibility</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-emerald-600 mb-1">8/10</div>
+          <div class="text-sm text-gray-600">Ease of Use</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-emerald-600 mb-1">10/10</div>
+          <div class="text-sm text-gray-600">Task List Support</div>
+        </div>
+      </div>
+      <p class="mt-4 text-emerald-800"><strong>Best for:</strong> PraxisNote's requirements. Excellent task list extension, JSON storage matches our domain model, full UI control for theming.</p>
+    </div>
+
+  </div>
+</body>
+</html>

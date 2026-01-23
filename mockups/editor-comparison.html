@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rich Text Editor Comparison - PraxisNote</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <style>
+    .score-excellent { background: #dcfce7; color: #15803d; }
+    .score-good { background: #dbeafe; color: #1d4ed8; }
+    .score-fair { background: #fef3c7; color: #b45309; }
+    .score-poor { background: #fee2e2; color: #dc2626; }
+
+    .comparison-table th, .comparison-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .comparison-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+    }
+    .comparison-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .feature-check { color: #22c55e; }
+    .feature-partial { color: #f59e0b; }
+    .feature-missing { color: #ef4444; }
+
+    .recommendation-card {
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      border: 2px solid #818cf8;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Rich Text Editor Comparison</h1>
+    <p class="text-gray-600 mb-8">Comprehensive comparison for PraxisNote's Note feature requirements</p>
+
+    <!-- ============================================ -->
+    <!-- REQUIREMENTS CHECKLIST -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">PraxisNote Requirements</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-gray-700 mb-3">Must Have</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-green-500"></i>
+              <span><strong>Task Lists / Checkboxes:</strong> Core feature for note-to-task workflow</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-green-500"></i>
+              <span><strong>Structured Output:</strong> Easy to parse for checkbox extraction</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-green-500"></i>
+              <span><strong>Angular Compatibility:</strong> Works with Angular 21 + Signals</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-green-500"></i>
+              <span><strong>Mobile Support:</strong> Works on touch devices</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium text-gray-700 mb-3">Nice to Have</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-center gap-2">
+              <i class="pi pi-star text-amber-500"></i>
+              <span><strong>Headless/Theming:</strong> Match PraxisNote's design system</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="pi pi-star text-amber-500"></i>
+              <span><strong>Slash Commands:</strong> Notion-style block insertion</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="pi pi-star text-amber-500"></i>
+              <span><strong>Collaboration:</strong> Future real-time editing support</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="pi pi-star text-amber-500"></i>
+              <span><strong>Small Bundle:</strong> Minimize impact on app size</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- COMPARISON TABLE -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
+      <div class="p-4 bg-gray-50 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">Feature Comparison</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full comparison-table">
+          <thead>
+            <tr>
+              <th class="sticky left-0 bg-gray-50 z-10">Feature</th>
+              <th class="text-center bg-emerald-50">
+                <div class="flex flex-col items-center">
+                  <span class="text-emerald-700">TipTap</span>
+                  <span class="text-xs text-emerald-600 font-normal">Recommended</span>
+                </div>
+              </th>
+              <th class="text-center">Quill</th>
+              <th class="text-center">PrimeNG Editor</th>
+              <th class="text-center">Editor.js</th>
+              <th class="text-center">Milkdown</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Task List Support -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-check-square text-indigo-600"></i>
+                  Task List Support
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Built-in
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-red-500">
+                  <i class="pi pi-times-circle"></i> Custom
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-red-500">
+                  <i class="pi pi-times-circle"></i> None
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Plugin
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> GFM
+                </span>
+              </td>
+            </tr>
+
+            <!-- Output Format -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-file text-indigo-600"></i>
+                  Output Format
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="text-sm">JSON (ProseMirror)</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">Delta / HTML</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">HTML</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">JSON (Blocks)</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">Markdown</span>
+              </td>
+            </tr>
+
+            <!-- Checkbox Extraction -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-search text-indigo-600"></i>
+                  Checkbox Extraction
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Easy
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-red-500">
+                  <i class="pi pi-times-circle"></i> Hard
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-red-500">
+                  <i class="pi pi-times-circle"></i> N/A
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Easy
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-amber-500">
+                  <i class="pi pi-minus-circle"></i> Regex
+                </span>
+              </td>
+            </tr>
+
+            <!-- Angular Support -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-cog text-indigo-600"></i>
+                  Angular Support
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="text-sm">ngx-tiptap (community)</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">ngx-quill (official-ish)</span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Native
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">Manual</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">Manual</span>
+              </td>
+            </tr>
+
+            <!-- Bundle Size -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-box text-indigo-600"></i>
+                  Bundle Size (gzip)
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="text-sm">~45KB</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">~43KB</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">~43KB (Quill)</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">~40KB</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">~50KB</span>
+              </td>
+            </tr>
+
+            <!-- Headless/Theming -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-palette text-indigo-600"></i>
+                  Headless/Theming
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Full control
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-amber-500">
+                  <i class="pi pi-minus-circle"></i> Override CSS
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-amber-500">
+                  <i class="pi pi-minus-circle"></i> PrimeNG theme
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Full control
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Full control
+                </span>
+              </td>
+            </tr>
+
+            <!-- Slash Commands -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-bolt text-indigo-600"></i>
+                  Slash Commands
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Extension
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-red-500">
+                  <i class="pi pi-times-circle"></i> Custom
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-red-500">
+                  <i class="pi pi-times-circle"></i> No
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Built-in
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Plugin
+                </span>
+              </td>
+            </tr>
+
+            <!-- Collaboration -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-users text-indigo-600"></i>
+                  Real-time Collab
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Y.js
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Delta OT
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-amber-500">
+                  <i class="pi pi-minus-circle"></i> Via Quill
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-red-500">
+                  <i class="pi pi-times-circle"></i> Limited
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Y.js
+                </span>
+              </td>
+            </tr>
+
+            <!-- Mobile Support -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-mobile text-indigo-600"></i>
+                  Mobile Support
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Good
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Good
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Good
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-amber-500">
+                  <i class="pi pi-minus-circle"></i> Basic
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Good
+                </span>
+              </td>
+            </tr>
+
+            <!-- Documentation -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-book text-indigo-600"></i>
+                  Documentation
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Excellent
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Good
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> PrimeNG docs
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-green-600">
+                  <i class="pi pi-check-circle"></i> Good
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="inline-flex items-center gap-1 text-amber-500">
+                  <i class="pi pi-minus-circle"></i> Moderate
+                </span>
+              </td>
+            </tr>
+
+            <!-- Community -->
+            <tr>
+              <td class="sticky left-0 bg-white font-medium">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-github text-indigo-600"></i>
+                  Community/Stars
+                </div>
+              </td>
+              <td class="text-center bg-emerald-50/50">
+                <span class="text-sm">28K+ stars</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">40K+ stars</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">(PrimeNG)</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">28K+ stars</span>
+              </td>
+              <td class="text-center">
+                <span class="text-sm">8K+ stars</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SCORES SUMMARY -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
+      <div class="p-4 bg-gray-50 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">Overall Scores for PraxisNote</h2>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-5 gap-4">
+          <!-- TipTap -->
+          <div class="text-center p-4 rounded-xl bg-emerald-50 border-2 border-emerald-300">
+            <h3 class="font-semibold text-emerald-800 mb-2">TipTap</h3>
+            <div class="text-4xl font-bold text-emerald-600 mb-2">9.0</div>
+            <div class="space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Task Lists</span>
+                <span class="font-medium text-emerald-600">10/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Flexibility</span>
+                <span class="font-medium text-emerald-600">9/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Angular</span>
+                <span class="font-medium text-emerald-600">8/10</span>
+              </div>
+            </div>
+            <div class="mt-3 px-2 py-1 bg-emerald-200 text-emerald-800 text-xs font-medium rounded">
+              RECOMMENDED
+            </div>
+          </div>
+
+          <!-- Editor.js -->
+          <div class="text-center p-4 rounded-xl bg-blue-50 border border-blue-200">
+            <h3 class="font-semibold text-blue-800 mb-2">Editor.js</h3>
+            <div class="text-4xl font-bold text-blue-600 mb-2">7.5</div>
+            <div class="space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Task Lists</span>
+                <span class="font-medium text-blue-600">8/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Flexibility</span>
+                <span class="font-medium text-blue-600">7/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Angular</span>
+                <span class="font-medium text-amber-600">6/10</span>
+              </div>
+            </div>
+            <div class="mt-3 px-2 py-1 bg-blue-200 text-blue-800 text-xs font-medium rounded">
+              GOOD OPTION
+            </div>
+          </div>
+
+          <!-- Milkdown -->
+          <div class="text-center p-4 rounded-xl bg-purple-50 border border-purple-200">
+            <h3 class="font-semibold text-purple-800 mb-2">Milkdown</h3>
+            <div class="text-4xl font-bold text-purple-600 mb-2">7.5</div>
+            <div class="space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Task Lists</span>
+                <span class="font-medium text-purple-600">9/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Flexibility</span>
+                <span class="font-medium text-purple-600">8/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Angular</span>
+                <span class="font-medium text-amber-600">6/10</span>
+              </div>
+            </div>
+            <div class="mt-3 px-2 py-1 bg-purple-200 text-purple-800 text-xs font-medium rounded">
+              FOR MD USERS
+            </div>
+          </div>
+
+          <!-- Quill -->
+          <div class="text-center p-4 rounded-xl bg-amber-50 border border-amber-200">
+            <h3 class="font-semibold text-amber-800 mb-2">Quill</h3>
+            <div class="text-4xl font-bold text-amber-600 mb-2">5.5</div>
+            <div class="space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Task Lists</span>
+                <span class="font-medium text-red-500">3/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Flexibility</span>
+                <span class="font-medium text-amber-600">7/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Angular</span>
+                <span class="font-medium text-green-600">8/10</span>
+              </div>
+            </div>
+            <div class="mt-3 px-2 py-1 bg-amber-200 text-amber-800 text-xs font-medium rounded">
+              NEEDS WORK
+            </div>
+          </div>
+
+          <!-- PrimeNG -->
+          <div class="text-center p-4 rounded-xl bg-red-50 border border-red-200">
+            <h3 class="font-semibold text-red-800 mb-2">PrimeNG Editor</h3>
+            <div class="text-4xl font-bold text-red-600 mb-2">4.0</div>
+            <div class="space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Task Lists</span>
+                <span class="font-medium text-red-500">2/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Flexibility</span>
+                <span class="font-medium text-red-500">5/10</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Angular</span>
+                <span class="font-medium text-green-600">9/10</span>
+              </div>
+            </div>
+            <div class="mt-3 px-2 py-1 bg-red-200 text-red-800 text-xs font-medium rounded">
+              NOT SUITABLE
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- DETAILED RECOMMENDATIONS -->
+    <!-- ============================================ -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+      <!-- Primary Recommendation -->
+      <div class="recommendation-card rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center">
+            <i class="pi pi-star-fill text-white text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-indigo-900">Primary: TipTap</h3>
+            <p class="text-indigo-700 text-sm">Best overall fit for PraxisNote</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm text-indigo-800">
+          <p><strong>Why TipTap?</strong></p>
+          <ul class="space-y-1 ml-4">
+            <li>• Built-in TaskList extension - checkboxes work out of the box</li>
+            <li>• JSON output perfectly matches Note domain model structure</li>
+            <li>• Headless architecture = full control over theming</li>
+            <li>• Excellent documentation and active community</li>
+            <li>• Future-proof: Y.js collaboration support when needed</li>
+            <li>• Same foundation as Notion, Linear, GitLab</li>
+          </ul>
+          <p class="mt-3"><strong>Integration Path:</strong></p>
+          <ol class="space-y-1 ml-4 list-decimal">
+            <li>Install ngx-tiptap and @tiptap/starter-kit</li>
+            <li>Add TaskList and TaskItem extensions</li>
+            <li>Create checkbox extraction service</li>
+            <li>Build custom toolbar with PrimeNG components</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Alternative -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <i class="pi pi-bolt text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">Alternative: Editor.js</h3>
+            <p class="text-gray-600 text-sm">Good if you prefer block-based editing</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm text-gray-700">
+          <p><strong>When to choose Editor.js:</strong></p>
+          <ul class="space-y-1 ml-4">
+            <li>• You want Notion-style block manipulation</li>
+            <li>• Checklist items are always separate blocks (not inline)</li>
+            <li>• Clean JSON output with typed blocks</li>
+            <li>• Don't need real-time collaboration soon</li>
+          </ul>
+          <p class="mt-3"><strong>Trade-offs:</strong></p>
+          <ul class="space-y-1 ml-4 text-amber-700">
+            <li>• No official Angular wrapper (manual setup)</li>
+            <li>• Mobile experience is basic</li>
+            <li>• Checkboxes can't be inline with other text</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MARKDOWN USERS -->
+    <!-- ============================================ -->
+    <div class="bg-purple-50 rounded-xl border border-purple-200 p-6 mb-8">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 bg-purple-200 rounded-xl flex items-center justify-center shrink-0">
+          <i class="pi pi-file-edit text-purple-700 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-purple-900 mb-2">For Markdown-First Users: Milkdown</h3>
+          <p class="text-purple-800 text-sm mb-3">If your target users are developers who love Markdown, Milkdown offers the best of both worlds:</p>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="font-medium text-purple-800 mb-1">Advantages:</p>
+              <ul class="text-purple-700 space-y-1 ml-4">
+                <li>• Type <code class="bg-purple-200 px-1 rounded">- [ ]</code> for instant checkboxes</li>
+                <li>• Content is portable Markdown</li>
+                <li>• Works in any Markdown editor</li>
+                <li>• GFM task list is a standard</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-medium text-purple-800 mb-1">Considerations:</p>
+              <ul class="text-purple-700 space-y-1 ml-4">
+                <li>• Checkbox IDs need custom plugin</li>
+                <li>• Smaller community than TipTap</li>
+                <li>• Manual Angular integration</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- NOT RECOMMENDED -->
+    <!-- ============================================ -->
+    <div class="bg-red-50 rounded-xl border border-red-200 p-6 mb-8">
+      <h3 class="text-lg font-bold text-red-800 mb-3 flex items-center gap-2">
+        <i class="pi pi-times-circle"></i>
+        Not Recommended for PraxisNote
+      </h3>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <div class="bg-white p-4 rounded-lg border border-red-100">
+          <h4 class="font-medium text-red-800 mb-2">PrimeNG Editor</h4>
+          <p class="text-red-700">Despite being part of your UI library, the lack of any task list support makes it unsuitable. You'd need to build checkboxes as a separate component, breaking the unified editing experience.</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg border border-red-100">
+          <h4 class="font-medium text-red-800 mb-2">Quill (standalone)</h4>
+          <p class="text-red-700">Building a custom checkbox blot requires significant effort. The Delta format is also harder to parse for checkbox extraction compared to TipTap's document tree.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MOCKUP LINKS -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Explore Individual Editor Mockups</h2>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <a href="editor-tiptap.html" class="p-4 rounded-lg bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors text-center">
+          <i class="pi pi-star-fill text-emerald-600 text-2xl mb-2"></i>
+          <div class="font-medium text-emerald-800">TipTap</div>
+          <div class="text-xs text-emerald-600">Recommended</div>
+        </a>
+        <a href="editor-quill.html" class="p-4 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-center">
+          <i class="pi pi-file-edit text-gray-600 text-2xl mb-2"></i>
+          <div class="font-medium text-gray-800">Quill</div>
+          <div class="text-xs text-gray-500">Classic</div>
+        </a>
+        <a href="editor-primeng.html" class="p-4 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-center">
+          <i class="pi pi-prime text-gray-600 text-2xl mb-2"></i>
+          <div class="font-medium text-gray-800">PrimeNG</div>
+          <div class="text-xs text-gray-500">Built-in</div>
+        </a>
+        <a href="editor-editorjs.html" class="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors text-center">
+          <i class="pi pi-th-large text-blue-600 text-2xl mb-2"></i>
+          <div class="font-medium text-blue-800">Editor.js</div>
+          <div class="text-xs text-blue-600">Block-based</div>
+        </a>
+        <a href="editor-milkdown.html" class="p-4 rounded-lg bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-colors text-center">
+          <i class="pi pi-code text-purple-600 text-2xl mb-2"></i>
+          <div class="font-medium text-purple-800">Milkdown</div>
+          <div class="text-xs text-purple-600">Markdown</div>
+        </a>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-200">
+        <a href="note-feature-layout.html" class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium">
+          <i class="pi pi-arrow-left"></i>
+          Back to Note Feature Layout Options
+        </a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

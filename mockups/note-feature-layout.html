@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Note Feature - Layout & Component Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#ffffff',
+            'surface-hover': '#f8fafc',
+            'surface-alt': '#f1f5f9',
+            foreground: '#1e293b',
+            'foreground-muted': '#94a3b8',
+            border: '#e2e8f0',
+            primary: '#6366f1',
+            'primary-light': '#e0e7ff',
+            todo: '#f1f5f9',
+            'todo-foreground': '#475569',
+            inprogress: '#e0f2fe',
+            'inprogress-foreground': '#0369a1',
+            done: '#dcfce7',
+            'done-foreground': '#15803d',
+            tag: '#f3e8ff',
+            'tag-foreground': '#7c3aed',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .mockup-section { margin-bottom: 3rem; }
+    .mockup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; }
+    .mockup-card { background: #f8fafc; border-radius: 12px; padding: 1rem; }
+    .mockup-label { font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem; font-weight: 500; }
+
+    /* Fake editor styling */
+    .fake-editor {
+      min-height: 200px;
+      outline: none;
+    }
+    .fake-editor p { margin-bottom: 0.5rem; }
+    .fake-editor ul { list-style: none; padding-left: 0; }
+    .fake-editor li { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem; }
+
+    /* Checkbox styling */
+    .note-checkbox {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #cbd5e1;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .note-checkbox:hover { border-color: #6366f1; }
+    .note-checkbox.checked {
+      background: #6366f1;
+      border-color: #6366f1;
+    }
+    .note-checkbox.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Note Feature - Layout & Component Design</h1>
+    <p class="text-gray-600 mb-8">Exploring layouts for the Note feature with rich text editing, checkboxes that become tasks, and tag support</p>
+
+    <!-- ============================================ -->
+    <!-- CONTEXT: What We're Building -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Context: Note Domain Model</h2>
+      <div class="mockup-card bg-white border border-gray-200">
+        <div class="mockup-label">Key Features to Support</div>
+        <ul class="text-sm text-gray-600 space-y-2 mb-4">
+          <li><span class="font-medium">1. Rich Text Content:</span> Opaque string stored as TipTap JSON, ProseMirror, or Markdown (editor-agnostic)</li>
+          <li><span class="font-medium">2. Checkboxes:</span> Extracted from content, can be converted to Tasks. Each has ID, text, and isChecked state</li>
+          <li><span class="font-medium">3. Tags:</span> Note-level tags that tasks inherit when created from checkboxes</li>
+          <li><span class="font-medium">4. Timestamps:</span> CreatedAt and UpdatedAt for tracking modifications</li>
+        </ul>
+        <p class="text-sm text-gray-500">The Note serves as a scratchpad where users capture thoughts, then promote checkboxes to full Tasks when ready.</p>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 1: Split View (Notes List + Editor) - RECOMMENDED -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Option 1: Split View - Notes List + Editor Panel</h2>
+      <p class="text-gray-600 mb-4 text-sm">Classic notes app pattern (Apple Notes, Bear, Notion). List on left, editor on right.</p>
+
+      <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+        <div class="mockup-label text-emerald-700">Recommended - Desktop View</div>
+        <div class="bg-surface rounded-lg border border-border overflow-hidden" style="height: 500px;">
+          <div class="flex h-full">
+            <!-- Notes List Panel -->
+            <div class="w-72 border-r border-border flex flex-col bg-surface-alt">
+              <!-- Header -->
+              <div class="p-3 border-b border-border flex items-center justify-between">
+                <h2 class="font-semibold text-foreground">Notes</h2>
+                <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface text-primary">
+                  <i class="pi pi-plus"></i>
+                </button>
+              </div>
+
+              <!-- Search -->
+              <div class="p-2 border-b border-border">
+                <div class="flex items-center gap-2 px-3 py-2 bg-surface rounded-lg border border-border">
+                  <i class="pi pi-search text-foreground-muted text-sm"></i>
+                  <input type="text" placeholder="Search notes..." class="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-foreground-muted">
+                </div>
+              </div>
+
+              <!-- Notes List -->
+              <div class="flex-1 overflow-y-auto p-2 space-y-1">
+                <!-- Active Note -->
+                <div class="p-3 rounded-lg bg-primary/10 border border-primary/20 cursor-pointer">
+                  <div class="flex items-start justify-between gap-2">
+                    <h3 class="font-medium text-foreground text-sm truncate">Sprint Planning Ideas</h3>
+                    <span class="text-[10px] text-foreground-muted shrink-0">2h</span>
+                  </div>
+                  <p class="text-xs text-foreground-muted mt-1 line-clamp-2">Review the authentication flow and gather requirements for the new...</p>
+                  <div class="flex items-center gap-1 mt-2">
+                    <span class="px-1.5 py-0.5 text-[10px] rounded bg-tag text-tag-foreground">work</span>
+                    <span class="text-[10px] text-foreground-muted">3 checkboxes</span>
+                  </div>
+                </div>
+
+                <!-- Other Notes -->
+                <div class="p-3 rounded-lg hover:bg-surface cursor-pointer">
+                  <div class="flex items-start justify-between gap-2">
+                    <h3 class="font-medium text-foreground text-sm truncate">Meeting Notes - Jan 20</h3>
+                    <span class="text-[10px] text-foreground-muted shrink-0">1d</span>
+                  </div>
+                  <p class="text-xs text-foreground-muted mt-1 line-clamp-2">Discussed roadmap priorities and team capacity for Q1...</p>
+                </div>
+
+                <div class="p-3 rounded-lg hover:bg-surface cursor-pointer">
+                  <div class="flex items-start justify-between gap-2">
+                    <h3 class="font-medium text-foreground text-sm truncate">Quick Ideas</h3>
+                    <span class="text-[10px] text-foreground-muted shrink-0">3d</span>
+                  </div>
+                  <p class="text-xs text-foreground-muted mt-1 line-clamp-2">Feature ideas to explore when we have bandwidth...</p>
+                  <div class="flex items-center gap-1 mt-2">
+                    <span class="px-1.5 py-0.5 text-[10px] rounded bg-tag text-tag-foreground">ideas</span>
+                  </div>
+                </div>
+
+                <div class="p-3 rounded-lg hover:bg-surface cursor-pointer">
+                  <div class="flex items-start justify-between gap-2">
+                    <h3 class="font-medium text-foreground text-sm truncate">API Design Thoughts</h3>
+                    <span class="text-[10px] text-foreground-muted shrink-0">1w</span>
+                  </div>
+                  <p class="text-xs text-foreground-muted mt-1 line-clamp-2">REST vs GraphQL considerations for the new endpoints...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Editor Panel -->
+            <div class="flex-1 flex flex-col">
+              <!-- Editor Toolbar -->
+              <div class="p-3 border-b border-border flex items-center justify-between">
+                <div class="flex items-center gap-1">
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-bold text-sm"></i>
+                  </button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-italic text-sm"></i>
+                  </button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-list text-sm"></i>
+                  </button>
+                  <div class="w-px h-5 bg-border mx-1"></div>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted" title="Add checkbox">
+                    <i class="pi pi-check-square text-sm"></i>
+                  </button>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-surface-alt text-foreground-muted text-xs">
+                    <i class="pi pi-tag text-xs"></i>
+                    <span>Tags</span>
+                  </button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-ellipsis-v text-sm"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Editor Content -->
+              <div class="flex-1 overflow-y-auto p-6">
+                <!-- Title -->
+                <input type="text" value="Sprint Planning Ideas" class="w-full text-2xl font-bold text-foreground bg-transparent outline-none mb-1 placeholder:text-foreground-muted">
+
+                <!-- Metadata -->
+                <div class="flex items-center gap-3 text-xs text-foreground-muted mb-4">
+                  <span>Updated 2 hours ago</span>
+                  <span>·</span>
+                  <div class="flex items-center gap-1">
+                    <span class="px-1.5 py-0.5 rounded bg-tag text-tag-foreground">work</span>
+                  </div>
+                </div>
+
+                <!-- Rich Text Content -->
+                <div class="fake-editor text-foreground">
+                  <p>Review the authentication flow and gather requirements for the new dashboard feature.</p>
+                  <p class="mt-4 font-medium">Action Items:</p>
+                  <ul class="mt-2">
+                    <li>
+                      <div class="note-checkbox"></div>
+                      <span>Review the authentication flow documentation</span>
+                    </li>
+                    <li>
+                      <div class="note-checkbox checked"></div>
+                      <span class="line-through text-foreground-muted">Schedule meeting with security team</span>
+                    </li>
+                    <li>
+                      <div class="note-checkbox"></div>
+                      <span>Draft API contract for new endpoints</span>
+                    </li>
+                  </ul>
+                  <p class="mt-4">Additional notes:</p>
+                  <p class="text-foreground-muted">Need to consider backward compatibility with v2 API clients...</p>
+                </div>
+              </div>
+
+              <!-- Bottom Action Bar -->
+              <div class="p-3 border-t border-border flex items-center justify-between bg-surface-alt">
+                <span class="text-xs text-foreground-muted">3 checkboxes · 1 completed</span>
+                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90">
+                  <i class="pi pi-arrow-right text-xs"></i>
+                  <span>Create Tasks from Checkboxes</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-emerald-600 mt-2">Split view: List for navigation, full editor for content. Bottom bar shows checkbox stats and bulk action.</p>
+      </div>
+
+      <!-- Mobile View -->
+      <div class="mockup-grid mt-4">
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700">Recommended - Mobile: Notes List</div>
+          <div class="bg-surface rounded-lg border border-border overflow-hidden" style="width: 320px; height: 500px;">
+            <!-- Header -->
+            <div class="p-4 border-b border-border flex items-center justify-between">
+              <h1 class="text-xl font-bold text-foreground">Notes</h1>
+              <button class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white">
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+
+            <!-- Search -->
+            <div class="p-3 border-b border-border">
+              <div class="flex items-center gap-2 px-3 py-2.5 bg-surface-alt rounded-lg">
+                <i class="pi pi-search text-foreground-muted"></i>
+                <input type="text" placeholder="Search notes..." class="flex-1 bg-transparent outline-none text-foreground placeholder:text-foreground-muted">
+              </div>
+            </div>
+
+            <!-- Notes List -->
+            <div class="p-3 space-y-2">
+              <div class="p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="font-semibold text-foreground">Sprint Planning Ideas</h3>
+                  <span class="text-xs text-foreground-muted">2h</span>
+                </div>
+                <p class="text-sm text-foreground-muted mt-1 line-clamp-2">Review the authentication flow and gather requirements...</p>
+                <div class="flex items-center gap-2 mt-3">
+                  <span class="px-2 py-1 text-xs rounded-full bg-tag text-tag-foreground">work</span>
+                  <span class="text-xs text-foreground-muted">3 items</span>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-xl bg-surface border border-border">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="font-semibold text-foreground">Meeting Notes</h3>
+                  <span class="text-xs text-foreground-muted">1d</span>
+                </div>
+                <p class="text-sm text-foreground-muted mt-1 line-clamp-2">Discussed roadmap priorities and team capacity...</p>
+              </div>
+
+              <div class="p-4 rounded-xl bg-surface border border-border">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="font-semibold text-foreground">Quick Ideas</h3>
+                  <span class="text-xs text-foreground-muted">3d</span>
+                </div>
+                <p class="text-sm text-foreground-muted mt-1 line-clamp-2">Feature ideas to explore when we have bandwidth...</p>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Mobile list view with card-based notes. Tap to open full editor.</p>
+        </div>
+
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700">Recommended - Mobile: Note Editor</div>
+          <div class="bg-surface rounded-lg border border-border overflow-hidden" style="width: 320px; height: 500px;">
+            <!-- Header -->
+            <div class="p-3 border-b border-border flex items-center justify-between">
+              <button class="flex items-center gap-1 text-primary">
+                <i class="pi pi-chevron-left"></i>
+                <span class="text-sm">Notes</span>
+              </button>
+              <div class="flex items-center gap-1">
+                <button class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface-alt text-foreground-muted">
+                  <i class="pi pi-tag"></i>
+                </button>
+                <button class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface-alt text-foreground-muted">
+                  <i class="pi pi-ellipsis-v"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="flex-1 overflow-y-auto p-4" style="height: 380px;">
+              <input type="text" value="Sprint Planning Ideas" class="w-full text-xl font-bold text-foreground bg-transparent outline-none mb-2">
+
+              <div class="flex items-center gap-2 mb-4">
+                <span class="px-2 py-0.5 text-xs rounded-full bg-tag text-tag-foreground">work</span>
+                <span class="text-xs text-foreground-muted">2h ago</span>
+              </div>
+
+              <div class="fake-editor text-foreground text-sm">
+                <p>Review the authentication flow and gather requirements for the new dashboard feature.</p>
+                <p class="mt-3 font-medium">Action Items:</p>
+                <ul class="mt-2">
+                  <li>
+                    <div class="note-checkbox"></div>
+                    <span>Review auth documentation</span>
+                  </li>
+                  <li>
+                    <div class="note-checkbox checked"></div>
+                    <span class="line-through text-foreground-muted">Schedule security meeting</span>
+                  </li>
+                  <li>
+                    <div class="note-checkbox"></div>
+                    <span>Draft API contract</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Bottom Toolbar -->
+            <div class="p-3 border-t border-border flex items-center justify-between bg-surface-alt">
+              <div class="flex items-center gap-1">
+                <button class="w-9 h-9 flex items-center justify-center rounded text-foreground-muted">
+                  <i class="pi pi-bold"></i>
+                </button>
+                <button class="w-9 h-9 flex items-center justify-center rounded text-foreground-muted">
+                  <i class="pi pi-list"></i>
+                </button>
+                <button class="w-9 h-9 flex items-center justify-center rounded text-foreground-muted">
+                  <i class="pi pi-check-square"></i>
+                </button>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-medium">
+                Create Tasks
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Full-screen editor on mobile with back navigation and bottom toolbar.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 2: Card Grid View -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Option 2: Card Grid View (Google Keep Style)</h2>
+      <p class="text-gray-600 mb-4 text-sm">Masonry grid of note cards. Click to expand into full editor modal/overlay.</p>
+
+      <div class="mockup-card">
+        <div class="mockup-label">Desktop - Grid View</div>
+        <div class="bg-surface-alt rounded-lg p-4" style="min-height: 400px;">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4">
+            <h1 class="text-xl font-bold text-foreground">Notes</h1>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 px-3 py-2 bg-surface rounded-lg border border-border w-64">
+                <i class="pi pi-search text-foreground-muted text-sm"></i>
+                <input type="text" placeholder="Search notes..." class="flex-1 bg-transparent outline-none text-sm">
+              </div>
+              <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white">
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Masonry Grid -->
+          <div class="columns-3 gap-4">
+            <!-- Note Card 1 -->
+            <div class="break-inside-avoid mb-4 p-4 bg-surface rounded-xl border border-border hover:shadow-lg transition-shadow cursor-pointer">
+              <h3 class="font-semibold text-foreground mb-2">Sprint Planning Ideas</h3>
+              <p class="text-sm text-foreground-muted mb-3">Review the authentication flow and gather requirements for the new dashboard feature.</p>
+              <ul class="text-sm space-y-1 mb-3">
+                <li class="flex items-center gap-2">
+                  <div class="note-checkbox" style="width:14px;height:14px;"></div>
+                  <span class="text-foreground-muted">Review auth docs</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="note-checkbox checked" style="width:14px;height:14px;"></div>
+                  <span class="text-foreground-muted line-through">Schedule meeting</span>
+                </li>
+              </ul>
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 text-xs rounded-full bg-tag text-tag-foreground">work</span>
+                <span class="text-xs text-foreground-muted">2h ago</span>
+              </div>
+            </div>
+
+            <!-- Note Card 2 -->
+            <div class="break-inside-avoid mb-4 p-4 bg-surface rounded-xl border border-border hover:shadow-lg transition-shadow cursor-pointer">
+              <h3 class="font-semibold text-foreground mb-2">Meeting Notes - Jan 20</h3>
+              <p class="text-sm text-foreground-muted">Discussed roadmap priorities and team capacity for Q1. Key decisions: focus on core features, delay nice-to-haves.</p>
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-xs text-foreground-muted">1d ago</span>
+              </div>
+            </div>
+
+            <!-- Note Card 3 -->
+            <div class="break-inside-avoid mb-4 p-4 bg-surface rounded-xl border border-border hover:shadow-lg transition-shadow cursor-pointer">
+              <h3 class="font-semibold text-foreground mb-2">Quick Ideas</h3>
+              <ul class="text-sm space-y-1">
+                <li class="flex items-center gap-2">
+                  <div class="note-checkbox" style="width:14px;height:14px;"></div>
+                  <span class="text-foreground-muted">Dark mode toggle</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="note-checkbox" style="width:14px;height:14px;"></div>
+                  <span class="text-foreground-muted">Keyboard shortcuts</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="note-checkbox" style="width:14px;height:14px;"></div>
+                  <span class="text-foreground-muted">Export to PDF</span>
+                </li>
+              </ul>
+              <div class="flex items-center justify-between mt-3">
+                <span class="px-2 py-0.5 text-xs rounded-full bg-tag text-tag-foreground">ideas</span>
+                <span class="text-xs text-foreground-muted">3d ago</span>
+              </div>
+            </div>
+
+            <!-- Note Card 4 -->
+            <div class="break-inside-avoid mb-4 p-4 bg-surface rounded-xl border border-border hover:shadow-lg transition-shadow cursor-pointer">
+              <h3 class="font-semibold text-foreground mb-2">API Design Thoughts</h3>
+              <p class="text-sm text-foreground-muted">REST vs GraphQL considerations for the new endpoints. Need to evaluate: query complexity, caching strategy, client needs.</p>
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-xs text-foreground-muted">1w ago</span>
+              </div>
+            </div>
+
+            <!-- Note Card 5 -->
+            <div class="break-inside-avoid mb-4 p-4 bg-surface rounded-xl border border-border hover:shadow-lg transition-shadow cursor-pointer">
+              <h3 class="font-semibold text-foreground mb-2">Shopping List</h3>
+              <ul class="text-sm space-y-1">
+                <li class="flex items-center gap-2">
+                  <div class="note-checkbox checked" style="width:14px;height:14px;"></div>
+                  <span class="text-foreground-muted line-through">Milk</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="note-checkbox" style="width:14px;height:14px;"></div>
+                  <span class="text-foreground-muted">Bread</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="note-checkbox" style="width:14px;height:14px;"></div>
+                  <span class="text-foreground-muted">Eggs</span>
+                </li>
+              </ul>
+              <div class="flex items-center justify-between mt-3">
+                <span class="px-2 py-0.5 text-xs rounded-full bg-tag text-tag-foreground">personal</span>
+                <span class="text-xs text-foreground-muted">5d ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Grid layout with card previews. Great for visual scanning, less efficient for writing.</p>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 3: Single Note Focus (Notion-style) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Option 3: Single Note Focus (Notion-style)</h2>
+      <p class="text-gray-600 mb-4 text-sm">Full-screen note editor with a minimal navigation sidebar. Focuses on writing experience.</p>
+
+      <div class="mockup-card">
+        <div class="mockup-label">Desktop - Single Note Focus</div>
+        <div class="bg-surface rounded-lg border border-border overflow-hidden" style="height: 450px;">
+          <div class="flex h-full">
+            <!-- Minimal Sidebar -->
+            <div class="w-14 bg-surface-alt border-r border-border flex flex-col items-center py-3 gap-2">
+              <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <i class="pi pi-file-edit"></i>
+              </button>
+              <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface text-foreground-muted">
+                <i class="pi pi-list"></i>
+              </button>
+              <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface text-foreground-muted">
+                <i class="pi pi-search"></i>
+              </button>
+              <div class="flex-1"></div>
+              <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface text-foreground-muted">
+                <i class="pi pi-cog"></i>
+              </button>
+            </div>
+
+            <!-- Editor Area -->
+            <div class="flex-1 flex flex-col">
+              <!-- Breadcrumb / Note Switcher -->
+              <div class="p-3 border-b border-border flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <button class="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-surface-alt text-foreground-muted text-sm">
+                    <i class="pi pi-folder text-xs"></i>
+                    <span>Notes</span>
+                    <i class="pi pi-chevron-right text-xs"></i>
+                  </button>
+                  <span class="text-foreground text-sm font-medium">Sprint Planning Ideas</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-star text-sm"></i>
+                  </button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-share-alt text-sm"></i>
+                  </button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-ellipsis-h text-sm"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Centered Editor -->
+              <div class="flex-1 overflow-y-auto">
+                <div class="max-w-2xl mx-auto py-8 px-6">
+                  <!-- Cover/Icon Area -->
+                  <div class="mb-4">
+                    <button class="text-4xl hover:bg-surface-alt rounded-lg p-2 -ml-2">📝</button>
+                  </div>
+
+                  <!-- Title -->
+                  <input type="text" value="Sprint Planning Ideas" class="w-full text-4xl font-bold text-foreground bg-transparent outline-none mb-2 placeholder:text-foreground-muted">
+
+                  <!-- Properties -->
+                  <div class="flex items-center gap-4 text-sm text-foreground-muted mb-6 py-2 border-b border-border">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-tag text-xs"></i>
+                      <span class="px-2 py-0.5 rounded-full bg-tag text-tag-foreground text-xs">work</span>
+                      <button class="text-foreground-muted/50 hover:text-foreground-muted">+ Add</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-calendar text-xs"></i>
+                      <span>Jan 21, 2025</span>
+                    </div>
+                  </div>
+
+                  <!-- Content -->
+                  <div class="fake-editor text-foreground">
+                    <p class="text-lg">Review the authentication flow and gather requirements for the new dashboard feature.</p>
+                    <p class="mt-6 text-lg font-semibold">Action Items</p>
+                    <ul class="mt-3">
+                      <li class="py-1">
+                        <div class="note-checkbox" style="width:18px;height:18px;"></div>
+                        <span class="text-lg">Review the authentication flow documentation</span>
+                      </li>
+                      <li class="py-1">
+                        <div class="note-checkbox checked" style="width:18px;height:18px;"></div>
+                        <span class="text-lg line-through text-foreground-muted">Schedule meeting with security team</span>
+                      </li>
+                      <li class="py-1">
+                        <div class="note-checkbox" style="width:18px;height:18px;"></div>
+                        <span class="text-lg">Draft API contract for new endpoints</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Full-screen focus on a single note. Great for long-form writing, harder to switch between notes.</p>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 4: Integrated with Tasks (Unified View) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Option 4: Integrated with Tasks (Unified Workspace)</h2>
+      <p class="text-gray-600 mb-4 text-sm">Notes appear alongside Tasks in the same workspace. Checkboxes can be dragged to become tasks.</p>
+
+      <div class="mockup-card">
+        <div class="mockup-label">Desktop - Notes + Kanban Side by Side</div>
+        <div class="bg-surface-alt rounded-lg p-4 overflow-x-auto" style="min-height: 400px;">
+          <div class="flex gap-4" style="min-width: 1000px;">
+            <!-- Notes Column -->
+            <div class="w-80 shrink-0">
+              <div class="flex items-center justify-between mb-3">
+                <h2 class="font-semibold text-foreground flex items-center gap-2">
+                  <i class="pi pi-file-edit text-primary"></i>
+                  Notes
+                </h2>
+                <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                  <i class="pi pi-plus text-sm"></i>
+                </button>
+              </div>
+
+              <!-- Notes in Column -->
+              <div class="space-y-2">
+                <div class="p-3 bg-surface rounded-lg border border-border">
+                  <h3 class="font-medium text-foreground text-sm mb-2">Sprint Planning Ideas</h3>
+                  <ul class="text-xs space-y-1">
+                    <li class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-alt cursor-grab" draggable="true">
+                      <div class="note-checkbox" style="width:12px;height:12px;"></div>
+                      <span class="text-foreground-muted flex-1">Review auth docs</span>
+                      <i class="pi pi-arrows-alt text-foreground-muted/30 text-xs"></i>
+                    </li>
+                    <li class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-alt cursor-grab" draggable="true">
+                      <div class="note-checkbox" style="width:12px;height:12px;"></div>
+                      <span class="text-foreground-muted flex-1">Draft API contract</span>
+                      <i class="pi pi-arrows-alt text-foreground-muted/30 text-xs"></i>
+                    </li>
+                  </ul>
+                  <div class="flex items-center gap-1 mt-2 pt-2 border-t border-border">
+                    <span class="px-1.5 py-0.5 text-[10px] rounded bg-tag text-tag-foreground">work</span>
+                    <span class="text-[10px] text-foreground-muted ml-auto">2h ago</span>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-surface rounded-lg border border-border">
+                  <h3 class="font-medium text-foreground text-sm mb-2">Quick Ideas</h3>
+                  <ul class="text-xs space-y-1">
+                    <li class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-alt cursor-grab">
+                      <div class="note-checkbox" style="width:12px;height:12px;"></div>
+                      <span class="text-foreground-muted flex-1">Dark mode toggle</span>
+                      <i class="pi pi-arrows-alt text-foreground-muted/30 text-xs"></i>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kanban Columns -->
+            <div class="flex-1 flex gap-4">
+              <!-- To Do -->
+              <div class="flex-1 bg-todo rounded-lg p-3">
+                <h2 class="font-semibold text-todo-foreground text-sm mb-3">To Do</h2>
+                <div class="space-y-2">
+                  <div class="p-3 bg-surface rounded-lg border border-border text-sm">
+                    <p class="text-foreground">Fix login validation bug</p>
+                    <div class="flex items-center gap-1 mt-2">
+                      <span class="px-1.5 py-0.5 text-[10px] rounded bg-tag text-tag-foreground">work</span>
+                    </div>
+                  </div>
+                  <!-- Drop Zone -->
+                  <div class="border-2 border-dashed border-todo-foreground/20 rounded-lg p-3 text-center text-xs text-todo-foreground/50">
+                    Drop checkbox here to create task
+                  </div>
+                </div>
+              </div>
+
+              <!-- In Progress -->
+              <div class="flex-1 bg-inprogress rounded-lg p-3">
+                <h2 class="font-semibold text-inprogress-foreground text-sm mb-3">In Progress</h2>
+                <div class="space-y-2">
+                  <div class="p-3 bg-surface rounded-lg border border-border text-sm">
+                    <p class="text-foreground">Implement user dashboard</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Done -->
+              <div class="flex-1 bg-done rounded-lg p-3">
+                <h2 class="font-semibold text-done-foreground text-sm mb-3">Done</h2>
+                <div class="space-y-2">
+                  <div class="p-3 bg-surface rounded-lg border border-border text-sm">
+                    <p class="text-foreground-muted line-through">Setup CI pipeline</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Unified workspace: Notes column + Kanban. Drag checkboxes directly to task columns.</p>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 5: Floating Quick Note (Capture-First) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Option 5: Floating Quick Note (Capture-First)</h2>
+      <p class="text-gray-600 mb-4 text-sm">Always-visible quick capture panel that floats over the Tasks view. Optimized for fast entry.</p>
+
+      <div class="mockup-grid">
+        <div class="mockup-card">
+          <div class="mockup-label">Collapsed - Quick Capture Bar</div>
+          <div class="bg-surface-alt rounded-lg p-4 relative" style="height: 300px;">
+            <!-- Background: Tasks View -->
+            <div class="opacity-50">
+              <div class="flex gap-4">
+                <div class="flex-1 bg-todo/50 rounded-lg p-3 h-48">
+                  <h2 class="font-semibold text-todo-foreground/50 text-sm mb-2">To Do</h2>
+                  <div class="space-y-2">
+                    <div class="p-2 bg-surface/50 rounded text-xs text-foreground/50">Task 1</div>
+                    <div class="p-2 bg-surface/50 rounded text-xs text-foreground/50">Task 2</div>
+                  </div>
+                </div>
+                <div class="flex-1 bg-inprogress/50 rounded-lg p-3 h-48">
+                  <h2 class="font-semibold text-inprogress-foreground/50 text-sm mb-2">In Progress</h2>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Capture Bar -->
+            <div class="absolute bottom-4 left-4 right-4 bg-surface rounded-xl shadow-lg border border-border p-3 flex items-center gap-3">
+              <i class="pi pi-pencil text-primary"></i>
+              <input type="text" placeholder="Quick note... (⌘+N)" class="flex-1 bg-transparent outline-none text-foreground placeholder:text-foreground-muted">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-alt text-foreground-muted">
+                <i class="pi pi-expand"></i>
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Collapsed: Single-line quick capture at bottom. Expands on focus.</p>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label">Expanded - Full Editor Overlay</div>
+          <div class="bg-surface-alt rounded-lg p-4 relative" style="height: 300px;">
+            <!-- Background: Tasks View (blurred) -->
+            <div class="opacity-30 blur-sm">
+              <div class="flex gap-4">
+                <div class="flex-1 bg-todo/50 rounded-lg p-3 h-48"></div>
+                <div class="flex-1 bg-inprogress/50 rounded-lg p-3 h-48"></div>
+              </div>
+            </div>
+
+            <!-- Expanded Editor Overlay -->
+            <div class="absolute inset-4 bg-surface rounded-xl shadow-2xl border border-border flex flex-col overflow-hidden">
+              <!-- Header -->
+              <div class="p-3 border-b border-border flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-bold text-sm"></i>
+                  </button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-list text-sm"></i>
+                  </button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-check-square text-sm"></i>
+                  </button>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="px-2 py-1 rounded text-xs text-foreground-muted hover:bg-surface-alt">Save & Close</button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted">
+                    <i class="pi pi-times text-sm"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Editor -->
+              <div class="flex-1 p-4 overflow-y-auto">
+                <input type="text" placeholder="Untitled" class="w-full text-lg font-semibold text-foreground bg-transparent outline-none mb-2 placeholder:text-foreground-muted">
+                <div class="fake-editor text-sm text-foreground">
+                  <p>Quick thought about the new feature...</p>
+                  <ul class="mt-2">
+                    <li>
+                      <div class="note-checkbox" style="width:14px;height:14px;"></div>
+                      <span>First action item</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Expanded: Full editor overlay with blur background. Quick save & dismiss.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 6: Tab-Based Navigation -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Option 6: Tab-Based Navigation (Tasks | Notes)</h2>
+      <p class="text-gray-600 mb-4 text-sm">Top-level tabs to switch between Tasks view and Notes view. Clear separation of concerns.</p>
+
+      <div class="mockup-card">
+        <div class="mockup-label">Desktop - Tab Navigation</div>
+        <div class="bg-surface rounded-lg border border-border overflow-hidden" style="height: 400px;">
+          <!-- Tab Bar -->
+          <div class="border-b border-border flex items-center px-4">
+            <button class="px-4 py-3 text-sm font-medium text-foreground-muted hover:text-foreground border-b-2 border-transparent hover:border-foreground-muted/30 -mb-px">
+              <i class="pi pi-check-square mr-2"></i>Tasks
+            </button>
+            <button class="px-4 py-3 text-sm font-medium text-primary border-b-2 border-primary -mb-px">
+              <i class="pi pi-file-edit mr-2"></i>Notes
+            </button>
+            <div class="flex-1"></div>
+            <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-alt text-primary">
+              <i class="pi pi-plus"></i>
+            </button>
+          </div>
+
+          <!-- Notes Content (Active Tab) -->
+          <div class="flex h-full" style="height: calc(100% - 49px);">
+            <!-- List -->
+            <div class="w-72 border-r border-border overflow-y-auto">
+              <div class="p-3 space-y-1">
+                <div class="p-3 rounded-lg bg-primary/10 cursor-pointer">
+                  <h3 class="font-medium text-foreground text-sm">Sprint Planning Ideas</h3>
+                  <p class="text-xs text-foreground-muted mt-1 line-clamp-2">Review the authentication flow...</p>
+                </div>
+                <div class="p-3 rounded-lg hover:bg-surface-alt cursor-pointer">
+                  <h3 class="font-medium text-foreground text-sm">Meeting Notes</h3>
+                  <p class="text-xs text-foreground-muted mt-1 line-clamp-2">Discussed roadmap priorities...</p>
+                </div>
+                <div class="p-3 rounded-lg hover:bg-surface-alt cursor-pointer">
+                  <h3 class="font-medium text-foreground text-sm">Quick Ideas</h3>
+                  <p class="text-xs text-foreground-muted mt-1 line-clamp-2">Feature ideas to explore...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="flex-1 p-6 overflow-y-auto">
+              <input type="text" value="Sprint Planning Ideas" class="w-full text-2xl font-bold text-foreground bg-transparent outline-none mb-4">
+              <div class="fake-editor text-foreground">
+                <p>Review the authentication flow and gather requirements.</p>
+                <ul class="mt-4">
+                  <li>
+                    <div class="note-checkbox"></div>
+                    <span>Review auth documentation</span>
+                  </li>
+                  <li>
+                    <div class="note-checkbox checked"></div>
+                    <span class="line-through text-foreground-muted">Schedule security meeting</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Tab navigation: Clear separation between Tasks and Notes. Familiar pattern from many apps.</p>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- RICH TEXT EDITOR COMPONENTS -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Rich Text Editor Components</h2>
+      <p class="text-gray-600 mb-4 text-sm">Possible editor toolbars and formatting options using PrimeNG + custom components.</p>
+
+      <div class="mockup-grid">
+        <div class="mockup-card">
+          <div class="mockup-label">Toolbar Option A: Minimal (Slack-style)</div>
+          <div class="bg-surface rounded-lg border border-border p-4">
+            <div class="flex items-center gap-1 p-2 bg-surface-alt rounded-lg mb-3">
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted font-bold">B</button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted italic">I</button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted line-through">S</button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-list text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-check-square text-sm"></i>
+              </button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-link text-sm"></i>
+              </button>
+            </div>
+            <div class="text-sm text-foreground-muted">Minimal toolbar for quick notes. Focus on text and checkboxes.</div>
+          </div>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label">Toolbar Option B: Full Featured</div>
+          <div class="bg-surface rounded-lg border border-border p-4">
+            <div class="flex items-center gap-1 p-2 bg-surface-alt rounded-lg mb-3 flex-wrap">
+              <select class="px-2 py-1 bg-surface border border-border rounded text-sm text-foreground">
+                <option>Paragraph</option>
+                <option>Heading 1</option>
+                <option>Heading 2</option>
+                <option>Heading 3</option>
+              </select>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted font-bold">B</button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted italic">I</button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted underline">U</button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-list text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-list-check text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-check-square text-sm"></i>
+              </button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-link text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-image text-sm"></i>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface text-foreground-muted">
+                <i class="pi pi-code text-sm"></i>
+              </button>
+            </div>
+            <div class="text-sm text-foreground-muted">Full-featured toolbar for rich documents. More options, more complexity.</div>
+          </div>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label">Toolbar Option C: Floating/Bubble (Medium-style)</div>
+          <div class="bg-surface rounded-lg border border-border p-4 relative" style="height: 150px;">
+            <div class="text-sm text-foreground">
+              <p>Some text here. <span class="bg-primary/20 text-primary">Selected text that shows</span> the floating toolbar.</p>
+            </div>
+            <!-- Floating Toolbar -->
+            <div class="absolute top-12 left-20 bg-foreground text-surface rounded-lg shadow-lg flex items-center gap-1 p-1">
+              <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-white/10 font-bold text-sm">B</button>
+              <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-white/10 italic text-sm">I</button>
+              <div class="w-px h-4 bg-white/20 mx-0.5"></div>
+              <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-white/10">
+                <i class="pi pi-link text-xs"></i>
+              </button>
+              <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-white/10">
+                <i class="pi pi-code text-xs"></i>
+              </button>
+            </div>
+            <div class="absolute bottom-4 left-4 text-xs text-foreground-muted">Toolbar appears on text selection. Clean, distraction-free writing.</div>
+          </div>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label">Checkbox Interaction: Convert to Task</div>
+          <div class="bg-surface rounded-lg border border-border p-4">
+            <div class="space-y-2">
+              <!-- Regular checkbox -->
+              <div class="flex items-center gap-2 p-2 rounded hover:bg-surface-alt group">
+                <div class="note-checkbox"></div>
+                <span class="text-sm text-foreground flex-1">Regular checkbox item</span>
+                <button class="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs bg-primary/10 text-primary rounded hover:bg-primary/20 transition-opacity">
+                  <i class="pi pi-arrow-right mr-1"></i>Task
+                </button>
+              </div>
+
+              <!-- Checkbox with linked task indicator -->
+              <div class="flex items-center gap-2 p-2 rounded bg-primary/5 border border-primary/20">
+                <div class="note-checkbox"></div>
+                <span class="text-sm text-foreground flex-1">Linked to task</span>
+                <span class="px-2 py-1 text-xs bg-inprogress text-inprogress-foreground rounded flex items-center gap-1">
+                  <i class="pi pi-external-link text-xs"></i>
+                  In Progress
+                </span>
+              </div>
+
+              <!-- Completed checkbox -->
+              <div class="flex items-center gap-2 p-2 rounded">
+                <div class="note-checkbox checked"></div>
+                <span class="text-sm text-foreground-muted line-through flex-1">Completed item</span>
+              </div>
+            </div>
+            <div class="text-xs text-foreground-muted mt-3">Hover reveals "Convert to Task" button. Linked checkboxes show task status.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- COMPARISON TABLE -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Comparison: Layout Options</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm bg-white rounded-lg border border-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Option</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Pattern</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Pros</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Cons</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Best For</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="bg-emerald-50">
+              <td class="px-4 py-3 font-medium text-emerald-700">1. Split View (Recommended)</td>
+              <td class="px-4 py-3 text-gray-600">Apple Notes / Bear</td>
+              <td class="px-4 py-3 text-gray-600">Fast note switching, full editor, works on mobile</td>
+              <td class="px-4 py-3 text-gray-600">Takes full screen, separate from tasks</td>
+              <td class="px-4 py-3 text-gray-600">Primary notes workflow</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">2. Card Grid</td>
+              <td class="px-4 py-3 text-gray-600">Google Keep</td>
+              <td class="px-4 py-3 text-gray-600">Visual overview, quick scanning</td>
+              <td class="px-4 py-3 text-gray-600">Less room for content, needs modal for editing</td>
+              <td class="px-4 py-3 text-gray-600">Many short notes</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">3. Single Note Focus</td>
+              <td class="px-4 py-3 text-gray-600">Notion</td>
+              <td class="px-4 py-3 text-gray-600">Best writing experience, beautiful</td>
+              <td class="px-4 py-3 text-gray-600">Slow to switch notes, more clicks</td>
+              <td class="px-4 py-3 text-gray-600">Long-form content</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">4. Integrated with Tasks</td>
+              <td class="px-4 py-3 text-gray-600">Unified workspace</td>
+              <td class="px-4 py-3 text-gray-600">Direct drag-to-task, single view</td>
+              <td class="px-4 py-3 text-gray-600">Complex UI, may be overwhelming</td>
+              <td class="px-4 py-3 text-gray-600">Power users, task-heavy workflow</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">5. Floating Quick Note</td>
+              <td class="px-4 py-3 text-gray-600">Capture-first</td>
+              <td class="px-4 py-3 text-gray-600">Fast capture without context switch</td>
+              <td class="px-4 py-3 text-gray-600">Notes feel secondary, limited space</td>
+              <td class="px-4 py-3 text-gray-600">Quick thoughts while in tasks</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">6. Tab Navigation</td>
+              <td class="px-4 py-3 text-gray-600">Tasks | Notes tabs</td>
+              <td class="px-4 py-3 text-gray-600">Clear separation, simple mental model</td>
+              <td class="px-4 py-3 text-gray-600">Extra click to switch, no unified view</td>
+              <td class="px-4 py-3 text-gray-600">Users who prefer separation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- RECOMMENDATION -->
+    <!-- ============================================ -->
+    <div class="mockup-section bg-emerald-50 rounded-xl p-6 border-2 border-emerald-200">
+      <h2 class="text-xl font-semibold text-emerald-800 mb-4">Recommendation: Option 1 - Split View</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Why This Option?</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>• Proven pattern used by Apple Notes, Bear, Notion, Obsidian</li>
+            <li>• Fast navigation between notes while keeping editor visible</li>
+            <li>• Works well on both desktop and mobile (responsive)</li>
+            <li>• Bottom action bar makes checkbox-to-task conversion discoverable</li>
+            <li>• List can show tags, checkbox counts, and timestamps at a glance</li>
+            <li>• Can evolve to support folders/organization later</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Implementation Approach</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>• <strong>Editor:</strong> TipTap with custom checkbox extension</li>
+            <li>• <strong>Components:</strong> PrimeNG Splitter for resizable panels</li>
+            <li>• <strong>Mobile:</strong> Full-screen list → Full-screen editor (navigation)</li>
+            <li>• <strong>Toolbar:</strong> Option C (floating/bubble) for clean writing experience</li>
+            <li>• <strong>Tags:</strong> Reuse existing tag picker from task cards</li>
+            <li>• <strong>State:</strong> Signal-based with computed for filtered/sorted notes</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-emerald-300">
+        <h3 class="font-medium text-emerald-700 mb-2">Alternative Consideration: Option 6 (Tab Navigation)</h3>
+        <p class="text-sm text-emerald-800">If the Split View feels too heavy, Tab Navigation is a simpler alternative. It keeps Notes and Tasks completely separate, which may be preferable if users don't frequently convert checkboxes to tasks. The tabs could be added to the existing header navigation.</p>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

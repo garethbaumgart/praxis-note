@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quill Editor - Interactive Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <!-- Quill CSS (simulated) -->
+  <style>
+    /* Quill Editor Styles */
+    .ql-toolbar {
+      border: 1px solid #e2e8f0;
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 8px;
+      background: #f8fafc;
+    }
+    .ql-toolbar button {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: #64748b;
+      transition: all 0.15s;
+    }
+    .ql-toolbar button:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .ql-toolbar button.ql-active {
+      background: #6366f1;
+      color: white;
+    }
+    .ql-toolbar .ql-picker {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+    }
+    .ql-toolbar .ql-picker-label {
+      padding: 4px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .ql-container {
+      border: 1px solid #e2e8f0;
+      border-radius: 0 0 8px 8px;
+      font-size: 16px;
+    }
+    .ql-editor {
+      min-height: 300px;
+      padding: 16px;
+      line-height: 1.6;
+    }
+    .ql-editor h1 { font-size: 2em; font-weight: bold; margin-bottom: 0.5em; }
+    .ql-editor h2 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; }
+    .ql-editor h3 { font-size: 1.17em; font-weight: bold; margin-bottom: 0.5em; }
+    .ql-editor p { margin-bottom: 0.5em; }
+    .ql-editor ul, .ql-editor ol { padding-left: 1.5em; margin-bottom: 0.5em; }
+    .ql-editor blockquote {
+      border-left: 4px solid #e2e8f0;
+      padding-left: 16px;
+      margin: 1em 0;
+      color: #64748b;
+    }
+    .ql-editor pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    .ql-editor a {
+      color: #6366f1;
+      text-decoration: underline;
+    }
+
+    /* Quill Snow Theme tooltip */
+    .ql-tooltip {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: absolute;
+    }
+
+    /* Custom checkbox styling (Quill doesn't have native task lists) */
+    .custom-checkbox-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .custom-checkbox-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .custom-checkbox-list input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-top: 4px;
+      accent-color: #6366f1;
+    }
+    .custom-checkbox-list li.checked span {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Quill Editor</h1>
+    <p class="text-gray-600 mb-8">Modern WYSIWYG editor with a modular architecture. Popular choice with good documentation.</p>
+
+    <!-- ============================================ -->
+    <!-- EDITOR OVERVIEW -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Key Features</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Mature:</strong> Battle-tested, used by Slack, LinkedIn, Salesforce</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Delta Format:</strong> Operational transform for real-time collab</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Themes:</strong> Snow (toolbar) and Bubble (floating) built-in</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>API:</strong> Clean, well-documented API</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>ngx-quill:</strong> Official-ish Angular wrapper available</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Considerations</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-times-circle text-red-500 mt-0.5"></i>
+              <span><strong>No Task Lists:</strong> No built-in checkbox/task list support</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Custom Formats:</strong> Need to build checkbox extension manually</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Bundle Size:</strong> ~43KB min+gzip (full bundle)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Styling:</strong> Comes with opinionated styles (can override)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Output:</strong> Delta (JSON) or HTML</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SNOW THEME (TOOLBAR) -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Snow Theme (Fixed Toolbar)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Default Quill Snow Theme</div>
+
+        <!-- Quill Toolbar -->
+        <div class="ql-toolbar">
+          <span class="ql-formats">
+            <select class="ql-picker ql-header">
+              <span class="ql-picker-label" style="padding: 4px 24px 4px 8px; font-size: 13px;">Normal ▾</span>
+            </select>
+          </span>
+          <span class="ql-formats" style="display: inline-flex; gap: 2px; margin-left: 8px;">
+            <button class="ql-bold font-bold">B</button>
+            <button class="ql-italic italic">I</button>
+            <button class="ql-underline underline">U</button>
+            <button class="ql-strike line-through">S</button>
+          </span>
+          <span class="ql-formats" style="display: inline-flex; gap: 2px; margin-left: 8px; padding-left: 8px; border-left: 1px solid #e2e8f0;">
+            <button class="ql-list" value="ordered"><i class="pi pi-list-check text-sm"></i></button>
+            <button class="ql-list" value="bullet"><i class="pi pi-list text-sm"></i></button>
+          </span>
+          <span class="ql-formats" style="display: inline-flex; gap: 2px; margin-left: 8px; padding-left: 8px; border-left: 1px solid #e2e8f0;">
+            <button class="ql-link"><i class="pi pi-link text-sm"></i></button>
+            <button class="ql-image"><i class="pi pi-image text-sm"></i></button>
+            <button class="ql-code-block"><i class="pi pi-code text-sm"></i></button>
+          </span>
+          <span class="ql-formats" style="display: inline-flex; gap: 2px; margin-left: 8px; padding-left: 8px; border-left: 1px solid #e2e8f0;">
+            <button class="ql-clean"><i class="pi pi-eraser text-sm"></i></button>
+          </span>
+        </div>
+
+        <!-- Quill Editor -->
+        <div class="ql-container">
+          <div class="ql-editor" contenteditable="true">
+            <h2>Sprint Planning Ideas</h2>
+            <p>Review the authentication flow and gather requirements for the new dashboard feature.</p>
+            <h3>Action Items</h3>
+            <p><strong>Note:</strong> Quill doesn't have built-in task lists. We'd need a custom format:</p>
+            <ul>
+              <li>Review the authentication flow documentation</li>
+              <li>Schedule meeting with security team</li>
+              <li>Draft API contract for new endpoints</li>
+            </ul>
+            <blockquote>Need to consider backward compatibility with v2 API clients...</blockquote>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- BUBBLE THEME -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Bubble Theme (Floating Toolbar)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Quill Bubble Theme - Toolbar appears on selection</div>
+
+        <div class="relative">
+          <!-- Floating tooltip/toolbar -->
+          <div class="ql-tooltip absolute top-20 left-24 z-10 flex items-center gap-1">
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 font-bold">B</button>
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 italic">I</button>
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 underline">U</button>
+            <div class="w-px h-5 bg-gray-200 mx-1"></div>
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100"><i class="pi pi-link text-sm"></i></button>
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100"><i class="pi pi-quote-right text-sm"></i></button>
+          </div>
+
+          <div class="ql-editor" contenteditable="true" style="border: 1px solid #e2e8f0; border-radius: 8px; margin: 16px;">
+            <p>With the Bubble theme, <span class="bg-indigo-200">select text to see the floating toolbar</span> appear.</p>
+            <p>This creates a cleaner, more focused writing experience without the permanent toolbar taking up space.</p>
+            <p>Great for mobile interfaces where screen real estate is limited.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CUSTOM CHECKBOX EXTENSION -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Custom Checkbox Extension (Required)</h2>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+        <div class="flex items-start gap-3">
+          <i class="pi pi-exclamation-triangle text-amber-600 mt-0.5"></i>
+          <div>
+            <p class="text-amber-800 font-medium">Quill requires custom development for checkboxes</p>
+            <p class="text-amber-700 text-sm mt-1">Unlike TipTap, Quill has no built-in task list support. You'd need to create a custom "blot" (Quill's term for custom formats).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Simulated Custom Checkbox Blot</div>
+
+        <div class="ql-toolbar">
+          <span class="ql-formats" style="display: inline-flex; gap: 2px;">
+            <button class="ql-bold font-bold">B</button>
+            <button class="ql-italic italic">I</button>
+          </span>
+          <span class="ql-formats" style="display: inline-flex; gap: 2px; margin-left: 8px; padding-left: 8px; border-left: 1px solid #e2e8f0;">
+            <button class="ql-list" value="bullet"><i class="pi pi-list text-sm"></i></button>
+            <button class="ql-active" title="Custom Checkbox Format"><i class="pi pi-check-square text-sm"></i></button>
+          </span>
+        </div>
+
+        <div class="ql-container">
+          <div class="ql-editor">
+            <h3>Project Checklist</h3>
+            <ul class="custom-checkbox-list">
+              <li>
+                <input type="checkbox" checked>
+                <span class="checked">Setup project repository</span>
+              </li>
+              <li>
+                <input type="checkbox" checked>
+                <span class="checked">Configure CI/CD pipeline</span>
+              </li>
+              <li>
+                <input type="checkbox">
+                <span>Implement user authentication</span>
+              </li>
+              <li>
+                <input type="checkbox">
+                <span>Design database schema</span>
+              </li>
+            </ul>
+            <p>This checkbox list requires a custom Quill blot implementation...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- DELTA FORMAT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Delta Format (Quill's Native Format)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Quill stores content as Delta operations</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>{
+  "ops": [
+    { "insert": "Sprint Planning Ideas", "attributes": { "header": 2 } },
+    { "insert": "\n" },
+    { "insert": "Review the authentication flow and gather requirements.\n" },
+    { "insert": "Action Items", "attributes": { "header": 3 } },
+    { "insert": "\n" },
+    { "insert": "Review auth docs", "attributes": { "list": "bullet" } },
+    { "insert": "\n" },
+    { "insert": "Schedule meeting", "attributes": { "list": "bullet" } },
+    { "insert": "\n" },
+    { "insert": "Draft API contract", "attributes": { "list": "bullet" } },
+    { "insert": "\n" }
+  ]
+}</code></pre>
+        <div class="p-4 bg-gray-50 border-t border-gray-200">
+          <p class="text-sm text-gray-600"><strong>Note:</strong> Delta format is optimized for operational transforms (real-time collaboration) but is less intuitive for querying structure compared to TipTap's document tree.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CUSTOM BLOT CODE EXAMPLE -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Custom Checkbox Blot Code</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Implementation effort required</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>// checkbox-blot.ts - Custom Quill format for checkboxes
+import Quill from 'quill';
+
+const Block = Quill.import('blots/block');
+
+class CheckboxBlot extends Block {
+  static blotName = 'checkbox';
+  static tagName = 'div';
+  static className = 'ql-checkbox';
+
+  static create(value: { checked: boolean; id: string }) {
+    const node = super.create() as HTMLElement;
+    node.setAttribute('data-checkbox-id', value.id);
+    node.setAttribute('data-checked', String(value.checked));
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = value.checked;
+    checkbox.addEventListener('change', (e) => {
+      node.setAttribute('data-checked', String((e.target as HTMLInputElement).checked));
+    });
+
+    const content = document.createElement('span');
+    content.contentEditable = 'true';
+
+    node.appendChild(checkbox);
+    node.appendChild(content);
+    return node;
+  }
+
+  static value(node: HTMLElement) {
+    return {
+      id: node.getAttribute('data-checkbox-id'),
+      checked: node.getAttribute('data-checked') === 'true',
+    };
+  }
+}
+
+Quill.register(CheckboxBlot);
+
+// Usage in Angular component
+@Component({...})
+export class NoteEditorComponent {
+  @ViewChild('editor') editorRef: ElementRef;
+  quill: Quill;
+
+  ngAfterViewInit() {
+    this.quill = new Quill(this.editorRef.nativeElement, {
+      theme: 'snow',
+      modules: {
+        toolbar: [['bold', 'italic'], ['checkbox']], // custom button
+      },
+    });
+  }
+
+  insertCheckbox() {
+    const range = this.quill.getSelection();
+    this.quill.insertEmbed(range.index, 'checkbox', {
+      id: crypto.randomUUID(),
+      checked: false,
+    });
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- INTEGRATION WITH NOTE LAYOUT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Integration: Split View Layout with Quill</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" style="height: 450px;">
+        <div class="flex h-full">
+          <!-- Notes List Panel -->
+          <div class="w-72 border-r border-gray-200 flex flex-col bg-gray-50">
+            <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+              <h2 class="font-semibold text-gray-800">Notes</h2>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white text-indigo-600">
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-1">
+              <div class="p-3 rounded-lg bg-indigo-100 border border-indigo-200 cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Sprint Planning</h3>
+                <p class="text-xs text-gray-500 mt-1 line-clamp-2">Review the authentication...</p>
+              </div>
+              <div class="p-3 rounded-lg hover:bg-white cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Meeting Notes</h3>
+                <p class="text-xs text-gray-500 mt-1">Discussed roadmap...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quill Editor Panel -->
+          <div class="flex-1 flex flex-col">
+            <!-- Quill Toolbar -->
+            <div class="ql-toolbar border-0 border-b rounded-none">
+              <span class="ql-formats" style="display: inline-flex; gap: 2px;">
+                <button class="ql-bold font-bold text-sm">B</button>
+                <button class="ql-italic italic text-sm">I</button>
+              </span>
+              <span class="ql-formats" style="display: inline-flex; gap: 2px; margin-left: 8px;">
+                <button><i class="pi pi-list text-sm"></i></button>
+                <button class="ql-active"><i class="pi pi-check-square text-sm"></i></button>
+              </span>
+            </div>
+
+            <!-- Editor Content -->
+            <div class="flex-1 overflow-y-auto">
+              <div class="ql-editor">
+                <h2>Sprint Planning Ideas</h2>
+                <p>Review the authentication flow and gather requirements.</p>
+                <h3>Action Items</h3>
+                <ul class="custom-checkbox-list">
+                  <li>
+                    <input type="checkbox">
+                    <span>Review auth documentation</span>
+                  </li>
+                  <li>
+                    <input type="checkbox" checked>
+                    <span class="checked">Schedule meeting</span>
+                  </li>
+                  <li>
+                    <input type="checkbox">
+                    <span>Draft API contract</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+              <span class="text-xs text-gray-500">3 tasks · 1 completed</span>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium">
+                Create Tasks
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- VERDICT -->
+    <!-- ============================================ -->
+    <div class="bg-amber-50 rounded-xl p-6 border-2 border-amber-200">
+      <h2 class="text-xl font-semibold text-amber-800 mb-4">Quill Verdict</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-amber-600 mb-1">7/10</div>
+          <div class="text-sm text-gray-600">Flexibility</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-amber-600 mb-1">8/10</div>
+          <div class="text-sm text-gray-600">Ease of Use</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-red-500 mb-1">3/10</div>
+          <div class="text-sm text-gray-600">Task List Support</div>
+        </div>
+      </div>
+      <p class="mt-4 text-amber-800"><strong>Conclusion:</strong> Quill is mature and well-documented, but the lack of built-in task list support is a significant drawback for PraxisNote. Building a custom checkbox blot adds development overhead and maintenance burden.</p>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PraxisNote.Application.Features.Notes;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
@@ -41,6 +42,13 @@ public static class DependencyInjection
 
         // User use cases
         services.AddScoped<LoginOrRegisterUser>();
+
+        // Note use cases
+        services.AddScoped<GetUserNotes>();
+        services.AddScoped<GetNoteById>();
+        services.AddScoped<CreateNote>();
+        services.AddScoped<UpdateNoteContent>();
+        services.AddScoped<DeleteNote>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();
