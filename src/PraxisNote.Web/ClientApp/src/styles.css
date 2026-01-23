@@ -145,7 +145,7 @@
   --color-tags-collapsed-bg: rgba(163, 190, 140, 0.15);
   --color-tags-collapsed-text: #a3be8c;
   --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.25);
-  --color-tag-bg: rgba(163, 190, 140, 0.35);
+  --color-tag-bg: rgba(163, 190, 140, 0.5);
   --color-tag-text: #4a6638;
 
   /* Brand gradient - Frost blue */
@@ -280,7 +280,7 @@
   --color-tags-collapsed-bg: rgba(163, 190, 140, 0.2);
   --color-tags-collapsed-text: #a3be8c;
   --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.3);
-  --color-tag-bg: rgba(163, 190, 140, 0.35);
+  --color-tag-bg: rgba(163, 190, 140, 0.5);
   --color-tag-text: #a3be8c;
 
   /* Brand gradient - Frost blue */
@@ -647,8 +647,8 @@
 
 /* Base chip styling - narrow with minimal padding */
 .p-chip {
-  background: var(--color-tag-bg);
-  color: var(--color-tag-text);
+  background: var(--color-tag-bg) !important;
+  color: var(--color-tag-text) !important;
   font-size: 10px;
   font-weight: 500;
   padding: 0 6px 0 8px;
