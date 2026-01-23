@@ -145,8 +145,8 @@
   --color-tags-collapsed-bg: rgba(163, 190, 140, 0.15);
   --color-tags-collapsed-text: #a3be8c;
   --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.25);
-  --color-tag-bg: rgba(163, 190, 140, 0.2);
-  --color-tag-text: #5c7a45;
+  --color-tag-bg: rgba(163, 190, 140, 0.35);
+  --color-tag-text: #4a6638;
 
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
@@ -280,7 +280,7 @@
   --color-tags-collapsed-bg: rgba(163, 190, 140, 0.2);
   --color-tags-collapsed-text: #a3be8c;
   --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.3);
-  --color-tag-bg: rgba(163, 190, 140, 0.25);
+  --color-tag-bg: rgba(163, 190, 140, 0.35);
   --color-tag-text: #a3be8c;
 
   /* Brand gradient - Frost blue */
