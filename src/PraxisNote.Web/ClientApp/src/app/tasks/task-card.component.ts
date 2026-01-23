@@ -7,13 +7,12 @@ import { HighlightPipe } from '../shared/pipes/highlight.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 import { DatePickerPopoverComponent } from './date-picker-popover.component';
-import { Chip } from 'primeng/chip';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent, Chip],
+  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent],
   template: `
     <div
       class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
@@ -122,12 +121,17 @@ import { Chip } from 'primeng/chip';
             <!-- Tags pills and inline search -->
             <div class="flex-1 min-w-0 flex flex-wrap items-center gap-1">
               @for (tag of visibleTags(); track tag.id) {
-                <p-chip
-                  [label]="tag.name"
-                  [removable]="true"
-                  (onRemove)="removeTag(tag.id)"
-                  styleClass="text-[10px] bg-tag text-tag-foreground"
-                />
+                <span class="tag-badge">
+                  {{ tag.name }}
+                  <button
+                    type="button"
+                    class="tag-badge-remove"
+                    (click)="removeTag(tag.id); $event.stopPropagation()"
+                    [attr.aria-label]="'Remove tag ' + tag.name"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </span>
               }
               @if (overflowCount() > 0 && !showTagPicker()) {
                 <!-- Overflow button to expand -->
@@ -696,16 +700,26 @@ export class TaskCardComponent {
     }, { injector: this.injector });
   }
 
-  /** Close expanded tabs when clicking outside the task card */
+  /** Close expanded tabs when clicking outside the task card, or close tag picker when clicking outside it */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (!this.initialized) return;
-    // Check if anything is expanded (tab or inline tags)
-    if (!this.selectedTab() && !this.inlineTagsExpanded()) return;
 
     const target = event.target;
     // Guard for non-Node targets (e.g., SVG elements in some browsers)
     if (!(target instanceof Node)) return;
+
+    // Close tag picker if clicking outside the tag picker area
+    if (this.showTagPicker()) {
+      const tagPickerContainer = this.inlineTagInput()?.nativeElement.closest('.relative');
+      if (tagPickerContainer && !tagPickerContainer.contains(target)) {
+        this.showTagPicker.set(false);
+        this.firstTagSearch.set('');
+      }
+    }
+
+    // Check if anything else is expanded (tab or inline tags)
+    if (!this.selectedTab() && !this.inlineTagsExpanded()) return;
 
     if (!this.elementRef.nativeElement.contains(target)) {
       this.closeExpanded();

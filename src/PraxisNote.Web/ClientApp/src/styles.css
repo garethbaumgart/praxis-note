@@ -645,34 +645,33 @@
    PrimeNG Chip - Tag styling (slim variant)
    ======================================== */
 
-/* Base chip styling - narrow with minimal padding */
-.p-chip {
-  background: var(--color-tag-bg) !important;
-  color: var(--color-tag-text) !important;
+/* Tag badge styling */
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
   font-size: 10px;
   font-weight: 500;
-  padding: 0 6px 0 8px;
+  padding: 2px 6px 2px 8px;
   border-radius: 9999px;
-  gap: 4px;
   height: 18px;
-  align-items: center;
+  line-height: 1;
 }
 
-/* Remove icon */
-.p-chip .p-chip-remove-icon {
+.tag-badge-remove {
   font-size: 10px;
   color: var(--color-tag-text);
   opacity: 0.5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
-.p-chip .p-chip-remove-icon:hover {
+.tag-badge-remove:hover {
   color: var(--color-danger-text);
   opacity: 1;
-}
-
-/* Label text */
-.p-chip .p-chip-label {
-  line-height: 1;
 }
 
 /* Search highlight - underline style */
