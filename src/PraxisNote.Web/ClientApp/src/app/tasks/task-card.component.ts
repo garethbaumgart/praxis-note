@@ -1082,7 +1082,7 @@ export class TaskCardComponent {
     const match = tagName.slice(index, index + query.length);
     const after = tagName.slice(index + query.length);
 
-    return `${this.escapeHtml(before)}<mark class="bg-warning/30 text-foreground px-0.5 rounded">${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
+    return `${this.escapeHtml(before)}<mark class="search-highlight">${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
   }
 
   private escapeHtml(text: string): string {
