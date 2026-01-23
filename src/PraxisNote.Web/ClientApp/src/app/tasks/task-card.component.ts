@@ -7,14 +7,13 @@ import { HighlightPipe } from '../shared/pipes/highlight.pipe';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 import { DatePickerPopoverComponent } from './date-picker-popover.component';
-import { TagPickerPopoverComponent } from './tag-picker-popover.component';
 import { Chip } from 'primeng/chip';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent, TagPickerPopoverComponent, Chip],
+  imports: [AutoResizeDirective, LinkifyPipe, HighlightPipe, DeleteConfirmButtonComponent, DatePickerPopoverComponent, Chip],
   template: `
     <div
       class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
@@ -113,14 +112,14 @@ import { Chip } from 'primeng/chip';
           </div>
         </div>
 
-        <!-- Inline tags row (when tags exist) -->
-        @if (hasInlineTags()) {
+        <!-- Inline tags row (when tags exist OR adding first tag) -->
+        @if (hasInlineTags() || showTagPicker()) {
           <div class="mt-1.5 flex items-center gap-2">
             <!-- Tag icon (aligned with flag) -->
-            <span class="shrink-0 w-5 h-5 flex items-center justify-center text-tag/60">
+            <span class="shrink-0 w-5 h-5 flex items-center justify-center" [class.text-tag]="showTagPicker()" [class.text-tag/60]="!showTagPicker()">
               <i class="pi pi-tag text-xs"></i>
             </span>
-            <!-- Tags pills -->
+            <!-- Tags pills and inline search -->
             <div class="flex-1 min-w-0 flex flex-wrap items-center gap-1">
               @for (tag of visibleTags(); track tag.id) {
                 <p-chip
@@ -130,7 +129,7 @@ import { Chip } from 'primeng/chip';
                   styleClass="text-[10px] bg-tag text-tag-foreground"
                 />
               }
-              @if (overflowCount() > 0) {
+              @if (overflowCount() > 0 && !showTagPicker()) {
                 <!-- Overflow button to expand -->
                 <button
                   type="button"
@@ -141,17 +140,62 @@ import { Chip } from 'primeng/chip';
                   +{{ overflowCount() }}
                 </button>
               }
-              <!-- Add tag button (always visible) -->
-              <button
-                type="button"
-                class="w-5 h-5 rounded-full flex items-center justify-center text-foreground-muted/30 hover:text-tag hover:bg-tag/10 transition-colors"
-                (click)="showTagPicker.set(true); $event.stopPropagation()"
-                aria-label="Add tag"
-              >
-                <i class="pi pi-plus text-[9px]"></i>
-              </button>
+              <!-- Inline search input (when adding tag) -->
+              @if (showTagPicker()) {
+                <div class="flex-1 min-w-[100px] relative">
+                  <input
+                    #inlineTagInput
+                    type="text"
+                    [placeholder]="hasInlineTags() ? 'Add tag...' : 'Add first tag...'"
+                    [value]="firstTagSearch()"
+                    (input)="firstTagSearch.set(asInput($event).value)"
+                    (keydown.enter)="onFirstTagEnter(); $event.preventDefault()"
+                    (keydown.escape)="showTagPicker.set(false); $event.stopPropagation()"
+                    class="w-full h-6 px-2 text-xs bg-surface-muted rounded-full border-0 outline-none focus:ring-1 focus:ring-primary"
+                    aria-label="Search or create tag"
+                  >
+                  <!-- Dropdown suggestions -->
+                  @if (tooltipSuggestions().length > 0 || canCreateFirstTag()) {
+                    <div class="absolute left-0 top-full mt-1 w-48 bg-surface rounded-lg shadow-lg border border-border py-1 z-50">
+                      @for (tag of tooltipSuggestions(); track tag.id) {
+                        <button
+                          type="button"
+                          class="w-full px-3 py-1.5 text-left text-xs hover:bg-surface-hover transition-colors flex items-center justify-between"
+                          (click)="addTag({ id: tag.id, name: tag.name }); $event.stopPropagation()"
+                        >
+                          <span [innerHTML]="highlightMatch(tag.name)"></span>
+                          <span class="text-foreground-muted">{{ tag.usageCount }}</span>
+                        </button>
+                      }
+                      @if (canCreateFirstTag()) {
+                        @if (tooltipSuggestions().length > 0) {
+                          <div class="border-t border-border my-1"></div>
+                        }
+                        <button
+                          type="button"
+                          class="w-full px-3 py-1.5 text-left text-xs text-primary hover:bg-surface-hover transition-colors"
+                          (click)="createAndAddTag(firstTagSearch().trim()); $event.stopPropagation()"
+                        >
+                          <i class="pi pi-plus text-[10px] mr-1"></i>
+                          Create "{{ firstTagSearch().trim() }}"
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <!-- Add tag button (when not adding) -->
+                <button
+                  type="button"
+                  class="w-5 h-5 rounded-full flex items-center justify-center text-foreground-muted/30 hover:text-tag hover:bg-tag/10 transition-colors"
+                  (click)="openInlineTagInput(); $event.stopPropagation()"
+                  aria-label="Add tag"
+                >
+                  <i class="pi pi-plus text-[9px]"></i>
+                </button>
+              }
               <!-- Collapse/"Less" button (only when expanded and has overflow) -->
-              @if (inlineTagsExpanded() && taskTags().length > 3) {
+              @if (inlineTagsExpanded() && taskTags().length > 3 && !showTagPicker()) {
                 <button
                   type="button"
                   class="ml-auto px-1.5 py-0.5 rounded-full text-[10px] bg-foreground-muted/10 text-foreground-muted hover:bg-foreground-muted/20 transition-colors flex items-center gap-0.5"
@@ -164,18 +208,6 @@ import { Chip } from 'primeng/chip';
               }
             </div>
           </div>
-          <!-- Tag picker popover for inline tags -->
-          @if (showTagPicker()) {
-            <div class="relative mt-1 ml-7">
-              <app-tag-picker-popover
-                [allTags]="allTags()"
-                [existingTagIds]="existingTagIds()"
-                (onSelect)="addTag($event)"
-                (onCreate)="createAndAddTag($event)"
-                (onClose)="showTagPicker.set(false)"
-              />
-            </div>
-          }
         }
 
         <!-- Tab bar - Google Home style -->
@@ -247,69 +279,16 @@ import { Chip } from 'primeng/chip';
             }
           </button>
 
-          <!-- Tags tab (only show when no inline tags - used for first tag add) -->
-          @if (!hasInlineTags()) {
-            <div class="relative">
-              <button
-                type="button"
-                class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7 w-7"
-                [class.bg-tag/30]="showTagPicker()"
-                [class.text-tag]="showTagPicker()"
-                [class.bg-foreground-muted/10]="!showTagPicker()"
-                [class.text-foreground-muted/40]="!showTagPicker()"
-                [class.hover:bg-foreground-muted/20]="!showTagPicker()"
-                (click)="onTagButtonClick(); $event.stopPropagation()"
-                aria-label="Add tag"
-                [attr.aria-expanded]="showTagPicker()"
-              >
-                <i class="pi pi-tag"></i>
-              </button>
-              <!-- Tooltip bubble for first tag add (positioned above the button) -->
-              @if (showTagPicker()) {
-                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 w-44">
-                  <!-- Tooltip content -->
-                  <div class="bg-surface rounded-lg p-2 shadow-lg border border-border">
-                    <input
-                      #firstTagInput
-                      type="text"
-                      placeholder="Type tag name..."
-                      [value]="firstTagSearch()"
-                      (input)="firstTagSearch.set(asInput($event).value)"
-                      (keydown.enter)="onFirstTagEnter(); $event.preventDefault()"
-                      (keydown.escape)="showTagPicker.set(false); $event.stopPropagation()"
-                      class="w-full text-sm px-2 py-1.5 bg-surface-muted rounded text-center outline-none focus:ring-1 focus:ring-primary"
-                      aria-label="Type tag name"
-                    >
-                    <!-- Tag suggestions as horizontal pills -->
-                    @if (tooltipSuggestions().length > 0) {
-                      <div class="flex flex-wrap justify-center gap-1 mt-2">
-                        @for (tag of tooltipSuggestions(); track tag.id) {
-                          <p-chip
-                            [label]="tag.name"
-                            styleClass="text-[10px] bg-tag text-tag-foreground cursor-pointer hover:opacity-80"
-                            (click)="addTag({ id: tag.id, name: tag.name }); $event.stopPropagation()"
-                          />
-                        }
-                      </div>
-                    }
-                    <!-- Create new tag option -->
-                    @if (canCreateFirstTag()) {
-                      <div class="flex justify-center mt-2">
-                        <button
-                          type="button"
-                          class="text-xs text-primary hover:text-primary-hover transition-colors"
-                          (click)="createAndAddTag(firstTagSearch().trim()); $event.stopPropagation()"
-                        >
-                          + Create "{{ firstTagSearch().trim() }}"
-                        </button>
-                      </div>
-                    }
-                  </div>
-                  <!-- Arrow pointing down -->
-                  <div class="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-surface border-r border-b border-border transform rotate-45"></div>
-                </div>
-              }
-            </div>
+          <!-- Tags tab (only show when no inline tags and not adding - clicking shows inline row) -->
+          @if (!hasInlineTags() && !showTagPicker()) {
+            <button
+              type="button"
+              class="relative flex items-center justify-center rounded-full transition-all text-xs shrink-0 h-7 w-7 bg-foreground-muted/10 text-foreground-muted/40 hover:bg-foreground-muted/20"
+              (click)="openInlineTagInput(); $event.stopPropagation()"
+              aria-label="Add tag"
+            >
+              <i class="pi pi-tag"></i>
+            </button>
           }
 
           <!-- Mobile status change buttons (spacer pushes to right) -->
@@ -588,7 +567,7 @@ export class TaskCardComponent {
 
   // First tag tooltip state
   readonly firstTagSearch = signal('');
-  readonly firstTagInput = viewChild<ElementRef<HTMLInputElement>>('firstTagInput');
+  readonly inlineTagInput = viewChild<ElementRef<HTMLInputElement>>('inlineTagInput');
 
   // Filtered suggestions for first tag tooltip (max 4)
   readonly tooltipSuggestions = computed(() => {
@@ -1023,20 +1002,16 @@ export class TaskCardComponent {
   }
 
   // Tag methods
-  onTagButtonClick(): void {
-    // Tag button in tab bar only renders when no tags exist (first tag add)
-    // Toggle the tooltip picker and close any expanded tabs
-    const wasOpen = this.showTagPicker();
-    this.showTagPicker.set(!wasOpen);
+  openInlineTagInput(): void {
+    // Open inline tag input and close any expanded tabs
+    this.showTagPicker.set(true);
     this.selectedTab.set(null);
+    this.firstTagSearch.set('');
 
-    // Focus the input when opening
-    if (!wasOpen) {
-      this.firstTagSearch.set('');
-      afterNextRender(() => {
-        this.firstTagInput()?.nativeElement.focus();
-      }, { injector: this.injector });
-    }
+    // Focus the input after render
+    afterNextRender(() => {
+      this.inlineTagInput()?.nativeElement.focus();
+    }, { injector: this.injector });
   }
 
   onFirstTagEnter(): void {
@@ -1078,5 +1053,27 @@ export class TaskCardComponent {
     this.onCreateTag.emit(name);
     this.showTagPicker.set(false);
     this.firstTagSearch.set('');
+  }
+
+  /** Highlight matching portion of tag name in dropdown */
+  highlightMatch(tagName: string): string {
+    const query = this.firstTagSearch().toLowerCase().trim();
+    if (!query) return this.escapeHtml(tagName);
+
+    const lowerName = tagName.toLowerCase();
+    const index = lowerName.indexOf(query);
+    if (index === -1) return this.escapeHtml(tagName);
+
+    const before = tagName.slice(0, index);
+    const match = tagName.slice(index, index + query.length);
+    const after = tagName.slice(index + query.length);
+
+    return `${this.escapeHtml(before)}<mark class="bg-warning/30 text-foreground px-0.5 rounded">${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
+  }
+
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 }
