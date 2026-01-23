@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrimeNG Editor - Interactive Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <style>
+    /* PrimeNG Editor Styles (Quill-based) */
+    .p-editor-container {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .p-editor-toolbar {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px;
+    }
+    .p-editor-toolbar .ql-formats {
+      display: inline-flex;
+      gap: 2px;
+      margin-right: 12px;
+    }
+    .p-editor-toolbar button {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      color: #64748b;
+      transition: all 0.15s;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .p-editor-toolbar button:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .p-editor-toolbar button.ql-active {
+      background: #6366f1;
+      color: white;
+    }
+    .p-editor-toolbar select {
+      padding: 6px 28px 6px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+    .p-editor-content {
+      min-height: 250px;
+      padding: 16px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .p-editor-content h1 { font-size: 2em; font-weight: bold; margin-bottom: 0.5em; }
+    .p-editor-content h2 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; }
+    .p-editor-content h3 { font-size: 1.17em; font-weight: bold; margin-bottom: 0.5em; }
+    .p-editor-content p { margin-bottom: 0.5em; }
+    .p-editor-content ul, .p-editor-content ol { padding-left: 1.5em; margin-bottom: 0.5em; }
+    .p-editor-content blockquote {
+      border-left: 4px solid #6366f1;
+      padding-left: 16px;
+      margin: 1em 0;
+      color: #64748b;
+      font-style: italic;
+    }
+    .p-editor-content a { color: #6366f1; text-decoration: underline; }
+    .p-editor-content code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    /* PrimeNG Theme Variables (simulated) */
+    :root {
+      --primary-color: #6366f1;
+      --primary-color-text: #ffffff;
+      --surface-ground: #f8fafc;
+      --surface-card: #ffffff;
+      --surface-border: #e2e8f0;
+      --text-color: #1e293b;
+      --text-color-secondary: #64748b;
+    }
+
+    /* Custom checkbox styling (not native to PrimeNG Editor) */
+    .custom-task-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .custom-task-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 6px;
+      padding: 4px 0;
+    }
+    .custom-task-list input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: #6366f1;
+      cursor: pointer;
+    }
+    .custom-task-list li.checked > span {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">PrimeNG Editor</h1>
+    <p class="text-gray-600 mb-8">PrimeNG's built-in rich text editor component. Wrapper around Quill with PrimeNG styling.</p>
+
+    <!-- ============================================ -->
+    <!-- EDITOR OVERVIEW -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Key Features</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>PrimeNG Integration:</strong> Consistent with your UI library</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Zero Config:</strong> Works out of the box with PrimeNG</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Theming:</strong> Automatically matches PrimeNG theme</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Form Integration:</strong> Works with Angular reactive forms</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Toolbar Customization:</strong> Configurable toolbar modules</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Considerations</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-times-circle text-red-500 mt-0.5"></i>
+              <span><strong>Quill Wrapper:</strong> Same limitations as Quill (no task lists)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-times-circle text-red-500 mt-0.5"></i>
+              <span><strong>Limited Extensibility:</strong> Hard to add custom formats</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>HTML Output:</strong> Stores content as HTML string</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Opinionated:</strong> Less control over UI than headless options</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Bundle:</strong> Adds Quill dependency (~43KB)</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- DEFAULT PRIMENG EDITOR -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Default PrimeNG Editor</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">p-editor with default toolbar</div>
+
+        <div class="p-editor-container m-4">
+          <div class="p-editor-toolbar">
+            <span class="ql-formats">
+              <select>
+                <option value="">Normal</option>
+                <option value="1">Heading 1</option>
+                <option value="2">Heading 2</option>
+                <option value="3">Heading 3</option>
+              </select>
+            </span>
+            <span class="ql-formats">
+              <button class="font-bold">B</button>
+              <button class="italic">I</button>
+              <button class="underline">U</button>
+            </span>
+            <span class="ql-formats">
+              <button><i class="pi pi-align-left text-sm"></i></button>
+              <button><i class="pi pi-align-center text-sm"></i></button>
+              <button><i class="pi pi-align-right text-sm"></i></button>
+              <button><i class="pi pi-align-justify text-sm"></i></button>
+            </span>
+            <span class="ql-formats">
+              <button><i class="pi pi-list text-sm"></i></button>
+              <button><i class="pi pi-list-check text-sm"></i></button>
+            </span>
+            <span class="ql-formats">
+              <button><i class="pi pi-link text-sm"></i></button>
+              <button><i class="pi pi-image text-sm"></i></button>
+              <button><i class="pi pi-code text-sm"></i></button>
+            </span>
+          </div>
+          <div class="p-editor-content" contenteditable="true">
+            <h2>Sprint Planning Ideas</h2>
+            <p>Review the authentication flow and gather requirements for the new dashboard feature.</p>
+            <h3>Key Points</h3>
+            <ul>
+              <li>Review the authentication flow documentation</li>
+              <li>Schedule meeting with security team</li>
+              <li>Draft API contract for new endpoints</li>
+            </ul>
+            <blockquote>Need to consider backward compatibility with v2 API clients...</blockquote>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CUSTOM TOOLBAR -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Custom Toolbar Configuration</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Minimal toolbar for notes</div>
+
+        <div class="p-editor-container m-4">
+          <div class="p-editor-toolbar">
+            <span class="ql-formats">
+              <button class="font-bold">B</button>
+              <button class="italic">I</button>
+              <button class="line-through">S</button>
+            </span>
+            <span class="ql-formats">
+              <button><i class="pi pi-list text-sm"></i></button>
+              <button class="ql-active"><i class="pi pi-check-square text-sm"></i></button>
+            </span>
+            <span class="ql-formats">
+              <button><i class="pi pi-link text-sm"></i></button>
+            </span>
+          </div>
+          <div class="p-editor-content" contenteditable="true">
+            <p>A minimal toolbar focused on note-taking essentials.</p>
+            <p>The checkbox button is highlighted, but remember - PrimeNG Editor doesn't support task lists natively.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TASK LIST LIMITATION -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Task List Support (Critical Limitation)</h2>
+
+      <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+        <div class="flex items-start gap-3">
+          <i class="pi pi-times-circle text-red-600 mt-0.5"></i>
+          <div>
+            <p class="text-red-800 font-medium">PrimeNG Editor does NOT support task lists</p>
+            <p class="text-red-700 text-sm mt-1">Since PrimeNG Editor wraps Quill, it inherits Quill's limitation of having no built-in checkbox/task list support. Custom formats are difficult to add through PrimeNG's abstraction layer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Workaround: Separate checkbox component outside editor</div>
+
+        <div class="p-4">
+          <div class="p-editor-container mb-4">
+            <div class="p-editor-toolbar">
+              <span class="ql-formats">
+                <button class="font-bold">B</button>
+                <button class="italic">I</button>
+              </span>
+              <span class="ql-formats">
+                <button><i class="pi pi-list text-sm"></i></button>
+              </span>
+            </div>
+            <div class="p-editor-content" contenteditable="true" style="min-height: 100px;">
+              <h3>Sprint Planning Ideas</h3>
+              <p>Review the authentication flow and gather requirements.</p>
+            </div>
+          </div>
+
+          <!-- Separate task list component -->
+          <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-medium text-gray-700 text-sm flex items-center gap-2">
+                <i class="pi pi-check-square text-indigo-600"></i>
+                Action Items
+              </h4>
+              <button class="text-xs text-indigo-600 hover:text-indigo-800">+ Add item</button>
+            </div>
+            <ul class="custom-task-list">
+              <li>
+                <input type="checkbox">
+                <span>Review auth documentation</span>
+              </li>
+              <li class="checked">
+                <input type="checkbox" checked>
+                <span>Schedule meeting</span>
+              </li>
+              <li>
+                <input type="checkbox">
+                <span>Draft API contract</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="p-4 bg-amber-50 border-t border-amber-200">
+          <p class="text-sm text-amber-800"><strong>Problem:</strong> This workaround separates checkboxes from the note content, breaking the unified editing experience. Checkboxes can't be inline with other rich text.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- HTML OUTPUT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">HTML Output Format</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">PrimeNG Editor outputs HTML strings</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>&lt;h2&gt;Sprint Planning Ideas&lt;/h2&gt;
+&lt;p&gt;Review the authentication flow and gather requirements for the new dashboard feature.&lt;/p&gt;
+&lt;h3&gt;Key Points&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;Review the authentication flow documentation&lt;/li&gt;
+  &lt;li&gt;Schedule meeting with security team&lt;/li&gt;
+  &lt;li&gt;Draft API contract for new endpoints&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;Need to consider backward compatibility...&lt;/blockquote&gt;</code></pre>
+        <div class="p-4 bg-gray-50 border-t border-gray-200">
+          <p class="text-sm text-gray-600"><strong>Note:</strong> HTML output is harder to parse for extracting checkboxes compared to structured JSON (like TipTap). Would need HTML parsing on the backend to sync checkboxes with the domain model.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ANGULAR CODE EXAMPLE -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Angular Integration</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Simple usage with Angular signals</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>// note-editor.component.ts
+import { Component, signal } from '@angular/core';
+import { EditorModule } from 'primeng/editor';
+
+@Component({
+  selector: 'app-note-editor',
+  standalone: true,
+  imports: [EditorModule],
+  template: `
+    &lt;p-editor
+      [style]="{ height: '300px' }"
+      [(ngModel)]="content"
+      (onTextChange)="onContentChange($event)"&gt;
+      &lt;ng-template pTemplate="header"&gt;
+        &lt;span class="ql-formats"&gt;
+          &lt;button type="button" class="ql-bold"&gt;&lt;/button&gt;
+          &lt;button type="button" class="ql-italic"&gt;&lt;/button&gt;
+        &lt;/span&gt;
+        &lt;span class="ql-formats"&gt;
+          &lt;button type="button" class="ql-list" value="bullet"&gt;&lt;/button&gt;
+        &lt;/span&gt;
+      &lt;/ng-template&gt;
+    &lt;/p-editor&gt;
+
+    &lt;!-- Separate task list (workaround) --&gt;
+    &lt;div class="task-list-container"&gt;
+      @for (task of tasks(); track task.id) {
+        &lt;div class="task-item"&gt;
+          &lt;p-checkbox
+            [binary]="true"
+            [(ngModel)]="task.checked"
+            (onChange)="onTaskChange(task)"&gt;
+          &lt;/p-checkbox&gt;
+          &lt;span&gt;{{ task.text }}&lt;/span&gt;
+        &lt;/div&gt;
+      }
+    &lt;/div&gt;
+  `
+})
+export class NoteEditorComponent {
+  content = '';
+  tasks = signal&lt;Task[]&gt;([]);
+
+  onContentChange(event: any) {
+    // event.htmlValue contains the HTML string
+    console.log(event.htmlValue);
+  }
+
+  // Tasks managed separately from editor content
+  onTaskChange(task: Task) {
+    this.tasks.update(tasks =>
+      tasks.map(t => t.id === task.id ? { ...t, checked: task.checked } : t)
+    );
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- INTEGRATION WITH NOTE LAYOUT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Integration: Split View with PrimeNG Editor</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" style="height: 500px;">
+        <div class="flex h-full">
+          <!-- Notes List Panel -->
+          <div class="w-72 border-r border-gray-200 flex flex-col bg-gray-50">
+            <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+              <h2 class="font-semibold text-gray-800">Notes</h2>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white text-indigo-600">
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-1">
+              <div class="p-3 rounded-lg bg-indigo-100 border border-indigo-200 cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Sprint Planning</h3>
+                <p class="text-xs text-gray-500 mt-1 line-clamp-2">Review the authentication...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Editor Panel -->
+          <div class="flex-1 flex flex-col">
+            <!-- Title -->
+            <div class="p-4 border-b border-gray-200">
+              <input type="text" value="Sprint Planning Ideas" class="w-full text-xl font-bold text-gray-800 bg-transparent outline-none">
+            </div>
+
+            <!-- PrimeNG Editor -->
+            <div class="flex-1 overflow-y-auto">
+              <div class="p-editor-container border-0">
+                <div class="p-editor-toolbar border-x-0">
+                  <span class="ql-formats">
+                    <button class="font-bold">B</button>
+                    <button class="italic">I</button>
+                  </span>
+                  <span class="ql-formats">
+                    <button><i class="pi pi-list text-sm"></i></button>
+                  </span>
+                </div>
+                <div class="p-editor-content" contenteditable="true" style="min-height: 150px;">
+                  <p>Review the authentication flow and gather requirements.</p>
+                  <p>Additional notes here...</p>
+                </div>
+              </div>
+
+              <!-- Separate Task List Section -->
+              <div class="mx-4 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <h4 class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <i class="pi pi-check-square text-indigo-600"></i>
+                  Action Items
+                </h4>
+                <ul class="custom-task-list">
+                  <li>
+                    <input type="checkbox">
+                    <span>Review auth docs</span>
+                  </li>
+                  <li class="checked">
+                    <input type="checkbox" checked>
+                    <span>Schedule meeting</span>
+                  </li>
+                  <li>
+                    <input type="checkbox">
+                    <span>Draft API contract</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+              <span class="text-xs text-gray-500">3 tasks · 1 completed</span>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium">
+                Create Tasks
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <p class="text-sm text-amber-800"><strong>Notice:</strong> Task list is a separate section below the editor, not integrated into the rich text content. This creates a disjointed experience compared to TipTap where checkboxes are inline with other content.</p>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- VERDICT -->
+    <!-- ============================================ -->
+    <div class="bg-red-50 rounded-xl p-6 border-2 border-red-200">
+      <h2 class="text-xl font-semibold text-red-800 mb-4">PrimeNG Editor Verdict</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-amber-600 mb-1">5/10</div>
+          <div class="text-sm text-gray-600">Flexibility</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-green-600 mb-1">9/10</div>
+          <div class="text-sm text-gray-600">Ease of Use</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-red-600 mb-1">2/10</div>
+          <div class="text-sm text-gray-600">Task List Support</div>
+        </div>
+      </div>
+      <p class="mt-4 text-red-800"><strong>Not Recommended:</strong> While PrimeNG Editor is easy to use and integrates well with your existing UI library, the complete lack of task list support makes it unsuitable for PraxisNote's core use case. Workarounds result in a fragmented user experience.</p>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Highlight Color Options (Light & Dark Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
+    <style>
+        /* Nord Color Palette Reference */
+        :root {
+            /* Aurora Colors */
+            --aurora-green: #a3be8c;
+            --aurora-orange: #d08770;
+            --aurora-purple: #b48ead;
+            --aurora-red: #bf616a;
+            --aurora-yellow: #ebcb8b;
+            /* Frost Colors */
+            --frost-blue: #5e81ac;
+            --frost-cyan: #88c0d0;
+            --frost-light-blue: #81a1c1;
+            /* Polar Night */
+            --polar-night-1: #2e3440;
+            --polar-night-2: #3b4252;
+            --polar-night-3: #434c5e;
+            --polar-night-4: #4c566a;
+            /* Snow Storm */
+            --snow-storm-1: #d8dee9;
+            --snow-storm-2: #e5e9f0;
+            --snow-storm-3: #eceff4;
+        }
+
+        .light-mode {
+            background: #fafaf8;
+        }
+        .dark-mode {
+            background: #2e3440;
+        }
+        .task-card-light {
+            background: white;
+            border: 1px solid #e5e9f0;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .task-card-dark {
+            background: #3b4252;
+            border: 1px solid #4c566a;
+            border-radius: 8px;
+            padding: 12px;
+        }
+    </style>
+</head>
+<body class="p-8 bg-gray-200">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-2xl font-bold mb-2">Search Highlight Color Options</h1>
+        <p class="text-gray-600 mb-2">Search query: "report" - Showing different highlight styles</p>
+        <p class="text-gray-500 text-sm mb-8">All options use Nord theme colors for consistency</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- LIGHT MODE -->
+            <div class="light-mode rounded-xl p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="pi pi-sun"></i> Light Mode
+                </h2>
+
+                <!-- Option 1: Current Yellow (Warning) -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Option 1: Aurora Yellow (Current)</p>
+                    <div class="task-card-light">
+                        <p class="text-sm text-gray-800">
+                            Review quarterly <mark style="background: rgba(235, 203, 139, 0.4); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 2: Frost Cyan (Soft highlight) -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Option 2: Frost Cyan ⭐ Recommended</p>
+                    <div class="task-card-light">
+                        <p class="text-sm text-gray-800">
+                            Review quarterly <mark style="background: rgba(136, 192, 208, 0.35); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 3: Frost Blue -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Option 3: Frost Blue</p>
+                    <div class="task-card-light">
+                        <p class="text-sm text-gray-800">
+                            Review quarterly <mark style="background: rgba(94, 129, 172, 0.25); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 4: Aurora Purple -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Option 4: Aurora Purple</p>
+                    <div class="task-card-light">
+                        <p class="text-sm text-gray-800">
+                            Review quarterly <mark style="background: rgba(180, 142, 173, 0.3); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 5: Aurora Orange -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Option 5: Aurora Orange</p>
+                    <div class="task-card-light">
+                        <p class="text-sm text-gray-800">
+                            Review quarterly <mark style="background: rgba(208, 135, 112, 0.3); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 6: Subtle Gray -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Option 6: Neutral Gray</p>
+                    <div class="task-card-light">
+                        <p class="text-sm text-gray-800">
+                            Review quarterly <mark style="background: rgba(76, 86, 106, 0.15); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 7: Underline style -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Option 7: Underline (No background)</p>
+                    <div class="task-card-light">
+                        <p class="text-sm text-gray-800">
+                            Review quarterly <mark style="background: transparent; color: #5e81ac; text-decoration: underline; text-decoration-color: #88c0d0; text-underline-offset: 2px; text-decoration-thickness: 2px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DARK MODE -->
+            <div class="dark-mode rounded-xl p-6">
+                <h2 class="text-lg font-bold text-gray-100 mb-4 flex items-center gap-2">
+                    <i class="pi pi-moon"></i> Dark Mode
+                </h2>
+
+                <!-- Option 1: Current Yellow (Warning) -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-400 mb-2 font-medium">Option 1: Aurora Yellow (Current)</p>
+                    <div class="task-card-dark">
+                        <p class="text-sm text-gray-100">
+                            Review quarterly <mark style="background: rgba(235, 203, 139, 0.3); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 2: Frost Cyan (Soft highlight) -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-400 mb-2 font-medium">Option 2: Frost Cyan ⭐ Recommended</p>
+                    <div class="task-card-dark">
+                        <p class="text-sm text-gray-100">
+                            Review quarterly <mark style="background: rgba(136, 192, 208, 0.3); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 3: Frost Blue -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-400 mb-2 font-medium">Option 3: Frost Blue</p>
+                    <div class="task-card-dark">
+                        <p class="text-sm text-gray-100">
+                            Review quarterly <mark style="background: rgba(94, 129, 172, 0.35); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 4: Aurora Purple -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-400 mb-2 font-medium">Option 4: Aurora Purple</p>
+                    <div class="task-card-dark">
+                        <p class="text-sm text-gray-100">
+                            Review quarterly <mark style="background: rgba(180, 142, 173, 0.3); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 5: Aurora Orange -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-400 mb-2 font-medium">Option 5: Aurora Orange</p>
+                    <div class="task-card-dark">
+                        <p class="text-sm text-gray-100">
+                            Review quarterly <mark style="background: rgba(208, 135, 112, 0.3); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 6: Subtle Gray -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-400 mb-2 font-medium">Option 6: Neutral Gray</p>
+                    <div class="task-card-dark">
+                        <p class="text-sm text-gray-100">
+                            Review quarterly <mark style="background: rgba(216, 222, 233, 0.15); color: inherit; padding: 1px 3px; border-radius: 3px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Option 7: Underline style -->
+                <div class="mb-6">
+                    <p class="text-xs text-gray-400 mb-2 font-medium">Option 7: Underline (No background)</p>
+                    <div class="task-card-dark">
+                        <p class="text-sm text-gray-100">
+                            Review quarterly <mark style="background: transparent; color: #88c0d0; text-decoration: underline; text-decoration-color: #88c0d0; text-underline-offset: 2px; text-decoration-thickness: 2px;">report</mark> and send summary
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Recommendation Section -->
+        <div class="mt-8 p-6 bg-white rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-800 mb-3">Recommendation</h3>
+            <div class="text-sm text-gray-600 space-y-2">
+                <p><strong>Option 2 (Frost Cyan)</strong> is recommended because:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li>Subtle but visible - draws attention without being jarring</li>
+                    <li>Works well in both light and dark modes</li>
+                    <li>Doesn't conflict with tag colors (green) or status colors</li>
+                    <li>Feels more modern and polished than traditional yellow highlights</li>
+                </ul>
+                <p class="mt-4"><strong>Options to avoid:</strong></p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li><strong>Orange (Option 5)</strong> - conflicts with "In Progress" column indicator</li>
+                    <li><strong>Yellow (Option 1)</strong> - can feel outdated/aggressive</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

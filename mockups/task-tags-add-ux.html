@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tags - Add Tag UX Options</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .task-card { background: #f8fafc; border: 1px solid #e2e8f0; }
+        .tag { background: #e0e7ff; color: #3730a3; }
+        .tag-muted { background: #f1f5f9; color: #64748b; }
+        .popover { background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .input-field { background: #f8fafc; border: 1px solid #e2e8f0; }
+        .recommended { border: 2px solid #10b981; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-2xl font-bold mb-2">Add Tag UX Options</h1>
+    <p class="text-gray-600 mb-8">Different ways to add tags to a task</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- Option A: Plus Button in Tag Row -->
+        <div class="bg-white rounded-lg p-6 recommended">
+            <h2 class="text-lg font-semibold mb-1">Option A: Plus Button in Tag Row</h2>
+            <p class="text-sm text-green-600 font-medium mb-4">✓ Recommended - Currently Implemented</p>
+            <p class="text-sm text-gray-500 mb-4">Small circular + button appears at end of tag row when expanded</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <!-- Inline tags row (expanded) -->
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs flex items-center gap-1">
+                            Work <button class="opacity-50 hover:opacity-100"><i class="pi pi-times text-[10px]"></i></button>
+                        </span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs flex items-center gap-1">
+                            Q4 <button class="opacity-50 hover:opacity-100"><i class="pi pi-times text-[10px]"></i></button>
+                        </span>
+                        <!-- Plus button -->
+                        <button class="w-5 h-5 rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 flex items-center justify-center">
+                            <i class="pi pi-plus text-[10px]"></i>
+                        </button>
+                        <!-- Collapse button -->
+                        <button class="w-5 h-5 rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 flex items-center justify-center">
+                            <i class="pi pi-chevron-up text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Minimal UI, doesn't clutter tag row</p>
+                <p class="text-green-600">✓ Consistent with collapse button pattern</p>
+                <p class="text-green-600">✓ Only visible when expanded (intentional action)</p>
+                <p class="text-amber-600">○ Requires expanding first to add tags</p>
+            </div>
+        </div>
+
+        <!-- Option B: Inline Text Button -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option B: Inline Text Button</h2>
+            <p class="text-sm text-gray-500 mb-4">"+Add tag" text link at end of tag row (always visible)</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <!-- Inline tags row -->
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Q4</span>
+                        <button class="text-xs text-indigo-500 hover:text-indigo-700">+Add tag</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Always visible, quick access</p>
+                <p class="text-green-600">✓ Clear affordance</p>
+                <p class="text-red-500">✗ Adds visual noise to every task</p>
+                <p class="text-red-500">✗ Inconsistent with minimalist design</p>
+            </div>
+        </div>
+
+        <!-- Option C: Hover-Reveal Plus -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option C: Hover-Reveal Plus</h2>
+            <p class="text-sm text-gray-500 mb-4">Plus button appears on hover over tag row (no expand needed)</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <!-- Inline tags row (hovered state) -->
+                <div class="flex items-start gap-2 mt-2 group">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Q4</span>
+                        <!-- Hover-revealed plus (shown for demo) -->
+                        <button class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-500 hover:bg-indigo-200 flex items-center justify-center opacity-60">
+                            <i class="pi pi-plus text-[10px]"></i>
+                        </button>
+                        <span class="text-[10px] text-gray-400 italic">(visible on hover)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Clean when not interacting</p>
+                <p class="text-green-600">✓ Quick access without expanding</p>
+                <p class="text-red-500">✗ Not discoverable on mobile (no hover)</p>
+                <p class="text-amber-600">○ Requires different UX for mobile</p>
+            </div>
+        </div>
+
+        <!-- Option D: Tag Icon Opens Picker -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option D: Tag Icon Opens Picker</h2>
+            <p class="text-sm text-gray-500 mb-4">Clicking the tag icon directly opens the tag picker popover</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <!-- Inline tags row -->
+                <div class="flex items-start gap-2 mt-2">
+                    <button class="w-5 h-5 flex items-center justify-center text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 rounded">
+                        <i class="pi pi-tag text-sm"></i>
+                    </button>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Q4</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Icon doubles as action button</p>
+                <p class="text-green-600">✓ No extra UI elements needed</p>
+                <p class="text-amber-600">○ Need different action for expand/collapse</p>
+                <p class="text-red-500">✗ Conflicting with expand behavior</p>
+            </div>
+        </div>
+
+        <!-- Option E: Click Tag Row to Add -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option E: Click Empty Space to Add</h2>
+            <p class="text-sm text-gray-500 mb-4">Clicking empty space after tags opens the picker</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <!-- Inline tags row -->
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center flex-1 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Q4</span>
+                        <span class="text-xs text-gray-400">click to add...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Large hit target</p>
+                <p class="text-green-600">✓ Intuitive interaction</p>
+                <p class="text-red-500">✗ Competes with expand/collapse gesture</p>
+                <p class="text-red-500">✗ Placeholder text adds visual noise</p>
+            </div>
+        </div>
+
+        <!-- Option F: Inline Input Field -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option F: Inline Input Field</h2>
+            <p class="text-sm text-gray-500 mb-4">Always-visible input field for typing tag names directly</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <!-- Inline tags row with input -->
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center flex-1">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Q4</span>
+                        <input type="text" placeholder="Add tag..." class="input-field text-xs px-2 py-0.5 rounded w-20 outline-none focus:ring-1 focus:ring-indigo-300">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Fastest way to add tags</p>
+                <p class="text-green-600">✓ Can show autocomplete inline</p>
+                <p class="text-red-500">✗ Takes up space on every task</p>
+                <p class="text-red-500">✗ Cluttered visual appearance</p>
+            </div>
+        </div>
+
+        <!-- Option G: Long Press / Right Click -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option G: Long Press / Right Click</h2>
+            <p class="text-sm text-gray-500 mb-4">Context menu on long press (mobile) or right click (desktop)</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <!-- Inline tags row -->
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Q4</span>
+                    </div>
+                </div>
+                <!-- Context menu mockup -->
+                <div class="popover absolute mt-1 rounded-lg py-1 text-xs w-32 border">
+                    <button class="w-full px-3 py-1.5 text-left hover:bg-gray-50 flex items-center gap-2">
+                        <i class="pi pi-plus text-[10px]"></i> Add tag
+                    </button>
+                    <button class="w-full px-3 py-1.5 text-left hover:bg-gray-50 flex items-center gap-2">
+                        <i class="pi pi-pencil text-[10px]"></i> Edit
+                    </button>
+                    <button class="w-full px-3 py-1.5 text-left hover:bg-gray-50 flex items-center gap-2 text-red-500">
+                        <i class="pi pi-trash text-[10px]"></i> Delete
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Clean UI, no visible buttons</p>
+                <p class="text-green-600">✓ Familiar mobile pattern</p>
+                <p class="text-red-500">✗ Not discoverable</p>
+                <p class="text-red-500">✗ Power user feature only</p>
+            </div>
+        </div>
+
+        <!-- Option H: Keyboard Shortcut -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option H: Keyboard Shortcut</h2>
+            <p class="text-sm text-gray-500 mb-4">Press 't' when task is focused to open tag picker</p>
+
+            <div class="task-card rounded-lg p-3 mb-4 ring-2 ring-indigo-300">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <!-- Inline tags row -->
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Q4</span>
+                    </div>
+                </div>
+                <div class="mt-2 text-[10px] text-gray-400 flex items-center gap-1">
+                    <kbd class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600 font-mono">t</kbd>
+                    <span>to add tag</span>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Fastest for power users</p>
+                <p class="text-green-600">✓ No UI clutter</p>
+                <p class="text-red-500">✗ Not discoverable without hints</p>
+                <p class="text-red-500">✗ Requires task focus implementation</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Tag Picker Popover UX Options -->
+    <h2 class="text-xl font-bold mt-12 mb-6">Tag Picker / Input UX Options</h2>
+    <p class="text-gray-600 mb-6">Once the user triggers "add tag", how do they select or create tags?</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+        <!-- Picker Option 1: Autocomplete Dropdown -->
+        <div class="bg-white rounded-lg p-6 recommended">
+            <h2 class="text-lg font-semibold mb-1">Picker 1: Autocomplete Dropdown</h2>
+            <p class="text-sm text-green-600 font-medium mb-4">✓ Recommended - Currently Implemented</p>
+            <p class="text-sm text-gray-500 mb-4">Type to filter existing tags, option to create new at bottom</p>
+
+            <div class="task-card rounded-lg p-3 mb-4 relative">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                    </div>
+                </div>
+                <!-- Popover -->
+                <div class="popover absolute left-8 top-16 rounded-lg p-2 w-56 border z-10">
+                    <input type="text" value="urg" placeholder="Search or create tag..."
+                           class="w-full input-field text-sm px-2 py-1.5 rounded outline-none focus:ring-1 focus:ring-indigo-300 mb-2">
+                    <div class="text-xs text-gray-500 mb-1 px-1">Matching tags</div>
+                    <div class="space-y-0.5">
+                        <button class="w-full px-2 py-1.5 text-left text-sm hover:bg-indigo-50 rounded flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                            <span><strong>Urg</strong>ent</span>
+                            <span class="text-gray-400 text-xs ml-auto">3 tasks</span>
+                        </button>
+                    </div>
+                    <div class="border-t mt-2 pt-2">
+                        <button class="w-full px-2 py-1.5 text-left text-sm text-indigo-600 hover:bg-indigo-50 rounded flex items-center gap-2">
+                            <i class="pi pi-plus text-xs"></i>
+                            Create "<strong>urg</strong>"
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Type to filter AND create</p>
+                <p class="text-green-600">✓ Shows existing tags with usage count</p>
+                <p class="text-green-600">✓ Familiar autocomplete pattern</p>
+                <p class="text-green-600">✓ Press Enter to create new tag</p>
+            </div>
+        </div>
+
+        <!-- Picker Option 2: Inline Chip Input -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Picker 2: Inline Chip Input</h2>
+            <p class="text-sm text-gray-500 mb-4">Type directly in tag row, chips form as you type</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center flex-1 input-field rounded px-1 py-0.5">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                        <input type="text" value="urgent" placeholder="Type tag..."
+                               class="bg-transparent text-sm outline-none flex-1 min-w-[60px]">
+                    </div>
+                </div>
+                <!-- Suggestion dropdown -->
+                <div class="popover absolute left-8 mt-1 rounded-lg py-1 w-40 border text-sm">
+                    <button class="w-full px-3 py-1.5 text-left hover:bg-indigo-50 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-400"></span> Urgent
+                    </button>
+                    <div class="border-t my-1"></div>
+                    <button class="w-full px-3 py-1.5 text-left text-indigo-600 hover:bg-indigo-50">
+                        <i class="pi pi-plus text-xs mr-1"></i> Create "urgent"
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Very fast for power users</p>
+                <p class="text-green-600">✓ Gmail-like chip input pattern</p>
+                <p class="text-amber-600">○ Enter/comma creates tag</p>
+                <p class="text-red-500">✗ More complex implementation</p>
+            </div>
+        </div>
+
+        <!-- Picker Option 3: Tag Cloud Selector -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Picker 3: Tag Cloud + Search</h2>
+            <p class="text-sm text-gray-500 mb-4">Shows all tags as clickable pills with search bar</p>
+
+            <div class="task-card rounded-lg p-3 mb-4 relative">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                    </div>
+                </div>
+                <!-- Tag cloud popover -->
+                <div class="popover absolute left-8 top-16 rounded-lg p-3 w-64 border z-10">
+                    <input type="text" placeholder="Search or create..."
+                           class="w-full input-field text-sm px-2 py-1.5 rounded outline-none focus:ring-1 focus:ring-indigo-300 mb-3">
+                    <div class="text-xs text-gray-500 mb-2">Your tags</div>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button class="tag px-2 py-0.5 rounded-full text-xs hover:bg-indigo-200">Urgent</button>
+                        <button class="tag px-2 py-0.5 rounded-full text-xs hover:bg-indigo-200">Q4</button>
+                        <button class="tag px-2 py-0.5 rounded-full text-xs hover:bg-indigo-200">Personal</button>
+                        <button class="tag px-2 py-0.5 rounded-full text-xs hover:bg-indigo-200">Meeting</button>
+                        <button class="tag px-2 py-0.5 rounded-full text-xs hover:bg-indigo-200">Follow-up</button>
+                        <button class="tag-muted px-2 py-0.5 rounded-full text-xs opacity-50 line-through">Work ✓</button>
+                    </div>
+                    <div class="border-t mt-3 pt-2">
+                        <button class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                            <i class="pi pi-plus text-xs"></i> Create new tag
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Visual overview of all tags</p>
+                <p class="text-green-600">✓ Shows already-applied tags (struck through)</p>
+                <p class="text-green-600">✓ Click to toggle tags on/off</p>
+                <p class="text-amber-600">○ Gets crowded with many tags</p>
+            </div>
+        </div>
+
+        <!-- Picker Option 4: Two-Step Modal -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Picker 4: Two-Step Flow</h2>
+            <p class="text-sm text-gray-500 mb-4">First select existing, then option to create new</p>
+
+            <div class="task-card rounded-lg p-3 mb-4 relative">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <p class="text-sm flex-1">Review quarterly report</p>
+                </div>
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs">Work</span>
+                    </div>
+                </div>
+                <!-- Step 1: Select -->
+                <div class="popover absolute left-8 top-16 rounded-lg w-48 border z-10 overflow-hidden">
+                    <div class="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600 border-b">Select tag</div>
+                    <div class="py-1">
+                        <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-indigo-50">Urgent</button>
+                        <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-indigo-50">Q4</button>
+                        <button class="w-full px-3 py-1.5 text-left text-sm hover:bg-indigo-50">Personal</button>
+                    </div>
+                    <div class="border-t bg-gray-50 px-3 py-2">
+                        <button class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                            <i class="pi pi-plus text-xs"></i> Create new...
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Clear separation of actions</p>
+                <p class="text-green-600">✓ Simple list interface</p>
+                <p class="text-red-500">✗ Extra click to create new</p>
+                <p class="text-red-500">✗ No search/filter</p>
+            </div>
+        </div>
+
+        <!-- Picker Option 5: Command Palette Style -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Picker 5: Command Palette Style</h2>
+            <p class="text-sm text-gray-500 mb-4">VS Code / Spotlight style - keyboard-first with fuzzy search</p>
+
+            <div class="relative">
+                <!-- Centered command palette -->
+                <div class="popover rounded-lg w-80 mx-auto border overflow-hidden">
+                    <div class="p-2 border-b">
+                        <div class="flex items-center gap-2 input-field rounded px-2 py-1.5">
+                            <i class="pi pi-search text-gray-400 text-sm"></i>
+                            <input type="text" value="urg" placeholder="Search tags..."
+                                   class="bg-transparent text-sm outline-none flex-1">
+                            <kbd class="text-[10px] px-1 py-0.5 bg-gray-200 rounded">esc</kbd>
+                        </div>
+                    </div>
+                    <div class="max-h-48 overflow-y-auto">
+                        <div class="px-2 py-1 text-[10px] text-gray-500 uppercase tracking-wide">Results</div>
+                        <button class="w-full px-3 py-2 text-left text-sm hover:bg-indigo-50 flex items-center gap-3 bg-indigo-50">
+                            <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                            <span><strong>Urg</strong>ent</span>
+                            <span class="text-gray-400 text-xs ml-auto">↵ select</span>
+                        </button>
+                    </div>
+                    <div class="border-t px-3 py-2 bg-gray-50 flex items-center justify-between text-xs text-gray-500">
+                        <span><i class="pi pi-plus text-[10px] mr-1"></i> Create "urg"</span>
+                        <span><kbd class="px-1 py-0.5 bg-gray-200 rounded text-[10px]">⌘</kbd> + <kbd class="px-1 py-0.5 bg-gray-200 rounded text-[10px]">↵</kbd></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1 mt-4">
+                <p class="text-green-600">✓ Power user friendly</p>
+                <p class="text-green-600">✓ Keyboard navigation</p>
+                <p class="text-green-600">✓ Fuzzy search</p>
+                <p class="text-amber-600">○ May feel heavyweight for simple task</p>
+            </div>
+        </div>
+
+        <!-- Picker Option 6: Quick Add with Hash -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Picker 6: Hash Syntax in Title</h2>
+            <p class="text-sm text-gray-500 mb-4">Type #tagname in task title to auto-create tags</p>
+
+            <div class="task-card rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2 mb-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-300">
+                        <i class="pi pi-flag text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <input type="text" value="Review quarterly report #work #urgent"
+                               class="w-full text-sm bg-transparent outline-none">
+                    </div>
+                </div>
+                <div class="ml-7 text-xs text-gray-400 flex items-center gap-1">
+                    <span class="text-indigo-500">#work</span> and <span class="text-indigo-500">#urgent</span> will be added as tags
+                </div>
+                <!-- Preview of parsed tags -->
+                <div class="flex items-start gap-2 mt-2">
+                    <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="pi pi-tag text-sm"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="tag px-2 py-0.5 rounded-full text-xs border-2 border-dashed border-indigo-300 bg-indigo-50">work</span>
+                        <span class="tag px-2 py-0.5 rounded-full text-xs border-2 border-dashed border-indigo-300 bg-indigo-50">urgent</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <p class="text-green-600">✓ Fastest creation flow</p>
+                <p class="text-green-600">✓ Natural for power users</p>
+                <p class="text-green-600">✓ Works during task creation</p>
+                <p class="text-red-500">✗ Not discoverable</p>
+                <p class="text-red-500">✗ No autocomplete for existing tags</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-8 p-4 bg-green-50 rounded-lg border border-green-200">
+        <h3 class="font-semibold text-green-800 mb-2">Recommendation Summary</h3>
+
+        <div class="grid md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-green-700 font-medium mb-2">Trigger UX (how to start adding):</p>
+                <p class="text-sm text-green-700 mb-1">
+                    <strong>Option A (Plus Button)</strong> - Clean, minimal, consistent
+                </p>
+                <ul class="text-sm text-green-600 list-disc list-inside space-y-0.5 ml-2">
+                    <li>Requires expand first (intentional)</li>
+                    <li>Works on mobile and desktop</li>
+                </ul>
+            </div>
+
+            <div>
+                <p class="text-sm text-green-700 font-medium mb-2">Picker UX (how to select/create):</p>
+                <p class="text-sm text-green-700 mb-1">
+                    <strong>Picker 1 (Autocomplete Dropdown)</strong> - Familiar, efficient
+                </p>
+                <ul class="text-sm text-green-600 list-disc list-inside space-y-0.5 ml-2">
+                    <li>Type to filter existing tags</li>
+                    <li>Shows usage count for context</li>
+                    <li>Press Enter to create new tag</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="text-sm text-green-700 mt-3">
+            <strong>Future enhancements:</strong> Consider adding <strong>Picker 6 (Hash Syntax)</strong> for power users who want to add tags while typing task titles.
+        </p>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Note Feature - Card Grid Layout (Google Keep Style)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#ffffff',
+            'surface-hover': '#f8fafc',
+            'surface-alt': '#f1f5f9',
+            foreground: '#1e293b',
+            'foreground-muted': '#94a3b8',
+            border: '#e2e8f0',
+            primary: '#6366f1',
+            'primary-light': '#e0e7ff',
+            tag: '#f3e8ff',
+            'tag-foreground': '#7c3aed',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Masonry layout */
+    .masonry-grid {
+      column-count: 4;
+      column-gap: 16px;
+    }
+    @media (max-width: 1280px) { .masonry-grid { column-count: 3; } }
+    @media (max-width: 1024px) { .masonry-grid { column-count: 2; } }
+    @media (max-width: 640px) { .masonry-grid { column-count: 1; } }
+
+    .masonry-item {
+      break-inside: avoid;
+      margin-bottom: 16px;
+    }
+
+    /* Note card */
+    .note-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .note-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .note-card:hover .card-actions {
+      opacity: 1;
+    }
+
+    /* Checkbox styling */
+    .note-checkbox {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #cbd5e1;
+      border-radius: 4px;
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .note-checkbox:hover { border-color: #6366f1; }
+    .note-checkbox.checked {
+      background: #6366f1;
+      border-color: #6366f1;
+    }
+    .note-checkbox.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 10px;
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Card actions */
+    .card-actions {
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    /* Quick add input */
+    .quick-add {
+      border: 2px dashed #e2e8f0;
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+    .quick-add:hover, .quick-add:focus-within {
+      border-color: #6366f1;
+      background: #f8fafc;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+  <!-- ============================================ -->
+  <!-- HEADER -->
+  <!-- ============================================ -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <h1 class="text-xl font-bold text-foreground">Notes</h1>
+        <span class="text-sm text-foreground-muted">12 notes</span>
+      </div>
+
+      <!-- Search -->
+      <div class="flex-1 max-w-xl mx-8">
+        <div class="flex items-center gap-2 px-4 py-2 bg-surface-alt rounded-lg border border-transparent focus-within:border-primary focus-within:bg-white">
+          <i class="pi pi-search text-foreground-muted"></i>
+          <input type="text" placeholder="Search notes..." class="flex-1 bg-transparent outline-none text-foreground placeholder:text-foreground-muted">
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2">
+        <!-- View toggle -->
+        <div class="flex items-center bg-surface-alt rounded-lg p-1">
+          <button class="w-8 h-8 flex items-center justify-center rounded text-foreground-muted hover:text-foreground">
+            <i class="pi pi-list"></i>
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center rounded bg-white text-primary shadow-sm">
+            <i class="pi pi-th-large"></i>
+          </button>
+        </div>
+
+        <!-- New note button -->
+        <button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90">
+          <i class="pi pi-plus"></i>
+          <span>New Note</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="max-w-7xl mx-auto px-4 pb-2 flex items-center gap-4">
+      <button class="px-3 py-1.5 text-sm font-medium text-primary border-b-2 border-primary">All</button>
+      <button class="px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground">With Tasks</button>
+      <button class="px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground">Recent</button>
+      <div class="flex-1"></div>
+      <button class="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground">
+        <i class="pi pi-filter text-xs"></i>
+        Filter by tag
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================ -->
+  <!-- MAIN CONTENT -->
+  <!-- ============================================ -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Quick Add -->
+    <div class="quick-add p-4 mb-6 flex items-center gap-3 cursor-text" onclick="document.getElementById('quick-input').focus()">
+      <i class="pi pi-plus text-foreground-muted"></i>
+      <input id="quick-input" type="text" placeholder="Take a note..." class="flex-1 bg-transparent outline-none text-foreground placeholder:text-foreground-muted">
+      <div class="flex items-center gap-1">
+        <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-alt text-foreground-muted" title="New checkbox list">
+          <i class="pi pi-check-square"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Masonry Grid -->
+    <div class="masonry-grid">
+
+      <!-- Note Card 1 - With checkboxes -->
+      <div class="masonry-item">
+        <div class="note-card p-4">
+          <h3 class="font-semibold text-foreground mb-2">Sprint Planning Ideas</h3>
+          <p class="text-sm text-foreground-muted mb-3">Review the authentication flow and gather requirements for the new dashboard feature.</p>
+
+          <!-- Checkboxes -->
+          <div class="space-y-2 mb-3">
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox"></div>
+              <span class="text-sm text-foreground">Review auth docs</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox checked"></div>
+              <span class="text-sm text-foreground-muted line-through">Schedule meeting</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox"></div>
+              <span class="text-sm text-foreground">Draft API contract</span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 text-xs rounded-full bg-tag text-tag-foreground">work</span>
+            </div>
+            <span class="text-xs text-foreground-muted">2h ago</span>
+          </div>
+
+          <!-- Hover actions -->
+          <div class="card-actions flex items-center gap-1 mt-2 pt-2 border-t border-gray-100">
+            <button class="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs text-primary hover:bg-primary/5 rounded">
+              <i class="pi pi-arrow-right text-xs"></i>
+              Create Tasks
+            </button>
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-foreground-muted">
+              <i class="pi pi-tag text-xs"></i>
+            </button>
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-foreground-muted">
+              <i class="pi pi-ellipsis-v text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Card 2 - Text only, longer -->
+      <div class="masonry-item">
+        <div class="note-card p-4">
+          <h3 class="font-semibold text-foreground mb-2">Meeting Notes - Jan 20</h3>
+          <p class="text-sm text-foreground-muted">Discussed roadmap priorities and team capacity for Q1. Key decisions:</p>
+          <ul class="text-sm text-foreground-muted mt-2 ml-4 list-disc space-y-1">
+            <li>Focus on core features first</li>
+            <li>Delay nice-to-haves until Q2</li>
+            <li>Need to hire 2 more engineers</li>
+            <li>Budget approved for new tooling</li>
+          </ul>
+          <p class="text-sm text-foreground-muted mt-2">Follow up with finance team about timeline for new hires.</p>
+
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+            <span class="text-xs text-foreground-muted">1d ago</span>
+          </div>
+
+          <div class="card-actions flex items-center gap-1 mt-2 pt-2 border-t border-gray-100">
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-foreground-muted">
+              <i class="pi pi-tag text-xs"></i>
+            </button>
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-foreground-muted">
+              <i class="pi pi-ellipsis-v text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Card 3 - Checkbox only (shopping list style) -->
+      <div class="masonry-item">
+        <div class="note-card p-4">
+          <h3 class="font-semibold text-foreground mb-3">Quick Ideas</h3>
+          <div class="space-y-2">
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox"></div>
+              <span class="text-sm text-foreground">Dark mode toggle</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox"></div>
+              <span class="text-sm text-foreground">Keyboard shortcuts</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox"></div>
+              <span class="text-sm text-foreground">Export to PDF</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox"></div>
+              <span class="text-sm text-foreground">Mobile app</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+            <span class="px-2 py-0.5 text-xs rounded-full bg-tag text-tag-foreground">ideas</span>
+            <span class="text-xs text-foreground-muted">3d ago</span>
+          </div>
+
+          <div class="card-actions flex items-center gap-1 mt-2 pt-2 border-t border-gray-100">
+            <button class="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs text-primary hover:bg-primary/5 rounded">
+              <i class="pi pi-arrow-right text-xs"></i>
+              Create Tasks
+            </button>
+            <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-foreground-muted">
+              <i class="pi pi-ellipsis-v text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Card 4 - Short note -->
+      <div class="masonry-item">
+        <div class="note-card p-4">
+          <h3 class="font-semibold text-foreground mb-2">API Design Thoughts</h3>
+          <p class="text-sm text-foreground-muted">REST vs GraphQL considerations for the new endpoints. Need to evaluate query complexity and caching strategy.</p>
+
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+            <span class="text-xs text-foreground-muted">1w ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Card 5 - With completed tasks -->
+      <div class="masonry-item">
+        <div class="note-card p-4">
+          <h3 class="font-semibold text-foreground mb-3">Release Checklist v2.1</h3>
+          <div class="space-y-2">
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox checked"></div>
+              <span class="text-sm text-foreground-muted line-through">Update changelog</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox checked"></div>
+              <span class="text-sm text-foreground-muted line-through">Run full test suite</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox checked"></div>
+              <span class="text-sm text-foreground-muted line-through">Deploy to staging</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox checked"></div>
+              <span class="text-sm text-foreground-muted line-through">Get sign-off</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="note-checkbox checked"></div>
+              <span class="text-sm text-foreground-muted line-through">Deploy to prod</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+            <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-700">completed</span>
+            <span class="text-xs text-foreground-muted">5d ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Card 6 - Code snippet -->
+      <div class="masonry-item">
+        <div class="note-card p-4">
+          <h3 class="font-semibold text-foreground mb-2">Auth Middleware Pattern</h3>
+          <pre class="text-xs bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto"><code>const authMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  // verify token...
+  next();
+};</code></pre>
+          <p class="text-sm text-foreground-muted mt-2">Remember to add rate limiting too.</p>
+
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+            <span class="px-2 py-0.5 text-xs rounded-full bg-tag text-tag-foreground">code</span>
+            <span class="text-xs text-foreground-muted">2w ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Card 7 -->
+      <div class="masonry-item">
+        <div class="note-card p-4">
+          <h3 class="font-semibold text-foreground mb-2">User Feedback Summary</h3>
+          <p class="text-sm text-foreground-muted">Top requests from this month:</p>
+          <ol class="text-sm text-foreground-muted mt-2 ml-4 list-decimal space-y-1">
+            <li>Better mobile experience</li>
+            <li>Keyboard shortcuts</li>
+            <li>Dark mode</li>
+            <li>Export options</li>
+          </ol>
+
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+            <span class="px-2 py-0.5 text-xs rounded-full bg-tag text-tag-foreground">feedback</span>
+            <span class="text-xs text-foreground-muted">4d ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Card 8 - Simple note -->
+      <div class="masonry-item">
+        <div class="note-card p-4">
+          <p class="text-sm text-foreground">Call Sarah about the design review - she mentioned some concerns about the new navigation.</p>
+
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+            <span class="text-xs text-foreground-muted">6d ago</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============================================ -->
+  <!-- EXPANDED NOTE MODAL -->
+  <!-- ============================================ -->
+  <div class="fixed inset-0 z-50 flex items-start justify-center pt-20 modal-overlay" style="display: none;" id="note-modal">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <input type="text" value="Sprint Planning Ideas" class="text-xl font-bold text-foreground bg-transparent outline-none flex-1">
+        <div class="flex items-center gap-1">
+          <button class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 text-foreground-muted">
+            <i class="pi pi-tag"></i>
+          </button>
+          <button class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 text-foreground-muted">
+            <i class="pi pi-trash"></i>
+          </button>
+          <button class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 text-foreground-muted" onclick="document.getElementById('note-modal').style.display='none'">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Content (Editor) -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <div class="prose prose-sm max-w-none">
+          <p>Review the authentication flow and gather requirements for the new dashboard feature.</p>
+
+          <h3>Action Items</h3>
+          <div class="space-y-2 not-prose">
+            <div class="flex items-start gap-3 p-2 rounded hover:bg-gray-50 group">
+              <div class="note-checkbox" style="width:18px;height:18px;margin-top:2px;"></div>
+              <span class="text-foreground flex-1">Review the authentication flow documentation</span>
+              <button class="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-primary hover:bg-primary/10 rounded transition-opacity">
+                → Task
+              </button>
+            </div>
+            <div class="flex items-start gap-3 p-2 rounded hover:bg-gray-50 group">
+              <div class="note-checkbox checked" style="width:18px;height:18px;margin-top:2px;"></div>
+              <span class="text-foreground-muted line-through flex-1">Schedule meeting with security team</span>
+            </div>
+            <div class="flex items-start gap-3 p-2 rounded hover:bg-gray-50 group">
+              <div class="note-checkbox" style="width:18px;height:18px;margin-top:2px;"></div>
+              <span class="text-foreground flex-1">Draft API contract for new endpoints</span>
+              <button class="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-primary hover:bg-primary/10 rounded transition-opacity">
+                → Task
+              </button>
+            </div>
+          </div>
+
+          <p class="mt-4">Need to consider backward compatibility with v2 API clients. Also check with the mobile team about their timeline.</p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-1 text-xs rounded-full bg-tag text-tag-foreground">work</span>
+          <span class="text-xs text-foreground-muted">Edited 2 hours ago</span>
+        </div>
+        <button class="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90">
+          <i class="pi pi-arrow-right text-sm"></i>
+          Create Tasks (2)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MOBILE VIEW -->
+  <!-- ============================================ -->
+  <div class="mt-12 p-8 bg-gray-200">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">Mobile View (Single Column)</h2>
+    <div class="max-w-sm mx-auto bg-gray-100 rounded-3xl overflow-hidden shadow-xl" style="height: 700px;">
+      <!-- Mobile Header -->
+      <div class="bg-white p-4 border-b border-gray-200">
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="text-lg font-bold text-foreground">Notes</h1>
+          <button class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white">
+            <i class="pi pi-plus"></i>
+          </button>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2.5 bg-surface-alt rounded-lg">
+          <i class="pi pi-search text-foreground-muted"></i>
+          <input type="text" placeholder="Search notes..." class="flex-1 bg-transparent outline-none text-sm">
+        </div>
+      </div>
+
+      <!-- Mobile Grid (2 columns on mobile) -->
+      <div class="p-3 overflow-y-auto" style="height: calc(100% - 120px);">
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Card 1 -->
+          <div class="note-card p-3">
+            <h3 class="font-medium text-foreground text-sm mb-1">Sprint Planning</h3>
+            <p class="text-xs text-foreground-muted line-clamp-2 mb-2">Review auth flow...</p>
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <div class="note-checkbox" style="width:12px;height:12px;"></div>
+                <span class="text-xs text-foreground-muted truncate">Review docs</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="note-checkbox checked" style="width:12px;height:12px;"></div>
+                <span class="text-xs text-foreground-muted line-through truncate">Schedule</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-tag text-tag-foreground">work</span>
+              <span class="text-[10px] text-foreground-muted">2h</span>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="note-card p-3">
+            <h3 class="font-medium text-foreground text-sm mb-1">Meeting Notes</h3>
+            <p class="text-xs text-foreground-muted line-clamp-4">Discussed roadmap priorities and team capacity...</p>
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <span class="text-[10px] text-foreground-muted">1d</span>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="note-card p-3">
+            <h3 class="font-medium text-foreground text-sm mb-1">Quick Ideas</h3>
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <div class="note-checkbox" style="width:12px;height:12px;"></div>
+                <span class="text-xs text-foreground-muted truncate">Dark mode</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="note-checkbox" style="width:12px;height:12px;"></div>
+                <span class="text-xs text-foreground-muted truncate">Shortcuts</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="note-checkbox" style="width:12px;height:12px;"></div>
+                <span class="text-xs text-foreground-muted truncate">Export PDF</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-tag text-tag-foreground">ideas</span>
+              <span class="text-[10px] text-foreground-muted">3d</span>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="note-card p-3">
+            <h3 class="font-medium text-foreground text-sm mb-1">API Design</h3>
+            <p class="text-xs text-foreground-muted line-clamp-3">REST vs GraphQL considerations...</p>
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <span class="text-[10px] text-foreground-muted">1w</span>
+            </div>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="note-card p-3">
+            <h3 class="font-medium text-foreground text-sm mb-1">Release v2.1</h3>
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <div class="note-checkbox checked" style="width:12px;height:12px;"></div>
+                <span class="text-xs text-foreground-muted line-through truncate">Changelog</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="note-checkbox checked" style="width:12px;height:12px;"></div>
+                <span class="text-xs text-foreground-muted line-through truncate">Tests</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="note-checkbox checked" style="width:12px;height:12px;"></div>
+                <span class="text-xs text-foreground-muted line-through truncate">Deploy</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-green-100 text-green-700">done</span>
+              <span class="text-[10px] text-foreground-muted">5d</span>
+            </div>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="note-card p-3">
+            <p class="text-xs text-foreground line-clamp-4">Call Sarah about the design review...</p>
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <span class="text-[10px] text-foreground-muted">6d</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- DESIGN NOTES -->
+  <!-- ============================================ -->
+  <div class="max-w-4xl mx-auto p-8">
+    <div class="bg-white rounded-xl p-6 border border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Card Grid Layout - Design Notes</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-gray-700 mb-2">Key Features</h3>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>• <strong>Masonry layout</strong> - Cards of varying heights fit naturally</li>
+            <li>• <strong>Quick add bar</strong> - Always visible at top for fast capture</li>
+            <li>• <strong>Hover actions</strong> - "Create Tasks" appears on hover</li>
+            <li>• <strong>Click to expand</strong> - Opens full editor modal</li>
+            <li>• <strong>Checkbox preview</strong> - See task items without opening</li>
+            <li>• <strong>Tags visible</strong> - Color-coded tags for organization</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium text-gray-700 mb-2">Responsive Behavior</h3>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>• <strong>Desktop (1280px+)</strong>: 4 columns</li>
+            <li>• <strong>Laptop (1024px)</strong>: 3 columns</li>
+            <li>• <strong>Tablet (640px)</strong>: 2 columns</li>
+            <li>• <strong>Mobile</strong>: 2 columns (compact cards)</li>
+          </ul>
+
+          <h3 class="font-medium text-gray-700 mt-4 mb-2">Interaction Pattern</h3>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>• Tap/click card → Opens full editor modal</li>
+            <li>• Tap checkbox → Toggles without opening card</li>
+            <li>• Hover "Create Tasks" → Promotes checkboxes to tasks</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-gray-200">
+        <h3 class="font-medium text-gray-700 mb-2">Editor Integration</h3>
+        <p class="text-sm text-gray-600">When a card is clicked, the modal opens with TipTap editor for full editing. The card preview shows a condensed version of the content with checkbox interactivity preserved.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple modal toggle for demo
+    document.querySelectorAll('.note-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('.note-checkbox') && !e.target.closest('button')) {
+          document.getElementById('note-modal').style.display = 'flex';
+        }
+      });
+    });
+
+    document.getElementById('note-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('note-modal')) {
+        document.getElementById('note-modal').style.display = 'none';
+      }
+    });
+
+    // Toggle checkboxes
+    document.querySelectorAll('.note-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('click', (e) => {
+        e.stopPropagation();
+        checkbox.classList.toggle('checked');
+        const text = checkbox.nextElementSibling;
+        if (text) {
+          text.classList.toggle('line-through');
+          text.classList.toggle('text-foreground-muted');
+          text.classList.toggle('text-foreground');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

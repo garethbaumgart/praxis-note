@@ -21,7 +21,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Task Comments** - Add comments to tasks with click-to-edit
 - ✅ **Task Tags** - Organize tasks with reusable tags, displayed inline with expandable overflow
 - ✅ **Google OAuth** - Secure authentication with user accounts
-- 🚧 **Note-First Workflow** - Capture thoughts in rich text notes
+- ✅ **Notes** - Google Keep-style card grid for capturing thoughts with masonry layout
 - 🚧 **Automatic Task Extraction** - Checkboxes in notes become tasks on your board
 - 🚧 **Bidirectional Sync** - Complete a task on the board, and the checkbox in your note is checked (and vice versa)
 

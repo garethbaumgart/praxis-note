@@ -190,6 +190,7 @@ app.MapCommentEndpoints();
 app.MapDueDateEndpoints();
 app.MapTagEndpoints();
 app.MapTaskTagEndpoints();
+app.MapNoteEndpoints();
 app.MapNotificationEndpoints();
 
 // SPA fallback - serves index.html for client-side routing

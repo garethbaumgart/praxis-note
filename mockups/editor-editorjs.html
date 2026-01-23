@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor.js - Block-Style Editor Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <style>
+    /* Editor.js Block Styles */
+    .ce-block {
+      padding: 4px 0;
+    }
+    .ce-block:hover .ce-toolbar {
+      opacity: 1;
+    }
+    .ce-toolbar {
+      position: absolute;
+      left: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      transition: opacity 0.15s;
+      display: flex;
+      gap: 4px;
+    }
+    .ce-toolbar button {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: #94a3b8;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+    }
+    .ce-toolbar button:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .ce-paragraph {
+      line-height: 1.6;
+      outline: none;
+    }
+    .ce-header {
+      font-weight: bold;
+      outline: none;
+    }
+    .ce-header[data-level="1"] { font-size: 2em; }
+    .ce-header[data-level="2"] { font-size: 1.5em; }
+    .ce-header[data-level="3"] { font-size: 1.17em; }
+
+    /* Checklist Block */
+    .cdx-checklist {
+      list-style: none;
+      padding: 0;
+    }
+    .cdx-checklist__item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 6px 0;
+    }
+    .cdx-checklist__item-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #cbd5e1;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .cdx-checklist__item-checkbox:hover {
+      border-color: #6366f1;
+    }
+    .cdx-checklist__item--checked .cdx-checklist__item-checkbox {
+      background: #6366f1;
+      border-color: #6366f1;
+    }
+    .cdx-checklist__item--checked .cdx-checklist__item-checkbox::after {
+      content: '✓';
+      color: white;
+      font-size: 12px;
+    }
+    .cdx-checklist__item--checked .cdx-checklist__item-text {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+    .cdx-checklist__item-text {
+      flex: 1;
+      outline: none;
+    }
+
+    /* Plus button (add block) */
+    .ce-plus {
+      position: absolute;
+      left: -40px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .ce-plus:hover {
+      background: #f1f5f9;
+      color: #6366f1;
+    }
+
+    /* Block toolbox (appears when clicking +) */
+    .ce-toolbox {
+      position: absolute;
+      left: 0;
+      top: 100%;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 0;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      min-width: 200px;
+      z-index: 10;
+    }
+    .ce-toolbox__button {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .ce-toolbox__button:hover {
+      background: #f1f5f9;
+    }
+    .ce-toolbox__button i {
+      width: 20px;
+      color: #64748b;
+    }
+    .ce-toolbox__button span {
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    /* Inline toolbar */
+    .ce-inline-toolbar {
+      position: absolute;
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 4px;
+      display: flex;
+      gap: 2px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .ce-inline-toolbar button {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: #e2e8f0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .ce-inline-toolbar button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .ce-inline-toolbar button.active {
+      background: #6366f1;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Editor.js</h1>
+    <p class="text-gray-600 mb-8">Block-style editor with a clean, Notion-like interface. Each content type is a separate block.</p>
+
+    <!-- ============================================ -->
+    <!-- EDITOR OVERVIEW -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Key Features</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Block Architecture:</strong> Clean JSON with typed blocks</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Checklist Plugin:</strong> Built-in checkbox support</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Plugin Ecosystem:</strong> Many community plugins</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Clean Output:</strong> Structured JSON, easy to parse</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-check text-green-500 mt-0.5"></i>
+              <span><strong>Modern UX:</strong> Notion-like block manipulation</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="font-semibold text-gray-800 mb-3">Considerations</h2>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Block-only:</strong> No inline mixing (checkbox can't be mid-paragraph)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Angular:</strong> No official wrapper, manual integration needed</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Bundle Size:</strong> ~30KB core + plugins (~10KB each)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Mobile:</strong> Works but not optimized for touch</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="pi pi-info-circle text-amber-500 mt-0.5"></i>
+              <span><strong>Nesting:</strong> Limited nested structure support</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- BLOCK EDITOR DEMO -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Block Editor Interface</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Editor.js with Checklist plugin</div>
+
+        <div class="p-8">
+          <!-- Editor Content Area -->
+          <div class="max-w-2xl mx-auto space-y-1">
+
+            <!-- Header Block -->
+            <div class="ce-block relative group pl-10">
+              <div class="ce-toolbar">
+                <button title="Drag to move"><i class="pi pi-bars text-xs"></i></button>
+              </div>
+              <div class="ce-header" data-level="2" contenteditable="true">Sprint Planning Ideas</div>
+            </div>
+
+            <!-- Paragraph Block -->
+            <div class="ce-block relative group pl-10">
+              <div class="ce-toolbar">
+                <button title="Drag to move"><i class="pi pi-bars text-xs"></i></button>
+              </div>
+              <div class="ce-paragraph" contenteditable="true">Review the authentication flow and gather requirements for the new dashboard feature.</div>
+            </div>
+
+            <!-- Header Block -->
+            <div class="ce-block relative group pl-10 pt-4">
+              <div class="ce-toolbar">
+                <button title="Drag to move"><i class="pi pi-bars text-xs"></i></button>
+              </div>
+              <div class="ce-header" data-level="3" contenteditable="true">Action Items</div>
+            </div>
+
+            <!-- Checklist Block -->
+            <div class="ce-block relative group pl-10">
+              <div class="ce-toolbar">
+                <button title="Drag to move"><i class="pi pi-bars text-xs"></i></button>
+              </div>
+              <ul class="cdx-checklist">
+                <li class="cdx-checklist__item">
+                  <div class="cdx-checklist__item-checkbox"></div>
+                  <div class="cdx-checklist__item-text" contenteditable="true">Review the authentication flow documentation</div>
+                </li>
+                <li class="cdx-checklist__item cdx-checklist__item--checked">
+                  <div class="cdx-checklist__item-checkbox"></div>
+                  <div class="cdx-checklist__item-text" contenteditable="true">Schedule meeting with security team</div>
+                </li>
+                <li class="cdx-checklist__item">
+                  <div class="cdx-checklist__item-checkbox"></div>
+                  <div class="cdx-checklist__item-text" contenteditable="true">Draft API contract for new endpoints</div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Empty block with plus button -->
+            <div class="ce-block relative group pl-10 py-2">
+              <div class="ce-plus" title="Add block">
+                <i class="pi pi-plus text-sm"></i>
+              </div>
+              <div class="ce-paragraph text-gray-400" contenteditable="true">Click + or type / to add a block...</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- BLOCK TOOLBOX -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Block Toolbox (Click + or type /)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Available block types</div>
+
+        <div class="p-8 relative">
+          <div class="max-w-2xl mx-auto">
+            <!-- Block with toolbox open -->
+            <div class="ce-block relative pl-10">
+              <div class="ce-plus bg-indigo-100 text-indigo-600">
+                <i class="pi pi-plus text-sm"></i>
+              </div>
+              <div class="ce-paragraph text-gray-400">/</div>
+
+              <!-- Toolbox dropdown -->
+              <div class="ce-toolbox ml-10 mt-2">
+                <button class="ce-toolbox__button">
+                  <i class="pi pi-paragraph"></i>
+                  <span>Text</span>
+                </button>
+                <button class="ce-toolbox__button bg-indigo-50">
+                  <i class="pi pi-check-square text-indigo-600"></i>
+                  <span class="text-indigo-600 font-medium">Checklist</span>
+                </button>
+                <button class="ce-toolbox__button">
+                  <i class="pi pi-hashtag"></i>
+                  <span>Heading</span>
+                </button>
+                <button class="ce-toolbox__button">
+                  <i class="pi pi-list"></i>
+                  <span>List</span>
+                </button>
+                <button class="ce-toolbox__button">
+                  <i class="pi pi-quote-right"></i>
+                  <span>Quote</span>
+                </button>
+                <button class="ce-toolbox__button">
+                  <i class="pi pi-code"></i>
+                  <span>Code</span>
+                </button>
+                <button class="ce-toolbox__button">
+                  <i class="pi pi-image"></i>
+                  <span>Image</span>
+                </button>
+                <button class="ce-toolbox__button">
+                  <i class="pi pi-minus"></i>
+                  <span>Delimiter</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- INLINE TOOLBAR -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Inline Toolbar (Text Selection)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Format selected text</div>
+
+        <div class="p-8 relative">
+          <div class="max-w-2xl mx-auto">
+            <!-- Inline toolbar -->
+            <div class="ce-inline-toolbar absolute top-6 left-48 z-10">
+              <button class="active font-bold">B</button>
+              <button class="italic">I</button>
+              <button><i class="pi pi-link text-xs"></i></button>
+              <div class="w-px h-6 bg-gray-600 mx-1"></div>
+              <button><i class="pi pi-code text-xs"></i></button>
+            </div>
+
+            <div class="ce-block pl-10 pt-8">
+              <div class="ce-paragraph">
+                This is some text. <span class="bg-indigo-200">Selected text shows</span> the inline formatting toolbar.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- JSON OUTPUT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">JSON Output Format</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Editor.js stores content as typed blocks</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>{
+  "time": 1706140800000,
+  "blocks": [
+    {
+      "id": "block-1",
+      "type": "header",
+      "data": {
+        "text": "Sprint Planning Ideas",
+        "level": 2
+      }
+    },
+    {
+      "id": "block-2",
+      "type": "paragraph",
+      "data": {
+        "text": "Review the authentication flow and gather requirements."
+      }
+    },
+    {
+      "id": "block-3",
+      "type": "header",
+      "data": {
+        "text": "Action Items",
+        "level": 3
+      }
+    },
+    {
+      "id": "block-4",
+      "type": "checklist",
+      "data": {
+        "items": [
+          { "text": "Review auth documentation", "checked": false },
+          { "text": "Schedule meeting with security team", "checked": true },
+          { "text": "Draft API contract", "checked": false }
+        ]
+      }
+    }
+  ],
+  "version": "2.28.0"
+}</code></pre>
+        <div class="p-4 bg-emerald-50 border-t border-emerald-200">
+          <p class="text-sm text-emerald-800"><strong>Advantage:</strong> The checklist block data is perfectly structured for extracting checkboxes. Each item has text and checked status, making it easy to sync with the Note domain model.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CHECKLIST BLOCK DETAIL -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Checklist Block (Built-in Plugin)</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="p-6">
+          <div class="max-w-xl">
+            <h3 class="font-medium text-gray-800 mb-4">Project Checklist</h3>
+            <ul class="cdx-checklist">
+              <li class="cdx-checklist__item cdx-checklist__item--checked">
+                <div class="cdx-checklist__item-checkbox"></div>
+                <div class="cdx-checklist__item-text" contenteditable="true">Setup project repository</div>
+              </li>
+              <li class="cdx-checklist__item cdx-checklist__item--checked">
+                <div class="cdx-checklist__item-checkbox"></div>
+                <div class="cdx-checklist__item-text" contenteditable="true">Configure CI/CD pipeline</div>
+              </li>
+              <li class="cdx-checklist__item">
+                <div class="cdx-checklist__item-checkbox"></div>
+                <div class="cdx-checklist__item-text" contenteditable="true">Implement user authentication</div>
+              </li>
+              <li class="cdx-checklist__item">
+                <div class="cdx-checklist__item-checkbox"></div>
+                <div class="cdx-checklist__item-text" contenteditable="true">Design database schema</div>
+              </li>
+              <li class="cdx-checklist__item">
+                <div class="cdx-checklist__item-checkbox"></div>
+                <div class="cdx-checklist__item-text" contenteditable="true">Create API documentation</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="p-4 bg-gray-50 border-t border-gray-200">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">5 items · 2 completed (40%)</span>
+            <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+              <i class="pi pi-arrow-right text-sm"></i>
+              Convert to Tasks
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ANGULAR INTEGRATION -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Angular Integration</h2>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+        <div class="flex items-start gap-3">
+          <i class="pi pi-info-circle text-amber-600 mt-0.5"></i>
+          <div>
+            <p class="text-amber-800 font-medium">Manual integration required</p>
+            <p class="text-amber-700 text-sm mt-1">Editor.js doesn't have an official Angular wrapper. You'll need to initialize it manually and handle zone integration.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="text-xs text-gray-500 px-4 py-2 bg-gray-50 border-b border-gray-200">Manual EditorJS setup with Angular</div>
+        <pre class="p-4 text-sm overflow-x-auto bg-gray-900 text-gray-100"><code>// note-editor.component.ts
+import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, output, input, NgZone } from '@angular/core';
+import EditorJS from '@editorjs/editorjs';
+import Checklist from '@editorjs/checklist';
+import Header from '@editorjs/header';
+import List from '@editorjs/list';
+
+@Component({
+  selector: 'app-note-editor',
+  standalone: true,
+  template: `&lt;div #editorContainer&gt;&lt;/div&gt;`
+})
+export class NoteEditorComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('editorContainer') editorContainer!: ElementRef;
+
+  readonly initialData = input&lt;EditorJSData | undefined&gt;();
+  readonly contentChange = output&lt;EditorJSData&gt;();
+
+  private editor!: EditorJS;
+  private ngZone = inject(NgZone);
+
+  ngAfterViewInit() {
+    // Initialize outside Angular zone to prevent change detection issues
+    this.ngZone.runOutsideAngular(() => {
+      this.editor = new EditorJS({
+        holder: this.editorContainer.nativeElement,
+        tools: {
+          header: Header,
+          checklist: Checklist,
+          list: List,
+        },
+        data: this.initialData(),
+        onChange: async () => {
+          const data = await this.editor.save();
+          this.ngZone.run(() => {
+            this.contentChange.emit(data);
+          });
+        },
+      });
+    });
+  }
+
+  ngOnDestroy() {
+    this.editor?.destroy();
+  }
+
+  // Extract checkboxes from editor data
+  getCheckboxes(): Checkbox[] {
+    return this.editor.save().then(data => {
+      return data.blocks
+        .filter(block => block.type === 'checklist')
+        .flatMap(block => block.data.items.map((item, index) => ({
+          id: `${block.id}-${index}`,
+          text: item.text,
+          isChecked: item.checked,
+        })));
+    });
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- INTEGRATION WITH NOTE LAYOUT -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Integration: Split View with Editor.js</h2>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" style="height: 500px;">
+        <div class="flex h-full">
+          <!-- Notes List Panel -->
+          <div class="w-72 border-r border-gray-200 flex flex-col bg-gray-50">
+            <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+              <h2 class="font-semibold text-gray-800">Notes</h2>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white text-indigo-600">
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-1">
+              <div class="p-3 rounded-lg bg-indigo-100 border border-indigo-200 cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Sprint Planning Ideas</h3>
+                <p class="text-xs text-gray-500 mt-1 line-clamp-2">Review the authentication...</p>
+                <span class="text-[10px] text-gray-400 mt-1">3 checklist items</span>
+              </div>
+              <div class="p-3 rounded-lg hover:bg-white cursor-pointer">
+                <h3 class="font-medium text-gray-800 text-sm">Meeting Notes</h3>
+                <p class="text-xs text-gray-500 mt-1">Discussed roadmap...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Editor.js Panel -->
+          <div class="flex-1 flex flex-col">
+            <!-- Minimal header -->
+            <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+              <div class="flex items-center gap-2 text-xs text-gray-400">
+                <span>Last edited 2 hours ago</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button class="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-100 text-gray-500 text-xs">
+                  <i class="pi pi-tag text-xs"></i>
+                  Tags
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500">
+                  <i class="pi pi-ellipsis-v text-sm"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Editor Content -->
+            <div class="flex-1 overflow-y-auto py-6 px-8">
+              <div class="max-w-2xl mx-auto space-y-1">
+                <!-- Title -->
+                <div class="ce-block pl-10 mb-4">
+                  <input type="text" value="Sprint Planning Ideas" class="w-full text-2xl font-bold text-gray-800 bg-transparent outline-none">
+                </div>
+
+                <!-- Paragraph -->
+                <div class="ce-block relative group pl-10">
+                  <div class="ce-paragraph" contenteditable="true">Review the authentication flow and gather requirements for the new dashboard feature.</div>
+                </div>
+
+                <!-- Checklist -->
+                <div class="ce-block pl-10 pt-4">
+                  <ul class="cdx-checklist">
+                    <li class="cdx-checklist__item">
+                      <div class="cdx-checklist__item-checkbox"></div>
+                      <div class="cdx-checklist__item-text" contenteditable="true">Review auth documentation</div>
+                    </li>
+                    <li class="cdx-checklist__item cdx-checklist__item--checked">
+                      <div class="cdx-checklist__item-checkbox"></div>
+                      <div class="cdx-checklist__item-text" contenteditable="true">Schedule meeting</div>
+                    </li>
+                    <li class="cdx-checklist__item">
+                      <div class="cdx-checklist__item-checkbox"></div>
+                      <div class="cdx-checklist__item-text" contenteditable="true">Draft API contract</div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+              <span class="text-xs text-gray-500">3 checklist items · 1 completed</span>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700">
+                <i class="pi pi-arrow-right text-xs"></i>
+                Create Tasks
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- VERDICT -->
+    <!-- ============================================ -->
+    <div class="bg-blue-50 rounded-xl p-6 border-2 border-blue-200">
+      <h2 class="text-xl font-semibold text-blue-800 mb-4">Editor.js Verdict</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-blue-600 mb-1">7/10</div>
+          <div class="text-sm text-gray-600">Flexibility</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-amber-600 mb-1">6/10</div>
+          <div class="text-sm text-gray-600">Ease of Use</div>
+        </div>
+        <div class="text-center p-4 bg-white rounded-lg">
+          <div class="text-3xl font-bold text-green-600 mb-1">8/10</div>
+          <div class="text-sm text-gray-600">Task List Support</div>
+        </div>
+      </div>
+      <p class="mt-4 text-blue-800"><strong>Good Option:</strong> Editor.js has excellent checklist support and clean JSON output. The block-based architecture makes checkbox extraction simple. However, manual Angular integration and the limitation that checkboxes must be in dedicated checklist blocks (not inline with text) are considerations.</p>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -19,23 +19,21 @@ import { AuthService } from '../auth';
 
       <!-- Quick actions -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <!-- New Note - Coming Soon -->
+        <!-- Notes - Live -->
         <button
-          type="button"
-          class="group relative p-4 bg-surface border border-border rounded-xl transition-all duration-200 text-left opacity-70 cursor-not-allowed"
-          aria-label="Create new note - Coming soon"
-          disabled
-          aria-disabled="true"
+          class="group relative p-4 bg-surface border border-border rounded-xl hover:border-done-foreground hover:shadow-md transition-all duration-200 text-left"
+          aria-label="View notes"
+          (click)="goToNotes()"
         >
-          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-due-today text-due-today-foreground">
-            <i class="pi pi-clock text-[10px]" aria-hidden="true"></i>
-            Soon
+          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-done text-done-foreground">
+            <i class="pi pi-check-circle text-[10px]" aria-hidden="true"></i>
+            Live
           </span>
-          <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center mb-3">
-            <i class="pi pi-plus text-accent-foreground" aria-hidden="true"></i>
+          <div class="w-10 h-10 rounded-lg bg-done flex items-center justify-center mb-3 group-hover:bg-done-hover transition-colors">
+            <i class="pi pi-file-edit text-done-foreground" aria-hidden="true"></i>
           </div>
-          <p class="font-medium text-foreground mb-1">New Note</p>
-          <p class="text-sm text-foreground-secondary">Start writing</p>
+          <p class="font-medium text-foreground mb-1">Notes</p>
+          <p class="text-sm text-foreground-secondary">Capture your thoughts</p>
         </button>
 
         <!-- Tasks - Live -->
@@ -97,6 +95,10 @@ export class HomePage {
     const name = this.auth.user()?.name;
     return name?.split(' ')[0] ?? '';
   });
+
+  goToNotes(): void {
+    this.router.navigate(['/notes']);
+  }
 
   goToTasks(): void {
     this.router.navigate(['/tasks']);

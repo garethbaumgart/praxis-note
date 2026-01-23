@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PraxisNote.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using PraxisNote.Infrastructure.Persistence;
 namespace PraxisNote.Infrastructure.Migrations
 {
     [DbContext(typeof(PraxisNoteDbContext))]
-    partial class PraxisNoteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260123105541_AddNotes")]
+    partial class AddNotes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,7 +142,7 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.HasIndex("UserId", "Name")
                         .IsUnique();
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.Tasks.TaskItem", b =>

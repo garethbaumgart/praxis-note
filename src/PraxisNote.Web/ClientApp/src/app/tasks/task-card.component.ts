@@ -521,6 +521,7 @@ export class TaskCardComponent {
   readonly selectedTab = signal<'dueDate' | 'comments' | 'tags' | null>(null);
   readonly dueDateExpanded = computed(() => this.selectedTab() === 'dueDate');
   readonly commentsExpanded = computed(() => this.selectedTab() === 'comments');
+  readonly tagsExpanded = computed(() => this.selectedTab() === 'tags');
 
   // Date picker popover state
   readonly showDatePicker = signal(false);
@@ -630,6 +631,11 @@ export class TaskCardComponent {
   readonly isCommentsPill = computed(() => this.commentsExpanded());
   readonly isCommentsCircleWithComments = computed(() => !this.commentsExpanded() && this.task().comments.length > 0);
   readonly isCommentsCircleEmpty = computed(() => !this.commentsExpanded() && this.task().comments.length === 0);
+
+  // Tags tab state computeds
+  readonly isTagsPill = computed(() => this.tagsExpanded());
+  readonly isTagsCircleWithTags = computed(() => !this.tagsExpanded() && this.taskTags().length > 0);
+  readonly isTagsCircleEmpty = computed(() => !this.tagsExpanded() && this.taskTags().length === 0);
 
   // Status button computeds - derive from previousStatus()/nextStatus() to avoid duplication
   readonly isPrevStatusTodo = computed(() => this.previousStatus() === 'Todo');
