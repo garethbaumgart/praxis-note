@@ -8,7 +8,11 @@ public static class ClaimsPrincipalExtensions
     /// Extracts the user ID from the ClaimsPrincipal's NameIdentifier claim.
     /// </summary>
     /// <param name="user">The claims principal representing the authenticated user.</param>
-    /// <returns>The user's GUID if valid, otherwise null.</returns>
+    /// <returns>
+    /// The user's GUID if the NameIdentifier claim exists and is a valid GUID.
+    /// Returns null if the claim is missing, empty, or not a valid GUID format.
+    /// Callers should treat null as an unauthorized request.
+    /// </returns>
     public static Guid? GetUserId(this ClaimsPrincipal user)
     {
         var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
