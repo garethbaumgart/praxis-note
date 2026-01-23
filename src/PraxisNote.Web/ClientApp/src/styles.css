@@ -674,3 +674,13 @@
 .p-chip .p-chip-label {
   line-height: 1;
 }
+
+/* Search highlight - underline style */
+.search-highlight {
+  background: transparent;
+  color: var(--color-accent-foreground);
+  text-decoration: underline;
+  text-decoration-color: #88c0d0;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 2px;
+}
