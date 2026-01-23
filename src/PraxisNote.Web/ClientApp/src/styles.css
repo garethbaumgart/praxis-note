@@ -134,19 +134,19 @@
   /* Segmented toggle */
   --color-segment-bg: rgba(236, 239, 244, 0.5);
 
-  /* Tags section - Aurora purple */
-  --color-tags-section-bg: rgba(180, 142, 173, 0.1);
-  --color-tags-section-border-base: rgba(180, 142, 173, 0.3);
-  --color-tags-badge-bg: rgba(180, 142, 173, 0.3);
-  --color-tags-badge-text: #b48ead;
-  --color-tags-expanded-bg: #b48ead;
-  --color-tags-expanded-text: #eceff4;
-  --color-tags-expanded-badge-bg: rgba(236, 239, 244, 0.2);
-  --color-tags-collapsed-bg: rgba(180, 142, 173, 0.15);
-  --color-tags-collapsed-text: #b48ead;
-  --color-tags-collapsed-hover-base: rgba(180, 142, 173, 0.25);
-  --color-tag-bg: rgba(180, 142, 173, 0.2);
-  --color-tag-text: #8b5c85;
+  /* Tags section - Aurora green */
+  --color-tags-section-bg: rgba(163, 190, 140, 0.1);
+  --color-tags-section-border-base: rgba(163, 190, 140, 0.3);
+  --color-tags-badge-bg: rgba(163, 190, 140, 0.3);
+  --color-tags-badge-text: #a3be8c;
+  --color-tags-expanded-bg: #a3be8c;
+  --color-tags-expanded-text: #2e3440;
+  --color-tags-expanded-badge-bg: rgba(46, 52, 64, 0.2);
+  --color-tags-collapsed-bg: rgba(163, 190, 140, 0.15);
+  --color-tags-collapsed-text: #a3be8c;
+  --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.25);
+  --color-tag-bg: rgba(163, 190, 140, 0.2);
+  --color-tag-text: #5c7a45;
 
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
@@ -269,19 +269,19 @@
   /* Segmented toggle */
   --color-segment-bg: rgba(67, 76, 94, 0.5);
 
-  /* Tags section - Aurora purple */
-  --color-tags-section-bg: rgba(180, 142, 173, 0.15);
-  --color-tags-section-border-base: rgba(180, 142, 173, 0.3);
-  --color-tags-badge-bg: rgba(180, 142, 173, 0.4);
-  --color-tags-badge-text: #b48ead;
-  --color-tags-expanded-bg: #b48ead;
-  --color-tags-expanded-text: #eceff4;
-  --color-tags-expanded-badge-bg: rgba(236, 239, 244, 0.2);
-  --color-tags-collapsed-bg: rgba(180, 142, 173, 0.2);
-  --color-tags-collapsed-text: #b48ead;
-  --color-tags-collapsed-hover-base: rgba(180, 142, 173, 0.3);
-  --color-tag-bg: rgba(180, 142, 173, 0.25);
-  --color-tag-text: #b48ead;
+  /* Tags section - Aurora green */
+  --color-tags-section-bg: rgba(163, 190, 140, 0.15);
+  --color-tags-section-border-base: rgba(163, 190, 140, 0.3);
+  --color-tags-badge-bg: rgba(163, 190, 140, 0.4);
+  --color-tags-badge-text: #a3be8c;
+  --color-tags-expanded-bg: #a3be8c;
+  --color-tags-expanded-text: #2e3440;
+  --color-tags-expanded-badge-bg: rgba(46, 52, 64, 0.2);
+  --color-tags-collapsed-bg: rgba(163, 190, 140, 0.2);
+  --color-tags-collapsed-text: #a3be8c;
+  --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.3);
+  --color-tag-bg: rgba(163, 190, 140, 0.25);
+  --color-tag-text: #a3be8c;
 
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #88c0d0);
