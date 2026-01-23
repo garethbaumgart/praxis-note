@@ -57,7 +57,14 @@ Once tests pass:
 
 After the PR is created, **actively monitor** and address feedback:
 
-1. **Self code review**: Review the PR diff using `gh pr diff` and add comments for any issues found using `gh pr comment` or `gh api`
+1. **Self code review**: Review the PR diff using `gh pr diff` and look for:
+   - Code duplication that could be extracted (DRY principle)
+   - Performance improvements without added complexity
+   - Patterns that don't match existing codebase conventions
+   - Missing null guards or error handling
+   - Accessibility issues (missing aria-labels on icon-only buttons)
+
+   **Apply good refactoring opportunities** you identify - don't defer them to future PRs unless they require significant architectural changes. Add comments for any issues found using `gh pr comment` or `gh api`
 2. **Wait for CI**: Monitor GitHub Actions for completion using `gh pr checks`
 3. **Check for warnings**: Review action logs AND annotations for any warnings (not just failures)
    - Use `gh api repos/{owner}/{repo}/check-runs/{job_id}/annotations` to fetch annotations

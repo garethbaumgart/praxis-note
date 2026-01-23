@@ -139,7 +139,7 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.HasIndex("UserId", "Name")
                         .IsUnique();
 
-                    b.ToTable("Tags", (string)null);
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.Tasks.TaskItem", b =>

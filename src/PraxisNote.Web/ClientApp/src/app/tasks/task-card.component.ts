@@ -723,7 +723,7 @@ export class TaskCardComponent {
   /** Close expanded tabs when pressing Escape */
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
-    if (this.selectedTab() || this.inlineTagsExpanded()) {
+    if (this.selectedTab() || this.inlineTagsExpanded() || this.showTagPicker()) {
       this.closeExpanded();
     }
   }
