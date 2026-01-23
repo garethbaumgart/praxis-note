@@ -62,8 +62,12 @@ test.describe('Notes', () => {
     const textarea = page.locator('textarea[aria-label="Note content"]');
     await textarea.fill('Updated content');
 
-    // Save the note
+    // Save the note and wait for the debounced API call to complete
+    const updatePromise = page.waitForResponse(
+      response => response.url().includes('/api/notes/') && response.request().method() === 'PUT'
+    );
     await page.getByRole('button', { name: 'Save' }).click();
+    await updatePromise;
 
     // Verify the dialog closed
     await expect(page.getByRole('dialog')).not.toBeVisible();

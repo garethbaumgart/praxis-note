@@ -17,16 +17,10 @@ import { NoteService } from './note.service';
       [closable]="true"
       [draggable]="false"
       [resizable]="false"
+      [header]="note() ? 'Edit Note' : 'New Note'"
       [style]="{ width: '90vw', maxWidth: '600px' }"
       styleClass="note-editor-dialog"
-      contentStyleClass="p-0"
     >
-      <ng-template pTemplate="header">
-        <span class="text-lg font-semibold text-foreground">
-          {{ note() ? 'Edit Note' : 'New Note' }}
-        </span>
-      </ng-template>
-
       <div class="p-4">
         <textarea
           #contentInput
@@ -47,10 +41,9 @@ import { NoteService } from './note.service';
             }
           </div>
         }
-      </div>
 
-      <ng-template pTemplate="footer">
-        <div class="flex justify-end gap-2">
+        <!-- Action buttons -->
+        <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-border">
           <button
             type="button"
             class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground rounded-md transition-colors"
@@ -66,17 +59,13 @@ import { NoteService } from './note.service';
             Save
           </button>
         </div>
-      </ng-template>
+      </div>
     </p-dialog>
   `,
   styles: [`
     :host ::ng-deep .note-editor-dialog .p-dialog-header {
       padding: 1rem 1.5rem;
       border-bottom: 1px solid var(--color-border-default);
-    }
-    :host ::ng-deep .note-editor-dialog .p-dialog-footer {
-      padding: 1rem 1.5rem;
-      border-top: 1px solid var(--color-border-default);
     }
     .tag-badge {
       display: inline-flex;
