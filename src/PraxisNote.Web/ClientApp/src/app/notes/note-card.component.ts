@@ -15,9 +15,9 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
     >
       <div class="p-3">
         <!-- Content preview -->
-        @if (note().content) {
+        @if (contentPreview()) {
           <p class="text-sm text-foreground line-clamp-6 whitespace-pre-wrap break-words">
-            {{ note().content }}
+            {{ contentPreview() }}
           </p>
         } @else {
           <p class="text-sm text-foreground-muted italic">Empty note</p>
@@ -151,6 +151,22 @@ export class NoteCardComponent {
   private readonly maxVisibleCheckboxes = 4;
   private readonly maxVisibleTags = 3;
 
+  readonly contentPreview = computed(() => {
+    const content = this.note().content;
+    if (!content) return '';
+
+    // Try to parse as TipTap JSON
+    try {
+      const parsed = JSON.parse(content);
+      if (parsed.type === 'doc' && parsed.content) {
+        return this.extractTextFromTiptap(parsed.content);
+      }
+    } catch {
+      // Not JSON, return as plain text
+    }
+    return content;
+  });
+
   readonly visibleCheckboxes = computed(() =>
     this.note().checkboxes.slice(0, this.maxVisibleCheckboxes)
   );
@@ -201,5 +217,27 @@ export class NoteCardComponent {
     if (diffDays < 7) return `${diffDays}d ago`;
 
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  /**
+   * Recursively extracts text from TipTap JSON content nodes.
+   */
+  private extractTextFromTiptap(nodes: any[]): string {
+    const textParts: string[] = [];
+
+    for (const node of nodes) {
+      if (node.type === 'text' && node.text) {
+        textParts.push(node.text);
+      } else if (node.content) {
+        textParts.push(this.extractTextFromTiptap(node.content));
+      }
+
+      // Add newline after block-level nodes
+      if (['paragraph', 'heading', 'bulletList', 'orderedList', 'taskList', 'blockquote'].includes(node.type)) {
+        textParts.push('\n');
+      }
+    }
+
+    return textParts.join('').trim();
   }
 }

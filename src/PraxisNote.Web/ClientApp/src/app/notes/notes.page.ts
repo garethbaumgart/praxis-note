@@ -142,7 +142,9 @@ export class NotesPage implements OnInit {
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const target = event.target as HTMLElement;
-    const isInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+    const isInInput = target.tagName === 'INPUT' ||
+                      target.tagName === 'TEXTAREA' ||
+                      target.isContentEditable;
 
     // Focus search with /
     if (event.key === '/' && !isInInput) {

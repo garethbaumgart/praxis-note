@@ -2,12 +2,13 @@ import { Component, ChangeDetectionStrategy, input, output, signal, effect, inje
 import { Dialog } from 'primeng/dialog';
 import { Note } from './note.model';
 import { NoteService } from './note.service';
+import { TiptapEditorComponent } from './tiptap-editor.component';
 
 @Component({
   selector: 'app-note-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog],
+  imports: [Dialog, TiptapEditorComponent],
   template: `
     <p-dialog
       [visible]="visible()"
@@ -18,20 +19,15 @@ import { NoteService } from './note.service';
       [draggable]="false"
       [resizable]="false"
       [header]="note() ? 'Edit Note' : 'New Note'"
-      [style]="{ width: '90vw', maxWidth: '600px' }"
+      [style]="{ width: '90vw', maxWidth: '700px' }"
       styleClass="note-editor-dialog"
     >
       <div class="p-4">
-        <textarea
-          #contentInput
-          [value]="content()"
-          (input)="onContentChange($any($event.target).value)"
-          (keydown.escape)="onClose.emit()"
-          placeholder="Take a note..."
-          rows="10"
-          class="w-full p-3 text-sm text-foreground bg-surface-subtle border border-border rounded-md resize-none focus:outline-none focus:border-accent-solid placeholder:text-foreground-muted"
-          aria-label="Note content"
-        ></textarea>
+        <!-- TipTap Editor -->
+        <app-tiptap-editor
+          [initialContent]="content()"
+          (contentChange)="onContentChange($event)"
+        />
 
         <!-- Tags display -->
         @if (note()?.tags?.length) {
