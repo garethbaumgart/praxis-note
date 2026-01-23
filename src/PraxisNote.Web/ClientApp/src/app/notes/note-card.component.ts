@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { Note } from './note.model';
 
 @Component({
@@ -81,7 +81,8 @@ import { Note } from './note.model';
     </div>
   `,
   styles: [`
-    .note-card:hover .card-actions {
+    .note-card:hover .card-actions,
+    .note-card:focus-within .card-actions {
       opacity: 1;
     }
     .card-actions {

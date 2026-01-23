@@ -36,7 +36,9 @@ public sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
-                v => JsonSerializer.Deserialize<List<Checkbox>>(v, JsonSerializerOptions.Default) ?? new List<Checkbox>())
+                v => string.IsNullOrWhiteSpace(v)
+                    ? new List<Checkbox>()
+                    : JsonSerializer.Deserialize<List<Checkbox>>(v, JsonSerializerOptions.Default) ?? new List<Checkbox>())
             .Metadata.SetValueComparer(checkboxesComparer);
 
         builder.Ignore(n => n.Checkboxes);
@@ -51,7 +53,9 @@ public sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
             .HasColumnName("TagIds")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
-                v => JsonSerializer.Deserialize<HashSet<Guid>>(v, JsonSerializerOptions.Default) ?? new HashSet<Guid>())
+                v => string.IsNullOrWhiteSpace(v)
+                    ? new HashSet<Guid>()
+                    : JsonSerializer.Deserialize<HashSet<Guid>>(v, JsonSerializerOptions.Default) ?? new HashSet<Guid>())
             .Metadata.SetValueComparer(tagIdsComparer);
 
         builder.Ignore(n => n.TagIds);

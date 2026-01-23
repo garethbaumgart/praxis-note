@@ -86,7 +86,6 @@ export class NoteEditorComponent {
   readonly visible = input.required<boolean>();
   readonly note = input<Note | null>(null);
   readonly onClose = output<void>();
-  readonly onSave = output<string>();
 
   readonly content = signal('');
 
