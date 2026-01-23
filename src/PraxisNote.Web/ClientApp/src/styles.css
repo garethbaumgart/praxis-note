@@ -105,6 +105,7 @@
   /* Search highlight - Frost */
   --color-highlight-bg: rgba(136, 192, 208, 0.4);  /* Frost cyan */
   --color-highlight-text: #2e3440;
+  --color-highlight-underline: #88c0d0;            /* Frost cyan for underline */
 
   /* Due date section (expanded panel) - Aurora yellow */
   --color-duedate-section-bg: rgba(235, 203, 139, 0.2);
@@ -240,6 +241,7 @@
   /* Search highlight - Frost cyan */
   --color-highlight-bg: rgba(136, 192, 208, 0.5);
   --color-highlight-text: #eceff4;
+  --color-highlight-underline: #88c0d0;            /* Frost cyan for underline */
 
   /* Due date section (expanded panel) - Aurora yellow */
   --color-duedate-section-bg: rgba(235, 203, 139, 0.15);
@@ -679,7 +681,7 @@
   background: transparent;
   color: var(--color-accent-foreground);
   text-decoration: underline;
-  text-decoration-color: #88c0d0;
+  text-decoration-color: var(--color-highlight-underline);
   text-underline-offset: 2px;
   text-decoration-thickness: 2px;
 }
