@@ -27,7 +27,9 @@ public sealed class TaskRepository(PraxisNoteDbContext context) : ITaskRepositor
 
     public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        // Project only TagIds to avoid loading full entities
+        // Project only TagIds to minimize data transfer (TagIds is stored as JSON).
+        // In-memory aggregation is necessary because EF Core can't translate
+        // SelectMany/GroupBy on JSON arrays to SQL without raw queries.
         var tagIdLists = await context.Tasks
             .Where(t => t.UserId == userId)
             .Select(t => t.TagIds)
