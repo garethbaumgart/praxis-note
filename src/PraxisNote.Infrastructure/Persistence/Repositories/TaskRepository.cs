@@ -18,6 +18,13 @@ public sealed class TaskRepository(PraxisNoteDbContext context) : ITaskRepositor
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<TaskItem>> GetTasksWithTagAsync(Guid userId, Guid tagId, CancellationToken cancellationToken = default)
+    {
+        return await context.Tasks
+            .Where(t => t.UserId == userId && t.TagIds.Contains(tagId))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         // Project only TagIds to avoid loading full entities

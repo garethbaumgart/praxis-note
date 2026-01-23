@@ -74,6 +74,12 @@ After the PR is created, **actively monitor** and address feedback:
      - **If addressing**: Add a thumbs up reaction using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
      - **If not addressing**: Reply to the comment explaining why (e.g., out of scope, matches existing patterns, deferred to follow-up)
    - **For high-level feedback in PR comments**: Reply to the comment addressing each suggestion - either confirm you'll fix it or explain why not
+   - **Apply good refactoring suggestions**: When reviewers suggest refactoring (e.g., extracting duplicated code, improving efficiency), evaluate and apply them if they:
+     - Reduce code duplication (DRY principle)
+     - Improve performance without adding complexity
+     - Follow existing patterns in the codebase
+     - Are straightforward to implement
+   - Do NOT defer refactoring suggestions to "future PRs" unless they are truly out of scope or require significant architectural changes
    - Commit, push, and verify the fix resolves the comment
 6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
 

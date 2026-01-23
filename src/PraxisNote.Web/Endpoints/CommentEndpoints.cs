@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using PraxisNote.Web.Extensions;
 using PraxisNote.Application.Features.Tasks;
 
 namespace PraxisNote.Web.Endpoints;
@@ -22,7 +23,7 @@ public static class CommentEndpoints
         AddComment addComment,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -49,7 +50,7 @@ public static class CommentEndpoints
         UpdateComment updateComment,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -73,7 +74,7 @@ public static class CommentEndpoints
         DeleteComment deleteComment,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -83,12 +84,6 @@ public static class CommentEndpoints
         var success = await deleteComment.ExecuteAsync(command, cancellationToken);
 
         return success ? Results.NoContent() : Results.NotFound();
-    }
-
-    private static Guid? GetUserId(ClaimsPrincipal user)
-    {
-        var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        return Guid.TryParse(userIdString, out var userId) ? userId : null;
     }
 }
 

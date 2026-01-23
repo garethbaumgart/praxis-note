@@ -18,9 +18,9 @@ public sealed class DeleteTag(ITagRepository tagRepository, ITaskRepository task
             throw new InvalidOperationException(NotFoundError);
         }
 
-        // Remove tag from all tasks
-        var tasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
-        foreach (var task in tasks)
+        // Remove tag only from tasks that have it (more efficient than loading all tasks)
+        var tasksWithTag = await taskRepository.GetTasksWithTagAsync(command.UserId, command.TagId, cancellationToken);
+        foreach (var task in tasksWithTag)
         {
             task.RemoveTag(command.TagId);
         }

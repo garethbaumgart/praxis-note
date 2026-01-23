@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using PraxisNote.Web.Extensions;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Web.Services;
 
@@ -22,7 +23,7 @@ public static class NotificationEndpoints
         GetNotifications getNotifications,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -40,7 +41,7 @@ public static class NotificationEndpoints
         GetUnseenNotificationCount getCount,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -59,7 +60,7 @@ public static class NotificationEndpoints
         MarkNotificationsSeen markSeen,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -79,7 +80,7 @@ public static class NotificationEndpoints
         GetUnseenNotificationCount getCount,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             context.Response.StatusCode = 401;
@@ -114,12 +115,6 @@ public static class NotificationEndpoints
         {
             sseManager.RemoveConnection(userId.Value, context.Response);
         }
-    }
-
-    private static Guid? GetUserId(ClaimsPrincipal user)
-    {
-        var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        return Guid.TryParse(userIdString, out var userId) ? userId : null;
     }
 }
 

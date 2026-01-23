@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using PraxisNote.Web.Extensions;
 using PraxisNote.Application.Features.Tags;
 
 namespace PraxisNote.Web.Endpoints;
@@ -21,7 +22,7 @@ public static class TagEndpoints
         GetUserTags getUserTags,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -39,7 +40,7 @@ public static class TagEndpoints
         CreateTag createTag,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -70,7 +71,7 @@ public static class TagEndpoints
         UpdateTag updateTag,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -104,7 +105,7 @@ public static class TagEndpoints
         DeleteTag deleteTag,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null)
         {
             return Results.Unauthorized();
@@ -121,12 +122,6 @@ public static class TagEndpoints
         {
             return Results.NotFound();
         }
-    }
-
-    private static Guid? GetUserId(ClaimsPrincipal user)
-    {
-        var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        return Guid.TryParse(userIdString, out var userId) ? userId : null;
     }
 }
 
