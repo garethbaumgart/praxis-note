@@ -115,7 +115,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
         @if (hasInlineTags() || showTagPicker()) {
           <div class="mt-1.5 flex flex-wrap items-center gap-1">
               @for (tag of visibleTags(); track tag.id) {
-                <span class="tag-badge" [class.tag-badge-done]="task().status === 'Done'">
+                <span class="tag-badge">
                   {{ tag.name }}
                   <button
                     type="button"
