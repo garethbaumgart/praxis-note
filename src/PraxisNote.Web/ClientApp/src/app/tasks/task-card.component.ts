@@ -113,7 +113,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
         <!-- Inline tags row (when tags exist OR adding first tag) -->
         @if (hasInlineTags() || showTagPicker()) {
-          <div class="mt-1.5 ml-7 flex flex-wrap items-center gap-1">
+          <div class="mt-1.5 flex flex-wrap items-center gap-1">
               @for (tag of visibleTags(); track tag.id) {
                 <span class="tag-badge">
                   {{ tag.name }}
