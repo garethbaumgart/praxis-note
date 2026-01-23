@@ -113,13 +113,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
         <!-- Inline tags row (when tags exist OR adding first tag) -->
         @if (hasInlineTags() || showTagPicker()) {
-          <div class="mt-1.5 flex items-center gap-2">
-            <!-- Tag icon (aligned with flag) -->
-            <span class="shrink-0 w-5 h-5 flex items-center justify-center" [class.text-tag]="showTagPicker()" [class.text-tag/60]="!showTagPicker()">
-              <i class="pi pi-tag text-xs"></i>
-            </span>
-            <!-- Tags pills and inline search -->
-            <div class="flex-1 min-w-0 flex flex-wrap items-center gap-1">
+          <div class="mt-1.5 ml-7 flex flex-wrap items-center gap-1">
               @for (tag of visibleTags(); track tag.id) {
                 <span class="tag-badge">
                   {{ tag.name }}
@@ -210,7 +204,6 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                   <span>Less</span>
                 </button>
               }
-            </div>
           </div>
         }
 
