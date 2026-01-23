@@ -569,7 +569,8 @@ export class TaskCardComponent {
   // Filtered suggestions for first tag tooltip (max 4)
   readonly tooltipSuggestions = computed(() => {
     const query = this.firstTagSearch().toLowerCase().trim();
-    const available = this.allTags();
+    const existingIds = new Set(this.taskTags().map(t => t.id));
+    const available = this.allTags().filter(tag => !existingIds.has(tag.id));
     if (!query) return available.slice(0, 4);
     return available
       .filter(tag => tag.name.toLowerCase().includes(query))
@@ -1047,6 +1048,12 @@ export class TaskCardComponent {
   }
 
   addTag(tag: TaskTag): void {
+    // Guard against duplicates
+    if (this.taskTags().some(t => t.id === tag.id)) {
+      this.showTagPicker.set(false);
+      this.firstTagSearch.set('');
+      return;
+    }
     this.onAddTag.emit(tag);
     this.showTagPicker.set(false);
     this.firstTagSearch.set('');
