@@ -44,8 +44,9 @@ public sealed class PromoteCheckboxToTask(
         // 3. Check if a task already exists for this checkbox
         var existingTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
         var existingTask = existingTasks.FirstOrDefault(t =>
-            t.CheckboxRef?.NoteId == command.NoteId &&
-            t.CheckboxRef?.CheckboxId == command.CheckboxId);
+            t.CheckboxRef is { } checkboxRef &&
+            checkboxRef.NoteId == command.NoteId &&
+            checkboxRef.CheckboxId == command.CheckboxId);
 
         if (existingTask is not null)
         {

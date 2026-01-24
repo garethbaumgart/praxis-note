@@ -5,8 +5,6 @@ import {
   output,
   OnDestroy,
   effect,
-  signal,
-  computed,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Editor, JSONContent } from '@tiptap/core';
