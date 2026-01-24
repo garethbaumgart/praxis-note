@@ -25,10 +25,12 @@ public sealed class GetCheckboxStatus(
             return null;
 
         // Get all tasks linked to this note
+        // Use GroupBy to handle potential duplicate links gracefully (take first)
         var userTasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
         var linkedTasks = userTasks
             .Where(t => t.CheckboxRef?.NoteId == query.NoteId)
-            .ToDictionary(t => t.CheckboxRef!.CheckboxId, t => t);
+            .GroupBy(t => t.CheckboxRef!.CheckboxId)
+            .ToDictionary(g => g.Key, g => g.First());
 
         // Build status for each checkbox
         var result = new List<CheckboxStatusDto>();
