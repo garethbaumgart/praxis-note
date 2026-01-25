@@ -27,7 +27,7 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: 'dotnet run --project ../../src/PraxisNote.Web --no-build',
+        command: 'dotnet run --project ../../src/PraxisNote.Web',
         url: 'http://localhost:5002/api/health',
         reuseExistingServer: !process.env.CI,
         timeout: 120000,
