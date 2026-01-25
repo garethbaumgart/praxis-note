@@ -1,6 +1,8 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
   input,
   output,
   OnDestroy,
@@ -316,6 +318,8 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
   `],
 })
 export class TiptapEditorComponent implements OnInit, OnDestroy {
+  private readonly cdr = inject(ChangeDetectorRef);
+
   /** Initial content (JSON string or empty string for new notes) */
   readonly initialContent = input<string>('');
 
@@ -347,6 +351,10 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
         const json = editor.getJSON();
         this.contentChange.emit(JSON.stringify(json));
       }
+    },
+    onSelectionUpdate: () => {
+      // Trigger change detection to update toolbar active states
+      this.cdr.markForCheck();
     },
   });
 

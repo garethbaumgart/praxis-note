@@ -130,6 +130,10 @@ public sealed class TiptapCheckboxExtractor : ICheckboxExtractor
         if (!node.TryGetProperty("content", out var content))
             return string.Empty;
 
+        // Guard against non-array content before enumeration
+        if (content.ValueKind != JsonValueKind.Array)
+            return string.Empty;
+
         var textParts = new List<string>();
 
         foreach (var child in content.EnumerateArray())

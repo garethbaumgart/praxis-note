@@ -11,7 +11,11 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
   template: `
     <div
       class="note-card bg-surface-subtle rounded-md border border-border hover:shadow-lg transition-all cursor-pointer group"
+      role="button"
+      tabindex="0"
       (click)="onOpen.emit()"
+      (keydown.enter)="onOpen.emit()"
+      (keydown.space)="onOpen.emit(); $event.preventDefault()"
     >
       <div class="p-3">
         <!-- Content preview -->
@@ -75,6 +79,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
             <app-delete-confirm-button
               ariaLabel="Confirm delete note"
               (onConfirm)="confirmDelete()"
+              (click)="$event.stopPropagation()"
             />
           } @else {
             <button
