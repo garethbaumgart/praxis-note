@@ -4,10 +4,10 @@ import {
   input,
   output,
   OnDestroy,
+  OnInit,
   effect,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Editor, JSONContent } from '@tiptap/core';
+import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
@@ -18,7 +18,7 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
   selector: 'app-tiptap-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, TiptapEditorDirective],
+  imports: [TiptapEditorDirective],
   template: `
     <!-- Toolbar -->
     <div class="flex items-center gap-1 p-2 border-b border-border bg-surface-subtle rounded-t-md">
@@ -131,11 +131,7 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
 
     <!-- Editor -->
     <div class="tiptap-editor-wrapper">
-      <tiptap-editor
-        [editor]="editor"
-        [(ngModel)]="editorContent"
-        outputFormat="json"
-      ></tiptap-editor>
+      <tiptap-editor [editor]="editor"></tiptap-editor>
     </div>
   `,
   styles: [`
@@ -202,14 +198,21 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
       margin-top: 0;
     }
 
-    :host ::ng-deep .ProseMirror ul,
+    :host ::ng-deep .ProseMirror ul {
+      padding-left: 1.5em;
+      margin: 0.5em 0;
+      list-style-type: disc;
+    }
+
     :host ::ng-deep .ProseMirror ol {
       padding-left: 1.5em;
       margin: 0.5em 0;
+      list-style-type: decimal;
     }
 
     :host ::ng-deep .ProseMirror li {
       margin: 0.25em 0;
+      display: list-item;
     }
 
     :host ::ng-deep .ProseMirror blockquote {
@@ -228,14 +231,15 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
     }
 
     :host ::ng-deep .ProseMirror pre {
-      background: var(--color-surface-inset);
+      background: var(--color-surface-muted);
       color: var(--color-foreground-default);
       padding: 0.75em 1em;
       border-radius: 6px;
       overflow-x: auto;
-      margin: 1em 0;
-      font-family: monospace;
-      font-size: 0.9em;
+      margin: 0.5em 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.875em;
+      line-height: 1.5;
     }
 
     :host ::ng-deep .ProseMirror pre code {
@@ -287,26 +291,43 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
       height: 0;
     }
 
-    /* Selection */
+    /* Selection - ensure text is selectable and disable native drag */
+    :host ::ng-deep .ProseMirror {
+      cursor: text;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    :host ::ng-deep .ProseMirror p,
+    :host ::ng-deep .ProseMirror li,
+    :host ::ng-deep .ProseMirror h2,
+    :host ::ng-deep .ProseMirror blockquote {
+      -webkit-user-drag: none;
+      user-drag: none;
+    }
+
     :host ::ng-deep .ProseMirror ::selection {
+      background: var(--color-accent-subtle);
+    }
+
+    :host ::ng-deep .ProseMirror *::selection {
       background: var(--color-accent-subtle);
     }
   `],
 })
-export class TiptapEditorComponent implements OnDestroy {
+export class TiptapEditorComponent implements OnInit, OnDestroy {
   /** Initial content (JSON string or empty string for new notes) */
   readonly initialContent = input<string>('');
 
-  /** Emits when content changes (debounced internally by parent) */
+  /** Emits when content changes */
   readonly contentChange = output<string>();
-
-  /** Internal model for ngx-tiptap */
-  editorContent: JSONContent | string = '';
 
   /** Track if we're initializing to avoid emitting on load */
   private isInitializing = true;
+  private hasInitialized = false;
 
   editor = new Editor({
+    editable: true,
     extensions: [
       StarterKit.configure({
         heading: {
@@ -330,40 +351,50 @@ export class TiptapEditorComponent implements OnDestroy {
   });
 
   constructor() {
-    // Initialize content when input changes
+    // Watch for initialContent changes after first init
     effect(() => {
       const content = this.initialContent();
-      this.isInitializing = true;
-
-      if (content) {
-        try {
-          const parsed = JSON.parse(content);
-          this.editor.commands.setContent(parsed);
-          this.editorContent = parsed;
-        } catch {
-          // If not valid JSON, treat as plain text and wrap in paragraph
-          const doc = {
-            type: 'doc',
-            content: [
-              {
-                type: 'paragraph',
-                content: content ? [{ type: 'text', text: content }] : [],
-              },
-            ],
-          };
-          this.editor.commands.setContent(doc);
-          this.editorContent = doc;
-        }
-      } else {
-        this.editor.commands.clearContent();
-        this.editorContent = '';
+      // Only react to changes after initial setup
+      if (this.hasInitialized) {
+        this.setEditorContent(content);
       }
-
-      // Allow updates after initialization
-      setTimeout(() => {
-        this.isInitializing = false;
-      }, 0);
     });
+  }
+
+  ngOnInit(): void {
+    // Set initial content once on init
+    this.setEditorContent(this.initialContent());
+    this.hasInitialized = true;
+  }
+
+  private setEditorContent(content: string): void {
+    this.isInitializing = true;
+
+    if (content) {
+      try {
+        const parsed = JSON.parse(content);
+        this.editor.commands.setContent(parsed);
+      } catch {
+        // If not valid JSON, treat as plain text and wrap in paragraph
+        const doc = {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: content ? [{ type: 'text', text: content }] : [],
+            },
+          ],
+        };
+        this.editor.commands.setContent(doc);
+      }
+    } else {
+      this.editor.commands.clearContent();
+    }
+
+    // Allow updates after initialization
+    setTimeout(() => {
+      this.isInitializing = false;
+    }, 0);
   }
 
   ngOnDestroy(): void {

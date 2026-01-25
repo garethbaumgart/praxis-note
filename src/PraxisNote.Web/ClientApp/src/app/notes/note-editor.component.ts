@@ -25,7 +25,7 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
       <div class="p-4">
         <!-- TipTap Editor -->
         <app-tiptap-editor
-          [initialContent]="content()"
+          [initialContent]="initialContent()"
           (contentChange)="onContentChange($event)"
         />
 
@@ -83,7 +83,11 @@ export class NoteEditorComponent {
   readonly note = input<Note | null>(null);
   readonly onClose = output<void>();
 
-  readonly content = signal('');
+  /** Initial content to pass to editor (only set when dialog opens) */
+  readonly initialContent = signal('');
+
+  /** Current content for saving (updated on every editor change) */
+  private currentContent = '';
 
   constructor() {
     // Sync content when note changes or dialog opens
@@ -92,18 +96,21 @@ export class NoteEditorComponent {
       const n = this.note();
       // Reset content when dialog opens (whether editing or creating new)
       if (isVisible) {
-        this.content.set(n?.content ?? '');
+        const content = n?.content ?? '';
+        this.initialContent.set(content);
+        this.currentContent = content;
       }
     });
   }
 
   onContentChange(value: string): void {
-    this.content.set(value);
+    // Only update the save value, don't feed back to editor
+    this.currentContent = value;
   }
 
   save(): void {
     const n = this.note();
-    const newContent = this.content();
+    const newContent = this.currentContent;
 
     if (n) {
       // Update existing note
