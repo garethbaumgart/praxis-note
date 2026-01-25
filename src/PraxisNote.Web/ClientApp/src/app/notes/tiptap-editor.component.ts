@@ -389,7 +389,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
           content: [
             {
               type: 'paragraph',
-              content: content ? [{ type: 'text', text: content }] : [],
+              content: [{ type: 'text', text: content }],
             },
           ],
         };
