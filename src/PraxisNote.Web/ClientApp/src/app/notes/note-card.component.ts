@@ -14,8 +14,8 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       role="button"
       tabindex="0"
       (click)="onOpen.emit()"
-      (keydown.enter)="handleCardKeydown($event)"
-      (keydown.space)="handleCardKeydown($event)"
+      (keydown.enter)="handleCardKeydown($any($event))"
+      (keydown.space)="handleCardKeydown($any($event))"
     >
       <div class="p-3">
         <!-- Content preview -->
