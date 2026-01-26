@@ -162,6 +162,7 @@ import { CheckboxStatus } from './note.model';
               [style.top.px]="item.top"
               (click)="onPromoteClick(item.index)"
               title="Promote to task"
+              aria-label="Promote checkbox to task"
             >
               <i class="pi pi-arrow-right"></i>
               <span>Task</span>
@@ -473,10 +474,13 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private hasInitialized = false;
 
   /** Pending setTimeout ID for coalescing button injection calls */
-  private pendingButtonInjection: number | null = null;
+  private pendingButtonInjection: ReturnType<typeof setTimeout> | null = null;
 
   /** MutationObserver to update overlay when TipTap re-renders */
   private mutationObserver: MutationObserver | null = null;
+
+  /** Scroll handler reference for cleanup */
+  private scrollHandler: (() => void) | null = null;
 
   editor = new Editor({
     editable: true,
@@ -544,8 +548,21 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     // Set up MutationObserver to re-inject buttons when TipTap re-renders the DOM
     this.setupMutationObserver();
+    // Set up scroll listener to update overlay positions when editor scrolls
+    this.setupScrollListener();
     // Initial injection of promote buttons after view is ready
     this.scheduleOverlayUpdate();
+  }
+
+  /**
+   * Sets up a scroll listener on the editor wrapper to keep overlay positions in sync.
+   */
+  private setupScrollListener(): void {
+    const wrapper = this.editorWrapper()?.nativeElement as HTMLElement;
+    if (!wrapper) return;
+
+    this.scrollHandler = () => this.scheduleOverlayUpdate();
+    wrapper.addEventListener('scroll', this.scrollHandler, { passive: true });
   }
 
   /**
@@ -561,7 +578,8 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       // Check if any mutation affects task list items
       const affectsTaskList = mutations.some(m =>
         m.type === 'childList' &&
-        (m.target as HTMLElement).closest?.('ul[data-type="taskList"]')
+        m.target instanceof Element &&
+        m.target.closest('ul[data-type="taskList"]')
       );
       if (affectsTaskList) {
         this.scheduleOverlayUpdate();
@@ -583,10 +601,10 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       clearTimeout(this.pendingButtonInjection);
     }
     // Use setTimeout with delay to ensure TipTap has finished rendering
-    this.pendingButtonInjection = window.setTimeout(() => {
+    this.pendingButtonInjection = setTimeout(() => {
       this.pendingButtonInjection = null;
       this.updateCheckboxOverlay();
-    }, 50) as unknown as number;
+    }, 50);
   }
 
   /**
@@ -620,6 +638,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     );
 
     const wrapperRect = wrapper.getBoundingClientRect();
+    const scrollTop = wrapper.scrollTop;
+    // Offset to align badge/button with checkbox text baseline
+    const VERTICAL_ALIGNMENT_OFFSET = 2;
     const items: Array<{
       index: number;
       top: number;
@@ -634,7 +655,8 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
       items.push({
         index,
-        top: itemRect.top - wrapperRect.top + 2, // 2px offset for alignment
+        // Calculate position relative to wrapper's scroll position
+        top: itemRect.top - wrapperRect.top + scrollTop + VERTICAL_ALIGNMENT_OFFSET,
         isLinked: status?.isLinked ?? false,
         taskStatus: status?.taskStatus ?? null,
       });
@@ -689,6 +711,10 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     if (this.mutationObserver) {
       this.mutationObserver.disconnect();
+    }
+    if (this.scrollHandler) {
+      const wrapper = this.editorWrapper()?.nativeElement as HTMLElement;
+      wrapper?.removeEventListener('scroll', this.scrollHandler);
     }
     this.editor.destroy();
   }
