@@ -14,8 +14,8 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       role="button"
       tabindex="0"
       (click)="onOpen.emit()"
-      (keydown.enter)="onOpen.emit()"
-      (keydown.space)="onOpen.emit(); $event.preventDefault()"
+      (keydown.enter)="handleCardKeydown($event)"
+      (keydown.space)="handleCardKeydown($event)"
     >
       <div class="p-3">
         <!-- Content preview -->
@@ -208,6 +208,17 @@ export class NoteCardComponent {
     this.onDelete.emit();
   }
 
+  /** Handle keydown on card, preventing bubbled events from child controls */
+  handleCardKeydown(event: KeyboardEvent): void {
+    // Only trigger open if the event target is the card itself (not a child button)
+    if (event.target === event.currentTarget) {
+      if (event.key === ' ') {
+        event.preventDefault(); // Prevent page scroll on space
+      }
+      this.onOpen.emit();
+    }
+  }
+
   formatRelativeTime(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
@@ -228,6 +239,11 @@ export class NoteCardComponent {
    * Recursively extracts text from TipTap JSON content nodes.
    */
   private extractTextFromTiptap(nodes: any[]): string {
+    // Guard against non-array content
+    if (!Array.isArray(nodes)) {
+      return '';
+    }
+
     const textParts: string[] = [];
 
     for (const node of nodes) {

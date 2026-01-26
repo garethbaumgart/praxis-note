@@ -143,6 +143,11 @@ export class NotesPage implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
+    // Don't trigger shortcuts when editor dialog is open
+    if (this.editorVisible()) {
+      return;
+    }
+
     const target = event.target as HTMLElement;
     const isInInput = target.tagName === 'INPUT' ||
                       target.tagName === 'TEXTAREA' ||
