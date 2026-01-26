@@ -424,6 +424,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private isInitializing = true;
   private hasInitialized = false;
 
+  /** Pending requestAnimationFrame ID for coalescing button injection calls */
+  private pendingButtonInjection: number | null = null;
+
   editor = new Editor({
     editable: true,
     extensions: [
@@ -445,7 +448,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         const json = editor.getJSON();
         this.contentChange.emit(JSON.stringify(json));
         // Re-inject promote buttons after content changes
-        setTimeout(() => this.injectPromoteButtons(), 0);
+        this.schedulePromoteButtonsInjection();
       }
     },
     onSelectionUpdate: () => {
@@ -470,8 +473,10 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     // Re-inject buttons whenever checkbox statuses change
     effect(() => {
       this.checkboxStatuses(); // Subscribe to changes
-      // Small delay to ensure DOM is updated
-      setTimeout(() => this.injectPromoteButtons(), 0);
+      // Only inject after initial setup is complete
+      if (this.hasInitialized) {
+        this.schedulePromoteButtonsInjection();
+      }
     });
   }
 
@@ -483,7 +488,21 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit(): void {
     // Initial injection of promote buttons after view is ready
-    setTimeout(() => this.injectPromoteButtons(), 0);
+    this.schedulePromoteButtonsInjection();
+  }
+
+  /**
+   * Schedules a promote button injection using requestAnimationFrame.
+   * Coalesces multiple calls within the same frame to avoid redundant DOM operations.
+   */
+  private schedulePromoteButtonsInjection(): void {
+    if (this.pendingButtonInjection !== null) {
+      return; // Already scheduled
+    }
+    this.pendingButtonInjection = requestAnimationFrame(() => {
+      this.pendingButtonInjection = null;
+      this.injectPromoteButtons();
+    });
   }
 
   /**
@@ -496,11 +515,14 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       '.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"]'
     );
 
-    const statuses = this.checkboxStatuses();
+    // Build Map for O(1) lookups instead of O(n) find()
+    const statusMap = new Map(
+      this.checkboxStatuses().map(s => [s.checkboxId, s])
+    );
 
     taskItems.forEach((item, index) => {
       const checkboxId = `cb-${index + 1}`;
-      const status = statuses.find(s => s.checkboxId === checkboxId);
+      const status = statusMap.get(checkboxId);
 
       // Remove existing action container if present
       const existingAction = item.querySelector('.task-item-actions');
@@ -578,6 +600,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
+    if (this.pendingButtonInjection !== null) {
+      cancelAnimationFrame(this.pendingButtonInjection);
+    }
     this.editor.destroy();
   }
 

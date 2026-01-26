@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'Improvement',
                     'Inline checkbox promotion',
                     'Hover over any checkbox in a note to reveal a quick promote button. Linked checkboxes show their task status inline.',
-                    'https://github.com/garethbaumgart/praxis-note/pull/212',
+                    'https://github.com/garethbaumgart/praxis-note/pull/214',
                     '2026-01-26T19:25:00Z'
                 );
                 """);
@@ -24,7 +24,8 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Inline checkbox promotion';
+                WHERE "Title" = 'Inline checkbox promotion'
+                  AND "IssueUrl" = 'https://github.com/garethbaumgart/praxis-note/pull/214';
                 """);
         }
     }
