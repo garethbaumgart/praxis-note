@@ -6,10 +6,12 @@ import {
   inject,
   input,
   output,
+  signal,
   OnDestroy,
   OnInit,
   AfterViewInit,
   effect,
+  viewChild,
 } from '@angular/core';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
@@ -135,8 +137,38 @@ import { CheckboxStatus } from './note.model';
     </div>
 
     <!-- Editor -->
-    <div class="tiptap-editor-wrapper">
+    <div class="tiptap-editor-wrapper" #editorWrapper>
       <tiptap-editor [editor]="editor"></tiptap-editor>
+
+      <!-- Overlay for promote buttons and status badges (outside TipTap's control) -->
+      <div class="checkbox-overlay">
+        @for (item of checkboxOverlayItems(); track item.index) {
+          @if (item.isLinked) {
+            <!-- Status badge for linked checkboxes -->
+            <span
+              class="status-badge"
+              [class.status-todo]="item.taskStatus === 'Todo'"
+              [class.status-inprogress]="item.taskStatus === 'InProgress'"
+              [class.status-done]="item.taskStatus === 'Done'"
+              [style.top.px]="item.top"
+            >
+              {{ item.taskStatus === 'InProgress' ? 'In Progress' : item.taskStatus }}
+            </span>
+          } @else {
+            <!-- Promote button for unlinked checkboxes -->
+            <button
+              type="button"
+              class="promote-overlay-btn"
+              [style.top.px]="item.top"
+              (click)="onPromoteClick(item.index)"
+              title="Promote to task"
+            >
+              <i class="pi pi-arrow-right"></i>
+              <span>Task</span>
+            </button>
+          }
+        }
+      </div>
     </div>
   `,
   styles: [`
@@ -171,12 +203,91 @@ import { CheckboxStatus } from './note.model';
     }
 
     .tiptap-editor-wrapper {
+      position: relative;
       min-height: 200px;
       max-height: 400px;
       overflow-y: auto;
       padding: 0.75rem;
       background: var(--color-surface-subtle);
       border-radius: 0 0 6px 6px;
+    }
+
+    /* Overlay for promote buttons and status badges (outside TipTap's control) */
+    .checkbox-overlay {
+      position: absolute;
+      top: 0;
+      right: 0.75rem;
+      width: 0;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .promote-overlay-btn {
+      position: absolute;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.25em;
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      font-size: 11px;
+      background: transparent;
+      color: var(--color-accent-solid);
+      border: none;
+      cursor: pointer;
+      pointer-events: auto;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    .promote-overlay-btn i {
+      font-size: 10px;
+    }
+
+    .tiptap-editor-wrapper:hover .promote-overlay-btn {
+      opacity: 1;
+    }
+
+    .promote-overlay-btn:hover {
+      background: var(--color-accent-subtle);
+    }
+
+    /* Status badges for linked checkboxes */
+    .status-badge {
+      position: absolute;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      white-space: nowrap;
+      pointer-events: auto;
+    }
+
+    .status-todo {
+      background: var(--color-todo-text);
+      color: white;
+    }
+
+    .status-inprogress {
+      background: var(--color-inprogress-text);
+      color: white;
+    }
+
+    .status-done {
+      background: var(--color-done-text);
+      color: white;
+    }
+
+    /* Mobile: always show buttons */
+    @media (hover: none) {
+      .promote-overlay-btn {
+        opacity: 1;
+      }
     }
 
     /* ProseMirror Editor Styles */
@@ -288,80 +399,6 @@ import { CheckboxStatus } from './note.model';
       flex: 1;
     }
 
-    /* Task Item Actions (promote button & status badges) */
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-item-actions {
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-      margin-left: auto;
-      padding-left: 0.5em;
-    }
-
-    /* Promote Button */
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-promote-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.25em;
-      padding: 0.2em 0.5em;
-      border-radius: 4px;
-      font-size: 11px;
-      background: transparent;
-      color: var(--color-accent-solid);
-      border: none;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.15s, background 0.15s;
-    }
-
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-promote-btn i {
-      font-size: 10px;
-    }
-
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li:hover .task-promote-btn {
-      opacity: 1;
-    }
-
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-promote-btn:hover {
-      background: var(--color-accent-subtle);
-    }
-
-    /* Mobile: always show promote button */
-    @media (hover: none) {
-      :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-promote-btn {
-        opacity: 1;
-      }
-    }
-
-    /* Status Badges */
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-status-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.15em 0.5em;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-status-badge:hover {
-      opacity: 0.8;
-    }
-
-    :host ::ng-deep .task-status-todo {
-      background: var(--color-todo);
-      color: var(--color-foreground-secondary);
-    }
-
-    :host ::ng-deep .task-status-inprogress {
-      background: var(--color-inprogress);
-      color: var(--color-foreground-default);
-    }
-
-    :host ::ng-deep .task-status-done {
-      background: var(--color-done);
-      color: var(--color-foreground-default);
-    }
 
     /* Placeholder */
     :host ::ng-deep .ProseMirror p.is-editor-empty:first-child::before {
@@ -420,12 +457,26 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /** Checkbox status data for showing linked state */
   readonly checkboxStatuses = input<CheckboxStatus[]>([]);
 
+  /** Reference to the editor wrapper for position calculations */
+  private readonly editorWrapper = viewChild<ElementRef>('editorWrapper');
+
+  /** Computed overlay items for promote buttons and status badges */
+  readonly checkboxOverlayItems = signal<Array<{
+    index: number;
+    top: number;
+    isLinked: boolean;
+    taskStatus: 'Todo' | 'InProgress' | 'Done' | null;
+  }>>([]);
+
   /** Track if we're initializing to avoid emitting on load */
   private isInitializing = true;
   private hasInitialized = false;
 
-  /** Pending requestAnimationFrame ID for coalescing button injection calls */
+  /** Pending setTimeout ID for coalescing button injection calls */
   private pendingButtonInjection: number | null = null;
+
+  /** MutationObserver to update overlay when TipTap re-renders */
+  private mutationObserver: MutationObserver | null = null;
 
   editor = new Editor({
     editable: true,
@@ -443,13 +494,17 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         placeholder: 'Take a note...',
       }),
     ],
+    onCreate: () => {
+      // Inject buttons after editor is created and DOM is ready
+      this.scheduleOverlayUpdate();
+    },
     onUpdate: ({ editor }) => {
       if (!this.isInitializing) {
         const json = editor.getJSON();
         this.contentChange.emit(JSON.stringify(json));
-        // Re-inject promote buttons after content changes
-        this.schedulePromoteButtonsInjection();
       }
+      // Always re-inject after content updates (TipTap re-renders the DOM)
+      this.scheduleOverlayUpdate();
     },
     onSelectionUpdate: () => {
       // Trigger change detection to update toolbar active states
@@ -475,7 +530,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.checkboxStatuses(); // Subscribe to changes
       // Only inject after initial setup is complete
       if (this.hasInitialized) {
-        this.schedulePromoteButtonsInjection();
+        this.scheduleOverlayUpdate();
       }
     });
   }
@@ -487,85 +542,111 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    // Set up MutationObserver to re-inject buttons when TipTap re-renders the DOM
+    this.setupMutationObserver();
     // Initial injection of promote buttons after view is ready
-    this.schedulePromoteButtonsInjection();
+    this.scheduleOverlayUpdate();
   }
 
   /**
-   * Schedules a promote button injection using requestAnimationFrame.
-   * Coalesces multiple calls within the same frame to avoid redundant DOM operations.
+   * Sets up a MutationObserver to detect when TipTap re-renders task items.
+   * Re-injects promote buttons when task items are modified.
    */
-  private schedulePromoteButtonsInjection(): void {
-    if (this.pendingButtonInjection !== null) {
-      return; // Already scheduled
-    }
-    this.pendingButtonInjection = requestAnimationFrame(() => {
-      this.pendingButtonInjection = null;
-      this.injectPromoteButtons();
+  private setupMutationObserver(): void {
+    const container = this.elementRef.nativeElement as HTMLElement;
+    const proseMirror = container.querySelector('.ProseMirror');
+    if (!proseMirror) return;
+
+    this.mutationObserver = new MutationObserver((mutations) => {
+      // Check if any mutation affects task list items
+      const affectsTaskList = mutations.some(m =>
+        m.type === 'childList' &&
+        (m.target as HTMLElement).closest?.('ul[data-type="taskList"]')
+      );
+      if (affectsTaskList) {
+        this.scheduleOverlayUpdate();
+      }
     });
+
+    this.mutationObserver.observe(proseMirror, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  /**
+   * Schedules an overlay update with a debounce.
+   * Uses setTimeout to let TipTap complete its rendering cycle before calculating positions.
+   */
+  private scheduleOverlayUpdate(): void {
+    if (this.pendingButtonInjection !== null) {
+      clearTimeout(this.pendingButtonInjection);
+    }
+    // Use setTimeout with delay to ensure TipTap has finished rendering
+    this.pendingButtonInjection = window.setTimeout(() => {
+      this.pendingButtonInjection = null;
+      this.updateCheckboxOverlay();
+    }, 50) as unknown as number;
   }
 
   /**
    * Injects promote buttons and status badges into task items.
    * Called after editor updates and when checkbox statuses change.
    */
-  private injectPromoteButtons(): void {
-    const container = this.elementRef.nativeElement as HTMLElement;
-    const taskItems = container.querySelectorAll<HTMLElement>(
-      '.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"]'
+  /**
+   * Computes overlay positions for promote buttons.
+   * Instead of injecting into TipTap's DOM (which gets re-rendered),
+   * we calculate positions and render buttons via Angular template.
+   */
+  private updateCheckboxOverlay(): void {
+    const wrapper = this.editorWrapper()?.nativeElement as HTMLElement;
+    if (!wrapper) {
+      this.checkboxOverlayItems.set([]);
+      return;
+    }
+
+    const taskItems = wrapper.querySelectorAll<HTMLElement>(
+      '.ProseMirror ul[data-type="taskList"] > li'
     );
 
-    // Build Map for O(1) lookups instead of O(n) find()
+    if (taskItems.length === 0) {
+      this.checkboxOverlayItems.set([]);
+      return;
+    }
+
+    // Build Map for O(1) lookups
     const statusMap = new Map(
       this.checkboxStatuses().map(s => [s.checkboxId, s])
     );
 
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const items: Array<{
+      index: number;
+      top: number;
+      isLinked: boolean;
+      taskStatus: 'Todo' | 'InProgress' | 'Done' | null;
+    }> = [];
+
     taskItems.forEach((item, index) => {
-      // Checkbox IDs are generated from DOM order to match backend extraction order.
-      // This matches CheckboxExtractor.cs which generates cb-1, cb-2, etc. from JSON order.
       const checkboxId = `cb-${index + 1}`;
       const status = statusMap.get(checkboxId);
+      const itemRect = item.getBoundingClientRect();
 
-      // Remove existing action container if present
-      const existingAction = item.querySelector('.task-item-actions');
-      if (existingAction) {
-        existingAction.remove();
-      }
-
-      // Create action container
-      const actionContainer = document.createElement('div');
-      actionContainer.className = 'task-item-actions';
-
-      if (status?.isLinked) {
-        // Show status badge for linked checkboxes (using button for accessibility)
-        const badge = document.createElement('button');
-        badge.type = 'button';
-        badge.className = `task-status-badge task-status-${status.taskStatus?.toLowerCase() ?? 'todo'}`;
-        badge.textContent = status.taskStatus === 'InProgress' ? 'In Progress' : (status.taskStatus ?? 'Todo');
-        badge.title = 'View task on board';
-        badge.onclick = (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          // TODO: Navigate to task on board (issue #215)
-        };
-        actionContainer.appendChild(badge);
-      } else {
-        // Show promote button for unlinked checkboxes
-        const promoteBtn = document.createElement('button');
-        promoteBtn.type = 'button';
-        promoteBtn.className = 'task-promote-btn';
-        promoteBtn.innerHTML = '<i class="pi pi-arrow-right"></i><span>Task</span>';
-        promoteBtn.title = 'Promote to task';
-        promoteBtn.onclick = (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          this.promoteCheckbox.emit({ checkboxIndex: index });
-        };
-        actionContainer.appendChild(promoteBtn);
-      }
-
-      item.appendChild(actionContainer);
+      items.push({
+        index,
+        top: itemRect.top - wrapperRect.top + 2, // 2px offset for alignment
+        isLinked: status?.isLinked ?? false,
+        taskStatus: status?.taskStatus ?? null,
+      });
     });
+
+    this.checkboxOverlayItems.set(items);
+    this.cdr.markForCheck();
+  }
+
+  /** Handle promote button click from overlay */
+  onPromoteClick(checkboxIndex: number): void {
+    this.promoteCheckbox.emit({ checkboxIndex });
   }
 
   private setEditorContent(content: string, isNewNote: boolean): void {
@@ -604,7 +685,10 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     if (this.pendingButtonInjection !== null) {
-      cancelAnimationFrame(this.pendingButtonInjection);
+      clearTimeout(this.pendingButtonInjection);
+    }
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
     }
     this.editor.destroy();
   }
