@@ -26,6 +26,7 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
         <!-- TipTap Editor -->
         <app-tiptap-editor
           [initialContent]="initialContent()"
+          [isNewNote]="!note()"
           (contentChange)="onContentChange($event)"
         />
 

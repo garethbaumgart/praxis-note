@@ -323,6 +323,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
   /** Initial content (JSON string or empty string for new notes) */
   readonly initialContent = input<string>('');
 
+  /** Whether this is a new note (will start with heading format) */
+  readonly isNewNote = input<boolean>(false);
+
   /** Emits when content changes */
   readonly contentChange = output<string>();
 
@@ -395,6 +398,20 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
         };
         this.editor.commands.setContent(doc);
       }
+    } else if (this.isNewNote()) {
+      // For new notes, start with heading format so user can type a title immediately
+      const doc = {
+        type: 'doc',
+        content: [
+          {
+            type: 'heading',
+            attrs: { level: 2 },
+          },
+        ],
+      };
+      this.editor.commands.setContent(doc);
+      // Focus and position cursor at start of heading
+      this.editor.commands.focus('start');
     } else {
       this.editor.commands.clearContent();
     }
