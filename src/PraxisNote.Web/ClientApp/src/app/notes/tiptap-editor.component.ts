@@ -2,11 +2,13 @@ import {
   Component,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  ElementRef,
   inject,
   input,
   output,
   OnDestroy,
   OnInit,
+  AfterViewInit,
   effect,
 } from '@angular/core';
 import { Editor } from '@tiptap/core';
@@ -15,6 +17,7 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Placeholder from '@tiptap/extension-placeholder';
 import { TiptapEditorDirective } from 'ngx-tiptap';
+import { CheckboxStatus } from './note.model';
 
 @Component({
   selector: 'app-tiptap-editor',
@@ -260,6 +263,7 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
       align-items: flex-start;
       gap: 0.5em;
       margin: 0.25em 0;
+      position: relative;
     }
 
     :host ::ng-deep .ProseMirror ul[data-type="taskList"] li > label {
@@ -282,6 +286,81 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
 
     :host ::ng-deep .ProseMirror ul[data-type="taskList"] li > div {
       flex: 1;
+    }
+
+    /* Task Item Actions (promote button & status badges) */
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-item-actions {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      margin-left: auto;
+      padding-left: 0.5em;
+    }
+
+    /* Promote Button */
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-promote-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.25em;
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      font-size: 11px;
+      background: transparent;
+      color: var(--color-accent-solid);
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-promote-btn i {
+      font-size: 10px;
+    }
+
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li:hover .task-promote-btn {
+      opacity: 1;
+    }
+
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-promote-btn:hover {
+      background: var(--color-accent-subtle);
+    }
+
+    /* Mobile: always show promote button */
+    @media (hover: none) {
+      :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-promote-btn {
+        opacity: 1;
+      }
+    }
+
+    /* Status Badges */
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15em 0.5em;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li .task-status-badge:hover {
+      opacity: 0.8;
+    }
+
+    :host ::ng-deep .task-status-todo {
+      background: var(--color-todo);
+      color: var(--color-foreground-secondary);
+    }
+
+    :host ::ng-deep .task-status-inprogress {
+      background: var(--color-inprogress);
+      color: var(--color-foreground-default);
+    }
+
+    :host ::ng-deep .task-status-done {
+      background: var(--color-done);
+      color: var(--color-foreground-default);
     }
 
     /* Placeholder */
@@ -319,8 +398,9 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
     }
   `],
 })
-export class TiptapEditorComponent implements OnInit, OnDestroy {
+export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly elementRef = inject(ElementRef);
 
   /** Initial content (JSON string or empty string for new notes) */
   readonly initialContent = input<string>('');
@@ -333,6 +413,12 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
 
   /** Emits when content changes */
   readonly contentChange = output<string>();
+
+  /** Emits when user clicks promote button on a checkbox */
+  readonly promoteCheckbox = output<{ checkboxIndex: number }>();
+
+  /** Checkbox status data for showing linked state */
+  readonly checkboxStatuses = input<CheckboxStatus[]>([]);
 
   /** Track if we're initializing to avoid emitting on load */
   private isInitializing = true;
@@ -358,6 +444,8 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
       if (!this.isInitializing) {
         const json = editor.getJSON();
         this.contentChange.emit(JSON.stringify(json));
+        // Re-inject promote buttons after content changes
+        setTimeout(() => this.injectPromoteButtons(), 0);
       }
     },
     onSelectionUpdate: () => {
@@ -378,12 +466,81 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
         this.setEditorContent(content, isNew);
       }
     });
+
+    // Re-inject buttons whenever checkbox statuses change
+    effect(() => {
+      this.checkboxStatuses(); // Subscribe to changes
+      // Small delay to ensure DOM is updated
+      setTimeout(() => this.injectPromoteButtons(), 0);
+    });
   }
 
   ngOnInit(): void {
     // Set initial content once on init
     this.setEditorContent(this.initialContent(), this.isNewNote());
     this.hasInitialized = true;
+  }
+
+  ngAfterViewInit(): void {
+    // Initial injection of promote buttons after view is ready
+    setTimeout(() => this.injectPromoteButtons(), 0);
+  }
+
+  /**
+   * Injects promote buttons and status badges into task items.
+   * Called after editor updates and when checkbox statuses change.
+   */
+  private injectPromoteButtons(): void {
+    const container = this.elementRef.nativeElement as HTMLElement;
+    const taskItems = container.querySelectorAll<HTMLElement>(
+      '.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"]'
+    );
+
+    const statuses = this.checkboxStatuses();
+
+    taskItems.forEach((item, index) => {
+      const checkboxId = `cb-${index + 1}`;
+      const status = statuses.find(s => s.checkboxId === checkboxId);
+
+      // Remove existing action container if present
+      const existingAction = item.querySelector('.task-item-actions');
+      if (existingAction) {
+        existingAction.remove();
+      }
+
+      // Create action container
+      const actionContainer = document.createElement('div');
+      actionContainer.className = 'task-item-actions';
+
+      if (status?.isLinked) {
+        // Show status badge for linked checkboxes
+        const badge = document.createElement('span');
+        badge.className = `task-status-badge task-status-${status.taskStatus?.toLowerCase() ?? 'todo'}`;
+        badge.textContent = status.taskStatus === 'InProgress' ? 'In Progress' : (status.taskStatus ?? 'Todo');
+        badge.title = 'Click to view task on board';
+        badge.onclick = (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          // TODO: Navigate to task on board
+        };
+        actionContainer.appendChild(badge);
+      } else {
+        // Show promote button for unlinked checkboxes
+        const promoteBtn = document.createElement('button');
+        promoteBtn.type = 'button';
+        promoteBtn.className = 'task-promote-btn';
+        promoteBtn.innerHTML = '<i class="pi pi-arrow-right"></i><span>Task</span>';
+        promoteBtn.title = 'Promote to task';
+        promoteBtn.onclick = (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          this.promoteCheckbox.emit({ checkboxIndex: index });
+        };
+        actionContainer.appendChild(promoteBtn);
+      }
+
+      item.appendChild(actionContainer);
+    });
   }
 
   private setEditorContent(content: string, isNewNote: boolean): void {
