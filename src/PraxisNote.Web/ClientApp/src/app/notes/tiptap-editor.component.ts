@@ -521,6 +521,8 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     );
 
     taskItems.forEach((item, index) => {
+      // Checkbox IDs are generated from DOM order to match backend extraction order.
+      // This matches CheckboxExtractor.cs which generates cb-1, cb-2, etc. from JSON order.
       const checkboxId = `cb-${index + 1}`;
       const status = statusMap.get(checkboxId);
 
@@ -535,15 +537,16 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       actionContainer.className = 'task-item-actions';
 
       if (status?.isLinked) {
-        // Show status badge for linked checkboxes
-        const badge = document.createElement('span');
+        // Show status badge for linked checkboxes (using button for accessibility)
+        const badge = document.createElement('button');
+        badge.type = 'button';
         badge.className = `task-status-badge task-status-${status.taskStatus?.toLowerCase() ?? 'todo'}`;
         badge.textContent = status.taskStatus === 'InProgress' ? 'In Progress' : (status.taskStatus ?? 'Todo');
-        badge.title = 'Click to view task on board';
+        badge.title = 'View task on board';
         badge.onclick = (e) => {
           e.stopPropagation();
           e.preventDefault();
-          // TODO: Navigate to task on board
+          // TODO: Navigate to task on board (issue #215)
         };
         actionContainer.appendChild(badge);
       } else {
