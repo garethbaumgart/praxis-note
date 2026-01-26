@@ -309,11 +309,13 @@ import { TiptapEditorDirective } from 'ngx-tiptap';
     }
 
     :host ::ng-deep .ProseMirror ::selection {
-      background: var(--color-accent-subtle);
+      background: var(--color-accent-solid);
+      color: white;
     }
 
     :host ::ng-deep .ProseMirror *::selection {
-      background: var(--color-accent-subtle);
+      background: var(--color-accent-solid);
+      color: white;
     }
   `],
 })
@@ -322,6 +324,12 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
 
   /** Initial content (JSON string or empty string for new notes) */
   readonly initialContent = input<string>('');
+
+  /** Whether this is a new note (will start with heading format) */
+  readonly isNewNote = input<boolean>(false);
+
+  /** Trigger to force editor reset (incremented each time dialog opens) */
+  readonly resetTrigger = input<number>(0);
 
   /** Emits when content changes */
   readonly contentChange = output<string>();
@@ -359,23 +367,26 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
   });
 
   constructor() {
-    // Watch for initialContent changes after first init
+    // Watch for initialContent, isNewNote, and resetTrigger changes after first init
     effect(() => {
       const content = this.initialContent();
+      const isNew = this.isNewNote();
+      // Read resetTrigger to ensure effect re-runs when it changes
+      this.resetTrigger();
       // Only react to changes after initial setup
       if (this.hasInitialized) {
-        this.setEditorContent(content);
+        this.setEditorContent(content, isNew);
       }
     });
   }
 
   ngOnInit(): void {
     // Set initial content once on init
-    this.setEditorContent(this.initialContent());
+    this.setEditorContent(this.initialContent(), this.isNewNote());
     this.hasInitialized = true;
   }
 
-  private setEditorContent(content: string): void {
+  private setEditorContent(content: string, isNewNote: boolean): void {
     this.isInitializing = true;
 
     if (content) {
@@ -395,6 +406,10 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
         };
         this.editor.commands.setContent(doc);
       }
+    } else if (isNewNote) {
+      // For new notes, start with heading format so user can type a title immediately
+      this.editor.commands.clearContent();
+      this.editor.commands.setHeading({ level: 2 });
     } else {
       this.editor.commands.clearContent();
     }
@@ -454,5 +469,10 @@ export class TiptapEditorComponent implements OnInit, OnDestroy {
   /** Check if editor has meaningful content */
   hasContent(): boolean {
     return !this.editor.isEmpty;
+  }
+
+  /** Focus the editor at the start */
+  focus(): void {
+    this.editor.commands.focus('start');
   }
 }

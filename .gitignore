@@ -447,3 +447,6 @@ FodyWeavers.xsd
 # Playwright
 playwright-report/
 test-results/
+
+# Mockups
+mockups/

@@ -1,7 +1,8 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, effect, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, effect, inject, viewChild } from '@angular/core';
 import { Dialog } from 'primeng/dialog';
 import { Note } from './note.model';
 import { NoteService } from './note.service';
+import { PdfExportService } from './pdf-export.service';
 import { TiptapEditorComponent } from './tiptap-editor.component';
 
 @Component({
@@ -13,11 +14,13 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
     <p-dialog
       [visible]="visible()"
       (visibleChange)="onClose.emit()"
+      (onShow)="onDialogShow()"
       [modal]="true"
       [dismissableMask]="true"
       [closable]="true"
       [draggable]="false"
       [resizable]="false"
+      [focusOnShow]="false"
       [header]="note() ? 'Edit Note' : 'New Note'"
       [style]="{ width: '90vw', maxWidth: '700px' }"
       styleClass="note-editor-dialog"
@@ -26,6 +29,8 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
         <!-- TipTap Editor -->
         <app-tiptap-editor
           [initialContent]="initialContent()"
+          [isNewNote]="isNewNote()"
+          [resetTrigger]="resetCounter()"
           (contentChange)="onContentChange($event)"
         />
 
@@ -39,21 +44,38 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
         }
 
         <!-- Action buttons -->
-        <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-border">
-          <button
-            type="button"
-            class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground rounded-md transition-colors"
-            (click)="onClose.emit()"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="px-4 py-2 text-sm text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity"
-            (click)="save()"
-          >
-            Save
-          </button>
+        <div class="flex justify-between items-center mt-4 pt-4 border-t border-border">
+          <!-- Export button (only for existing notes) -->
+          <div>
+            @if (note()) {
+              <button
+                type="button"
+                class="flex items-center gap-1.5 px-3 py-2 text-sm text-foreground-secondary hover:text-foreground rounded-md transition-colors"
+                (click)="exportToPdf()"
+                aria-label="Export to PDF"
+              >
+                <i class="pi pi-file-pdf text-sm"></i>
+                <span>Export PDF</span>
+              </button>
+            }
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground rounded-md transition-colors"
+              (click)="onClose.emit()"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="px-4 py-2 text-sm text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity"
+              (click)="save()"
+            >
+              Save
+            </button>
+          </div>
         </div>
       </div>
     </p-dialog>
@@ -78,13 +100,23 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
 })
 export class NoteEditorComponent {
   private readonly noteService = inject(NoteService);
+  private readonly pdfExportService = inject(PdfExportService);
 
   readonly visible = input.required<boolean>();
   readonly note = input<Note | null>(null);
   readonly onClose = output<void>();
 
+  /** Reference to the tiptap editor component */
+  private readonly tiptapEditor = viewChild(TiptapEditorComponent);
+
   /** Initial content to pass to editor (only set when dialog opens) */
   readonly initialContent = signal('');
+
+  /** Tracks whether current dialog is for a new note */
+  readonly isNewNote = signal(false);
+
+  /** Reset counter to force editor re-initialization */
+  readonly resetCounter = signal(0);
 
   /** Current content for saving (updated on every editor change) */
   private currentContent = '';
@@ -99,6 +131,9 @@ export class NoteEditorComponent {
         const content = n?.content ?? '';
         this.initialContent.set(content);
         this.currentContent = content;
+        this.isNewNote.set(!n);
+        // Increment to force editor reset
+        this.resetCounter.update((c) => c + 1);
       }
     });
   }
@@ -121,5 +156,27 @@ export class NoteEditorComponent {
     }
 
     this.onClose.emit();
+  }
+
+  exportToPdf(): void {
+    const n = this.note();
+    if (n) {
+      // Use current content (may have unsaved changes)
+      const noteToExport: Note = {
+        ...n,
+        content: this.currentContent || n.content,
+      };
+      this.pdfExportService.exportNoteToPdf(noteToExport);
+    }
+  }
+
+  onDialogShow(): void {
+    // Focus the editor when dialog opens (only for new notes)
+    if (!this.note()) {
+      // Small delay to ensure editor is ready after dialog animation
+      setTimeout(() => {
+        this.tiptapEditor()?.focus();
+      }, 50);
+    }
   }
 }
