@@ -11,13 +11,17 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
   template: `
     <div
       class="note-card bg-surface-subtle rounded-md border border-border hover:shadow-lg transition-all cursor-pointer group"
+      role="button"
+      tabindex="0"
       (click)="onOpen.emit()"
+      (keydown.enter)="handleCardKeydown($event)"
+      (keydown.space)="handleCardKeydown($event)"
     >
       <div class="p-3">
         <!-- Content preview -->
-        @if (note().content) {
+        @if (contentPreview()) {
           <p class="text-sm text-foreground line-clamp-6 whitespace-pre-wrap break-words">
-            {{ note().content }}
+            {{ contentPreview() }}
           </p>
         } @else {
           <p class="text-sm text-foreground-muted italic">Empty note</p>
@@ -75,6 +79,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
             <app-delete-confirm-button
               ariaLabel="Confirm delete note"
               (onConfirm)="confirmDelete()"
+              (click)="$event.stopPropagation()"
             />
           } @else {
             <button
@@ -151,6 +156,22 @@ export class NoteCardComponent {
   private readonly maxVisibleCheckboxes = 4;
   private readonly maxVisibleTags = 3;
 
+  readonly contentPreview = computed(() => {
+    const content = this.note().content;
+    if (!content) return '';
+
+    // Try to parse as TipTap JSON
+    try {
+      const parsed = JSON.parse(content);
+      if (parsed.type === 'doc' && parsed.content) {
+        return this.extractTextFromTiptap(parsed.content);
+      }
+    } catch {
+      // Not JSON, return as plain text
+    }
+    return content;
+  });
+
   readonly visibleCheckboxes = computed(() =>
     this.note().checkboxes.slice(0, this.maxVisibleCheckboxes)
   );
@@ -187,6 +208,17 @@ export class NoteCardComponent {
     this.onDelete.emit();
   }
 
+  /** Handle keydown on card, preventing bubbled events from child controls */
+  handleCardKeydown(event: KeyboardEvent): void {
+    // Only trigger open if the event target is the card itself (not a child button)
+    if (event.target === event.currentTarget) {
+      if (event.key === ' ') {
+        event.preventDefault(); // Prevent page scroll on space
+      }
+      this.onOpen.emit();
+    }
+  }
+
   formatRelativeTime(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
@@ -201,5 +233,32 @@ export class NoteCardComponent {
     if (diffDays < 7) return `${diffDays}d ago`;
 
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  /**
+   * Recursively extracts text from TipTap JSON content nodes.
+   */
+  private extractTextFromTiptap(nodes: any[]): string {
+    // Guard against non-array content
+    if (!Array.isArray(nodes)) {
+      return '';
+    }
+
+    const textParts: string[] = [];
+
+    for (const node of nodes) {
+      if (node.type === 'text' && node.text) {
+        textParts.push(node.text);
+      } else if (node.content) {
+        textParts.push(this.extractTextFromTiptap(node.content));
+      }
+
+      // Add newline after block-level nodes
+      if (['paragraph', 'heading', 'bulletList', 'orderedList', 'taskList', 'blockquote'].includes(node.type)) {
+        textParts.push('\n');
+      }
+    }
+
+    return textParts.join('').trim();
   }
 }

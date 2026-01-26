@@ -47,12 +47,14 @@ import { ToastService } from '../shared/services/toast.service';
       </div>
 
       <!-- Quick add -->
-      <div
-        class="quick-add mb-6 px-4 py-3 cursor-text"
+      <button
+        type="button"
+        class="quick-add mb-6 px-4 py-3 cursor-text w-full text-left"
         (click)="openNewNote()"
+        aria-label="Create new note"
       >
         <span class="text-sm text-foreground-muted">Take a note...</span>
-      </div>
+      </button>
 
       <!-- Loading skeletons -->
       @if (!noteService.initialLoadComplete()) {
@@ -141,8 +143,15 @@ export class NotesPage implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
+    // Don't trigger shortcuts when editor dialog is open
+    if (this.editorVisible()) {
+      return;
+    }
+
     const target = event.target as HTMLElement;
-    const isInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+    const isInInput = target.tagName === 'INPUT' ||
+                      target.tagName === 'TEXTAREA' ||
+                      target.isContentEditable;
 
     // Focus search with /
     if (event.key === '/' && !isInInput) {

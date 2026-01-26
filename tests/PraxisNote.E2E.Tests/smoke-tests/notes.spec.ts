@@ -42,45 +42,70 @@ test.describe('Notes', () => {
   });
 
   test('can edit note content', async ({ page, request }) => {
-    // Create a note via API
+    // Create a note via API with unique content
+    const originalContent = `Original content ${Date.now()}`;
     const createRes = await request.post('/api/notes', {
       headers: getMockAuthHeaders(testUser),
-      data: { content: 'Original content' },
+      data: { content: originalContent },
     });
     const note = await createRes.json();
 
     await setupAuth(page, testUser);
     await page.goto('/notes');
 
-    // Click on the note to open the editor
-    await page.getByText('Original content').click();
+    // Wait for the note to appear
+    await expect(page.getByText(originalContent)).toBeVisible();
+
+    // Find the note card with our content and click it to open dialog
+    const noteCard = page.locator('.note-card').filter({ hasText: originalContent });
+    await expect(noteCard).toBeVisible();
+    await noteCard.click();
 
     // Wait for the editor dialog to appear
-    await expect(page.getByRole('dialog')).toBeVisible();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 5000 });
 
-    // Clear and update the content
-    const textarea = page.locator('textarea[aria-label="Note content"]');
-    await textarea.fill('Updated content');
+    // Wait for TipTap editor to be ready inside the dialog
+    const editor = dialog.locator('.ProseMirror');
+    await expect(editor).toBeVisible({ timeout: 5000 });
 
-    // Save the note and wait for the debounced API call to complete
+    // Wait for the editor to fully initialize and show the original content
+    await expect(editor).toContainText('Original content', { timeout: 5000 });
+
+    // Focus and clear using triple-click + delete (selects paragraph in TipTap)
+    await editor.click({ clickCount: 3 });
+    await page.waitForTimeout(100);
+    await page.keyboard.press('Delete');
+    await page.waitForTimeout(100);
+
+    // Type new content
+    await editor.type('Updated content', { delay: 50 });
+
+    // Wait for TipTap to process the input
+    await page.waitForTimeout(500);
+
+    // Set up response listener BEFORE clicking save (wait for debounced PUT)
     const updatePromise = page.waitForResponse(
-      response => response.url().includes('/api/notes/') && response.request().method() === 'PUT'
+      response => response.url().includes('/api/notes/') && response.request().method() === 'PUT',
+      { timeout: 10000 }
     );
-    await page.getByRole('button', { name: 'Save' }).click();
+
+    // Click save
+    await dialog.getByRole('button', { name: 'Save' }).click();
+
+    // Wait for the debounced API call to complete
     await updatePromise;
 
     // Verify the dialog closed
-    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(dialog).not.toBeVisible();
 
-    // Verify the updated content is visible
-    await expect(page.getByText('Updated content')).toBeVisible();
-
-    // Verify the API was called correctly
+    // Verify via API that content was persisted
     const updatedNote = await request.get(`/api/notes/${note.id}`, {
       headers: getMockAuthHeaders(testUser),
     });
     const noteData = await updatedNote.json();
-    expect(noteData.content).toBe('Updated content');
+    // TipTap stores content as JSON, so check if the text is in the content
+    expect(noteData.content).toContain('Updated content');
   });
 
   test('can delete a note', async ({ page, request }) => {

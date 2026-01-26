@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Features.Notes;
+using PraxisNote.Application.Features.Notes.Services;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
@@ -49,6 +50,12 @@ public static class DependencyInjection
         services.AddScoped<CreateNote>();
         services.AddScoped<UpdateNoteContent>();
         services.AddScoped<DeleteNote>();
+        services.AddScoped<PromoteCheckboxToTask>();
+        services.AddScoped<GetCheckboxStatus>();
+
+        // Note services
+        services.AddSingleton<ICheckboxExtractor, TiptapCheckboxExtractor>();
+        services.AddSingleton<ICheckboxUpdater, TiptapCheckboxUpdater>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();

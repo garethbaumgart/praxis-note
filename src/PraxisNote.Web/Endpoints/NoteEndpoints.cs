@@ -16,6 +16,10 @@ public static class NoteEndpoints
         group.MapPost("/", (Delegate)HandleCreateNote);
         group.MapPut("/{id:guid}", (Delegate)HandleUpdateNote);
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteNote);
+
+        // Checkbox-Task sync endpoints
+        group.MapPost("/{noteId:guid}/checkboxes/{checkboxId}/promote", (Delegate)HandlePromoteCheckbox);
+        group.MapGet("/{noteId:guid}/checkbox-status", (Delegate)HandleGetCheckboxStatus);
     }
 
     private static async Task<IResult> HandleGetNotes(
@@ -106,6 +110,52 @@ public static class NoteEndpoints
         var success = await deleteNote.ExecuteAsync(command, cancellationToken);
 
         return success ? Results.NoContent() : Results.NotFound();
+    }
+    private static async Task<IResult> HandlePromoteCheckbox(
+        Guid noteId,
+        string checkboxId,
+        ClaimsPrincipal user,
+        PromoteCheckboxToTask promoteCheckbox,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var command = new PromoteCheckboxToTask.Command(noteId, userId.Value, checkboxId);
+        var result = await promoteCheckbox.ExecuteAsync(command, cancellationToken);
+
+        if (result is null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Created($"/api/tasks/{result.TaskId}", result);
+    }
+
+    private static async Task<IResult> HandleGetCheckboxStatus(
+        Guid noteId,
+        ClaimsPrincipal user,
+        GetCheckboxStatus getCheckboxStatus,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var query = new GetCheckboxStatus.Query(noteId, userId.Value);
+        var result = await getCheckboxStatus.ExecuteAsync(query, cancellationToken);
+
+        if (result is null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Ok(result);
     }
 }
 

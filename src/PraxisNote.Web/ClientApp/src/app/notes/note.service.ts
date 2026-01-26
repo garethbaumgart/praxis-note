@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { Subject, debounceTime } from 'rxjs';
-import { Note } from './note.model';
+import { Note, CheckboxStatus, PromoteCheckboxResult } from './note.model';
 import { ToastService } from '../shared/services/toast.service';
 
 interface PendingDeletion {
@@ -211,5 +211,24 @@ export class NoteService {
       clearTimeout(pending.timeoutId);
       this.pendingDeletions.delete(id);
     }
+  }
+
+  /**
+   * Promotes a checkbox to a task on the kanban board.
+   * Returns an observable with the created task info.
+   */
+  promoteCheckbox(noteId: string, checkboxId: string) {
+    return this.http.post<PromoteCheckboxResult>(
+      `/api/notes/${noteId}/checkboxes/${checkboxId}/promote`,
+      {}
+    );
+  }
+
+  /**
+   * Gets the link status of all checkboxes in a note.
+   * Shows which checkboxes are linked to tasks and their current status.
+   */
+  getCheckboxStatus(noteId: string) {
+    return this.http.get<CheckboxStatus[]>(`/api/notes/${noteId}/checkbox-status`);
   }
 }

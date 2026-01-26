@@ -17,3 +17,16 @@ export interface Note {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CheckboxStatus {
+  checkboxId: string;
+  isLinked: boolean;
+  taskId: string | null;
+  taskStatus: 'Todo' | 'InProgress' | 'Done' | null;
+}
+
+export interface PromoteCheckboxResult {
+  taskId: string;
+  title: string;
+  status: string;
+}

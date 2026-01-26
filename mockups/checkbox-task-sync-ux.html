@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkbox ↔ Task Sync UX - Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#eceff4',
+            'surface-subtle': '#e5e9f0',
+            'surface-hover': '#d8dee9',
+            foreground: '#2e3440',
+            'foreground-muted': '#4c566a',
+            border: '#d8dee9',
+            primary: '#5e81ac',
+            danger: '#bf616a',
+            success: '#a3be8c',
+            warning: '#ebcb8b',
+            todo: '#d8dee9',
+            inprogress: '#81a1c1',
+            done: '#a3be8c',
+            note: '#f8fafc',
+            'note-border': '#e2e8f0',
+            link: '#5e81ac',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .mockup-section { margin-bottom: 3rem; }
+    .mockup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
+    .mockup-card { background: #f8fafc; border-radius: 12px; padding: 1rem; }
+    .task-checkbox { width: 16px; height: 16px; accent-color: #5e81ac; }
+    .linked-indicator { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Checkbox ↔ Task Sync UX</h1>
+    <p class="text-gray-600 mb-8">The main feature of PraxisNote: Bidirectional sync between note checkboxes and kanban tasks.</p>
+
+    <!-- ============================================ -->
+    <!-- CONCEPT OVERVIEW -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <h2 class="font-semibold text-gray-800 mb-4">Core Concept</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-file-edit text-blue-600"></i>
+            <span class="font-medium text-blue-800">Note Checkbox</span>
+          </div>
+          <p class="text-sm text-blue-700">User adds a checkbox in their note using TipTap's task list feature.</p>
+        </div>
+        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center">
+          <div class="text-center">
+            <i class="pi pi-arrows-h text-2xl text-gray-400"></i>
+            <p class="text-xs text-gray-500 mt-1">Bidirectional Sync</p>
+          </div>
+        </div>
+        <div class="p-4 bg-green-50 rounded-lg border border-green-100">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-check-square text-green-600"></i>
+            <span class="font-medium text-green-800">Kanban Task</span>
+          </div>
+          <p class="text-sm text-green-700">Task appears on kanban board. Status changes sync back to checkbox.</p>
+        </div>
+      </div>
+      <div class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+        <p class="text-sm text-amber-800">
+          <strong>Key Decision:</strong> Should creating a checkbox automatically create a task, or should users explicitly "promote" checkboxes to tasks?
+        </p>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 1: Auto-Sync (Automatic Task Creation) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 1: Auto-Sync</h2>
+      <p class="text-gray-600 mb-4 text-sm">Every checkbox in a note automatically becomes a task on the kanban board.</p>
+
+      <div class="mockup-grid">
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Note Editor - Checkboxes Auto-Create Tasks</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <h3 class="font-medium text-gray-800 mb-3">Sprint Planning</h3>
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <div class="flex-1">
+                  <span class="text-sm text-gray-700">Review authentication flow</span>
+                  <span class="ml-2 px-1.5 py-0.5 text-[10px] rounded bg-todo text-foreground-muted">Todo</span>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1" checked>
+                <div class="flex-1">
+                  <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+                  <span class="ml-2 px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground">Done</span>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <div class="flex-1">
+                  <span class="text-sm text-gray-700">Draft API contract</span>
+                  <span class="ml-2 px-1.5 py-0.5 text-[10px] rounded bg-inprogress text-foreground">In Progress</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 mt-4">These tasks are blocking the release...</p>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Status badges show task state. Clicking badge opens task on board.</p>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Kanban Board - Auto-Populated Tasks</div>
+          <div class="bg-surface rounded-lg p-3">
+            <div class="grid grid-cols-3 gap-2">
+              <!-- Todo Column -->
+              <div class="bg-todo/30 rounded-lg p-2">
+                <div class="text-xs font-medium text-foreground-muted mb-2">Todo</div>
+                <div class="space-y-1.5">
+                  <div class="bg-surface-subtle rounded p-2 text-xs text-foreground">
+                    Review authentication flow
+                    <div class="flex items-center gap-1 mt-1">
+                      <i class="pi pi-file-edit text-[10px] text-link"></i>
+                      <span class="text-[10px] text-link">Sprint Planning</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- In Progress Column -->
+              <div class="bg-inprogress/30 rounded-lg p-2">
+                <div class="text-xs font-medium text-foreground-muted mb-2">In Progress</div>
+                <div class="space-y-1.5">
+                  <div class="bg-surface-subtle rounded p-2 text-xs text-foreground">
+                    Draft API contract
+                    <div class="flex items-center gap-1 mt-1">
+                      <i class="pi pi-file-edit text-[10px] text-link"></i>
+                      <span class="text-[10px] text-link">Sprint Planning</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Done Column -->
+              <div class="bg-done/30 rounded-lg p-2">
+                <div class="text-xs font-medium text-foreground-muted mb-2">Done</div>
+                <div class="space-y-1.5">
+                  <div class="bg-surface-subtle rounded p-2 text-xs text-foreground-muted">
+                    <span class="line-through">Schedule security meeting</span>
+                    <div class="flex items-center gap-1 mt-1">
+                      <i class="pi pi-file-edit text-[10px] text-link"></i>
+                      <span class="text-[10px] text-link">Sprint Planning</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Linked note name appears below task. Click to open note.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>• Zero friction - just type and it syncs</li>
+            <li>• Natural workflow matches how people think</li>
+            <li>• Always in sync, no manual steps</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>• Cluttered board with temporary/draft items</li>
+            <li>• No way to have "private" checkboxes</li>
+            <li>• Grocery lists become kanban tasks</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 2: Manual Promote (Recommended) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 2: Manual Promote (Recommended)</h2>
+      <p class="text-gray-600 mb-4 text-sm">Checkboxes stay in notes until explicitly promoted to tasks. Provides control without clutter.</p>
+
+      <div class="mockup-grid">
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700 text-xs font-medium mb-2">Recommended - Hover to Promote</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <h3 class="font-medium text-gray-800 mb-3">Sprint Planning</h3>
+            <div class="space-y-2">
+              <!-- Regular checkbox -->
+              <div class="flex items-start gap-2 group">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700 flex-1">Review authentication flow</span>
+                <button class="opacity-0 group-hover:opacity-100 text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-opacity">
+                  <i class="pi pi-arrow-right text-[9px]"></i> Task
+                </button>
+              </div>
+              <!-- Already linked checkbox -->
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1" checked>
+                <div class="flex-1">
+                  <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+                  <span class="ml-2 px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground cursor-pointer hover:bg-done/80">Done ↗</span>
+                </div>
+              </div>
+              <!-- Regular unchecked, not promoted -->
+              <div class="flex items-start gap-2 group">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700 flex-1">Draft API contract (needs discussion first)</span>
+                <button class="opacity-0 group-hover:opacity-100 text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-opacity">
+                  <i class="pi pi-arrow-right text-[9px]"></i> Task
+                </button>
+              </div>
+              <!-- Regular note content -->
+              <div class="flex items-start gap-2 group">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700 flex-1">Buy coffee for the team</span>
+                <button class="opacity-0 group-hover:opacity-100 text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-opacity">
+                  <i class="pi pi-arrow-right text-[9px]"></i> Task
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Hover reveals "→ Task" button. Only promoted items sync. Badge shows linked status.</p>
+        </div>
+
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700 text-xs font-medium mb-2">Recommended - Bulk Promote</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <h3 class="font-medium text-gray-800 mb-3">Sprint Planning</h3>
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1" checked>
+                <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+            </div>
+            <!-- Bulk action bar -->
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <span class="text-xs text-gray-500">3 checkboxes · 1 linked</span>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90">
+                <i class="pi pi-arrow-right text-xs"></i>
+                Create 2 Tasks
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Bottom action bar for bulk promotion. Creates tasks for all unlinked checkboxes.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>• User controls what becomes a task</li>
+            <li>• Clean kanban board, no clutter</li>
+            <li>• Notes can have temporary checklists</li>
+            <li>• Explicit action = clear mental model</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>• Extra step required</li>
+            <li>• May forget to promote important items</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 3: Opt-In per Note -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 3: Opt-In Per Note</h2>
+      <p class="text-gray-600 mb-4 text-sm">Each note has a toggle for "Sync checkboxes to tasks". Some notes sync, others don't.</p>
+
+      <div class="mockup-grid">
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Note Settings Toggle</div>
+          <div class="bg-white rounded-lg border border-note-border">
+            <!-- Note header with toggle -->
+            <div class="p-3 border-b border-gray-100 flex items-center justify-between">
+              <input type="text" value="Sprint Planning" class="font-medium text-gray-800 bg-transparent outline-none flex-1">
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                  <span>Sync to board</span>
+                  <div class="w-8 h-5 bg-primary rounded-full relative">
+                    <div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div class="p-4">
+              <div class="space-y-2">
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1">
+                  <span class="text-sm text-gray-700">Review authentication flow</span>
+                  <span class="px-1.5 py-0.5 text-[10px] rounded bg-todo text-foreground-muted">Todo</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1" checked>
+                  <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+                  <span class="px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground">Done</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Toggle in note header. When on, all checkboxes auto-sync.</p>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Non-Syncing Note</div>
+          <div class="bg-white rounded-lg border border-note-border">
+            <div class="p-3 border-b border-gray-100 flex items-center justify-between">
+              <input type="text" value="Grocery List" class="font-medium text-gray-800 bg-transparent outline-none flex-1">
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                  <span>Sync to board</span>
+                  <div class="w-8 h-5 bg-gray-300 rounded-full relative">
+                    <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div class="p-4">
+              <div class="space-y-2">
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1">
+                  <span class="text-sm text-gray-700">Milk</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1" checked>
+                  <span class="text-sm text-gray-400 line-through">Bread</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1">
+                  <span class="text-sm text-gray-700">Eggs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Toggle off. Checkboxes work normally, no task creation.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>• Clear separation: work notes vs personal lists</li>
+            <li>• Once set, no per-checkbox decisions</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>• All-or-nothing per note</li>
+            <li>• Can't have some checkboxes sync, others not</li>
+            <li>• Toggle is easy to miss</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 4: Keyboard Shortcut -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 4: Keyboard-First with Shortcut</h2>
+      <p class="text-gray-600 mb-4 text-sm">Use a keyboard shortcut (Cmd+Shift+T) to promote the current line to a task.</p>
+
+      <div class="mockup-grid">
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Keyboard Shortcut Flow</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <h3 class="font-medium text-gray-800 mb-3">Sprint Planning</h3>
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <!-- Focused line with cursor -->
+              <div class="flex items-start gap-2 bg-blue-50 -mx-2 px-2 py-1 rounded border border-blue-200">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Draft API contract<span class="animate-pulse">|</span></span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Buy coffee for team</span>
+              </div>
+            </div>
+            <div class="mt-4 p-2 bg-gray-800 rounded text-xs text-gray-300 font-mono">
+              Press <kbd class="px-1.5 py-0.5 bg-gray-700 rounded">⌘</kbd> + <kbd class="px-1.5 py-0.5 bg-gray-700 rounded">⇧</kbd> + <kbd class="px-1.5 py-0.5 bg-gray-700 rounded">T</kbd> to create task
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Cursor on checkbox line. Shortcut promotes to task instantly.</p>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">After Shortcut - Toast Confirmation</div>
+          <div class="bg-white rounded-lg border border-note-border p-4 relative">
+            <h3 class="font-medium text-gray-800 mb-3">Sprint Planning</h3>
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700 flex-1">Draft API contract</span>
+                <span class="px-1.5 py-0.5 text-[10px] rounded bg-todo text-foreground-muted">Todo ↗</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Buy coffee for team</span>
+              </div>
+            </div>
+            <!-- Toast notification -->
+            <div class="absolute -bottom-2 left-4 right-4 bg-gray-800 text-white text-xs p-2 rounded-lg flex items-center justify-between">
+              <span>✓ Task created: "Draft API contract"</span>
+              <button class="text-blue-300 hover:text-blue-200">View</button>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Toast confirms creation. Badge appears inline.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>• Fast for keyboard users</li>
+            <li>• Doesn't clutter the UI</li>
+            <li>• Explicit action, no accidents</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>• Not discoverable for new users</li>
+            <li>• Mobile has no keyboard shortcuts</li>
+            <li>• One item at a time</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 5: Hybrid (Context Menu) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 5: Context Menu</h2>
+      <p class="text-gray-600 mb-4 text-sm">Right-click on a checkbox to access task creation and other actions.</p>
+
+      <div class="mockup-grid">
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Right-Click Context Menu</div>
+          <div class="bg-white rounded-lg border border-note-border p-4 relative">
+            <h3 class="font-medium text-gray-800 mb-3">Sprint Planning</h3>
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <div class="flex items-start gap-2 bg-blue-50 -mx-2 px-2 py-1 rounded">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Buy coffee for team</span>
+              </div>
+            </div>
+            <!-- Context menu -->
+            <div class="absolute top-20 left-32 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-48 z-10">
+              <button class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                <i class="pi pi-arrow-right text-primary text-xs"></i>
+                Create Task
+              </button>
+              <button class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                <i class="pi pi-tag text-xs text-gray-400"></i>
+                Add Tags
+              </button>
+              <button class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                <i class="pi pi-calendar text-xs text-gray-400"></i>
+                Set Due Date
+              </button>
+              <div class="border-t border-gray-100 my-1"></div>
+              <button class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600">
+                <i class="pi pi-trash text-xs"></i>
+                Delete
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Right-click or long-press shows context menu with actions.</p>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Mobile - Long Press</div>
+          <div class="bg-white rounded-lg border border-note-border p-4 relative max-w-xs mx-auto">
+            <h3 class="font-medium text-gray-800 mb-3">Sprint Planning</h3>
+            <div class="space-y-3">
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <div class="flex items-start gap-2 p-2 -mx-2 bg-blue-50 rounded-lg border-2 border-blue-300">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+            </div>
+            <!-- Bottom sheet actions -->
+            <div class="absolute -bottom-4 left-0 right-0 bg-white border-t border-gray-200 rounded-t-2xl shadow-lg p-4">
+              <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-3"></div>
+              <div class="grid grid-cols-4 gap-2 text-center">
+                <button class="p-2">
+                  <i class="pi pi-arrow-right text-primary text-lg"></i>
+                  <div class="text-[10px] text-gray-600 mt-1">Task</div>
+                </button>
+                <button class="p-2">
+                  <i class="pi pi-tag text-gray-400 text-lg"></i>
+                  <div class="text-[10px] text-gray-600 mt-1">Tags</div>
+                </button>
+                <button class="p-2">
+                  <i class="pi pi-calendar text-gray-400 text-lg"></i>
+                  <div class="text-[10px] text-gray-600 mt-1">Due</div>
+                </button>
+                <button class="p-2">
+                  <i class="pi pi-trash text-red-400 text-lg"></i>
+                  <div class="text-[10px] text-gray-600 mt-1">Delete</div>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-8">Long-press on mobile shows bottom sheet with actions.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>• Discoverable through familiar pattern</li>
+            <li>• Works on desktop and mobile</li>
+            <li>• Room for additional actions</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>• Two steps (right-click, then click)</li>
+            <li>• Not as fast as hover or keyboard</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SYNC BEHAVIOR SECTION -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Sync Behavior Details</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <h3 class="font-semibold text-gray-800 mb-3">Checkbox → Task Sync</h3>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-2 py-1 text-left text-xs font-medium text-gray-600">Checkbox State</th>
+                <th class="px-2 py-1 text-left text-xs font-medium text-gray-600">Task Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr>
+                <td class="px-2 py-2">☐ Unchecked</td>
+                <td class="px-2 py-2"><span class="px-1.5 py-0.5 text-[10px] rounded bg-todo">Todo</span></td>
+              </tr>
+              <tr>
+                <td class="px-2 py-2">☑ Checked</td>
+                <td class="px-2 py-2"><span class="px-1.5 py-0.5 text-[10px] rounded bg-done">Done</span></td>
+              </tr>
+              <tr>
+                <td class="px-2 py-2" colspan="2" class="text-gray-500 italic">Text changes update task title</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-gray-200">
+          <h3 class="font-semibold text-gray-800 mb-3">Task → Checkbox Sync</h3>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-2 py-1 text-left text-xs font-medium text-gray-600">Task Status</th>
+                <th class="px-2 py-1 text-left text-xs font-medium text-gray-600">Checkbox State</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr>
+                <td class="px-2 py-2"><span class="px-1.5 py-0.5 text-[10px] rounded bg-todo">Todo</span></td>
+                <td class="px-2 py-2">☐ Unchecked</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-2"><span class="px-1.5 py-0.5 text-[10px] rounded bg-inprogress">In Progress</span></td>
+                <td class="px-2 py-2">☐ Unchecked (with badge)</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-2"><span class="px-1.5 py-0.5 text-[10px] rounded bg-done">Done</span></td>
+                <td class="px-2 py-2">☑ Checked</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-4 bg-amber-50 rounded-lg p-4 border border-amber-200">
+        <h4 class="font-medium text-amber-800 mb-2">Edge Cases to Handle</h4>
+        <ul class="text-sm text-amber-700 space-y-1">
+          <li>• <strong>Checkbox deleted:</strong> Task becomes "unlinked" but persists on board</li>
+          <li>• <strong>Task deleted:</strong> Checkbox becomes unlinked (reverts to regular checkbox)</li>
+          <li>• <strong>Note deleted:</strong> All linked tasks become unlinked</li>
+          <li>• <strong>Conflict:</strong> If both change simultaneously, last-write-wins with change indicator</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LINKED ITEM VISUALIZATION -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Linked Item Visualization Options</h2>
+
+      <div class="mockup-grid">
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-emerald-700 text-xs font-medium mb-2">Recommended - Status Badge</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700 flex-1">Review authentication flow</span>
+                <span class="px-1.5 py-0.5 text-[10px] rounded bg-todo text-foreground-muted cursor-pointer hover:bg-todo/80 flex items-center gap-1">
+                  Todo <i class="pi pi-external-link text-[8px]"></i>
+                </span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700 flex-1">Draft API contract</span>
+                <span class="px-1.5 py-0.5 text-[10px] rounded bg-inprogress text-foreground cursor-pointer hover:bg-inprogress/80 flex items-center gap-1">
+                  In Progress <i class="pi pi-external-link text-[8px]"></i>
+                </span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1" checked>
+                <span class="text-sm text-gray-400 line-through flex-1">Schedule security meeting</span>
+                <span class="px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground cursor-pointer hover:bg-done/80 flex items-center gap-1">
+                  Done <i class="pi pi-external-link text-[8px]"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Badge shows status and links to task. Click to open on board.</p>
+        </div>
+
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2">Alternative - Icon Indicator</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <div class="relative">
+                  <input type="checkbox" class="task-checkbox mt-1">
+                  <i class="pi pi-link absolute -right-1 -top-1 text-[8px] text-primary bg-white rounded-full"></i>
+                </div>
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <div class="relative">
+                  <input type="checkbox" class="task-checkbox mt-1">
+                  <i class="pi pi-link absolute -right-1 -top-1 text-[8px] text-primary bg-white rounded-full"></i>
+                </div>
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <input type="checkbox" class="task-checkbox mt-1">
+                <span class="text-sm text-gray-700">Buy coffee for team</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Small link icon on linked checkboxes. Subtle but less informative.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- COMPARISON TABLE -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Comparison: Quick Reference</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm bg-white rounded-lg border border-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Option</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Trigger</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">User Control</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Discoverability</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Mobile</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr>
+              <td class="px-4 py-3 font-medium">1. Auto-Sync</td>
+              <td class="px-4 py-3 text-gray-600">Automatic on checkbox creation</td>
+              <td class="px-4 py-3 text-red-600">None</td>
+              <td class="px-4 py-3 text-green-600">Excellent</td>
+              <td class="px-4 py-3 text-green-600">✓</td>
+            </tr>
+            <tr class="bg-emerald-50">
+              <td class="px-4 py-3 font-medium text-emerald-700">2. Manual Promote (Recommended)</td>
+              <td class="px-4 py-3 text-gray-600">Hover button / Bulk action</td>
+              <td class="px-4 py-3 text-green-600">Full per-checkbox</td>
+              <td class="px-4 py-3 text-green-600">Good (visible on hover)</td>
+              <td class="px-4 py-3 text-amber-600">Needs adaptation</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">3. Opt-In Per Note</td>
+              <td class="px-4 py-3 text-gray-600">Note-level toggle</td>
+              <td class="px-4 py-3 text-amber-600">Per-note only</td>
+              <td class="px-4 py-3 text-amber-600">Moderate</td>
+              <td class="px-4 py-3 text-green-600">✓</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">4. Keyboard Shortcut</td>
+              <td class="px-4 py-3 text-gray-600">⌘+⇧+T</td>
+              <td class="px-4 py-3 text-green-600">Full per-checkbox</td>
+              <td class="px-4 py-3 text-red-600">Poor (hidden)</td>
+              <td class="px-4 py-3 text-red-600">✗</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">5. Context Menu</td>
+              <td class="px-4 py-3 text-gray-600">Right-click / Long-press</td>
+              <td class="px-4 py-3 text-green-600">Full per-checkbox</td>
+              <td class="px-4 py-3 text-amber-600">Familiar pattern</td>
+              <td class="px-4 py-3 text-green-600">✓ (bottom sheet)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- RECOMMENDATION -->
+    <!-- ============================================ -->
+    <div class="mockup-section bg-emerald-50 rounded-xl p-6 border-2 border-emerald-200">
+      <h2 class="text-xl font-semibold text-emerald-800 mb-4">Recommendation: Option 2 - Manual Promote with Enhancements</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Why This Option?</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>✓ Full user control over what becomes a task</li>
+            <li>✓ Keeps kanban board clean and focused</li>
+            <li>✓ Hover button is discoverable and quick</li>
+            <li>✓ Bulk action handles multiple checkboxes efficiently</li>
+            <li>✓ Status badges provide clear feedback</li>
+            <li>✓ Click-through to task for full kanban features</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Implementation Additions</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>• Add keyboard shortcut (⌘+⇧+T) for power users</li>
+            <li>• Add context menu for mobile (long-press)</li>
+            <li>• Add bulk "Create Tasks" button at bottom of note</li>
+            <li>• Status badge is clickable to open task</li>
+            <li>• Tasks inherit note's tags at creation time</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
