@@ -270,17 +270,17 @@ import { CheckboxStatus } from './note.model';
     }
 
     .status-todo {
-      background: var(--color-todo-text);
+      background: var(--color-todo-foreground);
       color: white;
     }
 
     .status-inprogress {
-      background: var(--color-inprogress-text);
+      background: var(--color-inprogress-foreground);
       color: white;
     }
 
     .status-done {
-      background: var(--color-done-text);
+      background: var(--color-done-foreground);
       color: white;
     }
 
