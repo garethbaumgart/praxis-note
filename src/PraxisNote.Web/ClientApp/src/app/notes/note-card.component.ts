@@ -14,8 +14,8 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       role="button"
       tabindex="0"
       (click)="onOpen.emit()"
-      (keydown.enter)="handleCardKeydown($event)"
-      (keydown.space)="handleCardKeydown($event)"
+      (keydown.enter)="handleCardKeydown(asKeyboardEvent($event))"
+      (keydown.space)="handleCardKeydown(asKeyboardEvent($event))"
     >
       <div class="p-3">
         <!-- Content preview -->
@@ -206,6 +206,11 @@ export class NoteCardComponent {
     this.deleteConfirmation.cleanup();
     this.confirmingDelete.set(false);
     this.onDelete.emit();
+  }
+
+  /** Type-safe helper for keyboard events (Angular filtered events pass Event, not KeyboardEvent) */
+  asKeyboardEvent(event: Event): KeyboardEvent {
+    return event as KeyboardEvent;
   }
 
   /** Handle keydown on card, preventing bubbled events from child controls */
