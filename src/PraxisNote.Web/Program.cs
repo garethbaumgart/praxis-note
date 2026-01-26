@@ -138,11 +138,34 @@ var app = builder.Build();
 // Use forwarded headers (must be first - for Cloud Run / load balancers)
 app.UseForwardedHeaders();
 
-// Apply database migrations on startup (safe for single-instance Cloud Run)
-using (var scope = app.Services.CreateScope())
+// Apply database migrations on startup with retry logic for Cloud Run cold starts
+// Cloud Run may start the container before the database connection is fully ready
+var maxRetries = 5;
+var retryDelaySeconds = 3;
+
+for (var attempt = 1; attempt <= maxRetries; attempt++)
 {
-    var db = scope.ServiceProvider.GetRequiredService<PraxisNoteDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PraxisNoteDbContext>();
+        db.Database.Migrate();
+        app.Logger.LogInformation("Database migrations applied successfully");
+        break;
+    }
+    catch (Exception ex) when (attempt < maxRetries)
+    {
+        app.Logger.LogWarning(
+            ex,
+            "Database migration attempt {Attempt}/{MaxRetries} failed. Retrying in {Delay}s...",
+            attempt, maxRetries, retryDelaySeconds);
+        Thread.Sleep(TimeSpan.FromSeconds(retryDelaySeconds));
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Database migration failed after {MaxRetries} attempts", maxRetries);
+        throw; // Re-throw on final attempt to fail startup
+    }
 }
 
 // HTTPS redirection (production security)
