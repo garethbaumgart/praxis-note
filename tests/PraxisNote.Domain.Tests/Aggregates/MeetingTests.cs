@@ -422,4 +422,134 @@ public class MeetingTests
     }
 
     #endregion
+
+    #region SubmitTranscript Tests
+
+    [Fact]
+    public void SubmitTranscript_WithValidTranscript_SetsTranscriptContent()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var transcript = "Speaker 1: Hello\nSpeaker 2: Hi there";
+
+        // Act
+        meeting.SubmitTranscript(transcript);
+
+        // Assert
+        Assert.Equal(transcript, meeting.TranscriptContent);
+    }
+
+    [Fact]
+    public void SubmitTranscript_TrimsWhitespace()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act
+        meeting.SubmitTranscript("  Transcript content  ");
+
+        // Assert
+        Assert.Equal("Transcript content", meeting.TranscriptContent);
+    }
+
+    [Fact]
+    public void SubmitTranscript_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.SubmitTranscript("Transcript content");
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void SubmitTranscript_WithNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            meeting.SubmitTranscript(null!));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void SubmitTranscript_WithEmptyOrWhitespace_ThrowsArgumentException(string invalidTranscript)
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            meeting.SubmitTranscript(invalidTranscript));
+    }
+
+    [Fact]
+    public void SubmitTranscript_OverwritesExistingTranscript()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Original transcript");
+
+        // Act
+        meeting.SubmitTranscript("New transcript");
+
+        // Assert
+        Assert.Equal("New transcript", meeting.TranscriptContent);
+    }
+
+    #endregion
+
+    #region ClearTranscript Tests
+
+    [Fact]
+    public void ClearTranscript_WithExistingTranscript_ClearsContent()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+
+        // Act
+        meeting.ClearTranscript();
+
+        // Assert
+        Assert.Null(meeting.TranscriptContent);
+    }
+
+    [Fact]
+    public void ClearTranscript_WithExistingTranscript_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.ClearTranscript();
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void ClearTranscript_WithNoTranscript_DoesNotUpdateUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.ClearTranscript();
+
+        // Assert
+        Assert.Equal(originalUpdatedAt, meeting.UpdatedAt);
+    }
+
+    #endregion
 }

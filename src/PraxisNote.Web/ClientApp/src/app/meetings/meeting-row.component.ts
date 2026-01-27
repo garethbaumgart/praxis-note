@@ -19,9 +19,14 @@ import { Meeting, MeetingStatus } from './meeting.model';
 
       <!-- Content -->
       <div class="flex-1 min-w-0">
-        <h4 class="font-medium text-foreground text-sm truncate">
-          {{ meeting().title || 'Untitled Meeting' }}
-        </h4>
+        <div class="flex items-center gap-2">
+          <h4 class="font-medium text-foreground text-sm truncate">
+            {{ meeting().title || 'Untitled Meeting' }}
+          </h4>
+          @if (meeting().transcriptContent) {
+            <i class="pi pi-file-edit text-xs text-foreground-muted" title="Has transcript"></i>
+          }
+        </div>
         <p class="text-xs text-foreground-muted truncate">
           {{ formatAttendees(meeting().attendees) }}
         </p>

@@ -40,6 +40,11 @@ public sealed class Meeting : AggregateRoot
     public MeetingStatus Status { get; private set; }
 
     /// <summary>
+    /// The meeting transcript content. Optional - can be pasted or generated from audio.
+    /// </summary>
+    public string? TranscriptContent { get; private set; }
+
+    /// <summary>
     /// When this meeting was created.
     /// </summary>
     public DateTimeOffset CreatedAt { get; private init; }
@@ -139,5 +144,32 @@ public sealed class Meeting : AggregateRoot
     public void MarkAsReviewed()
     {
         UpdateStatus(MeetingStatus.Reviewed);
+    }
+
+    /// <summary>
+    /// Submits a transcript for this meeting.
+    /// </summary>
+    /// <remarks>
+    /// The transcript can be pasted manually or generated from audio.
+    /// Status remains Draft after submission - changes to Processing when AI analyzes.
+    /// </remarks>
+    public void SubmitTranscript(string transcript)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(transcript, nameof(transcript));
+
+        TranscriptContent = transcript.Trim();
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Clears the transcript content.
+    /// </summary>
+    public void ClearTranscript()
+    {
+        if (TranscriptContent is null)
+            return;
+
+        TranscriptContent = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

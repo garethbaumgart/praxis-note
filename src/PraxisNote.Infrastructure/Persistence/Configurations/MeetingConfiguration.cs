@@ -26,6 +26,9 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(m => m.TranscriptContent)
+            .HasColumnType("text");
+
         builder.Property(m => m.CreatedAt);
         builder.Property(m => m.UpdatedAt);
 

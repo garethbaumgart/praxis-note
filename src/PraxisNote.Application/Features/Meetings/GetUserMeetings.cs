@@ -16,6 +16,7 @@ public sealed class GetUserMeetings(IMeetingRepository meetingRepository)
                 m.Title,
                 m.MeetingDate,
                 m.Attendees,
+                m.TranscriptContent,
                 m.Status.ToString(),
                 m.CreatedAt,
                 m.UpdatedAt))

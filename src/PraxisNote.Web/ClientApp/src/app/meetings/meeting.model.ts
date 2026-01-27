@@ -5,6 +5,7 @@ export interface Meeting {
   title: string | null;
   meetingDate: string | null;
   attendees: string | null;
+  transcriptContent: string | null;
   status: MeetingStatus;
   createdAt: string;
   updatedAt: string;

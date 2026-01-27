@@ -73,6 +73,7 @@ export class MeetingService {
       title: title ?? null,
       meetingDate: meetingDate ?? now,
       attendees: attendees ?? null,
+      transcriptContent: null,
       status: 'Draft',
       createdAt: now,
       updatedAt: now,
@@ -120,6 +121,24 @@ export class MeetingService {
     this.http.delete(`/api/meetings/${id}`).subscribe({
       error: () => {
         this.toast.error('Failed to delete meeting');
+        this.loadMeetings();
+      },
+    });
+  }
+
+  submitTranscript(id: string, transcript: string): void {
+    // Optimistic update
+    this._meetings.update(meetings =>
+      meetings.map(m =>
+        m.id === id
+          ? { ...m, transcriptContent: transcript, updatedAt: new Date().toISOString() }
+          : m
+      )
+    );
+
+    this.http.post(`/api/meetings/${id}/transcript`, { transcript }).subscribe({
+      error: () => {
+        this.toast.error('Failed to submit transcript');
         this.loadMeetings();
       },
     });
