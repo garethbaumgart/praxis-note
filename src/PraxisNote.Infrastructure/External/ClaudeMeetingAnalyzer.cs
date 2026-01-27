@@ -12,7 +12,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 {
     private readonly MeetingAnalysisSettings _settings;
     private readonly ILogger<ClaudeMeetingAnalyzer> _logger;
-    private AnthropicClient? _client;
+    private readonly AnthropicClient? _client;
 
     private const string AnalysisPrompt = """
         Analyze this meeting transcript and provide a JSON response with:
