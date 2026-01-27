@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, computed, HostListener, ElementRef, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, HostListener, ElementRef, viewChild } from '@angular/core';
 import { MeetingService } from './meeting.service';
 import { Meeting } from './meeting.model';
 import { MeetingRowComponent } from './meeting-row.component';

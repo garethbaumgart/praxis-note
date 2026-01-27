@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -20,7 +20,7 @@ import { Meeting } from './meeting.model';
       [resizable]="false"
       [closable]="true"
       [style]="{ width: '450px' }"
-      [header]="meeting() ? 'Edit Meeting' : 'New Meeting'"
+      [header]="isEditing() ? 'Edit Meeting' : 'New Meeting'"
     >
       <div class="space-y-4">
         <!-- Title -->
@@ -74,7 +74,7 @@ import { Meeting } from './meeting.model';
             (onClick)="visible.set(false)"
           />
           <p-button
-            [label]="meeting() ? 'Save' : 'Create'"
+            [label]="isEditing() ? 'Save' : 'Create'"
             (onClick)="save()"
           />
         </div>
@@ -82,32 +82,23 @@ import { Meeting } from './meeting.model';
     </p-dialog>
   `,
 })
-export class MeetingEditorComponent implements OnInit {
+export class MeetingEditorComponent {
   readonly visible = signal(false);
-  readonly meeting = input<Meeting | null>(null);
+  readonly isEditing = signal(false);
   readonly onSave = output<{ title?: string; meetingDate?: string; attendees?: string }>();
 
   title = '';
   meetingDate: Date | null = null;
   attendees = '';
 
-  ngOnInit(): void {
-    const m = this.meeting();
-    if (m) {
-      this.title = m.title ?? '';
-      this.meetingDate = m.meetingDate ? new Date(m.meetingDate) : null;
-      this.attendees = m.attendees ?? '';
-    } else {
-      this.meetingDate = new Date();
-    }
-  }
-
   open(meeting?: Meeting): void {
     if (meeting) {
+      this.isEditing.set(true);
       this.title = meeting.title ?? '';
       this.meetingDate = meeting.meetingDate ? new Date(meeting.meetingDate) : new Date();
       this.attendees = meeting.attendees ?? '';
     } else {
+      this.isEditing.set(false);
       this.title = '';
       this.meetingDate = new Date();
       this.attendees = '';

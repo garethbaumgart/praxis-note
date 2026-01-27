@@ -29,7 +29,7 @@ import { Meeting, MeetingStatus } from './meeting.model';
 
       <!-- Status & Actions -->
       <div class="flex items-center gap-2">
-        <span class="status-badge" [class]="getStatusClass(meeting().status)">
+        <span class="status-badge {{ getStatusClass(meeting().status) }}">
           @if (meeting().status === 'Processing') {
             <span class="w-2 h-2 bg-current rounded-full animate-pulse mr-1"></span>
           }
