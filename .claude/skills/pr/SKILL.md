@@ -46,14 +46,37 @@ Run these checks and **ensure they pass**:
 
 **STOP if any tests fail.** Fix the failures and re-run until all tests pass. Do not proceed to PR creation with failing tests.
 
-## Step 4: Create the PR
+## Step 4: Browser Validation (Required Before PR Creation)
 
-Once tests pass:
+**CRITICAL**: For any PR with UI changes, you MUST validate the changes work correctly in the browser BEFORE creating the PR on GitHub. This prevents broken features from reaching production.
+
+1. **Start the dev stack**: Run `docker compose --profile dev-stack up -d`
+2. **Wait for startup**: Wait for the app to be available at http://localhost:4200
+3. **Navigate to the app**: Use the browser automation tools to open the app
+4. **Test each UI change**: For every UI-visible change in this PR:
+   - Navigate to the affected area
+   - Verify the change works as expected
+   - Test both light and dark mode if styling is involved
+   - Check responsive behavior if layout changes are involved
+   - Test keyboard navigation if interactive elements are added
+5. **Document verification**: Take screenshots or note what was verified
+6. **Fix any issues**: If something doesn't work as expected, fix it and re-run tests before proceeding
+
+**Skip this step ONLY for**:
+- Markdown-only PRs (`.md` files only)
+- Backend-only changes with no UI impact
+- Configuration or CI workflow changes
+
+**STOP if any UI validation fails.** Fix the issue, commit, push, and restart from Step 3.
+
+## Step 5: Create the PR
+
+Once tests pass AND browser validation is complete:
 
 1. Push any remaining commits to the remote branch
 2. Create the PR using `gh pr create`
 
-## Step 5: Post-PR Review and Monitoring
+## Step 6: Post-PR Review and Monitoring
 
 After the PR is created, **actively monitor** and address feedback:
 
@@ -92,14 +115,13 @@ After the PR is created, **actively monitor** and address feedback:
 
 **Do not stop monitoring until**: All AI reviews are complete (both CodeRabbit AND Copilot have submitted reviews), all comments are addressed, and CI is green.
 
-## Step 6: Manual Testing (Required Before Merge)
+## Step 7: User Approval and Merge
 
 Once CI is green and all comments are addressed:
 
-1. **Start the dev stack**: Run `docker compose --profile dev-stack up`
-2. **Notify the user**: Tell them the app is running at http://localhost:4200 and ask them to test the changes
-3. **Wait for approval**: Do NOT merge until the user explicitly approves or provides feedback
-4. **If feedback given**: Make fixes, commit, push, and repeat from Step 5 (CI monitoring)
-5. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
+1. **Notify the user**: Tell them the PR is ready for their review and approval
+2. **Wait for approval**: Do NOT merge until the user explicitly approves
+3. **If feedback given**: Make fixes, commit, push, and repeat from Step 3 (tests + browser validation)
+4. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
 
-**Exception**: Skip this step for markdown-only PRs (`.md` files only) - merge immediately.
+**Exception**: For markdown-only PRs (`.md` files only), merge immediately without waiting for user approval.
