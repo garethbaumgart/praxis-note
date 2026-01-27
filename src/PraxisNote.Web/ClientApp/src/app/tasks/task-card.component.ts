@@ -364,7 +364,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               >+35</button>
               <button
                 type="button"
-                (click)="toggleDatePicker(); $event.stopPropagation()"
+                (click)="showDatePicker.set(true); $event.stopPropagation()"
                 class="px-2 py-1 text-xs rounded bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover transition-colors"
                 aria-label="Open calendar"
               ><i class="pi pi-calendar-plus text-[10px]"></i></button>
@@ -531,10 +531,6 @@ export class TaskCardComponent {
 
   // Date picker popover state
   readonly showDatePicker = signal(false);
-
-  protected toggleDatePicker(): void {
-    this.showDatePicker.update(v => !v);
-  }
 
   // Tag picker popover state
   readonly showTagPicker = signal(false);

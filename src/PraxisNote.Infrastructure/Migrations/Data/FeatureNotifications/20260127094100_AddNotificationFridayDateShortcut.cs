@@ -25,7 +25,8 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
                 WHERE "Title" = 'Friday due date shortcut'
-                  AND "IssueUrl" = 'https://github.com/garethbaumgart/praxis-note/issues/219';
+                  AND "IssueUrl" = 'https://github.com/garethbaumgart/praxis-note/issues/219'
+                  AND "CreatedAt" = '2026-01-27T09:41:00Z';
                 """);
         }
     }
