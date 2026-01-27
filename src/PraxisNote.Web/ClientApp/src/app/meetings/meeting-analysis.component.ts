@@ -56,7 +56,7 @@ import { Meeting, parseJsonArray } from './meeting.model';
             <div>
               <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Key Points</h4>
               <ul class="space-y-1.5">
-                @for (point of keyPoints(); track point) {
+                @for (point of keyPoints(); track $index) {
                   <li class="flex gap-2 text-sm text-foreground">
                     <i class="pi pi-check-circle text-accent-solid mt-0.5 flex-shrink-0"></i>
                     <span>{{ point }}</span>
@@ -71,7 +71,7 @@ import { Meeting, parseJsonArray } from './meeting.model';
             <div>
               <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Decisions</h4>
               <ul class="space-y-1.5">
-                @for (decision of decisions(); track decision) {
+                @for (decision of decisions(); track $index) {
                   <li class="flex gap-2 text-sm text-foreground">
                     <i class="pi pi-bolt text-warning-foreground mt-0.5 flex-shrink-0"></i>
                     <span>{{ decision }}</span>

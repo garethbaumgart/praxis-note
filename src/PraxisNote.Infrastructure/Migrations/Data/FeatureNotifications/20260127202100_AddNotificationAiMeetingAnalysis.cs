@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'Feature',
                     'AI-powered meeting analysis',
                     'Analyze meeting transcripts with Claude AI to generate summaries, key discussion points, and decisions.',
-                    'https://github.com/garethbaumgart/praxis-note/pull/250',
+                    'https://github.com/garethbaumgart/praxis-note/issues/230',
                     '2026-01-27T20:21:00Z'
                 );
                 """);

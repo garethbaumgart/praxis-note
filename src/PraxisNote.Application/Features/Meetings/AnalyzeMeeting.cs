@@ -25,6 +25,10 @@ public sealed class AnalyzeMeeting(
         if (string.IsNullOrWhiteSpace(meeting.TranscriptContent))
             return false;
 
+        // Prevent re-triggering analysis while already processing
+        if (meeting.Status == MeetingStatus.Processing)
+            return false;
+
         meeting.StartAnalysis();
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
