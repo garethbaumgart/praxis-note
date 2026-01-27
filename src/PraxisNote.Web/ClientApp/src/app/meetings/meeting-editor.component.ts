@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { Meeting } from './meeting.model';
 
@@ -10,7 +11,7 @@ import { Meeting } from './meeting.model';
   selector: 'app-meeting-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DialogModule, ButtonModule, InputTextModule, DatePickerModule],
+  imports: [FormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule],
   template: `
     <p-dialog
       [visible]="visible()"
@@ -19,7 +20,7 @@ import { Meeting } from './meeting.model';
       [draggable]="false"
       [resizable]="false"
       [closable]="true"
-      [style]="{ width: '450px' }"
+      [style]="{ width: '600px' }"
       [header]="isEditing() ? 'Edit Meeting' : 'New Meeting'"
     >
       <div class="space-y-4">
@@ -63,6 +64,25 @@ import { Meeting } from './meeting.model';
           />
           <p class="text-xs text-foreground-muted mt-1">Separate names with commas</p>
         </div>
+
+        <!-- Transcript (only shown when editing) -->
+        @if (isEditing()) {
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="transcript" class="block text-sm font-medium text-foreground">Transcript</label>
+              <span class="text-xs text-foreground-muted">{{ transcript.length }} characters</span>
+            </div>
+            <textarea
+              pTextarea
+              id="transcript"
+              class="w-full"
+              [rows]="8"
+              placeholder="Paste your meeting transcript here..."
+              [(ngModel)]="transcript"
+            ></textarea>
+            <p class="text-xs text-foreground-muted mt-1">Paste a transcript from your meeting recording or notes</p>
+          </div>
+        }
       </div>
 
       <ng-template pTemplate="footer">
@@ -85,11 +105,12 @@ import { Meeting } from './meeting.model';
 export class MeetingEditorComponent {
   readonly visible = signal(false);
   readonly isEditing = signal(false);
-  readonly onSave = output<{ title?: string; meetingDate?: string; attendees?: string }>();
+  readonly onSave = output<{ title?: string; meetingDate?: string; attendees?: string; transcript?: string }>();
 
   title = '';
   meetingDate: Date | null = null;
   attendees = '';
+  transcript = '';
 
   open(meeting?: Meeting): void {
     if (meeting) {
@@ -97,11 +118,13 @@ export class MeetingEditorComponent {
       this.title = meeting.title ?? '';
       this.meetingDate = meeting.meetingDate ? new Date(meeting.meetingDate) : new Date();
       this.attendees = meeting.attendees ?? '';
+      this.transcript = meeting.transcriptContent ?? '';
     } else {
       this.isEditing.set(false);
       this.title = '';
       this.meetingDate = new Date();
       this.attendees = '';
+      this.transcript = '';
     }
     this.visible.set(true);
   }
@@ -111,6 +134,7 @@ export class MeetingEditorComponent {
       title: this.title || undefined,
       meetingDate: this.meetingDate?.toISOString(),
       attendees: this.attendees || undefined,
+      transcript: this.transcript,
     });
     this.visible.set(false);
   }

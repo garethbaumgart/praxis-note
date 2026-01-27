@@ -184,7 +184,7 @@ export class MeetingsPage implements OnInit {
     this.editorRef()?.open(meeting);
   }
 
-  handleSave(data: { title?: string; meetingDate?: string; attendees?: string }): void {
+  handleSave(data: { title?: string; meetingDate?: string; attendees?: string; transcript?: string }): void {
     if (this.editingMeeting) {
       this.meetingService.updateMeeting(
         this.editingMeeting.id,
@@ -192,6 +192,14 @@ export class MeetingsPage implements OnInit {
         data.meetingDate,
         data.attendees
       );
+      // Handle transcript changes
+      const hadTranscript = !!this.editingMeeting.transcriptContent;
+      const hasTranscript = !!data.transcript;
+      if (hasTranscript && data.transcript !== this.editingMeeting.transcriptContent) {
+        this.meetingService.submitTranscript(this.editingMeeting.id, data.transcript!);
+      } else if (hadTranscript && !hasTranscript) {
+        this.meetingService.clearTranscript(this.editingMeeting.id);
+      }
     } else {
       this.meetingService.createMeeting(data.title, data.meetingDate, data.attendees);
     }

@@ -17,6 +17,8 @@ public static class MeetingEndpoints
         group.MapPost("/", (Delegate)HandleCreateMeeting);
         group.MapPut("/{id:guid}", (Delegate)HandleUpdateMeeting);
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteMeeting);
+        group.MapPost("/{id:guid}/transcript", (Delegate)HandleSubmitTranscript);
+        group.MapDelete("/{id:guid}/transcript", (Delegate)HandleClearTranscript);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -117,7 +119,50 @@ public static class MeetingEndpoints
 
         return success ? Results.NoContent() : Results.NotFound();
     }
+
+    private static async Task<IResult> HandleSubmitTranscript(
+        Guid id,
+        ClaimsPrincipal user,
+        SubmitTranscriptRequest request,
+        [FromServices] SubmitTranscript submitTranscript,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Transcript))
+        {
+            return Results.BadRequest("Transcript content is required.");
+        }
+
+        var command = new SubmitTranscript.Command(id, userId.Value, request.Transcript);
+        var success = await submitTranscript.ExecuteAsync(command, cancellationToken);
+
+        return success ? Results.NoContent() : Results.NotFound();
+    }
+
+    private static async Task<IResult> HandleClearTranscript(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] ClearTranscript clearTranscript,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var command = new ClearTranscript.Command(id, userId.Value);
+        var success = await clearTranscript.ExecuteAsync(command, cancellationToken);
+
+        return success ? Results.NoContent() : Results.NotFound();
+    }
 }
 
 public record CreateMeetingRequest(string? Title, DateTimeOffset? MeetingDate, string? Attendees);
 public record UpdateMeetingRequest(string? Title, DateTimeOffset? MeetingDate, string? Attendees);
+public record SubmitTranscriptRequest(string Transcript);

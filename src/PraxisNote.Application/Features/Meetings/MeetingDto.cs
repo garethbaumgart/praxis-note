@@ -5,6 +5,7 @@ public record MeetingDto(
     string? Title,
     DateTimeOffset? MeetingDate,
     string? Attendees,
+    string? TranscriptContent,
     string Status,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
