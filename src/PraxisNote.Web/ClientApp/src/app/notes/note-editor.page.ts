@@ -235,18 +235,15 @@ import { ToastService } from '../shared/services/toast.service';
     }
 
     .editor-wrapper {
-      max-width: 48rem;
-      margin: 0 auto;
-      padding: 2rem;
+      max-width: 100%;
+      padding: 1.5rem 2rem;
       min-height: 100%;
       background: var(--color-bg-default);
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
     }
 
     @media (max-width: 768px) {
       .editor-wrapper {
         padding: 1rem;
-        box-shadow: none;
       }
     }
 

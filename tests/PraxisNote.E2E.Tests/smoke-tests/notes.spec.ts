@@ -56,17 +56,16 @@ test.describe('Notes', () => {
     // Wait for the note to appear
     await expect(page.getByText(originalContent)).toBeVisible();
 
-    // Find the note card with our content and click it to open dialog
+    // Find the note card with our content and click it to navigate to editor
     const noteCard = page.locator('.note-card').filter({ hasText: originalContent });
     await expect(noteCard).toBeVisible();
     await noteCard.click();
 
-    // Wait for the editor dialog to appear
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible({ timeout: 5000 });
+    // Wait for navigation to editor page
+    await page.waitForURL(`**/notes/${note.id}`);
 
-    // Wait for TipTap editor to be ready inside the dialog
-    const editor = dialog.locator('.ProseMirror');
+    // Wait for TipTap editor to be ready
+    const editor = page.locator('.ProseMirror');
     await expect(editor).toBeVisible({ timeout: 5000 });
 
     // Wait for the editor to fully initialize and show the original content
@@ -84,20 +83,17 @@ test.describe('Notes', () => {
     // Wait for TipTap to process the input
     await page.waitForTimeout(500);
 
-    // Set up response listener BEFORE clicking save (wait for debounced PUT)
+    // Set up response listener for debounced PUT (auto-save)
     const updatePromise = page.waitForResponse(
       response => response.url().includes('/api/notes/') && response.request().method() === 'PUT',
       { timeout: 10000 }
     );
 
-    // Click save
-    await dialog.getByRole('button', { name: 'Save' }).click();
+    // Trigger auto-save by waiting for the debounce (or press Ctrl+S)
+    await page.keyboard.press('Control+s');
 
-    // Wait for the debounced API call to complete
+    // Wait for the API call to complete
     await updatePromise;
-
-    // Verify the dialog closed
-    await expect(dialog).not.toBeVisible();
 
     // Verify via API that content was persisted
     const updatedNote = await request.get(`/api/notes/${note.id}`, {
