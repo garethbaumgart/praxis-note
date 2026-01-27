@@ -440,7 +440,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                         <!-- Desktop: hover/focus-reveal delete button for keyboard accessibility -->
                         <button
                           type="button"
-                          class="hidden md:group-hover/comment:flex md:group-focus-within/comment:flex text-foreground-muted/40 hover:text-danger shrink-0 text-xs"
+                          class="hidden md:group-hover/comment:flex md:group-focus-within/comment:flex text-foreground-muted/50 hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                           [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >

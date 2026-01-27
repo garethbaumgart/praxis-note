@@ -20,8 +20,6 @@ public static class TaskEndpoints
         group.MapPatch("/{id:guid}/priority", (Delegate)HandleTogglePriority);
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteTask);
         group.MapPut("/reorder", (Delegate)HandleReorderTasks);
-        group.MapPost("/{taskId:guid}/tags/{tagId:guid}", (Delegate)HandleAddTagToTask);
-        group.MapDelete("/{taskId:guid}/tags/{tagId:guid}", (Delegate)HandleRemoveTagFromTask);
     }
 
     private static async Task<IResult> HandleGetTasks(
@@ -189,60 +187,6 @@ public static class TaskEndpoints
         return result.Success
             ? Results.NoContent()
             : Results.BadRequest(new { error = result.Error });
-    }
-
-    private static async Task<IResult> HandleAddTagToTask(
-        Guid taskId,
-        Guid tagId,
-        ClaimsPrincipal user,
-        AddTagToTask addTagToTask,
-        CancellationToken cancellationToken)
-    {
-        var userId = user.GetUserId();
-        if (userId is null)
-        {
-            return Results.Unauthorized();
-        }
-
-        try
-        {
-            var command = new AddTagToTask.Command(userId.Value, taskId, tagId);
-            await addTagToTask.ExecuteAsync(command, cancellationToken);
-            return Results.NoContent();
-        }
-        catch (InvalidOperationException ex) when (ex.Message == AddTagToTask.TaskNotFoundError)
-        {
-            return Results.NotFound(new { error = "Task not found" });
-        }
-        catch (InvalidOperationException ex) when (ex.Message == AddTagToTask.TagNotFoundError)
-        {
-            return Results.NotFound(new { error = "Tag not found" });
-        }
-    }
-
-    private static async Task<IResult> HandleRemoveTagFromTask(
-        Guid taskId,
-        Guid tagId,
-        ClaimsPrincipal user,
-        RemoveTagFromTask removeTagFromTask,
-        CancellationToken cancellationToken)
-    {
-        var userId = user.GetUserId();
-        if (userId is null)
-        {
-            return Results.Unauthorized();
-        }
-
-        try
-        {
-            var command = new RemoveTagFromTask.Command(userId.Value, taskId, tagId);
-            await removeTagFromTask.ExecuteAsync(command, cancellationToken);
-            return Results.NoContent();
-        }
-        catch (InvalidOperationException ex) when (ex.Message == RemoveTagFromTask.TaskNotFoundError)
-        {
-            return Results.NotFound(new { error = "Task not found" });
-        }
     }
 }
 
