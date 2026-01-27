@@ -48,6 +48,15 @@ import { DatePicker } from 'primeng/datepicker';
           </button>
           <button
             type="button"
+            (click)="selectQuickOption('friday'); $event.stopPropagation()"
+            class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-later text-due-later-foreground hover:opacity-80"
+            [class.ring-2]="isSelected('friday')"
+            [class.ring-due-later-foreground]="isSelected('friday')"
+          >
+            Fri
+          </button>
+          <button
+            type="button"
             (click)="selectQuickOption('nextWeek'); $event.stopPropagation()"
             class="px-2 py-0.5 text-xs font-medium rounded-full transition-colors bg-due-later text-due-later-foreground hover:opacity-80"
             [class.ring-2]="isSelected('nextWeek')"
@@ -128,13 +137,13 @@ export class DatePickerPopoverComponent {
     }
   }
 
-  selectQuickOption(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): void {
+  selectQuickOption(option: 'today' | 'tomorrow' | 'friday' | 'nextWeek' | 'plus35'): void {
     const date = this.getQuickOptionDate(option);
     this.selectedDate.set(date);
     this.onSelect.emit(this.formatDate(date));
   }
 
-  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): Date {
+  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'friday' | 'nextWeek' | 'plus35'): Date {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -143,6 +152,8 @@ export class DatePickerPopoverComponent {
         return today;
       case 'tomorrow':
         return new Date(today.getTime() + 86400000);
+      case 'friday':
+        return this.getNextFriday(today);
       case 'nextWeek':
         return new Date(today.getTime() + 7 * 86400000);
       case 'plus35':
@@ -150,7 +161,13 @@ export class DatePickerPopoverComponent {
     }
   }
 
-  isSelected(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): boolean {
+  private getNextFriday(from: Date): Date {
+    const dayOfWeek = from.getDay(); // 0 = Sunday, 5 = Friday
+    const daysUntilFriday = (5 - dayOfWeek + 7) % 7 || 7; // If today is Friday, get next Friday
+    return new Date(from.getTime() + daysUntilFriday * 86400000);
+  }
+
+  isSelected(option: 'today' | 'tomorrow' | 'friday' | 'nextWeek' | 'plus35'): boolean {
     const current = this.currentDate();
     if (!current) return false;
 

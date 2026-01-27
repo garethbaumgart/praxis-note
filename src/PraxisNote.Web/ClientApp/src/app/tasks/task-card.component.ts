@@ -346,6 +346,12 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               >+1</button>
               <button
                 type="button"
+                (click)="selectQuickDate('friday'); $event.stopPropagation()"
+                class="px-2 py-1 text-xs rounded transition-colors"
+                [class]="isDateSelected('friday') ? 'bg-duedate-btn-selected text-duedate-btn-selected-foreground font-medium' : 'bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover'"
+              >Fri</button>
+              <button
+                type="button"
                 (click)="selectQuickDate('nextWeek'); $event.stopPropagation()"
                 class="px-2 py-1 text-xs rounded transition-colors"
                 [class]="isDateSelected('nextWeek') ? 'bg-duedate-btn-selected text-duedate-btn-selected-foreground font-medium' : 'bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover'"
@@ -358,7 +364,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
               >+35</button>
               <button
                 type="button"
-                (click)="showDatePicker.set(true); $event.stopPropagation()"
+                (click)="toggleDatePicker(); $event.stopPropagation()"
                 class="px-2 py-1 text-xs rounded bg-duedate-btn text-duedate-btn-foreground hover:bg-duedate-btn-hover transition-colors"
                 aria-label="Open calendar"
               ><i class="pi pi-calendar-plus text-[10px]"></i></button>
@@ -427,11 +433,11 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                         />
                       } @else {
                         <!-- Time: mobile shows both time and delete, desktop swaps on hover/focus -->
-                        <span class="text-foreground-muted/50 shrink-0 md:group-hover/comment:hidden md:group-focus-within/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                        <span class="text-foreground-muted shrink-0 md:group-hover/comment:hidden md:group-focus-within/comment:hidden">{{ formatCommentTime(comment) }}</span>
                         <!-- Mobile: always visible delete button -->
                         <button
                           type="button"
-                          class="flex md:hidden text-foreground-muted/50 hover:text-danger shrink-0 text-xs"
+                          class="flex md:hidden text-foreground-muted hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                           [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >
@@ -440,7 +446,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                         <!-- Desktop: hover/focus-reveal delete button for keyboard accessibility -->
                         <button
                           type="button"
-                          class="hidden md:group-hover/comment:flex md:group-focus-within/comment:flex text-foreground-muted/50 hover:text-danger shrink-0 text-xs"
+                          class="hidden md:group-hover/comment:flex md:group-focus-within/comment:flex text-foreground-muted hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                           [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >
@@ -525,6 +531,10 @@ export class TaskCardComponent {
 
   // Date picker popover state
   readonly showDatePicker = signal(false);
+
+  protected toggleDatePicker(): void {
+    this.showDatePicker.update(v => !v);
+  }
 
   // Tag picker popover state
   readonly showTagPicker = signal(false);
@@ -826,12 +836,12 @@ export class TaskCardComponent {
   }
 
   // Due date quick selection methods
-  selectQuickDate(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): void {
+  selectQuickDate(option: 'today' | 'tomorrow' | 'friday' | 'nextWeek' | 'plus35'): void {
     const date = this.getQuickOptionDate(option);
     this.onSetDueDate.emit(this.formatDateString(date));
   }
 
-  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): Date {
+  private getQuickOptionDate(option: 'today' | 'tomorrow' | 'friday' | 'nextWeek' | 'plus35'): Date {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -840,6 +850,8 @@ export class TaskCardComponent {
         return today;
       case 'tomorrow':
         return new Date(today.getTime() + 86400000);
+      case 'friday':
+        return this.getNextFriday(today);
       case 'nextWeek':
         return new Date(today.getTime() + 7 * 86400000);
       case 'plus35':
@@ -847,7 +859,13 @@ export class TaskCardComponent {
     }
   }
 
-  isDateSelected(option: 'today' | 'tomorrow' | 'nextWeek' | 'plus35'): boolean {
+  private getNextFriday(from: Date): Date {
+    const dayOfWeek = from.getDay(); // 0 = Sunday, 5 = Friday
+    const daysUntilFriday = (5 - dayOfWeek + 7) % 7 || 7; // If today is Friday, get next Friday
+    return new Date(from.getTime() + daysUntilFriday * 86400000);
+  }
+
+  isDateSelected(option: 'today' | 'tomorrow' | 'friday' | 'nextWeek' | 'plus35'): boolean {
     const current = this.task().dueDate;
     if (!current) return false;
 
