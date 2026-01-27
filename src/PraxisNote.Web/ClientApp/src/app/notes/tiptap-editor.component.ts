@@ -802,23 +802,67 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     const { from, to } = this.editor.state.selection;
     if (from === to) {
       // No selection - prompt for both URL and text
-      const url = window.prompt('Enter the URL:');
-      if (!url) return;
+      const rawUrl = window.prompt('Enter the URL:');
+      if (!rawUrl) return;
+
+      const url = this.normalizeUrl(rawUrl);
+      if (!url) {
+        window.alert('Please enter a valid http, https, or mailto URL.');
+        return;
+      }
 
       const text = window.prompt('Enter the link text:', url);
       if (!text) return;
 
+      // Use structured content instead of raw HTML to prevent XSS
       this.editor
         .chain()
         .focus()
-        .insertContent(`<a href="${url}">${text}</a>`)
+        .insertContent({
+          type: 'text',
+          marks: [{ type: 'link', attrs: { href: url } }],
+          text: text,
+        })
         .run();
     } else {
       // Text is selected - just prompt for URL
-      const url = window.prompt('Enter the URL:');
-      if (!url) return;
+      const rawUrl = window.prompt('Enter the URL:');
+      if (!rawUrl) return;
+
+      const url = this.normalizeUrl(rawUrl);
+      if (!url) {
+        window.alert('Please enter a valid http, https, or mailto URL.');
+        return;
+      }
 
       this.editor.chain().focus().setLink({ href: url }).run();
+    }
+  }
+
+  /**
+   * Validates and normalizes a URL to prevent XSS attacks.
+   * Only allows http, https, and mailto protocols.
+   * Auto-prefixes bare domains with https://.
+   */
+  private normalizeUrl(input: string): string | null {
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+
+    const allowedProtocols = ['http:', 'https:', 'mailto:'];
+
+    try {
+      // Auto-prefix bare domains with https://
+      const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed);
+      const candidate = hasProtocol ? trimmed : `https://${trimmed}`;
+      const url = new URL(candidate);
+
+      if (!allowedProtocols.includes(url.protocol)) {
+        return null;
+      }
+
+      return url.toString();
+    } catch {
+      return null;
     }
   }
 
