@@ -46,18 +46,21 @@
   --color-todo-text: #0b7285;       /* Non-Nord darker cyan for light mode contrast (WCAG accessibility) */
   --color-todo-text-muted: #1098ad;
   --color-todo-border: rgba(136, 192, 208, 0.35);
+  --color-todo-solid: #0b7285;      /* Solid background for badges */
 
   --color-inprogress-bg: rgba(208, 135, 112, 0.1);   /* Aurora orange */
   --color-inprogress-bg-hover: rgba(208, 135, 112, 0.15);
   --color-inprogress-text: #d08770;
   --color-inprogress-text-muted: rgba(208, 135, 112, 0.7);
   --color-inprogress-border: rgba(208, 135, 112, 0.2);
+  --color-inprogress-solid: #d08770; /* Solid background for badges */
 
   --color-done-bg: rgba(163, 190, 140, 0.1);   /* Aurora green */
   --color-done-bg-hover: rgba(163, 190, 140, 0.15);
   --color-done-text: #a3be8c;
   --color-done-text-muted: rgba(163, 190, 140, 0.7);
   --color-done-border: rgba(163, 190, 140, 0.2);
+  --color-done-solid: #a3be8c;       /* Solid background for badges */
 
   --color-archive-bg: rgba(180, 142, 173, 0.1);   /* Aurora purple */
   --color-archive-bg-hover: rgba(180, 142, 173, 0.15);
@@ -182,18 +185,21 @@
   --color-todo-text: #88c0d0;        /* Frost cyan */
   --color-todo-text-muted: #81a1c1;
   --color-todo-border: rgba(136, 192, 208, 0.25);
+  --color-todo-solid: #88c0d0;       /* Solid background for badges */
 
   --color-inprogress-bg: rgba(208, 135, 112, 0.1);    /* Aurora orange */
   --color-inprogress-bg-hover: rgba(208, 135, 112, 0.15);
   --color-inprogress-text: #d08770;
   --color-inprogress-text-muted: rgba(208, 135, 112, 0.7);
   --color-inprogress-border: rgba(208, 135, 112, 0.15);
+  --color-inprogress-solid: #d08770; /* Solid background for badges */
 
   --color-done-bg: rgba(163, 190, 140, 0.1);    /* Aurora green */
   --color-done-bg-hover: rgba(163, 190, 140, 0.15);
   --color-done-text: #a3be8c;
   --color-done-text-muted: rgba(163, 190, 140, 0.7);
   --color-done-border: rgba(163, 190, 140, 0.15);
+  --color-done-solid: #a3be8c;       /* Solid background for badges */
 
   --color-archive-bg: rgba(180, 142, 173, 0.1);    /* Aurora purple */
   --color-archive-bg-hover: rgba(180, 142, 173, 0.15);
@@ -321,18 +327,21 @@
   --color-todo-foreground: var(--color-todo-text);
   --color-todo-foreground-muted: var(--color-todo-text-muted);
   --color-todo-border: var(--color-todo-border);
+  --color-todo-solid: var(--color-todo-solid);
 
   --color-inprogress: var(--color-inprogress-bg);
   --color-inprogress-hover: var(--color-inprogress-bg-hover);
   --color-inprogress-foreground: var(--color-inprogress-text);
   --color-inprogress-foreground-muted: var(--color-inprogress-text-muted);
   --color-inprogress-border: var(--color-inprogress-border);
+  --color-inprogress-solid: var(--color-inprogress-solid);
 
   --color-done: var(--color-done-bg);
   --color-done-hover: var(--color-done-bg-hover);
   --color-done-foreground: var(--color-done-text);
   --color-done-foreground-muted: var(--color-done-text-muted);
   --color-done-border: var(--color-done-border);
+  --color-done-solid: var(--color-done-solid);
 
   --color-archive: var(--color-archive-bg);
   --color-archive-hover: var(--color-archive-bg-hover);

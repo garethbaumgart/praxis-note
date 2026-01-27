@@ -174,7 +174,28 @@ PraxisNote uses a semantic token system for colors. **These rules are mandatory:
 - **ALWAYS use semantic tokens** from `styles.css` (e.g., `bg-surface`, `text-foreground`, `bg-todo`)
 - **NEVER use hardcoded Tailwind colors** (e.g., `bg-gray-100`, `text-violet-600`)
 - **NEVER use `dark:` prefix** - our CSS variable system handles dark mode automatically
-- **New colors**: Add semantic tokens to `styles.css` in both `:root` (light) and `[data-theme="dark"]` (dark) blocks within `@layer theme`
+- **Respect token semantics**: Use `-foreground` tokens for text, background tokens for backgrounds. Don't use a foreground color as a background.
+- **New colors**: If no suitable token exists, add semantic tokens to `styles.css` in both `:root` (light) and `[data-theme="dark"]` (dark) blocks within `@layer theme`, then map them in `@theme inline`
+
+### Component CSS Colors
+
+When using colors in component `styles: []` (not Tailwind classes), use CSS variables:
+
+```css
+/* ✅ Good: Use semantic CSS variables */
+background: var(--color-surface-subtle);
+color: var(--color-foreground);
+border-color: var(--color-border);
+
+/* ❌ Bad: Hardcoded colors */
+background: #f5f5f5;
+color: rgb(51, 51, 51);
+
+/* ❌ Bad: Using foreground token as background */
+background: var(--color-todo-foreground);  /* This is a text color! */
+```
+
+**Before adding component CSS colors**: Check if a semantic token exists in `THEMING.md`. If not, add one to `styles.css` first.
 
 **Reference**: See `src/PraxisNote.Web/ClientApp/THEMING.md` for the full token reference and usage guidelines.
 
