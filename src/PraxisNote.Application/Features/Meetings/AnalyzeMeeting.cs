@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Meetings.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
@@ -8,7 +9,8 @@ namespace PraxisNote.Application.Features.Meetings;
 public sealed class AnalyzeMeeting(
     IMeetingRepository meetingRepository,
     IMeetingAnalyzer meetingAnalyzer,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ILogger<AnalyzeMeeting> logger)
 {
     public record Command(Guid MeetingId, Guid UserId);
 
@@ -19,20 +21,35 @@ public sealed class AnalyzeMeeting(
         if (meeting is null || meeting.UserId != command.UserId)
             return false;
 
+        // Validate transcript exists before starting analysis
+        if (string.IsNullOrWhiteSpace(meeting.TranscriptContent))
+            return false;
+
         meeting.StartAnalysis();
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         try
         {
-            var result = await meetingAnalyzer.AnalyzeAsync(meeting.TranscriptContent!, cancellationToken);
+            var result = await meetingAnalyzer.AnalyzeAsync(meeting.TranscriptContent, cancellationToken);
 
             meeting.CompleteAnalysis(
                 result.Summary,
                 JsonSerializer.Serialize(result.KeyPoints),
                 JsonSerializer.Serialize(result.Decisions));
         }
-        catch
+        catch (OperationCanceledException)
         {
+            // Propagate cancellation so callers can observe it
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to analyze meeting {MeetingId} for user {UserId}",
+                meeting.Id,
+                command.UserId);
+
             meeting.FailAnalysis();
         }
 
