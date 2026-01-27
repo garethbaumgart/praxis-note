@@ -236,7 +236,7 @@ import { CheckboxStatus } from './note.model';
       color: var(--color-accent-solid);
       border: none;
       cursor: pointer;
-      pointer-events: auto;
+      pointer-events: none;
       opacity: 0;
       transition: opacity 0.15s, background 0.15s;
     }
@@ -245,8 +245,10 @@ import { CheckboxStatus } from './note.model';
       font-size: 10px;
     }
 
-    .tiptap-editor-wrapper:hover .promote-overlay-btn {
+    .tiptap-editor-wrapper:hover .promote-overlay-btn,
+    .promote-overlay-btn:focus-visible {
       opacity: 1;
+      pointer-events: auto;
     }
 
     .promote-overlay-btn:hover {
@@ -288,6 +290,7 @@ import { CheckboxStatus } from './note.model';
     @media (hover: none) {
       .promote-overlay-btn {
         opacity: 1;
+        pointer-events: auto;
       }
     }
 
