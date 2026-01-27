@@ -33,10 +33,13 @@ This approach provides:
 
 | Token | Color | Usage |
 |-------|-------|-------|
-| `bg-todo` / `text-todo-foreground` | Slate | Todo column |
-| `bg-inprogress` / `text-inprogress-foreground` | Sky | In Progress column |
-| `bg-done` / `text-done-foreground` | Emerald | Done column |
-| `bg-archive` / `text-archive-foreground` | Violet | Archive column |
+| `bg-todo` / `text-todo-foreground` | Cyan | Todo column background/text |
+| `bg-inprogress` / `text-inprogress-foreground` | Orange | In Progress column |
+| `bg-done` / `text-done-foreground` | Green | Done column |
+| `bg-archive` / `text-archive-foreground` | Purple | Archive column |
+| `--color-todo-solid` | Cyan | Solid badge backgrounds |
+| `--color-inprogress-solid` | Orange | Solid badge backgrounds |
+| `--color-done-solid` | Green | Solid badge backgrounds |
 
 ### Notification Types
 

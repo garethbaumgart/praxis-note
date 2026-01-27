@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, input, output, signal, effect, inject, viewChild } from '@angular/core';
 import { Dialog } from 'primeng/dialog';
-import { Note } from './note.model';
+import { Note, CheckboxStatus } from './note.model';
 import { NoteService } from './note.service';
 import { PdfExportService } from './pdf-export.service';
 import { TiptapEditorComponent } from './tiptap-editor.component';
+import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-note-editor',
@@ -31,7 +32,9 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
           [initialContent]="initialContent()"
           [isNewNote]="isNewNote()"
           [resetTrigger]="resetCounter()"
+          [checkboxStatuses]="checkboxStatuses()"
           (contentChange)="onContentChange($event)"
+          (promoteCheckbox)="onPromoteCheckbox($event)"
         />
 
         <!-- Tags display -->
@@ -101,6 +104,7 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
 export class NoteEditorComponent {
   private readonly noteService = inject(NoteService);
   private readonly pdfExportService = inject(PdfExportService);
+  private readonly toast = inject(ToastService);
 
   readonly visible = input.required<boolean>();
   readonly note = input<Note | null>(null);
@@ -118,6 +122,9 @@ export class NoteEditorComponent {
   /** Reset counter to force editor re-initialization */
   readonly resetCounter = signal(0);
 
+  /** Checkbox status data for the current note */
+  readonly checkboxStatuses = signal<CheckboxStatus[]>([]);
+
   /** Current content for saving (updated on every editor change) */
   private currentContent = '';
 
@@ -134,7 +141,20 @@ export class NoteEditorComponent {
         this.isNewNote.set(!n);
         // Increment to force editor reset
         this.resetCounter.update((c) => c + 1);
+        // Load checkbox statuses for existing notes
+        if (n) {
+          this.loadCheckboxStatuses(n.id);
+        } else {
+          this.checkboxStatuses.set([]);
+        }
       }
+    });
+  }
+
+  private loadCheckboxStatuses(noteId: string): void {
+    this.noteService.getCheckboxStatus(noteId).subscribe({
+      next: (statuses) => this.checkboxStatuses.set(statuses),
+      error: () => this.checkboxStatuses.set([]),
     });
   }
 
@@ -178,5 +198,26 @@ export class NoteEditorComponent {
         this.tiptapEditor()?.focus();
       }, 50);
     }
+  }
+
+  onPromoteCheckbox(event: { checkboxIndex: number }): void {
+    const n = this.note();
+    if (!n) {
+      this.toast.error('Cannot promote checkbox in unsaved note');
+      return;
+    }
+
+    const checkboxId = `cb-${event.checkboxIndex + 1}`;
+
+    this.noteService.promoteCheckbox(n.id, checkboxId).subscribe({
+      next: (result) => {
+        this.toast.success({ summary: 'Task created', detail: result.title });
+        // Reload checkbox statuses to show the linked badge
+        this.loadCheckboxStatuses(n.id);
+      },
+      error: () => {
+        this.toast.error('Failed to promote checkbox to task');
+      },
+    });
   }
 }
