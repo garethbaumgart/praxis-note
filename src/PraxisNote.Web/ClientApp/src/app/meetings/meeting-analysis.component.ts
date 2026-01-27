@@ -40,18 +40,8 @@ import { Meeting, parseJsonArray } from './meeting.model';
         </div>
       }
 
-      <!-- No transcript -->
-      @else if (!hasTranscript()) {
-        <p class="text-sm text-foreground-muted">Add a transcript to enable AI analysis.</p>
-      }
-
-      <!-- No analysis yet -->
-      @else if (!hasAnalysis()) {
-        <p class="text-sm text-foreground-muted">Click "Analyze" to generate a summary, key points, and decisions.</p>
-      }
-
-      <!-- Analysis results -->
-      @else {
+      <!-- Analysis results (show even if transcript was cleared) -->
+      @else if (hasAnalysis()) {
         <div class="space-y-4">
           <!-- Summary -->
           @if (meeting().summary) {
@@ -97,6 +87,16 @@ import { Meeting, parseJsonArray } from './meeting.model';
           }
         </div>
       }
+
+      <!-- No transcript -->
+      @else if (!hasTranscript()) {
+        <p class="text-sm text-foreground-muted">Add a transcript to enable AI analysis.</p>
+      }
+
+      <!-- No analysis yet (has transcript but no analysis) -->
+      @else {
+        <p class="text-sm text-foreground-muted">Click "Analyze" to generate a summary, key points, and decisions.</p>
+      }
     </div>
   `,
 })
@@ -107,7 +107,12 @@ export class MeetingAnalysisComponent {
   readonly hasTranscript = computed(() => !!this.meeting().transcriptContent);
   readonly isProcessing = computed(() => this.meeting().status === 'Processing');
   readonly isFailed = computed(() => this.meeting().status === 'Failed');
-  readonly hasAnalysis = computed(() => !!this.meeting().summary);
+  readonly hasAnalysis = computed(() =>
+    !!this.meeting().summary?.trim() ||
+    this.keyPoints().length > 0 ||
+    this.decisions().length > 0 ||
+    this.meeting().status === 'Ready'
+  );
   readonly canAnalyze = computed(() => !this.isProcessing());
 
   readonly keyPoints = computed(() => parseJsonArray(this.meeting().keyPoints));
