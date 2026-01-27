@@ -66,6 +66,7 @@ public static class DependencyInjection
         services.AddScoped<DeleteMeeting>();
         services.AddScoped<SubmitTranscript>();
         services.AddScoped<ClearTranscript>();
+        services.AddScoped<AnalyzeMeeting>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();

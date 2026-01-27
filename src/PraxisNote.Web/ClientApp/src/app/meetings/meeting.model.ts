@@ -7,8 +7,20 @@ export interface Meeting {
   attendees: string | null;
   transcriptContent: string | null;
   status: MeetingStatus;
+  summary: string | null;
+  keyPoints: string | null;
+  decisions: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export function parseJsonArray(json: string | null): string[] {
+  if (!json) return [];
+  try {
+    return JSON.parse(json);
+  } catch {
+    return [];
+  }
 }
 
 export interface MeetingGroup {

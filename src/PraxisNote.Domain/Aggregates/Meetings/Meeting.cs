@@ -45,6 +45,21 @@ public sealed class Meeting : AggregateRoot
     public string? TranscriptContent { get; private set; }
 
     /// <summary>
+    /// AI-generated summary of the meeting.
+    /// </summary>
+    public string? Summary { get; private set; }
+
+    /// <summary>
+    /// AI-generated key discussion points. Stored as JSON array.
+    /// </summary>
+    public string? KeyPoints { get; private set; }
+
+    /// <summary>
+    /// AI-generated decisions made during the meeting. Stored as JSON array.
+    /// </summary>
+    public string? Decisions { get; private set; }
+
+    /// <summary>
     /// When this meeting was created.
     /// </summary>
     public DateTimeOffset CreatedAt { get; private init; }
@@ -170,6 +185,59 @@ public sealed class Meeting : AggregateRoot
             return;
 
         TranscriptContent = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Starts AI analysis of the meeting transcript.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when no transcript exists.</exception>
+    public void StartAnalysis()
+    {
+        if (string.IsNullOrWhiteSpace(TranscriptContent))
+            throw new InvalidOperationException("Cannot analyze meeting without transcript");
+
+        UpdateStatus(MeetingStatus.Processing);
+    }
+
+    /// <summary>
+    /// Completes AI analysis with the generated results.
+    /// </summary>
+    /// <param name="summary">The AI-generated summary.</param>
+    /// <param name="keyPoints">JSON array of key discussion points.</param>
+    /// <param name="decisions">JSON array of decisions made.</param>
+    public void CompleteAnalysis(string summary, string? keyPoints, string? decisions)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(summary, nameof(summary));
+
+        Summary = summary.Trim();
+        KeyPoints = keyPoints;
+        Decisions = decisions;
+        Status = MeetingStatus.Ready;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Marks the analysis as failed.
+    /// </summary>
+    public void FailAnalysis()
+    {
+        Status = MeetingStatus.Failed;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Clears the analysis results and resets status to Draft.
+    /// </summary>
+    public void ClearAnalysis()
+    {
+        if (Summary is null && KeyPoints is null && Decisions is null)
+            return;
+
+        Summary = null;
+        KeyPoints = null;
+        Decisions = null;
+        Status = MeetingStatus.Draft;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

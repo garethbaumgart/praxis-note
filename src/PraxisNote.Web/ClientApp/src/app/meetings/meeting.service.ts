@@ -75,6 +75,9 @@ export class MeetingService {
       attendees: attendees ?? null,
       transcriptContent: null,
       status: 'Draft',
+      summary: null,
+      keyPoints: null,
+      decisions: null,
       createdAt: now,
       updatedAt: now,
     };
@@ -160,6 +163,64 @@ export class MeetingService {
         this.loadMeetings();
       },
     });
+  }
+
+  analyzeMeeting(id: string): void {
+    // Optimistic update - set status to Processing
+    this._meetings.update(meetings =>
+      meetings.map(m =>
+        m.id === id
+          ? { ...m, status: 'Processing' as const, updatedAt: new Date().toISOString() }
+          : m
+      )
+    );
+
+    this.http.post(`/api/meetings/${id}/analyze`, {}).subscribe({
+      next: () => {
+        // Poll for completion
+        this.pollForAnalysisCompletion(id);
+      },
+      error: () => {
+        this.toast.error('Failed to start analysis');
+        this.loadMeetings();
+      },
+    });
+  }
+
+  private pollForAnalysisCompletion(id: string): void {
+    const pollInterval = 2000; // Poll every 2 seconds
+    const maxPolls = 60; // Stop after 2 minutes
+    let pollCount = 0;
+
+    const poll = setInterval(() => {
+      pollCount++;
+
+      this.http.get<Meeting>(`/api/meetings/${id}`).subscribe({
+        next: meeting => {
+          if (meeting.status !== 'Processing') {
+            clearInterval(poll);
+            this._meetings.update(meetings =>
+              meetings.map(m => (m.id === id ? meeting : m))
+            );
+
+            if (meeting.status === 'Ready') {
+              this.toast.success({ summary: 'Analysis complete' });
+            } else if (meeting.status === 'Failed') {
+              this.toast.error('Analysis failed');
+            }
+          } else if (pollCount >= maxPolls) {
+            clearInterval(poll);
+            this.toast.error('Analysis timed out');
+            this.loadMeetings();
+          }
+        },
+        error: () => {
+          clearInterval(poll);
+          this.toast.error('Failed to check analysis status');
+          this.loadMeetings();
+        },
+      });
+    }, pollInterval);
   }
 
   deleteMeetingWithUndo(id: string, undoTimeoutMs = 5000): Meeting | null {

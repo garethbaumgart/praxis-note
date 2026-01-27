@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, output, inject, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -6,12 +6,14 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { Meeting } from './meeting.model';
+import { MeetingAnalysisComponent } from './meeting-analysis.component';
+import { MeetingService } from './meeting.service';
 
 @Component({
   selector: 'app-meeting-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule],
+  imports: [FormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule, MeetingAnalysisComponent],
   template: `
     <p-dialog
       [visible]="visible()"
@@ -82,6 +84,14 @@ import { Meeting } from './meeting.model';
             ></textarea>
             <p class="text-xs text-foreground-muted mt-1">Paste a transcript from your meeting recording or notes</p>
           </div>
+
+          <!-- AI Analysis -->
+          @if (currentMeeting()) {
+            <app-meeting-analysis
+              [meeting]="currentMeeting()!"
+              (onAnalyze)="analyze()"
+            />
+          }
         }
       </div>
 
@@ -103,9 +113,18 @@ import { Meeting } from './meeting.model';
   `,
 })
 export class MeetingEditorComponent {
+  private readonly meetingService = inject(MeetingService);
+
   readonly visible = signal(false);
   readonly isEditing = signal(false);
+  private readonly meetingId = signal<string | null>(null);
   readonly onSave = output<{ title?: string; meetingDate?: string; attendees?: string; transcript?: string }>();
+
+  readonly currentMeeting = computed(() => {
+    const id = this.meetingId();
+    if (!id) return null;
+    return this.meetingService.meetings().find(m => m.id === id) ?? null;
+  });
 
   title = '';
   meetingDate: Date | null = null;
@@ -115,18 +134,27 @@ export class MeetingEditorComponent {
   open(meeting?: Meeting): void {
     if (meeting) {
       this.isEditing.set(true);
+      this.meetingId.set(meeting.id);
       this.title = meeting.title ?? '';
       this.meetingDate = meeting.meetingDate ? new Date(meeting.meetingDate) : new Date();
       this.attendees = meeting.attendees ?? '';
       this.transcript = meeting.transcriptContent ?? '';
     } else {
       this.isEditing.set(false);
+      this.meetingId.set(null);
       this.title = '';
       this.meetingDate = new Date();
       this.attendees = '';
       this.transcript = '';
     }
     this.visible.set(true);
+  }
+
+  analyze(): void {
+    const id = this.meetingId();
+    if (id) {
+      this.meetingService.analyzeMeeting(id);
+    }
   }
 
   save(): void {
