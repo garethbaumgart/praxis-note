@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Notes;
 using PraxisNote.Application.Features.Notes.Services;
 using PraxisNote.Application.Features.Notifications;
@@ -56,6 +57,13 @@ public static class DependencyInjection
         // Note services
         services.AddSingleton<ICheckboxExtractor, TiptapCheckboxExtractor>();
         services.AddSingleton<ICheckboxUpdater, TiptapCheckboxUpdater>();
+
+        // Meeting use cases
+        services.AddScoped<CreateMeeting>();
+        services.AddScoped<GetUserMeetings>();
+        services.AddScoped<GetMeetingById>();
+        services.AddScoped<UpdateMeeting>();
+        services.AddScoped<DeleteMeeting>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();
