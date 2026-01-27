@@ -17,7 +17,9 @@ export interface Meeting {
 export function parseJsonArray(json: string | null): string[] {
   if (!json) return [];
   try {
-    return JSON.parse(json);
+    const parsed = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is string => typeof item === 'string');
   } catch {
     return [];
   }

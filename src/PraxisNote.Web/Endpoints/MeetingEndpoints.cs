@@ -178,7 +178,7 @@ public static class MeetingEndpoints
         var command = new AnalyzeMeeting.Command(id, userId.Value);
         var success = await analyzeMeeting.ExecuteAsync(command, cancellationToken);
 
-        return success ? Results.Accepted() : Results.NotFound();
+        return success ? Results.NoContent() : Results.NotFound();
     }
 }
 

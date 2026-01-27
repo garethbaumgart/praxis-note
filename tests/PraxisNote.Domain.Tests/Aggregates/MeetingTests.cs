@@ -581,11 +581,11 @@ public class MeetingTests
     }
 
     [Fact]
-    public void StartAnalysis_WithEmptyTranscript_ThrowsInvalidOperationException()
+    public void StartAnalysis_WithNullTranscript_ThrowsInvalidOperationException()
     {
         // Arrange
         var meeting = Meeting.Create(_validUserId);
-        // Can't submit empty transcript (SubmitTranscript throws), so transcript is null
+        // Transcript is null by default (can't submit empty - SubmitTranscript validates)
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
@@ -618,14 +618,14 @@ public class MeetingTests
     }
 
     [Fact]
-    public void CompleteAnalysis_WithNullSummary_ThrowsArgumentException()
+    public void CompleteAnalysis_WithNullSummary_ThrowsArgumentNullException()
     {
         // Arrange
         var meeting = Meeting.Create(_validUserId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
-        // Act & Assert
+        // Act & Assert - ThrowIfNullOrWhiteSpace internally calls ThrowIfNull first for null values
         Assert.Throws<ArgumentNullException>(() =>
             meeting.CompleteAnalysis(null!, null, null));
     }

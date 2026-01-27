@@ -213,8 +213,7 @@ public sealed class Meeting : AggregateRoot
         Summary = summary.Trim();
         KeyPoints = keyPoints;
         Decisions = decisions;
-        Status = MeetingStatus.Ready;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdateStatus(MeetingStatus.Ready);
     }
 
     /// <summary>
@@ -222,8 +221,7 @@ public sealed class Meeting : AggregateRoot
     /// </summary>
     public void FailAnalysis()
     {
-        Status = MeetingStatus.Failed;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdateStatus(MeetingStatus.Failed);
     }
 
     /// <summary>
@@ -231,13 +229,12 @@ public sealed class Meeting : AggregateRoot
     /// </summary>
     public void ClearAnalysis()
     {
-        if (Summary is null && KeyPoints is null && Decisions is null)
+        if (Summary is null && KeyPoints is null && Decisions is null && Status != MeetingStatus.Failed)
             return;
 
         Summary = null;
         KeyPoints = null;
         Decisions = null;
-        Status = MeetingStatus.Draft;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        UpdateStatus(MeetingStatus.Draft);
     }
 }

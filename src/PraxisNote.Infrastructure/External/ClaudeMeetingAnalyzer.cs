@@ -10,6 +10,7 @@ namespace PraxisNote.Infrastructure.External;
 
 public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 {
+    private readonly AnthropicClient _client;
     private readonly MeetingAnalysisSettings _settings;
     private readonly ILogger<ClaudeMeetingAnalyzer> _logger;
 
@@ -22,25 +23,25 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         Respond ONLY with valid JSON, no other text or markdown formatting.
 
         Transcript:
-        {0}
         """;
 
     public ClaudeMeetingAnalyzer(IOptions<MeetingAnalysisSettings> settings, ILogger<ClaudeMeetingAnalyzer> logger)
     {
         _settings = settings.Value;
         _logger = logger;
-    }
 
-    public async Task<MeetingAnalysisResult> AnalyzeAsync(string transcript, CancellationToken cancellationToken = default)
-    {
         if (string.IsNullOrWhiteSpace(_settings.ApiKey))
         {
             throw new InvalidOperationException("Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
         }
 
-        var client = new AnthropicClient(_settings.ApiKey);
+        _client = new AnthropicClient(_settings.ApiKey);
+    }
 
-        var prompt = string.Format(AnalysisPrompt, transcript);
+    public async Task<MeetingAnalysisResult> AnalyzeAsync(string transcript, CancellationToken cancellationToken = default)
+    {
+        // Use string concatenation to avoid format string vulnerabilities
+        var prompt = AnalysisPrompt + transcript;
 
         var parameters = new MessageParameters
         {
@@ -54,7 +55,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
 
-        var response = await client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
+        var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
 
         var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
 
