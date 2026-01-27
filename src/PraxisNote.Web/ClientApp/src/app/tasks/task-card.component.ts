@@ -80,7 +80,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                   <!-- Mobile: always visible delete button -->
                   <button
                     type="button"
-                    class="flex md:hidden text-foreground-muted/30 hover:text-danger text-xs transition-colors"
+                    class="flex md:hidden text-foreground-muted/50 hover:text-danger text-xs transition-colors"
                     (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                     aria-label="Delete task"
                   >
@@ -89,7 +89,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                   <!-- Desktop: hover-reveal delete button (overlays time) -->
                   <button
                     type="button"
-                    class="hidden md:group-hover:flex absolute right-0 text-foreground-muted/40 hover:text-danger text-xs"
+                    class="hidden md:group-hover:flex absolute right-0 text-foreground-muted/50 hover:text-danger text-xs"
                     (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                     aria-label="Delete task"
                   >
@@ -100,7 +100,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 <!-- No time (Todo): mobile shows always, desktop on hover -->
                 <button
                   type="button"
-                  class="flex text-foreground-muted/30 hover:text-danger text-xs transition-colors md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
+                  class="flex text-foreground-muted/50 hover:text-danger text-xs transition-colors md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
                   (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                   aria-label="Delete task"
                 >
@@ -427,11 +427,11 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                         />
                       } @else {
                         <!-- Time: mobile shows both time and delete, desktop swaps on hover/focus -->
-                        <span class="text-foreground-muted/30 shrink-0 md:group-hover/comment:hidden md:group-focus-within/comment:hidden">{{ formatCommentTime(comment) }}</span>
+                        <span class="text-foreground-muted/50 shrink-0 md:group-hover/comment:hidden md:group-focus-within/comment:hidden">{{ formatCommentTime(comment) }}</span>
                         <!-- Mobile: always visible delete button -->
                         <button
                           type="button"
-                          class="flex md:hidden text-foreground-muted/30 hover:text-danger shrink-0 text-xs"
+                          class="flex md:hidden text-foreground-muted/50 hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                           [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >

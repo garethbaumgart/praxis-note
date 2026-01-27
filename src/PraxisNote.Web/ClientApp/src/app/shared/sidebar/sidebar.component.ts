@@ -37,7 +37,9 @@ export class SidebarComponent {
   ];
 
   protected isActive(path: string): boolean {
-    return this.router.url === path || this.router.url.startsWith(path + '/');
+    // Extract pathname without query params or fragments
+    const currentPath = this.router.url.split('?')[0].split('#')[0];
+    return currentPath === path || currentPath.startsWith(path + '/');
   }
 
   protected navigate(path: string): void {
