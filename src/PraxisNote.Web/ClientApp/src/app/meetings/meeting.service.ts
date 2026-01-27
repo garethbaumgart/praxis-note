@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Meeting, MeetingGroup } from './meeting.model';
 import { ToastService } from '../shared/services/toast.service';
@@ -12,7 +12,6 @@ interface PendingDeletion {
 @Injectable({ providedIn: 'root' })
 export class MeetingService {
   private readonly http = inject(HttpClient);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly toast = inject(ToastService);
 
   private readonly pendingDeletions = new Map<string, PendingDeletion>();
@@ -98,11 +97,11 @@ export class MeetingService {
   }
 
   updateMeeting(id: string, title?: string, meetingDate?: string, attendees?: string): void {
-    // Optimistic update
+    // Optimistic update - match backend behavior where undefined becomes null
     this._meetings.update(meetings =>
       meetings.map(m =>
         m.id === id
-          ? { ...m, title: title ?? m.title, meetingDate: meetingDate ?? m.meetingDate, attendees: attendees ?? m.attendees, updatedAt: new Date().toISOString() }
+          ? { ...m, title: title ?? null, meetingDate: meetingDate ?? null, attendees: attendees ?? null, updatedAt: new Date().toISOString() }
           : m
       )
     );
