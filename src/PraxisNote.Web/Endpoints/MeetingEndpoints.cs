@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Web.Extensions;
 
@@ -20,7 +21,7 @@ public static class MeetingEndpoints
 
     private static async Task<IResult> HandleGetMeetings(
         ClaimsPrincipal user,
-        GetUserMeetings getUserMeetings,
+        [FromServices] GetUserMeetings getUserMeetings,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -38,7 +39,7 @@ public static class MeetingEndpoints
     private static async Task<IResult> HandleGetMeetingById(
         Guid id,
         ClaimsPrincipal user,
-        GetMeetingById getMeetingById,
+        [FromServices] GetMeetingById getMeetingById,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -56,7 +57,7 @@ public static class MeetingEndpoints
     private static async Task<IResult> HandleCreateMeeting(
         ClaimsPrincipal user,
         CreateMeetingRequest request,
-        CreateMeeting createMeeting,
+        [FromServices] CreateMeeting createMeeting,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -79,7 +80,7 @@ public static class MeetingEndpoints
         Guid id,
         ClaimsPrincipal user,
         UpdateMeetingRequest request,
-        UpdateMeeting updateMeeting,
+        [FromServices] UpdateMeeting updateMeeting,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -102,7 +103,7 @@ public static class MeetingEndpoints
     private static async Task<IResult> HandleDeleteMeeting(
         Guid id,
         ClaimsPrincipal user,
-        DeleteMeeting deleteMeeting,
+        [FromServices] DeleteMeeting deleteMeeting,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
