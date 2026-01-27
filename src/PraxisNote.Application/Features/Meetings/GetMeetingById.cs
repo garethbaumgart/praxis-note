@@ -20,6 +20,9 @@ public sealed class GetMeetingById(IMeetingRepository meetingRepository)
             meeting.Attendees,
             meeting.TranscriptContent,
             meeting.Status.ToString(),
+            meeting.Summary,
+            meeting.KeyPoints,
+            meeting.Decisions,
             meeting.CreatedAt,
             meeting.UpdatedAt);
     }

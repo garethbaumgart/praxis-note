@@ -24,6 +24,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Notes** - Google Keep-style card grid with TipTap rich text editor
 - ✅ **Checkbox-Task Sync** - Promote checkboxes to tasks with bidirectional sync (complete a task, checkbox is checked; check a checkbox, task is done)
 - ✅ **Meetings** - Daily grouped meeting list with fire-and-forget capture workflow
+- ✅ **AI Analysis** - Claude-powered meeting transcript analysis for summaries, key points, and decisions
 
 ✅ = Implemented | 🚧 = Planned
 
@@ -47,6 +48,15 @@ docker compose --profile dev-stack up
 ```
 
 Open http://localhost:4200. Use the mock auth toolbar at the bottom to log in (no Google OAuth setup required).
+
+#### Optional: AI Analysis
+
+To enable AI-powered meeting analysis, set your Anthropic API key:
+
+```bash
+export MeetingAnalysis__ApiKey="sk-ant-..."
+docker compose --profile dev-stack up
+```
 
 To stop:
 ```bash

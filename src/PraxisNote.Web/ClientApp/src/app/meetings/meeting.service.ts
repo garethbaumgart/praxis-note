@@ -1,5 +1,7 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
+import { timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, EMPTY } from 'rxjs';
 import { Meeting, MeetingGroup } from './meeting.model';
 import { ToastService } from '../shared/services/toast.service';
 
@@ -13,8 +15,10 @@ interface PendingDeletion {
 export class MeetingService {
   private readonly http = inject(HttpClient);
   private readonly toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly pendingDeletions = new Map<string, PendingDeletion>();
+  private readonly stopPolling$ = new Subject<void>();
 
   private readonly _meetings = signal<Meeting[]>([]);
   private readonly _loading = signal(false);
@@ -75,6 +79,9 @@ export class MeetingService {
       attendees: attendees ?? null,
       transcriptContent: null,
       status: 'Draft',
+      summary: null,
+      keyPoints: null,
+      decisions: null,
       createdAt: now,
       updatedAt: now,
     };
@@ -160,6 +167,77 @@ export class MeetingService {
         this.loadMeetings();
       },
     });
+  }
+
+  analyzeMeeting(id: string): void {
+    // Optimistic update - set status to Processing
+    this._meetings.update(meetings =>
+      meetings.map(m =>
+        m.id === id
+          ? { ...m, status: 'Processing' as const, updatedAt: new Date().toISOString() }
+          : m
+      )
+    );
+
+    this.http.post(`/api/meetings/${id}/analyze`, {}).subscribe({
+      next: () => {
+        // Poll for completion
+        this.pollForAnalysisCompletion(id);
+      },
+      error: () => {
+        this.toast.error('Failed to start analysis');
+        this.loadMeetings();
+      },
+    });
+  }
+
+  private pollForAnalysisCompletion(id: string): void {
+    const pollInterval = 2000; // Poll every 2 seconds
+    const maxPolls = 60; // Stop after 2 minutes
+
+    // Cancel any existing polling for this meeting
+    this.stopPolling$.next();
+
+    timer(0, pollInterval)
+      .pipe(
+        take(maxPolls),
+        takeUntil(this.stopPolling$),
+        takeUntilDestroyed(this.destroyRef),
+        exhaustMap(() => this.http.get<Meeting>(`/api/meetings/${id}`)),
+        tap(meeting => {
+          if (meeting.status !== 'Processing') {
+            this._meetings.update(meetings =>
+              meetings.map(m => (m.id === id ? meeting : m))
+            );
+
+            if (meeting.status === 'Ready') {
+              this.toast.success({ summary: 'Analysis complete' });
+            } else if (meeting.status === 'Failed') {
+              this.toast.error('Analysis failed');
+            }
+
+            // Stop polling by emitting to the subject
+            this.stopPolling$.next();
+          }
+        }),
+        filter(meeting => meeting.status !== 'Processing'),
+        take(1),
+        catchError(() => {
+          this.toast.error('Failed to check analysis status');
+          this.loadMeetings();
+          return EMPTY;
+        })
+      )
+      .subscribe({
+        complete: () => {
+          // If we completed all polls without a terminal state, it timed out
+          const meeting = this._meetings().find(m => m.id === id);
+          if (meeting?.status === 'Processing') {
+            this.toast.error('Analysis timed out');
+            this.loadMeetings();
+          }
+        },
+      });
   }
 
   deleteMeetingWithUndo(id: string, undoTimeoutMs = 5000): Meeting | null {

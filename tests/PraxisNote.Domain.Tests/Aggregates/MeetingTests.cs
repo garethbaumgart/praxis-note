@@ -552,4 +552,246 @@ public class MeetingTests
     }
 
     #endregion
+
+    #region StartAnalysis Tests
+
+    [Fact]
+    public void StartAnalysis_WithTranscript_SetsProcessingStatus()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript content");
+
+        // Act
+        meeting.StartAnalysis();
+
+        // Assert
+        Assert.Equal(MeetingStatus.Processing, meeting.Status);
+    }
+
+    [Fact]
+    public void StartAnalysis_WithoutTranscript_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
+            meeting.StartAnalysis());
+    }
+
+    [Fact]
+    public void StartAnalysis_WithNullTranscript_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        // Transcript is null by default (can't submit empty - SubmitTranscript validates)
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
+            meeting.StartAnalysis());
+    }
+
+    #endregion
+
+    #region CompleteAnalysis Tests
+
+    [Fact]
+    public void CompleteAnalysis_WithValidData_SetsAnalysisFieldsAndReadyStatus()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var summary = "This was a productive meeting.";
+        var keyPoints = "[\"Point 1\", \"Point 2\"]";
+        var decisions = "[\"Decision 1\"]";
+
+        // Act
+        meeting.CompleteAnalysis(summary, keyPoints, decisions);
+
+        // Assert
+        Assert.Equal(MeetingStatus.Ready, meeting.Status);
+        Assert.Equal(summary, meeting.Summary);
+        Assert.Equal(keyPoints, meeting.KeyPoints);
+        Assert.Equal(decisions, meeting.Decisions);
+    }
+
+    [Fact]
+    public void CompleteAnalysis_WithNullSummary_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act & Assert - ThrowIfNullOrWhiteSpace internally calls ThrowIfNull first for null values
+        Assert.Throws<ArgumentNullException>(() =>
+            meeting.CompleteAnalysis(null!, null, null));
+    }
+
+    [Fact]
+    public void CompleteAnalysis_WithEmptySummary_ThrowsArgumentException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            meeting.CompleteAnalysis("", null, null));
+    }
+
+    [Fact]
+    public void CompleteAnalysis_WithWhitespaceSummary_ThrowsArgumentException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            meeting.CompleteAnalysis("   ", null, null));
+    }
+
+    [Fact]
+    public void CompleteAnalysis_TrimsSummary()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act
+        meeting.CompleteAnalysis("  Summary with whitespace  ", null, null);
+
+        // Assert
+        Assert.Equal("Summary with whitespace", meeting.Summary);
+    }
+
+    [Fact]
+    public void CompleteAnalysis_WithNullKeyPointsAndDecisions_Succeeds()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act
+        meeting.CompleteAnalysis("Summary", null, null);
+
+        // Assert
+        Assert.Equal(MeetingStatus.Ready, meeting.Status);
+        Assert.Null(meeting.KeyPoints);
+        Assert.Null(meeting.Decisions);
+    }
+
+    [Fact]
+    public void CompleteAnalysis_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.CompleteAnalysis("Summary", null, null);
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    #endregion
+
+    #region FailAnalysis Tests
+
+    [Fact]
+    public void FailAnalysis_SetsFailedStatus()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act
+        meeting.FailAnalysis();
+
+        // Assert
+        Assert.Equal(MeetingStatus.Failed, meeting.Status);
+    }
+
+    [Fact]
+    public void FailAnalysis_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.FailAnalysis();
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    #endregion
+
+    #region ClearAnalysis Tests
+
+    [Fact]
+    public void ClearAnalysis_WithExistingAnalysis_ClearsFieldsAndSetsDraftStatus()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        meeting.CompleteAnalysis("Summary", "[\"Key Point\"]", "[\"Decision\"]");
+
+        // Act
+        meeting.ClearAnalysis();
+
+        // Assert
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Null(meeting.Summary);
+        Assert.Null(meeting.KeyPoints);
+        Assert.Null(meeting.Decisions);
+    }
+
+    [Fact]
+    public void ClearAnalysis_WithExistingAnalysis_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        meeting.CompleteAnalysis("Summary", null, null);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.ClearAnalysis();
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void ClearAnalysis_WithNoAnalysis_DoesNotUpdateUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.ClearAnalysis();
+
+        // Assert
+        Assert.Equal(originalUpdatedAt, meeting.UpdatedAt);
+    }
+
+    #endregion
 }

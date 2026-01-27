@@ -46,9 +46,23 @@ Run these checks and **ensure they pass**:
 
 **STOP if any tests fail.** Fix the failures and re-run until all tests pass. Do not proceed to PR creation with failing tests.
 
-## Step 4: Browser Validation (Required Before PR Creation)
+## Step 4: Create the PR
 
-**CRITICAL**: For any PR with UI changes, you MUST validate the changes work correctly in the browser BEFORE creating the PR on GitHub. This prevents broken features from reaching production.
+Once tests pass:
+
+1. Push any remaining commits to the remote branch
+2. Create the PR using `gh pr create`
+
+## Step 5: Browser Validation (While CI Runs)
+
+**Purpose**: Validate UI changes work correctly while CI and AI reviews run in parallel, making efficient use of wait time.
+
+**Skip this step ONLY for**:
+- Markdown-only PRs (`.md` files only)
+- Backend-only changes with no UI impact
+- Configuration or CI workflow changes
+
+**For PRs with UI changes**:
 
 1. **Start the dev stack**: Run `docker compose --profile dev-stack up -d`
 2. **Wait for startup**: Wait for the app to be available at http://localhost:4200
@@ -60,21 +74,9 @@ Run these checks and **ensure they pass**:
    - Check responsive behavior if layout changes are involved
    - Test keyboard navigation if interactive elements are added
 5. **Document verification**: Take screenshots or note what was verified
-6. **Fix any issues**: If something doesn't work as expected, fix it and re-run tests before proceeding
+6. **Fix any issues**: If something doesn't work as expected, fix it, commit, push, and re-run tests
 
-**Skip this step ONLY for**:
-- Markdown-only PRs (`.md` files only)
-- Backend-only changes with no UI impact
-- Configuration or CI workflow changes
-
-**STOP if any UI validation fails.** Fix the issue, commit, push, and restart from Step 3.
-
-## Step 5: Create the PR
-
-Once tests pass AND browser validation is complete:
-
-1. Push any remaining commits to the remote branch
-2. Create the PR using `gh pr create`
+**If UI validation fails**: Fix the issue, commit, push, and restart from Step 3.
 
 ## Step 6: Post-PR Review and Monitoring
 

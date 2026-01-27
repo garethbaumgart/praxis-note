@@ -19,6 +19,7 @@ public static class MeetingEndpoints
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteMeeting);
         group.MapPost("/{id:guid}/transcript", (Delegate)HandleSubmitTranscript);
         group.MapDelete("/{id:guid}/transcript", (Delegate)HandleClearTranscript);
+        group.MapPost("/{id:guid}/analyze", (Delegate)HandleAnalyzeMeeting);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -158,6 +159,24 @@ public static class MeetingEndpoints
 
         var command = new ClearTranscript.Command(id, userId.Value);
         var success = await clearTranscript.ExecuteAsync(command, cancellationToken);
+
+        return success ? Results.NoContent() : Results.NotFound();
+    }
+
+    private static async Task<IResult> HandleAnalyzeMeeting(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] AnalyzeMeeting analyzeMeeting,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var command = new AnalyzeMeeting.Command(id, userId.Value);
+        var success = await analyzeMeeting.ExecuteAsync(command, cancellationToken);
 
         return success ? Results.NoContent() : Results.NotFound();
     }

@@ -7,5 +7,8 @@ public record MeetingDto(
     string? Attendees,
     string? TranscriptContent,
     string Status,
+    string? Summary,
+    string? KeyPoints,
+    string? Decisions,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);

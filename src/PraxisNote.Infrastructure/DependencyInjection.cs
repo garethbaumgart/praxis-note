@@ -2,12 +2,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Common;
+using PraxisNote.Application.Features.Meetings;
+using PraxisNote.Application.Features.Meetings.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Notifications;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.Users;
+using PraxisNote.Infrastructure.External;
 using PraxisNote.Infrastructure.Persistence;
 using PraxisNote.Infrastructure.Persistence.Repositories;
 
@@ -38,6 +41,10 @@ public static class DependencyInjection
         services.AddScoped<INoteRepository, NoteRepository>();
         services.AddScoped<IMeetingRepository, MeetingRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+
+        // External services
+        services.Configure<MeetingAnalysisSettings>(configuration.GetSection(MeetingAnalysisSettings.SectionName));
+        services.AddScoped<IMeetingAnalyzer, ClaudeMeetingAnalyzer>();
 
         return services;
     }
