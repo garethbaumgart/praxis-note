@@ -75,10 +75,11 @@ public class MeetingTests
 
         // Act
         var meeting = Meeting.Create(_validUserId);
+        var afterCreate = DateTimeOffset.UtcNow;
 
         // Assert
         Assert.NotNull(meeting.MeetingDate);
-        Assert.True(meeting.MeetingDate >= beforeCreate);
+        Assert.InRange(meeting.MeetingDate.Value, beforeCreate, afterCreate);
     }
 
     [Fact]

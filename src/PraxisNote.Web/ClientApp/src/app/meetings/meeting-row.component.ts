@@ -84,7 +84,7 @@ import { Meeting, MeetingStatus } from './meeting.model';
     }
 
     .status-failed {
-      background: rgba(191, 97, 106, 0.1);
+      background: var(--color-danger-bg, rgba(191, 97, 106, 0.1));
       color: var(--color-danger-base);
     }
   `],

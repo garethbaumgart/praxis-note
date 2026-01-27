@@ -54,7 +54,7 @@ public sealed class Meeting : AggregateRoot
     /// </summary>
     private Meeting() { }
 
-    private Meeting(Guid id, Guid userId, string? title, DateTimeOffset? meetingDate) : base(id)
+    private Meeting(Guid id, Guid userId, string? title, DateTimeOffset? meetingDate, string? attendees) : base(id)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
 
@@ -63,21 +63,22 @@ public sealed class Meeting : AggregateRoot
         UserId = userId;
         Title = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
         MeetingDate = meetingDate ?? now;
+        Attendees = string.IsNullOrWhiteSpace(attendees) ? null : attendees.Trim();
         Status = MeetingStatus.Draft;
         CreatedAt = now;
         UpdatedAt = now;
     }
 
     /// <summary>
-    /// Creates a new meeting with optional title and date.
+    /// Creates a new meeting with optional title, date, and attendees.
     /// </summary>
     /// <remarks>
     /// For back-to-back meetings, title can be added later during review.
     /// If meetingDate is null, defaults to current time.
     /// </remarks>
-    public static Meeting Create(Guid userId, string? title = null, DateTimeOffset? meetingDate = null)
+    public static Meeting Create(Guid userId, string? title = null, DateTimeOffset? meetingDate = null, string? attendees = null)
     {
-        return new Meeting(Guid.NewGuid(), userId, title, meetingDate);
+        return new Meeting(Guid.NewGuid(), userId, title, meetingDate, attendees);
     }
 
     /// <summary>

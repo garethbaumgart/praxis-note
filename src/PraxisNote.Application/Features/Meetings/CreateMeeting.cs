@@ -10,12 +10,7 @@ public sealed class CreateMeeting(IMeetingRepository meetingRepository, IUnitOfW
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
-        var meeting = Meeting.Create(command.UserId, command.Title, command.MeetingDate);
-
-        if (!string.IsNullOrWhiteSpace(command.Attendees))
-        {
-            meeting.UpdateAttendees(command.Attendees);
-        }
+        var meeting = Meeting.Create(command.UserId, command.Title, command.MeetingDate, command.Attendees);
 
         await meetingRepository.AddAsync(meeting, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

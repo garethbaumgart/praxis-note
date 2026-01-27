@@ -14,8 +14,7 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
     {
         return await context.Meetings
             .Where(m => m.UserId == userId)
-            .OrderByDescending(m => m.MeetingDate)
-            .ThenByDescending(m => m.CreatedAt)
+            .OrderByDescending(m => m.MeetingDate ?? m.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 
