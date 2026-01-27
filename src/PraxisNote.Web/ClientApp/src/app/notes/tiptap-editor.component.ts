@@ -805,8 +805,13 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     taskStatus: 'Todo' | 'InProgress' | 'Done' | null;
   }>>([]);
 
-  /** Current block type based on cursor position */
+  /** Signal to track editor selection changes for reactive updates */
+  private readonly selectionVersion = signal(0);
+
+  /** Current block type based on cursor position - reactive via selectionVersion */
   readonly currentBlockType = computed(() => {
+    // Read selectionVersion to make this computed reactive on selection changes
+    this.selectionVersion();
     if (this.editor.isActive('heading', { level: 1 })) return 'heading1';
     if (this.editor.isActive('heading', { level: 2 })) return 'heading2';
     if (this.editor.isActive('heading', { level: 3 })) return 'heading3';
@@ -889,6 +894,8 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.scheduleOverlayUpdate();
     },
     onSelectionUpdate: () => {
+      // Increment selectionVersion to trigger reactive updates for currentBlockType
+      this.selectionVersion.update(v => v + 1);
       this.cdr.markForCheck();
     },
   });
@@ -1230,10 +1237,16 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   insertImage(): void {
-    const url = window.prompt('Enter the image URL:');
-    if (url) {
-      this.editor.chain().focus().setImage({ src: url }).run();
+    const rawUrl = window.prompt('Enter the image URL:');
+    if (!rawUrl) return;
+
+    const url = this.normalizeUrl(rawUrl);
+    if (!url) {
+      window.alert('Please enter a valid http or https URL.');
+      return;
     }
+
+    this.editor.chain().focus().setImage({ src: url }).run();
   }
 
   insertTable(): void {
