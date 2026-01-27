@@ -39,7 +39,9 @@ public sealed class AnalyzeMeeting(
         }
         catch (OperationCanceledException)
         {
-            // Propagate cancellation so callers can observe it
+            // Mark as failed before propagating so meeting isn't stuck in Processing
+            meeting.FailAnalysis();
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
             throw;
         }
         catch (Exception ex)

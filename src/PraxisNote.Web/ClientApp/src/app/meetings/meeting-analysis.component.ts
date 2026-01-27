@@ -34,7 +34,7 @@ import { Meeting, parseJsonArray } from './meeting.model';
 
       <!-- Failed state -->
       @else if (isFailed()) {
-        <div class="flex items-center gap-3 text-red-500">
+        <div class="flex items-center gap-3 text-danger">
           <i class="pi pi-exclamation-circle"></i>
           <span class="text-sm">Analysis failed. Please try again.</span>
         </div>
@@ -83,7 +83,7 @@ import { Meeting, parseJsonArray } from './meeting.model';
               <ul class="space-y-1.5">
                 @for (decision of decisions(); track decision) {
                   <li class="flex gap-2 text-sm text-foreground">
-                    <i class="pi pi-bolt text-amber-500 mt-0.5 flex-shrink-0"></i>
+                    <i class="pi pi-bolt text-warning-foreground mt-0.5 flex-shrink-0"></i>
                     <span>{{ decision }}</span>
                   </li>
                 }
