@@ -58,16 +58,16 @@ import { ToastService } from '../shared/services/toast.service';
             >
               <i class="pi pi-file-pdf"></i>
             </button>
+            <button
+              type="button"
+              class="action-btn"
+              (click)="deleteNote()"
+              aria-label="Delete note"
+              title="Delete note"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
           }
-          <button
-            type="button"
-            class="action-btn"
-            (click)="deleteNote()"
-            aria-label="Delete note"
-            title="Delete note"
-          >
-            <i class="pi pi-trash"></i>
-          </button>
         </div>
       </header>
 
@@ -295,6 +295,8 @@ export class NoteEditorPage implements OnInit, OnDestroy {
 
   private currentContent = '';
   private noteId: string | null = null;
+  private pollingTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private isDestroyed = false;
 
   readonly noteTitle = computed(() => {
     const n = this.note();
@@ -334,8 +336,17 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.isDestroyed = true;
+    this.cancelPolling();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private cancelPolling(): void {
+    if (this.pollingTimeoutId !== null) {
+      clearTimeout(this.pollingTimeoutId);
+      this.pollingTimeoutId = null;
+    }
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -346,10 +357,27 @@ export class NoteEditorPage implements OnInit, OnDestroy {
       this.saveNow();
     }
 
-    // Go back with Escape
-    if (event.key === 'Escape') {
+    // Go back with Escape when not typing in an input/editor
+    if (event.key === 'Escape' && !this.isInEditableElement(event)) {
       this.navigateBack();
     }
+  }
+
+  private isInEditableElement(event: KeyboardEvent): boolean {
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      return false;
+    }
+
+    const editableElement = target.closest(
+      'input, textarea, [contenteditable=""], [contenteditable="true"]'
+    ) as HTMLElement | null;
+
+    if (editableElement) {
+      return true;
+    }
+
+    return target.isContentEditable;
   }
 
   private initNewNote(): void {
@@ -361,6 +389,9 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   }
 
   private loadNote(id: string): void {
+    // Cancel any previous polling when route changes
+    this.cancelPolling();
+
     this.noteId = id;
     this.loading.set(true);
 
@@ -371,6 +402,11 @@ export class NoteEditorPage implements OnInit, OnDestroy {
 
     // Wait for notes to load, then find the note
     const checkForNote = () => {
+      // Stop polling if component is destroyed
+      if (this.isDestroyed) {
+        return;
+      }
+
       const notes = this.noteService.notes();
       const n = notes.find((note) => note.id === id);
 
@@ -387,7 +423,7 @@ export class NoteEditorPage implements OnInit, OnDestroy {
         this.loading.set(false);
       } else {
         // Notes not loaded yet, try again
-        setTimeout(checkForNote, 100);
+        this.pollingTimeoutId = setTimeout(checkForNote, 100);
       }
     };
 
@@ -427,8 +463,20 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   }
 
   private watchForNewNote(content: string): void {
+    // Cancel any existing polling
+    this.cancelPolling();
+
+    let attempts = 0;
+    const maxAttempts = 100; // 5 seconds max (100 * 50ms)
+
     // Poll for the new note (created optimistically by the service)
     const checkForNote = () => {
+      // Stop polling if component is destroyed
+      if (this.isDestroyed) {
+        return;
+      }
+
+      attempts++;
       const notes = this.noteService.notes();
       // Find note with matching content that was just created
       const newNote = notes.find((n) => n.content === content);
@@ -438,16 +486,17 @@ export class NoteEditorPage implements OnInit, OnDestroy {
         // Update URL without navigation
         this.router.navigate(['/notes', newNote.id], { replaceUrl: true });
         this.lastSaved.set(true);
-      } else {
+      } else if (attempts < maxAttempts) {
         // Try again shortly
-        setTimeout(checkForNote, 50);
+        this.pollingTimeoutId = setTimeout(checkForNote, 50);
       }
+      // After maxAttempts, stop polling silently - the note may still be syncing
     };
     checkForNote();
   }
 
   private saveNow(): void {
-    if (this.currentContent) {
+    if (this.currentContent !== null && this.currentContent !== undefined) {
       this.autoSave(this.currentContent);
     }
   }
@@ -475,26 +524,24 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     const n = this.note();
     if (!n) return;
 
-    if (confirm('Are you sure you want to delete this note?')) {
-      // Use deleteNoteWithUndo for undo capability
-      const deleted = this.noteService.deleteNoteWithUndo(n.id);
-      if (deleted) {
-        this.toast.success({
-          summary: 'Note deleted',
-          action: {
-            label: 'Undo',
-            callback: () => this.noteService.undoDelete(n.id),
-          },
-        });
-        this.router.navigate(['/notes']);
-      }
+    // Use deleteNoteWithUndo for undo capability, consistent with other pages
+    const deleted = this.noteService.deleteNoteWithUndo(n.id);
+    if (deleted) {
+      this.toast.success({
+        summary: 'Note deleted',
+        action: {
+          label: 'Undo',
+          callback: () => this.noteService.undoDelete(n.id),
+        },
+      });
+      this.router.navigate(['/notes']);
     }
   }
 
   onPromoteCheckbox(event: { checkboxIndex: number }): void {
     const n = this.note();
     if (!n) {
-      this.toast.error('Save the note first to promote checkboxes');
+      this.toast.error('Cannot promote checkbox in unsaved note');
       return;
     }
 

@@ -15,6 +15,9 @@ export const routes: Routes = [
     loadComponent: () => import('./notes/notes.page').then(m => m.NotesPage),
   },
   {
+    // This route matches both /notes/{actual-id} and /notes/new.
+    // NoteEditorPage treats 'new' specially to create a new note.
+    // If adding routes like /notes/archived, define them above this route.
     path: 'notes/:id',
     loadComponent: () => import('./notes/note-editor.page').then(m => m.NoteEditorPage),
   },
