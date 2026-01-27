@@ -32,6 +32,7 @@
     "@angular/router": "^21.0.6",
     "@primeng/themes": "^21.0.2",
     "@tiptap/core": "^3.17.0",
+    "@tiptap/extension-link": "^3.17.1",
     "@tiptap/extension-placeholder": "^3.17.0",
     "@tiptap/extension-task-item": "^3.17.0",
     "@tiptap/extension-task-list": "^3.17.0",

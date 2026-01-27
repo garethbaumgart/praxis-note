@@ -18,6 +18,7 @@ import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Placeholder from '@tiptap/extension-placeholder';
+import Link from '@tiptap/extension-link';
 import { TiptapEditorDirective } from 'ngx-tiptap';
 import { CheckboxStatus } from './note.model';
 
@@ -60,6 +61,16 @@ import { CheckboxStatus } from './note.model';
           aria-label="Strikethrough"
         >
           <span class="line-through">S</span>
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive('link')"
+          (click)="toggleLink()"
+          title="Link (Ctrl+K)"
+          aria-label="Insert link"
+        >
+          <i class="pi pi-link text-sm"></i>
         </button>
       </div>
 
@@ -437,6 +448,19 @@ import { CheckboxStatus } from './note.model';
       background: var(--color-accent-solid);
       color: white;
     }
+
+    /* Links */
+    :host ::ng-deep .ProseMirror a.note-link {
+      color: var(--color-accent-solid);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    :host ::ng-deep .ProseMirror a.note-link:hover {
+      color: var(--color-accent-emphasis);
+    }
   `],
 })
 export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -499,6 +523,14 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       }),
       Placeholder.configure({
         placeholder: 'Take a note...',
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'note-link',
+          rel: 'noopener noreferrer',
+          target: '_blank',
+        },
       }),
     ],
     onCreate: () => {
@@ -757,6 +789,37 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   toggleCodeBlock(): void {
     this.editor.chain().focus().toggleCodeBlock().run();
+  }
+
+  toggleLink(): void {
+    // If there's already a link, remove it
+    if (this.editor.isActive('link')) {
+      this.editor.chain().focus().unsetLink().run();
+      return;
+    }
+
+    // Check if text is selected
+    const { from, to } = this.editor.state.selection;
+    if (from === to) {
+      // No selection - prompt for both URL and text
+      const url = window.prompt('Enter the URL:');
+      if (!url) return;
+
+      const text = window.prompt('Enter the link text:', url);
+      if (!text) return;
+
+      this.editor
+        .chain()
+        .focus()
+        .insertContent(`<a href="${url}">${text}</a>`)
+        .run();
+    } else {
+      // Text is selected - just prompt for URL
+      const url = window.prompt('Enter the URL:');
+      if (!url) return;
+
+      this.editor.chain().focus().setLink({ href: url }).run();
+    }
   }
 
   /** Get current content as JSON string */
