@@ -10,9 +10,9 @@ namespace PraxisNote.Infrastructure.External;
 
 public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 {
-    private readonly AnthropicClient _client;
     private readonly MeetingAnalysisSettings _settings;
     private readonly ILogger<ClaudeMeetingAnalyzer> _logger;
+    private AnthropicClient? _client;
 
     private const string AnalysisPrompt = """
         Analyze this meeting transcript and provide a JSON response with:
@@ -30,16 +30,21 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         _settings = settings.Value;
         _logger = logger;
 
-        if (string.IsNullOrWhiteSpace(_settings.ApiKey))
+        // Defer client creation until first use - allows app to start without API key
+        // and provides a clear error message when analysis is attempted
+        if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
         {
-            throw new InvalidOperationException("Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+            _client = new AnthropicClient(_settings.ApiKey);
         }
-
-        _client = new AnthropicClient(_settings.ApiKey);
     }
 
     public async Task<MeetingAnalysisResult> AnalyzeAsync(string transcript, CancellationToken cancellationToken = default)
     {
+        if (_client is null)
+        {
+            throw new InvalidOperationException("Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+        }
+
         // Use string concatenation to avoid format string vulnerabilities
         var prompt = AnalysisPrompt + transcript;
 

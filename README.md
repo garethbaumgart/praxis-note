@@ -49,14 +49,19 @@ docker compose --profile dev-stack up
 
 Open http://localhost:4200. Use the mock auth toolbar at the bottom to log in (no Google OAuth setup required).
 
-#### Optional: AI Analysis
+#### Optional: AI Meeting Analysis
 
-To enable AI-powered meeting analysis, set your Anthropic API key:
+To enable AI-powered meeting transcript analysis, you need an Anthropic API key:
+
+1. **Get an API key** from https://console.anthropic.com/ (under API Keys)
+2. **Set the environment variable** before starting the dev stack:
 
 ```bash
-export MeetingAnalysis__ApiKey="sk-ant-..."
+export MeetingAnalysis__ApiKey="sk-ant-your-key-here"
 docker compose --profile dev-stack up
 ```
+
+Without the API key, the app runs normally but clicking "Analyze" on meetings will show "Analysis failed".
 
 To stop:
 ```bash
@@ -85,6 +90,18 @@ GitHub Actions runs on every push to `main` and on pull requests:
 - **Deploy** - Auto-deploys to Google Cloud Run (Sydney) with Neon PostgreSQL
 
 Dependency updates are automated via [Renovate](https://renovatebot.com/).
+
+### Production Secrets
+
+Secrets are stored in **Google Cloud Secret Manager** and injected into Cloud Run at deploy time.
+
+To enable AI meeting analysis in production:
+
+1. Create a secret in GCP Secret Manager named `ANTHROPIC_API_KEY`
+2. Add your Anthropic API key (`sk-ant-...`) as the secret value
+3. Grant the Cloud Run service account access to the secret
+
+The deploy workflow automatically maps this to `MeetingAnalysis__ApiKey` in Cloud Run.
 
 ## Architecture
 

@@ -78,6 +78,7 @@ jobs:
             ConnectionStrings__DefaultConnection=CONNECTION_STRING:latest
             Authentication__Google__ClientId=GOOGLE_CLIENT_ID:latest
             Authentication__Google__ClientSecret=GOOGLE_CLIENT_SECRET:latest
+            MeetingAnalysis__ApiKey=ANTHROPIC_API_KEY:latest
 
       - name: Show deployment URL
         run: |
