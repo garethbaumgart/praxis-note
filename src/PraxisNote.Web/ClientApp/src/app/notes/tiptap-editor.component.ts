@@ -1058,35 +1058,37 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.editor.destroy();
   }
 
-  // Block type dropdown handler
+  // Block type dropdown handler - uses set commands (not toggle) for predictable behavior
   onBlockTypeChange(value: string): void {
+    const chain = this.editor.chain().focus();
+
     switch (value) {
       case 'paragraph':
-        this.editor.chain().focus().setParagraph().run();
+        chain.setParagraph().run();
         break;
       case 'heading1':
-        this.editor.chain().focus().toggleHeading({ level: 1 }).run();
+        chain.setHeading({ level: 1 }).run();
         break;
       case 'heading2':
-        this.editor.chain().focus().toggleHeading({ level: 2 }).run();
+        chain.setHeading({ level: 2 }).run();
         break;
       case 'heading3':
-        this.editor.chain().focus().toggleHeading({ level: 3 }).run();
+        chain.setHeading({ level: 3 }).run();
         break;
       case 'bulletList':
-        this.editor.chain().focus().toggleBulletList().run();
+        chain.clearNodes().toggleBulletList().run();
         break;
       case 'orderedList':
-        this.editor.chain().focus().toggleOrderedList().run();
+        chain.clearNodes().toggleOrderedList().run();
         break;
       case 'taskList':
-        this.editor.chain().focus().toggleTaskList().run();
+        chain.clearNodes().toggleTaskList().run();
         break;
       case 'blockquote':
-        this.editor.chain().focus().toggleBlockquote().run();
+        chain.clearNodes().toggleBlockquote().run();
         break;
       case 'codeBlock':
-        this.editor.chain().focus().toggleCodeBlock().run();
+        chain.clearNodes().setCodeBlock().run();
         break;
     }
   }

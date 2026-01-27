@@ -294,6 +294,12 @@ export class PdfExportService {
     const src = node.attrs?.['src'] as string;
     const alt = (node.attrs?.['alt'] as string) || 'Image';
 
+    const placeholderHeight = 30;
+    const topOffset = 5;
+
+    // Check if placeholder fits on current page before drawing
+    yPosition = this.checkPageBreak(doc, yPosition + placeholderHeight);
+
     doc.setFontSize(10);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100, 100, 100);
@@ -301,7 +307,7 @@ export class PdfExportService {
     // Draw image placeholder box
     doc.setDrawColor(180, 180, 180);
     doc.setFillColor(250, 250, 250);
-    doc.rect(this.margin, yPosition - 5, this.maxWidth, 30, 'FD');
+    doc.rect(this.margin, yPosition - topOffset, this.maxWidth, placeholderHeight, 'FD');
 
     doc.text(`[Image: ${alt}]`, this.margin + 5, yPosition + 10);
     if (src) {
