@@ -1,16 +1,16 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, HostListener, ElementRef, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, computed, HostListener, ElementRef, viewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { NoteService } from './note.service';
 import { Note } from './note.model';
 import { NoteCardComponent } from './note-card.component';
 import { NoteCardSkeletonComponent } from './note-card-skeleton.component';
-import { NoteEditorComponent } from './note-editor.component';
 import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-notes-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NoteCardComponent, NoteCardSkeletonComponent, NoteEditorComponent],
+  imports: [NoteCardComponent, NoteCardSkeletonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <!-- Header -->
@@ -92,13 +92,6 @@ import { ToastService } from '../shared/services/toast.service';
         </div>
       }
     </div>
-
-    <!-- Note Editor Modal -->
-    <app-note-editor
-      [visible]="editorVisible()"
-      [note]="selectedNote()"
-      (onClose)="closeEditor()"
-    />
   `,
   styles: [`
     .masonry-grid {
@@ -127,12 +120,11 @@ import { ToastService } from '../shared/services/toast.service';
 })
 export class NotesPage implements OnInit {
   readonly noteService = inject(NoteService);
+  private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
   private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
-  readonly editorVisible = signal(false);
-  readonly selectedNote = signal<Note | null>(null);
   readonly skeletonArray = Array.from({ length: 8 }, (_, i) => i);
 
   readonly noteCount = computed(() => this.noteService.notes().length);
@@ -143,11 +135,6 @@ export class NotesPage implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
-    // Don't trigger shortcuts when editor dialog is open
-    if (this.editorVisible()) {
-      return;
-    }
-
     const target = event.target as HTMLElement;
     const isInInput = target.tagName === 'INPUT' ||
                       target.tagName === 'TEXTAREA' ||
@@ -176,18 +163,11 @@ export class NotesPage implements OnInit {
   }
 
   openNewNote(): void {
-    this.selectedNote.set(null);
-    this.editorVisible.set(true);
+    this.router.navigate(['/notes', 'new']);
   }
 
   openNote(note: Note): void {
-    this.selectedNote.set(note);
-    this.editorVisible.set(true);
-  }
-
-  closeEditor(): void {
-    this.editorVisible.set(false);
-    this.selectedNote.set(null);
+    this.router.navigate(['/notes', note.id]);
   }
 
   deleteNote(note: Note): void {

@@ -14,4 +14,8 @@ export const routes: Routes = [
     path: 'notes',
     loadComponent: () => import('./notes/notes.page').then(m => m.NotesPage),
   },
+  {
+    path: 'notes/:id',
+    loadComponent: () => import('./notes/note-editor.page').then(m => m.NoteEditorPage),
+  },
 ];
