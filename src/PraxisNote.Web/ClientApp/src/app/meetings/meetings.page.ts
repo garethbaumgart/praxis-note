@@ -192,9 +192,13 @@ export class MeetingsPage implements OnInit {
         data.meetingDate,
         data.attendees
       );
-      // Submit transcript separately if changed
-      if (data.transcript && data.transcript !== this.editingMeeting.transcriptContent) {
-        this.meetingService.submitTranscript(this.editingMeeting.id, data.transcript);
+      // Handle transcript changes
+      const hadTranscript = !!this.editingMeeting.transcriptContent;
+      const hasTranscript = !!data.transcript;
+      if (hasTranscript && data.transcript !== this.editingMeeting.transcriptContent) {
+        this.meetingService.submitTranscript(this.editingMeeting.id, data.transcript!);
+      } else if (hadTranscript && !hasTranscript) {
+        this.meetingService.clearTranscript(this.editingMeeting.id);
       }
     } else {
       this.meetingService.createMeeting(data.title, data.meetingDate, data.attendees);

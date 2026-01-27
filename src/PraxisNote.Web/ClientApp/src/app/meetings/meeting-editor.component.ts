@@ -134,7 +134,7 @@ export class MeetingEditorComponent {
       title: this.title || undefined,
       meetingDate: this.meetingDate?.toISOString(),
       attendees: this.attendees || undefined,
-      transcript: this.transcript || undefined,
+      transcript: this.transcript,
     });
     this.visible.set(false);
   }

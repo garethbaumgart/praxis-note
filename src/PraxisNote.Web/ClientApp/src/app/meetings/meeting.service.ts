@@ -144,6 +144,24 @@ export class MeetingService {
     });
   }
 
+  clearTranscript(id: string): void {
+    // Optimistic update
+    this._meetings.update(meetings =>
+      meetings.map(m =>
+        m.id === id
+          ? { ...m, transcriptContent: null, updatedAt: new Date().toISOString() }
+          : m
+      )
+    );
+
+    this.http.delete(`/api/meetings/${id}/transcript`).subscribe({
+      error: () => {
+        this.toast.error('Failed to clear transcript');
+        this.loadMeetings();
+      },
+    });
+  }
+
   deleteMeetingWithUndo(id: string, undoTimeoutMs = 5000): Meeting | null {
     const meetings = this._meetings();
     const index = meetings.findIndex(m => m.id === id);
