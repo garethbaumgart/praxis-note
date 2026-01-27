@@ -320,7 +320,29 @@ cd tests/PraxisNote.E2E.Tests && npm test
 docker compose --profile e2e down
 ```
 
-## PR Workflow
+## Git Workflow
+
+### Feature Branches
+
+**ALWAYS** create a new feature branch when working on a new issue or feature. Never commit directly to `main`.
+
+```bash
+# Create and switch to a new feature branch
+git checkout -b feat/short-description
+
+# Examples:
+git checkout -b feat/editor-toolbar-enhancements
+git checkout -b fix/login-redirect-bug
+git checkout -b chore/update-dependencies
+```
+
+**Branch naming conventions:**
+- `feat/` - New features
+- `fix/` - Bug fixes
+- `chore/` - Maintenance tasks, refactoring, dependencies
+- `docs/` - Documentation only changes
+
+### PR Workflow
 
 **ALWAYS** use the `/pr` skill when creating or updating a pull request. This ensures README is reviewed, tests are run, the PR is properly reviewed, and CI checks are monitored for warnings.
 

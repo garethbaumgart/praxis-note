@@ -109,6 +109,15 @@ export class PdfExportService {
         case 'codeBlock':
           yPosition = this.renderCodeBlock(doc, node, yPosition);
           break;
+        case 'horizontalRule':
+          yPosition = this.renderHorizontalRule(doc, yPosition);
+          break;
+        case 'image':
+          yPosition = this.renderImage(doc, node, yPosition);
+          break;
+        case 'table':
+          yPosition = this.renderTable(doc, node, yPosition);
+          break;
         default:
           // For unknown nodes with content, render their children
           if (node.content) {
@@ -270,6 +279,102 @@ export class PdfExportService {
     doc.setTextColor(0, 0, 0);
 
     return yPosition + boxHeight + 2;
+  }
+
+  private renderHorizontalRule(doc: jsPDF, yPosition: number): number {
+    yPosition += 5;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(this.margin, yPosition, this.margin + this.maxWidth, yPosition);
+    return yPosition + 10;
+  }
+
+  private renderImage(doc: jsPDF, node: TiptapNode, yPosition: number): number {
+    // For now, just show a placeholder since loading external images requires async handling
+    const src = node.attrs?.['src'] as string;
+    const alt = (node.attrs?.['alt'] as string) || 'Image';
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100, 100, 100);
+
+    // Draw image placeholder box
+    doc.setDrawColor(180, 180, 180);
+    doc.setFillColor(250, 250, 250);
+    doc.rect(this.margin, yPosition - 5, this.maxWidth, 30, 'FD');
+
+    doc.text(`[Image: ${alt}]`, this.margin + 5, yPosition + 10);
+    if (src) {
+      const truncatedSrc = src.length > 60 ? src.substring(0, 60) + '...' : src;
+      doc.setFontSize(8);
+      doc.text(truncatedSrc, this.margin + 5, yPosition + 18);
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+
+    return yPosition + 35;
+  }
+
+  private renderTable(doc: jsPDF, node: TiptapNode, yPosition: number): number {
+    if (!node.content) return yPosition;
+
+    const rows: string[][] = [];
+
+    // Extract table data
+    for (const row of node.content) {
+      if (row.type === 'tableRow' && row.content) {
+        const rowData: string[] = [];
+        for (const cell of row.content) {
+          if ((cell.type === 'tableCell' || cell.type === 'tableHeader') && cell.content) {
+            const cellText = this.extractText(cell);
+            rowData.push(cellText);
+          }
+        }
+        rows.push(rowData);
+      }
+    }
+
+    if (rows.length === 0) return yPosition;
+
+    // Calculate column widths
+    const numCols = Math.max(...rows.map(r => r.length));
+    const colWidth = this.maxWidth / numCols;
+    const cellPadding = 3;
+    const cellHeight = 10;
+
+    doc.setFontSize(10);
+    doc.setDrawColor(180, 180, 180);
+
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      yPosition = this.checkPageBreak(doc, yPosition + cellHeight);
+      const row = rows[rowIndex];
+      const isHeader = rowIndex === 0;
+
+      for (let colIndex = 0; colIndex < numCols; colIndex++) {
+        const x = this.margin + colIndex * colWidth;
+        const text = row[colIndex] || '';
+
+        // Draw cell background for header
+        if (isHeader) {
+          doc.setFillColor(240, 240, 240);
+          doc.rect(x, yPosition - cellHeight + cellPadding, colWidth, cellHeight, 'FD');
+          doc.setFont('helvetica', 'bold');
+        } else {
+          doc.rect(x, yPosition - cellHeight + cellPadding, colWidth, cellHeight, 'S');
+          doc.setFont('helvetica', 'normal');
+        }
+
+        // Draw cell text (truncated if needed)
+        const truncatedText = doc.splitTextToSize(text, colWidth - cellPadding * 2)[0] || '';
+        doc.text(truncatedText, x + cellPadding, yPosition);
+      }
+
+      yPosition += cellHeight;
+    }
+
+    doc.setFont('helvetica', 'normal');
+    return yPosition + 5;
   }
 
   private extractText(node: TiptapNode): string {

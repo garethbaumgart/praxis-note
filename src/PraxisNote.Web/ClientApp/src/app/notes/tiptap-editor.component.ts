@@ -12,25 +12,88 @@ import {
   AfterViewInit,
   effect,
   viewChild,
+  computed,
 } from '@angular/core';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Placeholder from '@tiptap/extension-placeholder';
+import Link from '@tiptap/extension-link';
+import { Underline } from '@tiptap/extension-underline';
+import { Highlight } from '@tiptap/extension-highlight';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { Image } from '@tiptap/extension-image';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
+import { common, createLowlight } from 'lowlight';
 import { TiptapEditorDirective } from 'ngx-tiptap';
 import { CheckboxStatus } from './note.model';
+import { Select } from 'primeng/select';
+import { Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
+import { FormsModule } from '@angular/forms';
+
+// Create lowlight instance with common languages
+const lowlight = createLowlight(common);
+
+// Block type options for the dropdown
+interface BlockType {
+  label: string;
+  value: string;
+  icon?: string;
+  style?: string;
+}
 
 @Component({
   selector: 'app-tiptap-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TiptapEditorDirective],
+  imports: [TiptapEditorDirective, Select, Menu, FormsModule],
   template: `
     <!-- Toolbar -->
-    <div class="flex items-center gap-1 p-2 border-b border-border bg-surface-subtle rounded-t-md">
-      <!-- Text formatting -->
-      <div class="flex items-center gap-0.5">
+    <div class="toolbar-container">
+      <!-- Row 1: Block type + Text formatting + Primary actions -->
+      <div class="toolbar-row">
+        <!-- Block Type Dropdown -->
+        <p-select
+          [options]="blockTypes"
+          [ngModel]="currentBlockType()"
+          (ngModelChange)="onBlockTypeChange($event)"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ width: '120px' }"
+          styleClass="block-type-dropdown"
+          appendTo="body"
+        >
+          <ng-template #selectedItem let-selected>
+            <div class="flex items-center gap-2">
+              @if (selected?.icon) {
+                <i [class]="selected.icon + ' text-xs'"></i>
+              }
+              <span [style]="selected?.style">{{ selected?.label }}</span>
+            </div>
+          </ng-template>
+          <ng-template #item let-option>
+            <div class="flex items-center gap-2 py-1">
+              @if (option.icon) {
+                <i [class]="option.icon + ' text-sm w-4'"></i>
+              } @else {
+                <span class="w-4"></span>
+              }
+              <span [style]="option.style">{{ option.label }}</span>
+            </div>
+          </ng-template>
+        </p-select>
+
+        <div class="divider"></div>
+
+        <!-- Text formatting (always visible) -->
         <button
           type="button"
           class="toolbar-btn"
@@ -54,6 +117,16 @@ import { CheckboxStatus } from './note.model';
         <button
           type="button"
           class="toolbar-btn"
+          [class.active]="editor.isActive('underline')"
+          (click)="toggleUnderline()"
+          title="Underline (Ctrl+U)"
+          aria-label="Underline"
+        >
+          <span class="underline">U</span>
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn"
           [class.active]="editor.isActive('strike')"
           (click)="toggleStrike()"
           title="Strikethrough"
@@ -61,12 +134,78 @@ import { CheckboxStatus } from './note.model';
         >
           <span class="line-through">S</span>
         </button>
-      </div>
 
-      <div class="w-px h-5 bg-border mx-1"></div>
+        <div class="divider"></div>
 
-      <!-- Lists -->
-      <div class="flex items-center gap-0.5">
+        <!-- Link & Highlight -->
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive('link')"
+          (click)="toggleLink()"
+          title="Link"
+          aria-label="Insert link"
+        >
+          <i class="pi pi-link text-sm"></i>
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive('highlight')"
+          (click)="toggleHighlight()"
+          title="Highlight"
+          aria-label="Highlight text"
+        >
+          <i class="pi pi-sun text-sm"></i>
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn color-btn"
+          (click)="showColorPicker()"
+          title="Text Color"
+          aria-label="Text color"
+        >
+          <span class="color-indicator" [style.background]="currentTextColor()"></span>
+          <span>A</span>
+        </button>
+
+        <div class="divider"></div>
+
+        <!-- Text Align -->
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive({ textAlign: 'left' })"
+          (click)="setTextAlign('left')"
+          title="Align Left"
+          aria-label="Align left"
+        >
+          <i class="pi pi-align-left text-sm"></i>
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive({ textAlign: 'center' })"
+          (click)="setTextAlign('center')"
+          title="Align Center"
+          aria-label="Align center"
+        >
+          <i class="pi pi-align-center text-sm"></i>
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive({ textAlign: 'right' })"
+          (click)="setTextAlign('right')"
+          title="Align Right"
+          aria-label="Align right"
+        >
+          <i class="pi pi-align-right text-sm"></i>
+        </button>
+
+        <div class="divider"></div>
+
+        <!-- Lists -->
         <button
           type="button"
           class="toolbar-btn"
@@ -79,16 +218,6 @@ import { CheckboxStatus } from './note.model';
         </button>
         <button
           type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('orderedList')"
-          (click)="toggleOrderedList()"
-          title="Numbered List"
-          aria-label="Numbered list"
-        >
-          <i class="pi pi-sort-numeric-down text-sm"></i>
-        </button>
-        <button
-          type="button"
           class="toolbar-btn task-list-btn"
           [class.active]="editor.isActive('taskList')"
           (click)="toggleTaskList()"
@@ -97,42 +226,21 @@ import { CheckboxStatus } from './note.model';
         >
           <i class="pi pi-check-square text-sm"></i>
         </button>
-      </div>
 
-      <div class="w-px h-5 bg-border mx-1"></div>
+        <div class="divider"></div>
 
-      <!-- Block types -->
-      <div class="flex items-center gap-0.5">
+        <!-- Overflow Menu -->
         <button
           type="button"
           class="toolbar-btn"
-          [class.active]="editor.isActive('heading', { level: 2 })"
-          (click)="toggleHeading()"
-          title="Heading"
-          aria-label="Heading"
+          (click)="overflowMenu.toggle($event)"
+          title="More options"
+          aria-label="More formatting options"
         >
-          <span class="font-semibold text-xs">H</span>
+          <i class="pi pi-ellipsis-h text-sm"></i>
         </button>
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('blockquote')"
-          (click)="toggleBlockquote()"
-          title="Quote"
-          aria-label="Quote"
-        >
-          <i class="pi pi-comment text-sm"></i>
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('codeBlock')"
-          (click)="toggleCodeBlock()"
-          title="Code Block"
-          aria-label="Code block"
-        >
-          <i class="pi pi-code text-sm"></i>
-        </button>
+
+        <p-menu #overflowMenu [model]="overflowMenuItems" [popup]="true" appendTo="body" />
       </div>
     </div>
 
@@ -171,10 +279,33 @@ import { CheckboxStatus } from './note.model';
         }
       </div>
     </div>
+
+    <!-- Hidden color input for color picker -->
+    <input
+      #colorInput
+      type="color"
+      class="hidden-color-input"
+      [value]="currentTextColor()"
+      (input)="onColorChange($event)"
+    />
   `,
   styles: [`
     :host {
       display: block;
+    }
+
+    .toolbar-container {
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface-subtle);
+      border-radius: 6px 6px 0 0;
+    }
+
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      flex-wrap: wrap;
     }
 
     .toolbar-btn {
@@ -186,6 +317,9 @@ import { CheckboxStatus } from './note.model';
       border-radius: 4px;
       color: var(--color-foreground-secondary);
       transition: all 0.15s;
+      background: transparent;
+      border: none;
+      cursor: pointer;
     }
 
     .toolbar-btn:hover {
@@ -201,6 +335,39 @@ import { CheckboxStatus } from './note.model';
     .toolbar-btn.task-list-btn.active {
       background: var(--color-accent-solid);
       color: white;
+    }
+
+    .toolbar-btn.color-btn {
+      position: relative;
+      flex-direction: column;
+      gap: 1px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .color-indicator {
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 3px;
+      border-radius: 1px;
+    }
+
+    .divider {
+      width: 1px;
+      height: 20px;
+      background: var(--color-border);
+      margin: 0 4px;
+    }
+
+    .hidden-color-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 0;
+      height: 0;
     }
 
     .tiptap-editor-wrapper {
@@ -308,6 +475,17 @@ import { CheckboxStatus } from './note.model';
       margin-top: 0;
     }
 
+    /* Headings */
+    :host ::ng-deep .ProseMirror h1 {
+      font-size: 1.75em;
+      font-weight: 700;
+      margin: 1em 0 0.5em;
+    }
+
+    :host ::ng-deep .ProseMirror h1:first-child {
+      margin-top: 0;
+    }
+
     :host ::ng-deep .ProseMirror h2 {
       font-size: 1.25em;
       font-weight: 600;
@@ -315,6 +493,16 @@ import { CheckboxStatus } from './note.model';
     }
 
     :host ::ng-deep .ProseMirror h2:first-child {
+      margin-top: 0;
+    }
+
+    :host ::ng-deep .ProseMirror h3 {
+      font-size: 1.1em;
+      font-weight: 600;
+      margin: 1em 0 0.5em;
+    }
+
+    :host ::ng-deep .ProseMirror h3:first-child {
       margin-top: 0;
     }
 
@@ -367,6 +555,70 @@ import { CheckboxStatus } from './note.model';
       padding: 0;
     }
 
+    /* Syntax highlighting */
+    :host ::ng-deep .ProseMirror pre .hljs-keyword { color: #c678dd; }
+    :host ::ng-deep .ProseMirror pre .hljs-string { color: #98c379; }
+    :host ::ng-deep .ProseMirror pre .hljs-number { color: #d19a66; }
+    :host ::ng-deep .ProseMirror pre .hljs-comment { color: #5c6370; font-style: italic; }
+    :host ::ng-deep .ProseMirror pre .hljs-function { color: #61afef; }
+    :host ::ng-deep .ProseMirror pre .hljs-variable { color: #e06c75; }
+    :host ::ng-deep .ProseMirror pre .hljs-attr { color: #d19a66; }
+    :host ::ng-deep .ProseMirror pre .hljs-tag { color: #e06c75; }
+
+    /* Highlight */
+    :host ::ng-deep .ProseMirror mark {
+      background: #fef08a;
+      padding: 0.1em 0.2em;
+      border-radius: 2px;
+    }
+
+    /* Horizontal Rule */
+    :host ::ng-deep .ProseMirror hr {
+      border: none;
+      border-top: 2px solid var(--color-border);
+      margin: 1.5em 0;
+    }
+
+    /* Images */
+    :host ::ng-deep .ProseMirror img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0.5em 0;
+    }
+
+    /* Tables */
+    :host ::ng-deep .ProseMirror table {
+      border-collapse: collapse;
+      margin: 1em 0;
+      width: 100%;
+    }
+
+    :host ::ng-deep .ProseMirror th,
+    :host ::ng-deep .ProseMirror td {
+      border: 1px solid var(--color-border);
+      padding: 0.5em;
+      text-align: left;
+    }
+
+    :host ::ng-deep .ProseMirror th {
+      background: var(--color-surface-hover);
+      font-weight: 600;
+    }
+
+    /* Text alignment */
+    :host ::ng-deep .ProseMirror [style*="text-align: center"] {
+      text-align: center;
+    }
+
+    :host ::ng-deep .ProseMirror [style*="text-align: right"] {
+      text-align: right;
+    }
+
+    :host ::ng-deep .ProseMirror [style*="text-align: justify"] {
+      text-align: justify;
+    }
+
     /* Task List Styles */
     :host ::ng-deep .ProseMirror ul[data-type="taskList"] {
       list-style: none;
@@ -403,7 +655,6 @@ import { CheckboxStatus } from './note.model';
       flex: 1;
     }
 
-
     /* Placeholder */
     :host ::ng-deep .ProseMirror p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
@@ -422,7 +673,9 @@ import { CheckboxStatus } from './note.model';
 
     :host ::ng-deep .ProseMirror p,
     :host ::ng-deep .ProseMirror li,
+    :host ::ng-deep .ProseMirror h1,
     :host ::ng-deep .ProseMirror h2,
+    :host ::ng-deep .ProseMirror h3,
     :host ::ng-deep .ProseMirror blockquote {
       -webkit-user-drag: none;
       user-drag: none;
@@ -436,6 +689,28 @@ import { CheckboxStatus } from './note.model';
     :host ::ng-deep .ProseMirror *::selection {
       background: var(--color-accent-solid);
       color: white;
+    }
+
+    /* Links */
+    :host ::ng-deep .ProseMirror a.note-link {
+      color: var(--color-accent-solid);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    :host ::ng-deep .ProseMirror a.note-link:hover {
+      color: var(--color-accent-emphasis);
+    }
+
+    /* Block type dropdown styling */
+    :host ::ng-deep .block-type-dropdown {
+      font-size: 13px;
+    }
+
+    :host ::ng-deep .block-type-dropdown .p-select-label {
+      padding: 4px 8px;
     }
   `],
 })
@@ -464,6 +739,64 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /** Reference to the editor wrapper for position calculations */
   private readonly editorWrapper = viewChild<ElementRef>('editorWrapper');
 
+  /** Reference to the hidden color input */
+  private readonly colorInput = viewChild<ElementRef>('colorInput');
+
+  /** Block type options for the dropdown */
+  readonly blockTypes: BlockType[] = [
+    { label: 'Paragraph', value: 'paragraph' },
+    { label: 'Heading 1', value: 'heading1', style: 'font-size: 1.25em; font-weight: 700;' },
+    { label: 'Heading 2', value: 'heading2', style: 'font-size: 1.1em; font-weight: 600;' },
+    { label: 'Heading 3', value: 'heading3', style: 'font-size: 1em; font-weight: 600;' },
+    { label: 'Bullet List', value: 'bulletList', icon: 'pi pi-list' },
+    { label: 'Numbered List', value: 'orderedList', icon: 'pi pi-sort-numeric-down' },
+    { label: 'Task List', value: 'taskList', icon: 'pi pi-check-square' },
+    { label: 'Quote', value: 'blockquote', icon: 'pi pi-comment' },
+    { label: 'Code Block', value: 'codeBlock', icon: 'pi pi-code' },
+  ];
+
+  /** Overflow menu items */
+  readonly overflowMenuItems: MenuItem[] = [
+    {
+      label: 'Formatting',
+      items: [
+        {
+          label: 'Inline Code',
+          icon: 'pi pi-code',
+          command: () => this.toggleInlineCode(),
+        },
+        {
+          label: 'Clear Formatting',
+          icon: 'pi pi-eraser',
+          command: () => this.clearFormatting(),
+        },
+      ],
+    },
+    {
+      label: 'Insert',
+      items: [
+        {
+          label: 'Horizontal Rule',
+          icon: 'pi pi-minus',
+          command: () => this.insertHorizontalRule(),
+        },
+        {
+          label: 'Image',
+          icon: 'pi pi-image',
+          command: () => this.insertImage(),
+        },
+        {
+          label: 'Table',
+          icon: 'pi pi-table',
+          command: () => this.insertTable(),
+        },
+      ],
+    },
+  ];
+
+  /** Current text color */
+  readonly currentTextColor = signal('#000000');
+
   /** Computed overlay items for promote buttons and status badges */
   readonly checkboxOverlayItems = signal<Array<{
     index: number;
@@ -471,6 +804,19 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     isLinked: boolean;
     taskStatus: 'Todo' | 'InProgress' | 'Done' | null;
   }>>([]);
+
+  /** Current block type based on cursor position */
+  readonly currentBlockType = computed(() => {
+    if (this.editor.isActive('heading', { level: 1 })) return 'heading1';
+    if (this.editor.isActive('heading', { level: 2 })) return 'heading2';
+    if (this.editor.isActive('heading', { level: 3 })) return 'heading3';
+    if (this.editor.isActive('bulletList')) return 'bulletList';
+    if (this.editor.isActive('orderedList')) return 'orderedList';
+    if (this.editor.isActive('taskList')) return 'taskList';
+    if (this.editor.isActive('blockquote')) return 'blockquote';
+    if (this.editor.isActive('codeBlock')) return 'codeBlock';
+    return 'paragraph';
+  });
 
   /** Track if we're initializing to avoid emitting on load */
   private isInitializing = true;
@@ -490,8 +836,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     extensions: [
       StarterKit.configure({
         heading: {
-          levels: [2],
+          levels: [1, 2, 3],
         },
+        codeBlock: false, // Disable default, use CodeBlockLowlight instead
       }),
       TaskList,
       TaskItem.configure({
@@ -500,9 +847,38 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       Placeholder.configure({
         placeholder: 'Take a note...',
       }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'note-link',
+          rel: 'noopener noreferrer',
+          target: '_blank',
+        },
+      }),
+      Underline,
+      Highlight.configure({
+        multicolor: false,
+      }),
+      TextStyle,
+      Color,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Image.configure({
+        inline: false,
+        allowBase64: true,
+      }),
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableCell,
+      TableHeader,
+      CodeBlockLowlight.configure({
+        lowlight,
+      }),
     ],
     onCreate: () => {
-      // Inject buttons after editor is created and DOM is ready
       this.scheduleOverlayUpdate();
     },
     onUpdate: ({ editor }) => {
@@ -510,32 +886,25 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         const json = editor.getJSON();
         this.contentChange.emit(JSON.stringify(json));
       }
-      // Always re-inject after content updates (TipTap re-renders the DOM)
       this.scheduleOverlayUpdate();
     },
     onSelectionUpdate: () => {
-      // Trigger change detection to update toolbar active states
       this.cdr.markForCheck();
     },
   });
 
   constructor() {
-    // Watch for initialContent, isNewNote, and resetTrigger changes after first init
     effect(() => {
       const content = this.initialContent();
       const isNew = this.isNewNote();
-      // Read resetTrigger to ensure effect re-runs when it changes
       this.resetTrigger();
-      // Only react to changes after initial setup
       if (this.hasInitialized) {
         this.setEditorContent(content, isNew);
       }
     });
 
-    // Re-inject buttons whenever checkbox statuses change
     effect(() => {
-      this.checkboxStatuses(); // Subscribe to changes
-      // Only inject after initial setup is complete
+      this.checkboxStatuses();
       if (this.hasInitialized) {
         this.scheduleOverlayUpdate();
       }
@@ -543,23 +912,16 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Set initial content once on init
     this.setEditorContent(this.initialContent(), this.isNewNote());
     this.hasInitialized = true;
   }
 
   ngAfterViewInit(): void {
-    // Set up MutationObserver to re-inject buttons when TipTap re-renders the DOM
     this.setupMutationObserver();
-    // Set up scroll listener to update overlay positions when editor scrolls
     this.setupScrollListener();
-    // Initial injection of promote buttons after view is ready
     this.scheduleOverlayUpdate();
   }
 
-  /**
-   * Sets up a scroll listener on the editor wrapper to keep overlay positions in sync.
-   */
   private setupScrollListener(): void {
     const wrapper = this.editorWrapper()?.nativeElement as HTMLElement;
     if (!wrapper) return;
@@ -568,17 +930,12 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     wrapper.addEventListener('scroll', this.scrollHandler, { passive: true });
   }
 
-  /**
-   * Sets up a MutationObserver to detect when TipTap re-renders task items.
-   * Re-injects promote buttons when task items are modified.
-   */
   private setupMutationObserver(): void {
     const container = this.elementRef.nativeElement as HTMLElement;
     const proseMirror = container.querySelector('.ProseMirror');
     if (!proseMirror) return;
 
     this.mutationObserver = new MutationObserver((mutations) => {
-      // Check if any mutation affects task list items
       const affectsTaskList = mutations.some(m =>
         m.type === 'childList' &&
         m.target instanceof Element &&
@@ -595,30 +952,16 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  /**
-   * Schedules an overlay update with a debounce.
-   * Uses setTimeout to let TipTap complete its rendering cycle before calculating positions.
-   */
   private scheduleOverlayUpdate(): void {
     if (this.pendingButtonInjection !== null) {
       clearTimeout(this.pendingButtonInjection);
     }
-    // Use setTimeout with delay to ensure TipTap has finished rendering
     this.pendingButtonInjection = setTimeout(() => {
       this.pendingButtonInjection = null;
       this.updateCheckboxOverlay();
     }, 50);
   }
 
-  /**
-   * Injects promote buttons and status badges into task items.
-   * Called after editor updates and when checkbox statuses change.
-   */
-  /**
-   * Computes overlay positions for promote buttons.
-   * Instead of injecting into TipTap's DOM (which gets re-rendered),
-   * we calculate positions and render buttons via Angular template.
-   */
   private updateCheckboxOverlay(): void {
     const wrapper = this.editorWrapper()?.nativeElement as HTMLElement;
     if (!wrapper) {
@@ -635,14 +978,12 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    // Build Map for O(1) lookups
     const statusMap = new Map(
       this.checkboxStatuses().map(s => [s.checkboxId, s])
     );
 
     const wrapperRect = wrapper.getBoundingClientRect();
     const scrollTop = wrapper.scrollTop;
-    // Offset to align badge/button with checkbox text baseline
     const VERTICAL_ALIGNMENT_OFFSET = 2;
     const items: Array<{
       index: number;
@@ -658,7 +999,6 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
       items.push({
         index,
-        // Calculate position relative to wrapper's scroll position
         top: itemRect.top - wrapperRect.top + scrollTop + VERTICAL_ALIGNMENT_OFFSET,
         isLinked: status?.isLinked ?? false,
         taskStatus: status?.taskStatus ?? null,
@@ -669,7 +1009,6 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.cdr.markForCheck();
   }
 
-  /** Handle promote button click from overlay */
   onPromoteClick(checkboxIndex: number): void {
     this.promoteCheckbox.emit({ checkboxIndex });
   }
@@ -682,7 +1021,6 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         const parsed = JSON.parse(content);
         this.editor.commands.setContent(parsed);
       } catch {
-        // If not valid JSON, treat as plain text and wrap in paragraph
         const doc = {
           type: 'doc',
           content: [
@@ -695,14 +1033,12 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         this.editor.commands.setContent(doc);
       }
     } else if (isNewNote) {
-      // For new notes, start with heading format so user can type a title immediately
       this.editor.commands.clearContent();
       this.editor.commands.setHeading({ level: 2 });
     } else {
       this.editor.commands.clearContent();
     }
 
-    // Allow updates after initialization
     setTimeout(() => {
       this.isInitializing = false;
     }, 0);
@@ -722,6 +1058,39 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.editor.destroy();
   }
 
+  // Block type dropdown handler
+  onBlockTypeChange(value: string): void {
+    switch (value) {
+      case 'paragraph':
+        this.editor.chain().focus().setParagraph().run();
+        break;
+      case 'heading1':
+        this.editor.chain().focus().toggleHeading({ level: 1 }).run();
+        break;
+      case 'heading2':
+        this.editor.chain().focus().toggleHeading({ level: 2 }).run();
+        break;
+      case 'heading3':
+        this.editor.chain().focus().toggleHeading({ level: 3 }).run();
+        break;
+      case 'bulletList':
+        this.editor.chain().focus().toggleBulletList().run();
+        break;
+      case 'orderedList':
+        this.editor.chain().focus().toggleOrderedList().run();
+        break;
+      case 'taskList':
+        this.editor.chain().focus().toggleTaskList().run();
+        break;
+      case 'blockquote':
+        this.editor.chain().focus().toggleBlockquote().run();
+        break;
+      case 'codeBlock':
+        this.editor.chain().focus().toggleCodeBlock().run();
+        break;
+    }
+  }
+
   // Toolbar actions
   toggleBold(): void {
     this.editor.chain().focus().toggleBold().run();
@@ -731,8 +1100,95 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.editor.chain().focus().toggleItalic().run();
   }
 
+  toggleUnderline(): void {
+    this.editor.chain().focus().toggleUnderline().run();
+  }
+
   toggleStrike(): void {
     this.editor.chain().focus().toggleStrike().run();
+  }
+
+  toggleLink(): void {
+    if (this.editor.isActive('link')) {
+      this.editor.chain().focus().unsetLink().run();
+      return;
+    }
+
+    const { from, to } = this.editor.state.selection;
+    if (from === to) {
+      const rawUrl = window.prompt('Enter the URL:');
+      if (!rawUrl) return;
+
+      const url = this.normalizeUrl(rawUrl);
+      if (!url) {
+        window.alert('Please enter a valid http, https, or mailto URL.');
+        return;
+      }
+
+      const text = window.prompt('Enter the link text:', url);
+      if (!text) return;
+
+      this.editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'text',
+          marks: [{ type: 'link', attrs: { href: url } }],
+          text: text,
+        })
+        .run();
+    } else {
+      const rawUrl = window.prompt('Enter the URL:');
+      if (!rawUrl) return;
+
+      const url = this.normalizeUrl(rawUrl);
+      if (!url) {
+        window.alert('Please enter a valid http, https, or mailto URL.');
+        return;
+      }
+
+      this.editor.chain().focus().setLink({ href: url }).run();
+    }
+  }
+
+  private normalizeUrl(input: string): string | null {
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+
+    const allowedProtocols = ['http:', 'https:', 'mailto:'];
+
+    try {
+      const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed);
+      const candidate = hasProtocol ? trimmed : `https://${trimmed}`;
+      const url = new URL(candidate);
+
+      if (!allowedProtocols.includes(url.protocol)) {
+        return null;
+      }
+
+      return url.toString();
+    } catch {
+      return null;
+    }
+  }
+
+  toggleHighlight(): void {
+    this.editor.chain().focus().toggleHighlight().run();
+  }
+
+  showColorPicker(): void {
+    const input = this.colorInput()?.nativeElement as HTMLInputElement;
+    input?.click();
+  }
+
+  onColorChange(event: Event): void {
+    const color = (event.target as HTMLInputElement).value;
+    this.currentTextColor.set(color);
+    this.editor.chain().focus().setColor(color).run();
+  }
+
+  setTextAlign(alignment: 'left' | 'center' | 'right' | 'justify'): void {
+    this.editor.chain().focus().setTextAlign(alignment).run();
   }
 
   toggleBulletList(): void {
@@ -747,8 +1203,8 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.editor.chain().focus().toggleTaskList().run();
   }
 
-  toggleHeading(): void {
-    this.editor.chain().focus().toggleHeading({ level: 2 }).run();
+  toggleHeading(level: 1 | 2 | 3 = 2): void {
+    this.editor.chain().focus().toggleHeading({ level }).run();
   }
 
   toggleBlockquote(): void {
@@ -757,6 +1213,29 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   toggleCodeBlock(): void {
     this.editor.chain().focus().toggleCodeBlock().run();
+  }
+
+  toggleInlineCode(): void {
+    this.editor.chain().focus().toggleCode().run();
+  }
+
+  clearFormatting(): void {
+    this.editor.chain().focus().clearNodes().unsetAllMarks().run();
+  }
+
+  insertHorizontalRule(): void {
+    this.editor.chain().focus().setHorizontalRule().run();
+  }
+
+  insertImage(): void {
+    const url = window.prompt('Enter the image URL:');
+    if (url) {
+      this.editor.chain().focus().setImage({ src: url }).run();
+    }
+  }
+
+  insertTable(): void {
+    this.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
   }
 
   /** Get current content as JSON string */
