@@ -44,15 +44,12 @@ public interface ICheckboxExtractor
 /// </remarks>
 public sealed class TiptapCheckboxExtractor : ICheckboxExtractor
 {
-    private int _idCounter;
-
     public IReadOnlyList<Checkbox> Extract(string content)
     {
         if (string.IsNullOrWhiteSpace(content))
             return [];
 
-        _idCounter = 0;
-        var checkboxes = new List<Checkbox>();
+        var context = new ExtractionContext();
 
         try
         {
@@ -61,7 +58,7 @@ public sealed class TiptapCheckboxExtractor : ICheckboxExtractor
 
             if (root.TryGetProperty("content", out var contentArray))
             {
-                ExtractFromNodes(contentArray, checkboxes);
+                ExtractFromNodes(contentArray, context);
             }
         }
         catch (JsonException)
@@ -70,10 +67,10 @@ public sealed class TiptapCheckboxExtractor : ICheckboxExtractor
             return [];
         }
 
-        return checkboxes;
+        return context.Checkboxes;
     }
 
-    private void ExtractFromNodes(JsonElement nodes, List<Checkbox> checkboxes)
+    private static void ExtractFromNodes(JsonElement nodes, ExtractionContext context)
     {
         if (nodes.ValueKind != JsonValueKind.Array)
             return;
@@ -87,21 +84,21 @@ public sealed class TiptapCheckboxExtractor : ICheckboxExtractor
 
             if (nodeType == "taskItem")
             {
-                var checkbox = ExtractTaskItem(node);
+                var checkbox = ExtractTaskItem(node, context);
                 if (checkbox != null)
                 {
-                    checkboxes.Add(checkbox);
+                    context.Checkboxes.Add(checkbox);
                 }
             }
             else if (node.TryGetProperty("content", out var childContent))
             {
                 // Recursively search in nested content (e.g., taskList, bulletList, etc.)
-                ExtractFromNodes(childContent, checkboxes);
+                ExtractFromNodes(childContent, context);
             }
         }
     }
 
-    private Checkbox? ExtractTaskItem(JsonElement taskItem)
+    private static Checkbox? ExtractTaskItem(JsonElement taskItem, ExtractionContext context)
     {
         // Get checked state from attrs
         var isChecked = false;
@@ -119,13 +116,22 @@ public sealed class TiptapCheckboxExtractor : ICheckboxExtractor
         // Generate a unique ID for this checkbox
         // TipTap doesn't provide IDs by default, so we generate sequential IDs
         // These IDs are stable as long as the checkbox order doesn't change
-        _idCounter++;
-        var id = $"cb-{_idCounter}";
+        context.IdCounter++;
+        var id = $"cb-{context.IdCounter}";
 
         return new Checkbox(id, text, isChecked);
     }
 
-    private string ExtractTextFromNode(JsonElement node)
+    /// <summary>
+    /// Thread-safe context for a single extraction operation.
+    /// </summary>
+    private sealed class ExtractionContext
+    {
+        public int IdCounter { get; set; }
+        public List<Checkbox> Checkboxes { get; } = [];
+    }
+
+    private static string ExtractTextFromNode(JsonElement node)
     {
         if (!node.TryGetProperty("content", out var content))
             return string.Empty;

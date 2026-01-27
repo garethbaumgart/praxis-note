@@ -1,5 +1,7 @@
-import { Component, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject, input, output, ChangeDetectionStrategy, signal, OnInit, DestroyRef } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 
 interface NavItem {
   path: string;
@@ -20,14 +22,18 @@ interface User {
   templateUrl: './sidebar.component.html',
   host: { class: 'contents' },
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly user = input.required<User>();
   readonly mobileOpen = input(false);
 
   readonly closeMobile = output<void>();
   readonly onLogout = output<void>();
+
+  // Reactive signal for current path to support zoneless change detection
+  private readonly currentPath = signal('');
 
   protected readonly navItems: NavItem[] = [
     { path: '/home', label: 'Home', icon: 'pi-home', enabled: true },
@@ -36,10 +42,27 @@ export class SidebarComponent {
     { path: '/tags', label: 'Tags', icon: 'pi-tags', enabled: false },
   ];
 
-  protected isActive(path: string): boolean {
+  ngOnInit(): void {
+    // Set initial path
+    this.updateCurrentPath();
+
+    // Subscribe to navigation events to update the path signal
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => this.updateCurrentPath());
+  }
+
+  private updateCurrentPath(): void {
     // Extract pathname without query params or fragments
-    const currentPath = this.router.url.split('?')[0].split('#')[0];
-    return currentPath === path || currentPath.startsWith(path + '/');
+    this.currentPath.set(this.router.url.split('?')[0].split('#')[0]);
+  }
+
+  protected isActive(path: string): boolean {
+    const current = this.currentPath();
+    return current === path || current.startsWith(path + '/');
   }
 
   protected navigate(path: string): void {
