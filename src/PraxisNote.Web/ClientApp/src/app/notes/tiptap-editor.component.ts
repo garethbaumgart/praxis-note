@@ -67,7 +67,7 @@ import { CheckboxStatus } from './note.model';
           class="toolbar-btn"
           [class.active]="editor.isActive('link')"
           (click)="toggleLink()"
-          title="Link (Ctrl+K)"
+          title="Link"
           aria-label="Insert link"
         >
           <i class="pi pi-link text-sm"></i>
