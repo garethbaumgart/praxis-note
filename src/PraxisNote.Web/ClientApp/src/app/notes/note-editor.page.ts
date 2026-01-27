@@ -400,6 +400,9 @@ export class NoteEditorPage implements OnInit, OnDestroy {
       this.noteService.loadNotes();
     }
 
+    let attempts = 0;
+    const maxAttempts = 100; // 10 seconds max (100 * 100ms)
+
     // Wait for notes to load, then find the note
     const checkForNote = () => {
       // Stop polling if component is destroyed
@@ -407,6 +410,7 @@ export class NoteEditorPage implements OnInit, OnDestroy {
         return;
       }
 
+      attempts++;
       const notes = this.noteService.notes();
       const n = notes.find((note) => note.id === id);
 
@@ -421,9 +425,13 @@ export class NoteEditorPage implements OnInit, OnDestroy {
       } else if (this.noteService.initialLoadComplete()) {
         this.notFound.set(true);
         this.loading.set(false);
-      } else {
+      } else if (attempts < maxAttempts) {
         // Notes not loaded yet, try again
         this.pollingTimeoutId = setTimeout(checkForNote, 100);
+      } else {
+        // Max attempts reached, show not found
+        this.notFound.set(true);
+        this.loading.set(false);
       }
     };
 
