@@ -23,6 +23,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Google OAuth** - Secure authentication with user accounts
 - ✅ **Notes** - Google Keep-style card grid with TipTap rich text editor
 - ✅ **Checkbox-Task Sync** - Promote checkboxes to tasks with bidirectional sync (complete a task, checkbox is checked; check a checkbox, task is done)
+- ✅ **Meetings** - Daily grouped meeting list with fire-and-forget capture workflow
 
 ✅ = Implemented | 🚧 = Planned
 
