@@ -28,7 +28,7 @@ interface TimeOption {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, NgClass, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule, SelectModule, MeetingAnalysisComponent],
-  styles: `
+  styles: [`
     :host ::ng-deep .p-dialog-content {
       padding: 0 !important;
     }
@@ -44,7 +44,7 @@ interface TimeOption {
       border: none;
       background: transparent;
     }
-  `,
+  `],
   template: `
     <p-dialog
       [visible]="visible()"
@@ -93,6 +93,7 @@ interface TimeOption {
               <button
                 type="button"
                 class="px-3 py-1.5 text-sm rounded-full transition-colors"
+                [attr.aria-pressed]="selectedDateChip() === option.label"
                 [class.bg-accent]="selectedDateChip() === option.label"
                 [class.text-accent-foreground]="selectedDateChip() === option.label"
                 [class.bg-surface-muted]="selectedDateChip() !== option.label"
@@ -116,6 +117,8 @@ interface TimeOption {
             <button
               type="button"
               class="px-3 py-1.5 text-sm rounded-full bg-surface-muted text-foreground-secondary hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
+              [attr.aria-expanded]="showDatePicker()"
+              aria-label="Pick a date"
               (click)="showDatePicker.set(!showDatePicker())"
             >
               <i class="pi pi-calendar text-xs"></i>
@@ -349,7 +352,7 @@ export class MeetingEditorComponent {
     this.meetingDate.set(newDate);
   }
 
-  onDatePickerChange(date: Date): void {
+  onDatePickerChange(date: Date | null): void {
     if (!date) return;
 
     // Preserve the current time
