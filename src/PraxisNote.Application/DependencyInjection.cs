@@ -54,6 +54,10 @@ public static class DependencyInjection
         services.AddScoped<PromoteCheckboxToTask>();
         services.AddScoped<GetCheckboxStatus>();
 
+        // Note-Tag use cases
+        services.AddScoped<AddTagToNote>();
+        services.AddScoped<RemoveTagFromNote>();
+
         // Note services
         services.AddSingleton<ICheckboxExtractor, TiptapCheckboxExtractor>();
         services.AddSingleton<ICheckboxUpdater, TiptapCheckboxUpdater>();

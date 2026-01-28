@@ -7,14 +7,20 @@ import {
   OnInit,
   OnDestroy,
   HostListener,
+  ElementRef,
+  viewChild,
+  afterNextRender,
+  Injector,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
-import { Note, CheckboxStatus } from './note.model';
+import { Note, CheckboxStatus, NoteTag } from './note.model';
 import { NoteService } from './note.service';
 import { PdfExportService } from './pdf-export.service';
 import { TiptapEditorComponent } from './tiptap-editor.component';
 import { ToastService } from '../shared/services/toast.service';
+import { TagService } from '../tasks/tag.service';
+import { Tag } from '../tasks/tag.model';
 
 @Component({
   selector: 'app-note-editor-page',
@@ -103,7 +109,7 @@ import { ToastService } from '../shared/services/toast.service';
         }
       </main>
 
-      <!-- Footer status bar -->
+      <!-- Footer status bar with tags -->
       <footer class="footer">
         @if (note()) {
           <span class="text-xs text-foreground-muted">
@@ -111,10 +117,99 @@ import { ToastService } from '../shared/services/toast.service';
           </span>
         }
         <span class="flex-1"></span>
-        @if (note()?.tags?.length) {
-          <div class="tags">
-            @for (tag of note()!.tags; track tag.id) {
-              <span class="tag">{{ tag.name }}</span>
+        <!-- Tags section (editable) -->
+        @if (note()) {
+          <div class="tags-section">
+            <!-- Display existing tags -->
+            @for (tag of visibleTags(); track tag.id) {
+              <span class="tag-badge">
+                {{ tag.name }}
+                <button
+                  type="button"
+                  class="tag-badge-remove"
+                  (click)="removeTag(tag.id)"
+                  [attr.aria-label]="'Remove tag ' + tag.name"
+                >
+                  <i class="pi pi-times"></i>
+                </button>
+              </span>
+            }
+            @if (overflowCount() > 0 && !showTagPicker()) {
+              <!-- Overflow button to expand -->
+              <button
+                type="button"
+                class="overflow-btn"
+                (click)="inlineTagsExpanded.set(true)"
+                [attr.aria-label]="'Show ' + overflowCount() + ' more tags'"
+              >
+                +{{ overflowCount() }}
+              </button>
+            }
+            <!-- Inline tag input (when adding tag) -->
+            @if (showTagPicker()) {
+              <div class="tag-input-wrapper">
+                <input
+                  #tagInput
+                  type="text"
+                  [placeholder]="noteTags().length > 0 ? 'Add tag...' : 'Add first tag...'"
+                  [value]="tagSearch()"
+                  (input)="tagSearch.set(asInput($event).value)"
+                  (keydown.enter)="onTagEnter(); $event.preventDefault()"
+                  (keydown.escape)="showTagPicker.set(false)"
+                  class="tag-input"
+                  aria-label="Search or create tag"
+                >
+                <!-- Dropdown suggestions -->
+                @if (tagSuggestions().length > 0 || canCreateTag()) {
+                  <div class="tag-dropdown">
+                    @for (tag of tagSuggestions(); track tag.id) {
+                      <button
+                        type="button"
+                        class="tag-dropdown-item"
+                        (click)="addTag({ id: tag.id, name: tag.name })"
+                      >
+                        <span [innerHTML]="highlightMatch(tag.name)"></span>
+                        <span class="text-foreground-muted">{{ tag.usageCount }}</span>
+                      </button>
+                    }
+                    @if (canCreateTag()) {
+                      @if (tagSuggestions().length > 0) {
+                        <div class="tag-dropdown-divider"></div>
+                      }
+                      <button
+                        type="button"
+                        class="tag-dropdown-item create"
+                        (click)="createAndAddTag(tagSearch().trim())"
+                      >
+                        <i class="pi pi-plus text-[10px] mr-1"></i>
+                        Create "{{ tagSearch().trim() }}"
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <!-- Add tag button (when not adding) -->
+              <button
+                type="button"
+                class="add-tag-btn"
+                (click)="openTagInput()"
+                aria-label="Add tag"
+              >
+                <i class="pi pi-plus text-[9px]"></i>
+              </button>
+            }
+            <!-- Collapse/"Less" button (only when expanded and has overflow) -->
+            @if (inlineTagsExpanded() && noteTags().length > 3 && !showTagPicker()) {
+              <button
+                type="button"
+                class="collapse-btn"
+                (click)="inlineTagsExpanded.set(false)"
+                aria-label="Show fewer tags"
+              >
+                <i class="pi pi-chevron-up text-[8px]"></i>
+                <span>Less</span>
+              </button>
             }
           </div>
         }
@@ -252,17 +347,20 @@ import { ToastService } from '../shared/services/toast.service';
       align-items: center;
       padding: 0.5rem 1.5rem;
       border-top: 1px solid var(--color-border-default);
-      background: var(--color-bg-default);
+      background: var(--color-bg-base);
     }
 
-    .tags {
+    .tags-section {
       display: flex;
-      gap: 0.375rem;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.25rem;
     }
 
-    .tag {
+    .tag-badge {
       display: inline-flex;
       align-items: center;
+      gap: 0.25rem;
       background: var(--color-tag-bg);
       color: var(--color-tag-text);
       font-size: 10px;
@@ -271,14 +369,141 @@ import { ToastService } from '../shared/services/toast.service';
       border-radius: 9999px;
       height: 18px;
     }
+
+    .tag-badge-remove {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--color-tag-text);
+      opacity: 0.6;
+      transition: opacity 0.15s;
+    }
+
+    .tag-badge-remove:hover {
+      opacity: 1;
+    }
+
+    .overflow-btn {
+      padding: 2px 6px;
+      border-radius: 9999px;
+      font-size: 10px;
+      background: var(--color-tags-section-bg);
+      color: var(--color-text-muted);
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .overflow-btn:hover {
+      background: var(--color-tags-badge-bg);
+      color: var(--color-tag-text);
+    }
+
+    .tag-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .tag-input {
+      width: 100%;
+      height: 24px;
+      padding: 0 8px;
+      font-size: 12px;
+      background: var(--color-bg-muted);
+      border-radius: 9999px;
+      border: none;
+      outline: none;
+    }
+
+    .tag-dropdown {
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 4px);
+      width: 192px;
+      background: var(--color-bg-base);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--color-border-default);
+      padding: 4px 0;
+      z-index: 50;
+    }
+
+    .tag-dropdown-item {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .tag-dropdown-item:hover {
+      background: var(--color-bg-subtle);
+    }
+
+    .tag-dropdown-item.create {
+      color: var(--color-accent-solid);
+    }
+
+    .tag-dropdown-divider {
+      border-top: 1px solid var(--color-border-default);
+      margin: 4px 0;
+    }
+
+    .add-tag-btn {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 9999px;
+      color: var(--color-text-muted);
+      opacity: 0.3;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .add-tag-btn:hover {
+      color: var(--color-tag-text);
+      background: var(--color-tags-badge-bg);
+      opacity: 1;
+    }
+
+    .collapse-btn {
+      all: unset;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: auto;
+      padding: 2px 6px;
+      border-radius: 9999px;
+      font-size: 10px;
+      background: var(--color-tags-section-bg);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .collapse-btn:hover {
+      background: var(--color-tags-collapsed-bg);
+    }
   `],
 })
 export class NoteEditorPage implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly noteService = inject(NoteService);
+  private readonly tagService = inject(TagService);
   private readonly pdfExportService = inject(PdfExportService);
   private readonly toast = inject(ToastService);
+  private readonly injector = inject(Injector);
 
   private readonly destroy$ = new Subject<void>();
   private readonly contentChange$ = new Subject<string>();
@@ -292,6 +517,12 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   readonly isNewNote = signal(false);
   readonly resetCounter = signal(0);
   readonly checkboxStatuses = signal<CheckboxStatus[]>([]);
+
+  // Tag-related signals
+  readonly showTagPicker = signal(false);
+  readonly inlineTagsExpanded = signal(false);
+  readonly tagSearch = signal('');
+  readonly tagInput = viewChild<ElementRef<HTMLInputElement>>('tagInput');
 
   private currentContent = '';
   private noteId: string | null = null;
@@ -315,7 +546,55 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     return 'Untitled';
   });
 
+  // Tag computed properties
+  readonly noteTags = computed(() => this.note()?.tags ?? []);
+  
+  private readonly MAX_VISIBLE_TAGS = 3;
+
+  readonly visibleTags = computed(() => {
+    const tags = this.noteTags();
+    const expanded = this.inlineTagsExpanded();
+    const adding = this.showTagPicker();
+    
+    if (expanded || adding) return tags;
+    return tags.slice(0, this.MAX_VISIBLE_TAGS);
+  });
+
+  readonly overflowCount = computed(() => {
+    const total = this.noteTags().length;
+    const expanded = this.inlineTagsExpanded();
+    const adding = this.showTagPicker();
+    
+    if (expanded || adding) return 0;
+    return Math.max(0, total - this.MAX_VISIBLE_TAGS);
+  });
+
+  readonly existingTagIds = computed(() => this.noteTags().map(t => t.id));
+
+  readonly tagSuggestions = computed(() => {
+    const query = this.tagSearch().toLowerCase().trim();
+    const existingIds = this.existingTagIds();
+    const allTags = this.tagService.tags();
+    
+    if (!query) return allTags.filter(t => !existingIds.includes(t.id));
+    
+    return allTags
+      .filter(t => !existingIds.includes(t.id) && t.name.toLowerCase().includes(query))
+      .sort((a, b) => b.usageCount - a.usageCount);
+  });
+
+  readonly canCreateTag = computed(() => {
+    const query = this.tagSearch().trim();
+    const suggestions = this.tagSuggestions();
+    return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
+  });
+
   ngOnInit(): void {
+    // Load tags
+    if (this.tagService.tags().length === 0) {
+      this.tagService.loadTags();
+    }
+
     // Set up auto-save with debounce
     this.contentChange$
       .pipe(debounceTime(1000), takeUntil(this.destroy$))
@@ -592,5 +871,109 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     return (node.content as { type: string; text?: string; content?: unknown[] }[])
       .map((child) => this.extractText(child))
       .join('');
+  }
+
+  // Tag methods
+  openTagInput(): void {
+    this.showTagPicker.set(true);
+    this.tagSearch.set('');
+
+    // Focus the input after render
+    afterNextRender(() => {
+      this.tagInput()?.nativeElement.focus();
+    }, { injector: this.injector });
+  }
+
+  onTagEnter(): void {
+    const query = this.tagSearch().trim();
+    const suggestions = this.tagSuggestions();
+
+    // If there's an exact match, select it
+    const exactMatch = suggestions.find(t =>
+      t.name.toLowerCase() === query.toLowerCase()
+    );
+    if (exactMatch) {
+      this.addTag({ id: exactMatch.id, name: exactMatch.name });
+      return;
+    }
+
+    // If can create, create it
+    if (this.canCreateTag()) {
+      this.createAndAddTag(query);
+      return;
+    }
+
+    // If there's a single suggestion, select it
+    if (suggestions.length === 1) {
+      this.addTag({ id: suggestions[0].id, name: suggestions[0].name });
+    }
+  }
+
+  addTag(tag: NoteTag): void {
+    const n = this.note();
+    if (!n) return;
+
+    // Guard against duplicates
+    if (this.noteTags().some(t => t.id === tag.id)) {
+      this.showTagPicker.set(false);
+      this.tagSearch.set('');
+      return;
+    }
+
+    this.noteService.addTagToNote(n.id, tag, () => {
+      this.tagService.incrementUsageCount(tag.id);
+    });
+    this.showTagPicker.set(false);
+    this.tagSearch.set('');
+  }
+
+  removeTag(tagId: string): void {
+    const n = this.note();
+    if (!n) return;
+
+    this.noteService.removeTagFromNote(n.id, tagId, () => {
+      this.tagService.decrementUsageCount(tagId);
+    });
+  }
+
+  createAndAddTag(name: string): void {
+    this.tagService.createTag(name, (createdTag: Tag) => {
+      this.addTag({ id: createdTag.id, name: createdTag.name });
+    });
+    this.showTagPicker.set(false);
+    this.tagSearch.set('');
+  }
+
+  /** Highlight matching portion of tag name in dropdown */
+  highlightMatch(tagName: string): string {
+    const query = this.tagSearch().toLowerCase().trim();
+    if (!query) return this.escapeHtml(tagName);
+
+    const lowerName = tagName.toLowerCase();
+    const index = lowerName.indexOf(query);
+    if (index === -1) return this.escapeHtml(tagName);
+
+    const before = tagName.slice(0, index);
+    const match = tagName.slice(index, index + query.length);
+    const after = tagName.slice(index + query.length);
+
+    return `${this.escapeHtml(before)}<mark class="search-highlight">${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
+  }
+
+  private escapeHtml(text: string): string {
+    const map: { [key: string]: string } = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+    };
+    return text.replace(/[&<>"'/]/g, (char) => map[char]);
+  }
+
+  /** Type-safe helper for accessing input value from events */
+  asInput(event: Event): HTMLInputElement {
+    return event.target as HTMLInputElement;
   }
 }

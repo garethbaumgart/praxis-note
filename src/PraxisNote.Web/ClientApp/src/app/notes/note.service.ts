@@ -231,4 +231,77 @@ export class NoteService {
   getCheckboxStatus(noteId: string) {
     return this.http.get<CheckboxStatus[]>(`/api/notes/${noteId}/checkbox-status`);
   }
+
+  addTagToNote(noteId: string, tag: { id: string; name: string }, onSuccess?: () => void, onError?: () => void): void {
+    // Check if tag already exists on note
+    const note = this._notes().find(n => n.id === noteId);
+    const existingTags = note?.tags ?? [];
+    if (existingTags.some(t => t.id === tag.id)) {
+      return; // Tag already on note
+    }
+
+    // Optimistic update
+    this._notes.update(notes =>
+      notes.map(n =>
+        n.id === noteId
+          ? { ...n, tags: [...(n.tags ?? []), tag] }
+          : n
+      )
+    );
+
+    this.http.post(`/api/notes/${noteId}/tags/${tag.id}`, {}).subscribe({
+      next: () => {
+        onSuccess?.();
+      },
+      error: () => {
+        // Rollback optimistic update
+        this._notes.update(notes =>
+          notes.map(n =>
+            n.id === noteId
+              ? { ...n, tags: (n.tags ?? []).filter(tg => tg.id !== tag.id) }
+              : n
+          )
+        );
+        this.toast.error('Failed to add tag');
+        onError?.();
+      },
+    });
+  }
+
+  removeTagFromNote(noteId: string, tagId: string, onSuccess?: () => void, onError?: () => void): void {
+    const note = this._notes().find(n => n.id === noteId);
+    const removedTag = (note?.tags ?? []).find(t => t.id === tagId);
+
+    // Guard: if tag isn't on the note, short-circuit
+    if (!removedTag) {
+      return;
+    }
+
+    // Optimistic update
+    this._notes.update(notes =>
+      notes.map(n =>
+        n.id === noteId
+          ? { ...n, tags: (n.tags ?? []).filter(tg => tg.id !== tagId) }
+          : n
+      )
+    );
+
+    this.http.delete(`/api/notes/${noteId}/tags/${tagId}`).subscribe({
+      next: () => {
+        onSuccess?.();
+      },
+      error: () => {
+        // Rollback optimistic update
+        this._notes.update(notes =>
+          notes.map(n =>
+            n.id === noteId
+              ? { ...n, tags: [...(n.tags ?? []), removedTag] }
+              : n
+          )
+        );
+        this.toast.error('Failed to remove tag');
+        onError?.();
+      },
+    });
+  }
 }
