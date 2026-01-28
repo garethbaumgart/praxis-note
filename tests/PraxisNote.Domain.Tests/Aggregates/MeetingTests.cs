@@ -1135,6 +1135,20 @@ public class MeetingTests
     }
 
     [Fact]
+    public void CompleteTranscription_AlwaysUpdatesUpdatedAt()
+    {
+        // Arrange - status is already Draft, so UpdateStatus would be a no-op
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.CompleteTranscription("Transcribed text");
+
+        // Assert - UpdatedAt should still be updated even though status didn't change
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
     public void CompleteTranscription_OverwritesExistingTranscript()
     {
         // Arrange

@@ -228,6 +228,7 @@ public sealed class Meeting : AggregateRoot
 
         TranscriptContent = transcript.Trim();
         UpdateStatus(MeetingStatus.Draft);
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
