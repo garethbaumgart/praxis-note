@@ -286,6 +286,27 @@ When adding a new feature, ask: "If this breaks, does the app become unusable?" 
 
 ## Development
 
+### Database Migrations
+
+**Migrations merged to main are immutable.** Once merged, a migration may have been pulled by other developers or deployed to any environment.
+
+| Phase | Can Edit? |
+|-------|-----------|
+| Local branch | ✅ Yes - review, customize, test freely |
+| In PR (not merged) | ✅ Yes - edit based on review feedback |
+| Merged to main | ❌ Never - create a new migration instead |
+
+To create a new migration:
+```bash
+cd src/PraxisNote.Infrastructure
+dotnet ef migrations add MigrationName --startup-project ../PraxisNote.Web
+```
+
+To remove an unapplied migration (local only):
+```bash
+dotnet ef migrations remove --startup-project ../PraxisNote.Web
+```
+
 ### Starting the Dev Stack
 
 Run the full stack locally with hot reload (requires Docker):
