@@ -14,13 +14,15 @@ namespace PraxisNote.Infrastructure.Migrations
                 name: "TagIds",
                 table: "Meetings",
                 type: "text",
-                nullable: true);
+                nullable: false,
+                defaultValue: "[]");
 
             migrationBuilder.AddColumn<string>(
                 name: "ActionItems",
                 table: "Meetings",
                 type: "jsonb",
-                nullable: true);
+                nullable: false,
+                defaultValue: "[]");
         }
 
         /// <inheritdoc />

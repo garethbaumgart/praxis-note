@@ -1121,12 +1121,14 @@ public class MeetingTests
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+        var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
         var result = meeting.ToggleActionItem(Guid.NewGuid());
 
         // Assert
         Assert.False(result);
+        Assert.Equal(originalUpdatedAt, meeting.UpdatedAt);
     }
 
     [Fact]

@@ -72,7 +72,7 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
                                                 pair.First.Assignee == pair.Second.Assignee &&
                                                 pair.First.IsCompleted == pair.Second.IsCompleted)),
             c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.Id, v.Description, v.Assignee, v.IsCompleted)),
-            c => c == null ? new List<ActionItem>() : c.Select(x => x).ToList());
+            c => c == null ? new List<ActionItem>() : c.ToList());
 
         builder.Property<List<ActionItem>>("_actionItems")
             .HasColumnName("ActionItems")

@@ -39,9 +39,12 @@ public sealed class AnalyzeMeeting(
             var camelCaseOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
             // Convert extracted action items to domain ActionItem objects
-            var actionItems = result.ExtractedActionItems
+            // Filter out any items with null/empty descriptions to prevent exceptions
+            var actionItems = result.ExtractedActionItems?
+                .Where(a => !string.IsNullOrWhiteSpace(a.Description))
                 .Select(a => ActionItem.Create(a.Description, a.Assignee))
-                .ToList();
+                .ToList()
+                ?? [];
 
             meeting.CompleteAnalysis(
                 result.Summary,
