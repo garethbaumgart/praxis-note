@@ -218,6 +218,16 @@ interface BlockType {
         </button>
         <button
           type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive('orderedList')"
+          (click)="toggleOrderedList()"
+          title="Numbered List"
+          aria-label="Numbered list"
+        >
+          <i class="pi pi-sort-numeric-down text-sm"></i>
+        </button>
+        <button
+          type="button"
           class="toolbar-btn task-list-btn"
           [class.active]="editor.isActive('taskList')"
           (click)="toggleTaskList()"
@@ -225,6 +235,30 @@ interface BlockType {
           aria-label="Task list"
         >
           <i class="pi pi-check-square text-sm"></i>
+        </button>
+
+        <div class="divider"></div>
+
+        <!-- Quote & Code Block -->
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive('blockquote')"
+          (click)="toggleBlockquote()"
+          title="Quote"
+          aria-label="Quote"
+        >
+          <i class="pi pi-comment text-sm"></i>
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="editor.isActive('codeBlock')"
+          (click)="toggleCodeBlock()"
+          title="Code Block"
+          aria-label="Code block"
+        >
+          <i class="pi pi-code text-sm"></i>
         </button>
 
         <div class="divider"></div>
@@ -748,11 +782,6 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     { label: 'Heading 1', value: 'heading1', style: 'font-size: 1.25em; font-weight: 700;' },
     { label: 'Heading 2', value: 'heading2', style: 'font-size: 1.1em; font-weight: 600;' },
     { label: 'Heading 3', value: 'heading3', style: 'font-size: 1em; font-weight: 600;' },
-    { label: 'Bullet List', value: 'bulletList', icon: 'pi pi-list' },
-    { label: 'Numbered List', value: 'orderedList', icon: 'pi pi-sort-numeric-down' },
-    { label: 'Task List', value: 'taskList', icon: 'pi pi-check-square' },
-    { label: 'Quote', value: 'blockquote', icon: 'pi pi-comment' },
-    { label: 'Code Block', value: 'codeBlock', icon: 'pi pi-code' },
   ];
 
   /** Overflow menu items */
@@ -815,11 +844,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.editor.isActive('heading', { level: 1 })) return 'heading1';
     if (this.editor.isActive('heading', { level: 2 })) return 'heading2';
     if (this.editor.isActive('heading', { level: 3 })) return 'heading3';
-    if (this.editor.isActive('bulletList')) return 'bulletList';
-    if (this.editor.isActive('orderedList')) return 'orderedList';
-    if (this.editor.isActive('taskList')) return 'taskList';
-    if (this.editor.isActive('blockquote')) return 'blockquote';
-    if (this.editor.isActive('codeBlock')) return 'codeBlock';
+    // Lists, blockquote, and codeBlock are no longer in dropdown, return paragraph
     return 'paragraph';
   });
 
@@ -1081,21 +1106,6 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         break;
       case 'heading3':
         chain.setHeading({ level: 3 }).run();
-        break;
-      case 'bulletList':
-        chain.clearNodes().toggleBulletList().run();
-        break;
-      case 'orderedList':
-        chain.clearNodes().toggleOrderedList().run();
-        break;
-      case 'taskList':
-        chain.clearNodes().toggleTaskList().run();
-        break;
-      case 'blockquote':
-        chain.clearNodes().toggleBlockquote().run();
-        break;
-      case 'codeBlock':
-        chain.clearNodes().setCodeBlock().run();
         break;
     }
   }
