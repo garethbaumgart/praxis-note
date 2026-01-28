@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Web.Extensions;
 
@@ -178,6 +179,7 @@ public static class MeetingEndpoints
         ClaimsPrincipal user,
         IFormFile file,
         [FromServices] TranscribeAudio transcribeAudio,
+        [FromServices] IOptions<WhisperTranscriptionSettings> settings,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -189,6 +191,13 @@ public static class MeetingEndpoints
         if (file.Length == 0)
         {
             return Results.BadRequest("Audio file is required.");
+        }
+
+        var maxSize = settings.Value.MaxFileSizeBytes;
+        if (file.Length > maxSize)
+        {
+            return Results.BadRequest(
+                $"Audio file exceeds the maximum size of {maxSize / (1024 * 1024)}MB.");
         }
 
         var extension = Path.GetExtension(file.FileName);

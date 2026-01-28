@@ -296,8 +296,7 @@ export class MeetingEditorComponent {
   readonly attendees = signal('');
   readonly transcript = signal('');
   readonly audioFileName = signal<string | null>(null);
-
-  readonly isTranscribing = computed(() => this.currentMeeting()?.status === 'Processing');
+  readonly isTranscribing = signal(false);
 
   // Date selection state
   readonly selectedDateChip = signal<string | null>('Tomorrow');
@@ -364,9 +363,9 @@ export class MeetingEditorComponent {
     // Sync transcript when transcription completes (meeting updated via polling)
     effect(() => {
       const meeting = this.currentMeeting();
-      if (meeting?.transcriptContent && meeting.status !== 'Processing') {
-        const current = this.transcript();
-        if (!current && meeting.transcriptContent) {
+      if (meeting && meeting.status !== 'Processing' && this.isTranscribing()) {
+        this.isTranscribing.set(false);
+        if (meeting.transcriptContent) {
           this.transcript.set(meeting.transcriptContent);
         }
       }
@@ -501,6 +500,7 @@ export class MeetingEditorComponent {
     this.promotingIds.set(new Set());
     this.showDatePicker.set(false);
     this.audioFileName.set(null);
+    this.isTranscribing.set(false);
 
     if (meeting) {
       this.isEditing.set(true);
@@ -546,6 +546,7 @@ export class MeetingEditorComponent {
     if (!id) return;
 
     this.audioFileName.set(file.name);
+    this.isTranscribing.set(true);
     this.meetingService.transcribeAudio(id, file);
 
     // Reset file input so the same file can be re-selected
