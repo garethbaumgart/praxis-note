@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input, computed } from '@angular/co
 import { DecimalPipe } from '@angular/common';
 import { Accordion, AccordionPanel, AccordionHeader, AccordionContent } from 'primeng/accordion';
 import { ProgressBar } from 'primeng/progressbar';
-import { Meeting, parseBehavioralAnalysis, BehavioralAnalysis, RedFlag } from './meeting.model';
+import { Meeting, parseBehavioralAnalysis, RedFlag } from './meeting.model';
 
 @Component({
   selector: 'app-meeting-behavioral-analysis',
@@ -17,6 +17,9 @@ import { Meeting, parseBehavioralAnalysis, BehavioralAnalysis, RedFlag } from '.
             <i class="pi pi-users"></i>
             Behavioral Analysis
           </h3>
+          <p class="text-xs text-foreground-muted mt-1">
+            AI-generated interpretation — use as guidance, not ground truth.
+          </p>
         </div>
 
         <p-accordion [multiple]="true" class="behavioral-accordion">
