@@ -229,8 +229,15 @@ export class MeetingEditorComponent {
     if (!id) return;
 
     this.meetingService.getActionItemStatus(id).subscribe({
-      next: statuses => this.actionItemStatuses.set(statuses),
-      error: () => this.actionItemStatuses.set([]),
+      next: statuses => {
+        // Guard against stale responses when meeting changes
+        if (this.meetingId() !== id) return;
+        this.actionItemStatuses.set(statuses);
+      },
+      error: () => {
+        if (this.meetingId() !== id) return;
+        this.actionItemStatuses.set([]);
+      },
     });
   }
 
