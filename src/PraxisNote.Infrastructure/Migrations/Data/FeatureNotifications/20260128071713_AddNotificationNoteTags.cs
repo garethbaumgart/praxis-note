@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'Feature',
                     'Note tags',
                     'Organize your notes with tags, just like tasks.',
-                    'https://github.com/garethbaumgart/praxis-note/pull/TBD',
+                    'https://github.com/garethbaumgart/praxis-note/pull/258',
                     '2026-01-28T07:17:13Z'
                 );
                 """);

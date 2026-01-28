@@ -272,6 +272,11 @@ export class NoteService {
     const note = this._notes().find(n => n.id === noteId);
     const removedTag = (note?.tags ?? []).find(t => t.id === tagId);
 
+    // Guard: if tag isn't on the note, short-circuit
+    if (!removedTag) {
+      return;
+    }
+
     // Optimistic update
     this._notes.update(notes =>
       notes.map(n =>
@@ -287,15 +292,13 @@ export class NoteService {
       },
       error: () => {
         // Rollback optimistic update
-        if (removedTag) {
-          this._notes.update(notes =>
-            notes.map(n =>
-              n.id === noteId
-                ? { ...n, tags: [...(n.tags ?? []), removedTag] }
-                : n
-            )
-          );
-        }
+        this._notes.update(notes =>
+          notes.map(n =>
+            n.id === noteId
+              ? { ...n, tags: [...(n.tags ?? []), removedTag] }
+              : n
+          )
+        );
         this.toast.error('Failed to remove tag');
         onError?.();
       },

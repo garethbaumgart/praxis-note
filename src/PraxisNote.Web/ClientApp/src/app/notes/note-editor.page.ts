@@ -347,7 +347,7 @@ import { Tag } from '../tasks/tag.model';
       align-items: center;
       padding: 0.5rem 1.5rem;
       border-top: 1px solid var(--color-border-default);
-      background: var(--color-bg-default);
+      background: var(--color-bg-base);
     }
 
     .tags-section {
@@ -389,7 +389,7 @@ import { Tag } from '../tasks/tag.model';
       padding: 2px 6px;
       border-radius: 9999px;
       font-size: 10px;
-      background: rgba(var(--color-text-muted-rgb), 0.1);
+      background: var(--color-tags-section-bg);
       color: var(--color-text-muted);
       border: none;
       cursor: pointer;
@@ -397,7 +397,7 @@ import { Tag } from '../tasks/tag.model';
     }
 
     .overflow-btn:hover {
-      background: rgba(var(--color-tag-rgb), 0.1);
+      background: var(--color-tags-badge-bg);
       color: var(--color-tag-text);
     }
 
@@ -423,7 +423,7 @@ import { Tag } from '../tasks/tag.model';
       left: 0;
       bottom: calc(100% + 4px);
       width: 192px;
-      background: var(--color-bg-default);
+      background: var(--color-bg-base);
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       border: 1px solid var(--color-border-default);
@@ -464,14 +464,16 @@ import { Tag } from '../tasks/tag.model';
       width: 20px;
       height: 20px;
       border-radius: 9999px;
-      color: rgba(var(--color-text-muted-rgb), 0.3);
+      color: var(--color-text-muted);
+      opacity: 0.3;
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .add-tag-btn:hover {
       color: var(--color-tag-text);
-      background: rgba(var(--color-tag-rgb), 0.1);
+      background: var(--color-tags-badge-bg);
+      opacity: 1;
     }
 
     .collapse-btn {
@@ -483,14 +485,14 @@ import { Tag } from '../tasks/tag.model';
       padding: 2px 6px;
       border-radius: 9999px;
       font-size: 10px;
-      background: rgba(var(--color-text-muted-rgb), 0.1);
+      background: var(--color-tags-section-bg);
       color: var(--color-text-muted);
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .collapse-btn:hover {
-      background: rgba(var(--color-text-muted-rgb), 0.2);
+      background: var(--color-tags-collapsed-bg);
     }
   `],
 })
@@ -959,9 +961,15 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   }
 
   private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    const map: { [key: string]: string } = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+    };
+    return text.replace(/[&<>"'/]/g, (char) => map[char]);
   }
 
   /** Type-safe helper for accessing input value from events */
