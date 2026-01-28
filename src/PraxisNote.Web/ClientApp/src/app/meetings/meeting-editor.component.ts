@@ -59,33 +59,35 @@ interface TimeOption {
       <div class="px-5 py-4 space-y-4" [ngClass]="isEditing() ? ['max-h-[520px]', 'overflow-y-auto'] : []">
         <!-- Title -->
         <div class="flex items-center gap-3">
-          <i class="pi pi-file-edit text-foreground-muted w-5 text-center"></i>
+          <i class="pi pi-file-edit text-foreground-muted w-5 text-center" aria-hidden="true"></i>
           <input
             pInputText
             type="text"
             class="flex-1"
             placeholder="Meeting title (optional)"
+            aria-label="Meeting title"
             [value]="title()"
-            (input)="title.set($any($event.target).value)"
+            (input)="title.set(asInput($event).value)"
           />
         </div>
 
         <!-- Attendees -->
         <div class="flex items-center gap-3">
-          <i class="pi pi-users text-foreground-muted w-5 text-center"></i>
+          <i class="pi pi-users text-foreground-muted w-5 text-center" aria-hidden="true"></i>
           <input
             pInputText
             type="text"
             class="flex-1"
             placeholder="Attendees (comma separated)"
+            aria-label="Attendees"
             [value]="attendees()"
-            (input)="attendees.set($any($event.target).value)"
+            (input)="attendees.set(asInput($event).value)"
           />
         </div>
 
         <!-- Date -->
         <div class="flex items-center gap-3">
-          <i class="pi pi-calendar text-foreground-muted w-5 text-center"></i>
+          <i class="pi pi-calendar text-foreground-muted w-5 text-center" aria-hidden="true"></i>
           <div class="flex flex-wrap gap-2 flex-1">
             @for (option of dateOptions; track option.label) {
               <button
@@ -139,7 +141,7 @@ interface TimeOption {
 
         <!-- Time -->
         <div class="flex items-center gap-3">
-          <i class="pi pi-clock text-foreground-muted w-5 text-center"></i>
+          <i class="pi pi-clock text-foreground-muted w-5 text-center" aria-hidden="true"></i>
           <div class="flex items-center gap-2">
             <p-select
               [options]="hourOptions"
@@ -149,6 +151,7 @@ interface TimeOption {
               optionValue="value"
               [style]="{ width: '110px' }"
               appendTo="body"
+              ariaLabel="Meeting hour"
             />
             <p-select
               [options]="periodOptions"
@@ -156,6 +159,7 @@ interface TimeOption {
               (ngModelChange)="selectedPeriod.set($event)"
               [style]="{ width: '78px', minWidth: '78px' }"
               appendTo="body"
+              ariaLabel="AM or PM"
             />
           </div>
         </div>
@@ -163,15 +167,16 @@ interface TimeOption {
         <!-- Transcript (only shown when editing) -->
         @if (isEditing()) {
           <div class="flex gap-3">
-            <i class="pi pi-align-left text-foreground-muted w-5 text-center mt-2"></i>
+            <i class="pi pi-align-left text-foreground-muted w-5 text-center mt-2" aria-hidden="true"></i>
             <div class="flex-1">
               <textarea
                 pTextarea
                 class="w-full resize-none text-sm"
                 [rows]="5"
                 placeholder="Paste transcript..."
+                aria-label="Meeting transcript"
                 [value]="transcript()"
-                (input)="transcript.set($any($event.target).value)"
+                (input)="transcript.set(asTextarea($event).value)"
               ></textarea>
               <div class="flex justify-end mt-1">
                 <span class="text-xs text-foreground-muted">{{ transcript().length }} characters</span>
@@ -182,7 +187,7 @@ interface TimeOption {
           <!-- AI Analysis -->
           @if (currentMeeting()) {
             <div class="flex gap-3">
-              <i class="pi pi-sparkles text-foreground-muted w-5 text-center mt-1"></i>
+              <i class="pi pi-sparkles text-foreground-muted w-5 text-center mt-1" aria-hidden="true"></i>
               <div class="flex-1">
                 <app-meeting-analysis
                   [meeting]="currentMeeting()!"
@@ -513,5 +518,15 @@ export class MeetingEditorComponent {
       transcript: this.transcript(),
     });
     this.visible.set(false);
+  }
+
+  /** Type-safe helper for input events */
+  asInput(event: Event): HTMLInputElement {
+    return event.target as HTMLInputElement;
+  }
+
+  /** Type-safe helper for textarea events */
+  asTextarea(event: Event): HTMLTextAreaElement {
+    return event.target as HTMLTextAreaElement;
   }
 }
