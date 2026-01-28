@@ -82,6 +82,7 @@ export class MeetingService {
       summary: null,
       keyPoints: null,
       decisions: null,
+      behavioralAnalysis: null,
       createdAt: now,
       updatedAt: now,
     };

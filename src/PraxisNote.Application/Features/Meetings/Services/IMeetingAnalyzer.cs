@@ -8,4 +8,49 @@ public interface IMeetingAnalyzer
 public record MeetingAnalysisResult(
     string Summary,
     List<string> KeyPoints,
-    List<string> Decisions);
+    List<string> Decisions,
+    BehavioralAnalysisData? BehavioralAnalysis = null);
+
+#region Behavioral Analysis Types
+
+public record BehavioralAnalysisData(
+    SpeakingDynamics SpeakingDynamics,
+    SentimentTone SentimentTone,
+    CommunicationPatterns CommunicationPatterns,
+    List<RedFlag> RedFlags);
+
+public record SpeakingDynamics(
+    List<ParticipantTalkTime> TalkTimeByParticipant,
+    List<InterruptionPattern> InterruptionPatterns,
+    Dictionary<string, double> QuestionVsStatementRatio);
+
+public record ParticipantTalkTime(string Participant, double Percentage, string Duration);
+
+public record InterruptionPattern(string Interrupter, string Interrupted, int Count);
+
+public record SentimentTone(
+    List<ParticipantSentiment> ParticipantSentiments,
+    List<ToneShift> ToneShifts,
+    List<string> EmotionalIndicators);
+
+public record ParticipantSentiment(string Participant, string Sentiment, double Score);
+
+public record ToneShift(string Timestamp, string Description, string From, string To);
+
+public record CommunicationPatterns(
+    double OverallClarity,
+    List<FollowUpPattern> FollowUpPatterns,
+    List<ParticipantEngagement> EngagementLevels);
+
+public record FollowUpPattern(string Topic, bool WasFollowedUp, string? AssignedTo);
+
+public record ParticipantEngagement(string Participant, string Level, List<string> Indicators);
+
+public record RedFlag(
+    string Type,        // "evasive", "hedging", "defensive", "inconsistent"
+    string Participant,
+    string Description,
+    string Context,
+    string Severity);   // "low", "medium", "high"
+
+#endregion

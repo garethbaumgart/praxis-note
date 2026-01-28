@@ -10,5 +10,6 @@ public record MeetingDto(
     string? Summary,
     string? KeyPoints,
     string? Decisions,
+    string? BehavioralAnalysis,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);

@@ -1,12 +1,13 @@
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { Meeting, parseJsonArray } from './meeting.model';
+import { Meeting, parseJsonArray, parseBehavioralAnalysis } from './meeting.model';
+import { MeetingBehavioralAnalysisComponent } from './meeting-behavioral-analysis.component';
 
 @Component({
   selector: 'app-meeting-analysis',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule],
+  imports: [ButtonModule, MeetingBehavioralAnalysisComponent],
   template: `
     <div class="border border-border rounded-lg p-4 bg-surface-subtle">
       <!-- Header with Analyze button -->
@@ -86,6 +87,11 @@ import { Meeting, parseJsonArray } from './meeting.model';
             </div>
           }
         </div>
+
+        <!-- Behavioral Analysis -->
+        @if (hasBehavioralAnalysis()) {
+          <app-meeting-behavioral-analysis [meeting]="meeting()" />
+        }
       }
 
       <!-- No transcript -->
@@ -117,4 +123,5 @@ export class MeetingAnalysisComponent {
 
   readonly keyPoints = computed(() => parseJsonArray(this.meeting().keyPoints));
   readonly decisions = computed(() => parseJsonArray(this.meeting().decisions));
+  readonly hasBehavioralAnalysis = computed(() => !!parseBehavioralAnalysis(this.meeting().behavioralAnalysis));
 }

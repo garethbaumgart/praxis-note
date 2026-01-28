@@ -23,6 +23,7 @@ public sealed class GetMeetingById(IMeetingRepository meetingRepository)
             meeting.Summary,
             meeting.KeyPoints,
             meeting.Decisions,
+            meeting.BehavioralAnalysis,
             meeting.CreatedAt,
             meeting.UpdatedAt);
     }

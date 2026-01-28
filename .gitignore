@@ -450,3 +450,6 @@ test-results/
 
 # Mockups
 mockups/
+
+# Environment variables (API keys)
+.env

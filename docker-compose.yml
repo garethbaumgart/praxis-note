@@ -48,10 +48,12 @@ services:
       ConnectionStrings__DefaultConnection: "Host=postgres-dev;Port=5432;Database=praxisnote;Username=praxisnote;Password=devTestPassword"
       Authentication__Google__ClientId: "mock-client-id"
       Authentication__Google__ClientSecret: "mock-client-secret"
+      MeetingAnalysis__ApiKey: ${ANTHROPIC_API_KEY:-}
     ports:
       - "5002:5002"
     volumes:
       - ./src:/src
+      - ~/.microsoft/usersecrets:/root/.microsoft/usersecrets:ro
     depends_on:
       postgres-dev:
         condition: service_healthy
