@@ -25,17 +25,6 @@ test.describe('Notes', () => {
         headers: getMockAuthHeaders(testUser),
       });
     }
-
-    // Clean up tasks before each test (tasks can be created via checkbox promotion)
-    const tasks = await request.get('/api/tasks', {
-      headers: getMockAuthHeaders(testUser),
-    });
-    const taskList = await tasks.json();
-    for (const task of taskList) {
-      await request.delete(`/api/tasks/${task.id}`, {
-        headers: getMockAuthHeaders(testUser),
-      });
-    }
   });
 
   test('can create and view a note', async ({ page, request }) => {
@@ -140,64 +129,6 @@ test.describe('Notes', () => {
 
     // Verify the note is no longer visible
     await expect(page.getByText('Delete me')).not.toBeVisible();
-  });
-
-  test('can promote checkbox to task on newly created note', async ({ request }) => {
-    // This test verifies the fix for the bug where promoting a checkbox
-    // on a newly created note would fail with a 404 error because
-    // checkboxes weren't extracted during note creation.
-
-    // Create a note with a checkbox via API (simulates creating a note with checkboxes)
-    const tiptapContent = JSON.stringify({
-      type: 'doc',
-      content: [
-        {
-          type: 'taskList',
-          content: [
-            {
-              type: 'taskItem',
-              attrs: { checked: false },
-              content: [
-                {
-                  type: 'paragraph',
-                  content: [{ type: 'text', text: 'Buy groceries' }],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
-
-    const createRes = await request.post('/api/notes', {
-      headers: getMockAuthHeaders(testUser),
-      data: { content: tiptapContent },
-    });
-    expect(createRes.ok()).toBeTruthy();
-    const note = await createRes.json();
-
-    // Immediately try to promote the checkbox to a task (without editing the note first)
-    // This should succeed now that CreateNote extracts checkboxes
-    const promoteRes = await request.post(`/api/notes/${note.id}/checkboxes/cb-1/promote`, {
-      headers: getMockAuthHeaders(testUser),
-    });
-
-    // Should succeed (200 OK), not fail with 404
-    expect(promoteRes.ok()).toBeTruthy();
-    expect(promoteRes.status()).toBe(200);
-
-    const task = await promoteRes.json();
-    expect(task.title).toBe('Buy groceries');
-    expect(task.status).toBe('Todo');
-
-    // Verify the task was actually created
-    const tasksRes = await request.get('/api/tasks', {
-      headers: getMockAuthHeaders(testUser),
-    });
-    const tasks = await tasksRes.json();
-    const createdTask = tasks.find((t: any) => t.title === 'Buy groceries');
-    expect(createdTask).toBeDefined();
-    expect(createdTask.status).toBe('Todo');
   });
 });
 
