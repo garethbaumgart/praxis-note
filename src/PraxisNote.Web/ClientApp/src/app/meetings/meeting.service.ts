@@ -83,6 +83,8 @@ export class MeetingService {
       keyPoints: null,
       decisions: null,
       behavioralAnalysis: null,
+      tags: [],
+      actionItems: [],
       createdAt: now,
       updatedAt: now,
     };
@@ -307,6 +309,66 @@ export class MeetingService {
       clearTimeout(pending.timeoutId);
       this.pendingDeletions.delete(id);
     }
+  }
+
+  addTag(meetingId: string, tagId: string, tagName: string): void {
+    // Optimistic update
+    this._meetings.update(meetings =>
+      meetings.map(m =>
+        m.id === meetingId && !m.tags.some(t => t.id === tagId)
+          ? { ...m, tags: [...m.tags, { id: tagId, name: tagName }], updatedAt: new Date().toISOString() }
+          : m
+      )
+    );
+
+    this.http.post(`/api/meetings/${meetingId}/tags/${tagId}`, {}).subscribe({
+      error: () => {
+        this.toast.error('Failed to add tag');
+        this.loadMeetings();
+      },
+    });
+  }
+
+  removeTag(meetingId: string, tagId: string): void {
+    // Optimistic update
+    this._meetings.update(meetings =>
+      meetings.map(m =>
+        m.id === meetingId
+          ? { ...m, tags: m.tags.filter(t => t.id !== tagId), updatedAt: new Date().toISOString() }
+          : m
+      )
+    );
+
+    this.http.delete(`/api/meetings/${meetingId}/tags/${tagId}`).subscribe({
+      error: () => {
+        this.toast.error('Failed to remove tag');
+        this.loadMeetings();
+      },
+    });
+  }
+
+  toggleActionItem(meetingId: string, actionItemId: string): void {
+    // Optimistic update
+    this._meetings.update(meetings =>
+      meetings.map(m =>
+        m.id === meetingId
+          ? {
+              ...m,
+              actionItems: m.actionItems.map(a =>
+                a.id === actionItemId ? { ...a, isCompleted: !a.isCompleted } : a
+              ),
+              updatedAt: new Date().toISOString(),
+            }
+          : m
+      )
+    );
+
+    this.http.patch(`/api/meetings/${meetingId}/action-items/${actionItemId}/toggle`, {}).subscribe({
+      error: () => {
+        this.toast.error('Failed to toggle action item');
+        this.loadMeetings();
+      },
+    });
   }
 
   private groupMeetingsByDate(meetings: Meeting[]): MeetingGroup[] {

@@ -2,12 +2,13 @@ import { Component, ChangeDetectionStrategy, input, output, computed } from '@an
 import { ButtonModule } from 'primeng/button';
 import { Meeting, parseJsonArray, parseBehavioralAnalysis } from './meeting.model';
 import { MeetingBehavioralAnalysisComponent } from './meeting-behavioral-analysis.component';
+import { MeetingActionItemsComponent } from './meeting-action-items.component';
 
 @Component({
   selector: 'app-meeting-analysis',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule, MeetingBehavioralAnalysisComponent],
+  imports: [ButtonModule, MeetingBehavioralAnalysisComponent, MeetingActionItemsComponent],
   template: `
     <div class="border border-border rounded-lg p-4 bg-surface-subtle">
       <!-- Header with Analyze button -->
@@ -86,6 +87,12 @@ import { MeetingBehavioralAnalysisComponent } from './meeting-behavioral-analysi
               <p class="text-sm text-foreground-muted italic">No decisions were recorded in this meeting.</p>
             </div>
           }
+
+          <!-- Action Items -->
+          <app-meeting-action-items
+            [actionItems]="meeting().actionItems"
+            (onToggle)="onToggleActionItem.emit($event)"
+          />
         </div>
 
         <!-- Behavioral Analysis -->
@@ -109,6 +116,7 @@ import { MeetingBehavioralAnalysisComponent } from './meeting-behavioral-analysi
 export class MeetingAnalysisComponent {
   readonly meeting = input.required<Meeting>();
   readonly onAnalyze = output<void>();
+  readonly onToggleActionItem = output<string>();
 
   readonly hasTranscript = computed(() => !!this.meeting().transcriptContent);
   readonly isProcessing = computed(() => this.meeting().status === 'Processing');

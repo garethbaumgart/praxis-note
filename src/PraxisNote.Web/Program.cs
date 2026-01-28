@@ -215,6 +215,7 @@ app.MapTagEndpoints();
 app.MapTaskTagEndpoints();
 app.MapNoteEndpoints();
 app.MapMeetingEndpoints();
+app.MapMeetingTagEndpoints();
 app.MapNotificationEndpoints();
 
 // SPA fallback - serves index.html for client-side routing

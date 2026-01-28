@@ -1,5 +1,18 @@
 export type MeetingStatus = 'Draft' | 'Processing' | 'Ready' | 'Reviewed' | 'Failed';
 
+export interface MeetingTag {
+  id: string;
+  name: string;
+}
+
+export interface ActionItem {
+  id: string;
+  description: string;
+  assignee: string | null;
+  isCompleted: boolean;
+  createdAt: string;
+}
+
 export interface Meeting {
   id: string;
   title: string | null;
@@ -11,6 +24,8 @@ export interface Meeting {
   keyPoints: string | null;
   decisions: string | null;
   behavioralAnalysis: string | null;
+  tags: MeetingTag[];
+  actionItems: ActionItem[];
   createdAt: string;
   updatedAt: string;
 }

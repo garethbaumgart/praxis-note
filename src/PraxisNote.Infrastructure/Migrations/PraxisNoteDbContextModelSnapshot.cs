@@ -88,6 +88,16 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("_actionItems")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("ActionItems");
+
+                    b.Property<string>("_tagIds")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("TagIds");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MeetingDate");

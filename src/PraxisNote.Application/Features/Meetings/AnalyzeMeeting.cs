@@ -37,13 +37,20 @@ public sealed class AnalyzeMeeting(
             var result = await meetingAnalyzer.AnalyzeAsync(meeting.TranscriptContent, cancellationToken);
 
             var camelCaseOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+            // Convert extracted action items to domain ActionItem objects
+            var actionItems = result.ExtractedActionItems
+                .Select(a => ActionItem.Create(a.Description, a.Assignee))
+                .ToList();
+
             meeting.CompleteAnalysis(
                 result.Summary,
                 JsonSerializer.Serialize(result.KeyPoints),
                 JsonSerializer.Serialize(result.Decisions),
                 result.BehavioralAnalysis is not null
                     ? JsonSerializer.Serialize(result.BehavioralAnalysis, camelCaseOptions)
-                    : null);
+                    : null,
+                actionItems);
         }
         catch (OperationCanceledException)
         {
