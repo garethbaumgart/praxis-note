@@ -158,7 +158,7 @@ interface TimeOption {
             />
             <span class="text-foreground-muted font-medium">:</span>
             <p-select
-              [options]="minuteOptions"
+              [options]="minuteOptions()"
               [ngModel]="selectedMinute()"
               (ngModelChange)="selectedMinute.set($event)"
               optionLabel="label"
@@ -299,7 +299,7 @@ export class MeetingEditorComponent {
     { label: '11', value: 11 },
   ];
 
-  readonly minuteOptions: TimeOption[] = [
+  readonly defaultMinuteOptions: TimeOption[] = [
     { label: '00', value: 0 },
     { label: '05', value: 5 },
     { label: '10', value: 10 },
@@ -313,6 +313,8 @@ export class MeetingEditorComponent {
     { label: '50', value: 50 },
     { label: '55', value: 55 },
   ];
+
+  readonly minuteOptions = signal<TimeOption[]>(this.defaultMinuteOptions);
 
   readonly periodOptions = ['AM', 'PM'];
 
@@ -409,10 +411,18 @@ export class MeetingEditorComponent {
     }
 
     this.selectedHour.set(hours);
-    // Round to nearest 5-minute interval for the dropdown
+
+    // Use the exact minute value; if it's not on a 5-minute interval, add it to the options
     const minutes = date.getMinutes();
-    const rounded = Math.round(minutes / 5) * 5;
-    this.selectedMinute.set(rounded >= 60 ? 55 : rounded);
+    if (minutes % 5 !== 0) {
+      const pad = minutes < 10 ? '0' : '';
+      const customOption: TimeOption = { label: `${pad}${minutes}`, value: minutes };
+      const opts = [...this.defaultMinuteOptions, customOption].sort((a, b) => a.value - b.value);
+      this.minuteOptions.set(opts);
+    } else {
+      this.minuteOptions.set(this.defaultMinuteOptions);
+    }
+    this.selectedMinute.set(minutes);
     this.selectedPeriod.set(period);
   }
 
@@ -473,6 +483,7 @@ export class MeetingEditorComponent {
       this.customDateLabel.set(null);
       this.selectedHour.set(10);
       this.selectedMinute.set(0);
+      this.minuteOptions.set(this.defaultMinuteOptions);
       this.selectedPeriod.set('AM');
 
       this.attendees.set('');
