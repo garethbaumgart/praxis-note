@@ -145,16 +145,27 @@ interface TimeOption {
         <!-- Time -->
         <div class="flex items-center gap-3">
           <i class="pi pi-clock text-foreground-muted w-5 text-center" aria-hidden="true"></i>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1">
             <p-select
               [options]="hourOptions"
               [ngModel]="selectedHour()"
               (ngModelChange)="selectedHour.set($event)"
               optionLabel="label"
               optionValue="value"
-              [style]="{ width: '110px' }"
+              [style]="{ width: '80px' }"
               appendTo="body"
               ariaLabel="Meeting hour"
+            />
+            <span class="text-foreground-muted font-medium">:</span>
+            <p-select
+              [options]="minuteOptions"
+              [ngModel]="selectedMinute()"
+              (ngModelChange)="selectedMinute.set($event)"
+              optionLabel="label"
+              optionValue="value"
+              [style]="{ width: '80px' }"
+              appendTo="body"
+              ariaLabel="Meeting minute"
             />
             <p-select
               [options]="periodOptions"
@@ -262,6 +273,7 @@ export class MeetingEditorComponent {
 
   // Time selection state
   readonly selectedHour = signal(10);
+  readonly selectedMinute = signal(0);
   readonly selectedPeriod = signal<'AM' | 'PM'>('AM');
 
   // Date options
@@ -273,18 +285,33 @@ export class MeetingEditorComponent {
 
   // Time options
   readonly hourOptions: TimeOption[] = [
-    { label: '12:00', value: 12 },
-    { label: '1:00', value: 1 },
-    { label: '2:00', value: 2 },
-    { label: '3:00', value: 3 },
-    { label: '4:00', value: 4 },
-    { label: '5:00', value: 5 },
-    { label: '6:00', value: 6 },
-    { label: '7:00', value: 7 },
-    { label: '8:00', value: 8 },
-    { label: '9:00', value: 9 },
-    { label: '10:00', value: 10 },
-    { label: '11:00', value: 11 },
+    { label: '12', value: 12 },
+    { label: '1', value: 1 },
+    { label: '2', value: 2 },
+    { label: '3', value: 3 },
+    { label: '4', value: 4 },
+    { label: '5', value: 5 },
+    { label: '6', value: 6 },
+    { label: '7', value: 7 },
+    { label: '8', value: 8 },
+    { label: '9', value: 9 },
+    { label: '10', value: 10 },
+    { label: '11', value: 11 },
+  ];
+
+  readonly minuteOptions: TimeOption[] = [
+    { label: '00', value: 0 },
+    { label: '05', value: 5 },
+    { label: '10', value: 10 },
+    { label: '15', value: 15 },
+    { label: '20', value: 20 },
+    { label: '25', value: 25 },
+    { label: '30', value: 30 },
+    { label: '35', value: 35 },
+    { label: '40', value: 40 },
+    { label: '45', value: 45 },
+    { label: '50', value: 50 },
+    { label: '55', value: 55 },
   ];
 
   readonly periodOptions = ['AM', 'PM'];
@@ -302,14 +329,14 @@ export class MeetingEditorComponent {
     // Update meetingDate when time selection changes
     effect(() => {
       const hour = this.selectedHour();
+      const minute = this.selectedMinute();
       const period = this.selectedPeriod();
       const currentDate = this.meetingDate();
 
       if (currentDate) {
         const newDate = new Date(currentDate);
         const hour24 = this.toHour24(hour, period);
-        // Preserve minutes and seconds from the original date
-        newDate.setHours(hour24, currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
+        newDate.setHours(hour24, minute, 0, 0);
         // Only update if time actually changed to avoid infinite loop
         if (newDate.getTime() !== currentDate.getTime()) {
           this.meetingDate.set(newDate);
@@ -345,9 +372,9 @@ export class MeetingEditorComponent {
     if (currentDate) {
       newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
     } else {
-      // Default to selected hour
+      // Default to selected time
       const hour24 = this.toHour24(this.selectedHour(), this.selectedPeriod());
-      newDate.setHours(hour24, 0, 0, 0);
+      newDate.setHours(hour24, this.selectedMinute(), 0, 0);
     }
     this.meetingDate.set(newDate);
   }
@@ -382,6 +409,10 @@ export class MeetingEditorComponent {
     }
 
     this.selectedHour.set(hours);
+    // Round to nearest 5-minute interval for the dropdown
+    const minutes = date.getMinutes();
+    const rounded = Math.round(minutes / 5) * 5;
+    this.selectedMinute.set(rounded >= 60 ? 55 : rounded);
     this.selectedPeriod.set(period);
   }
 
@@ -441,6 +472,7 @@ export class MeetingEditorComponent {
       this.selectedDateChip.set('Tomorrow');
       this.customDateLabel.set(null);
       this.selectedHour.set(10);
+      this.selectedMinute.set(0);
       this.selectedPeriod.set('AM');
 
       this.attendees.set('');
