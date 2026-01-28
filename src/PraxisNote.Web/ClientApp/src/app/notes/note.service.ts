@@ -66,7 +66,12 @@ export class NoteService {
     this._loading.set(true);
     this.http.get<Note[]>('/api/notes').subscribe({
       next: notes => {
-        this._notes.set(notes);
+        // Filter out notes with pending deletions to avoid restoring them
+        const pendingIds = new Set(this.pendingDeletions.keys());
+        const filtered = pendingIds.size > 0
+          ? notes.filter(n => !pendingIds.has(n.id))
+          : notes;
+        this._notes.set(filtered);
         this._loading.set(false);
         this._initialLoadComplete.set(true);
       },
@@ -77,7 +82,7 @@ export class NoteService {
     });
   }
 
-  createNote(content?: string): void {
+  createNote(content?: string, onCreated?: (id: string) => void): void {
     const tempId = crypto.randomUUID();
     const now = new Date().toISOString();
     const newNote: Note = {
@@ -98,6 +103,7 @@ export class NoteService {
         this._notes.update(notes =>
           notes.map(n => (n.id === tempId ? { ...n, id: result.id } : n))
         );
+        onCreated?.(result.id);
       },
       error: () => {
         this.toast.error('Failed to create note');
