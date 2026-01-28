@@ -25,6 +25,17 @@ test.describe('Notes', () => {
         headers: getMockAuthHeaders(testUser),
       });
     }
+
+    // Clean up tasks before each test (tasks can be created via checkbox promotion)
+    const tasks = await request.get('/api/tasks', {
+      headers: getMockAuthHeaders(testUser),
+    });
+    const taskList = await tasks.json();
+    for (const task of taskList) {
+      await request.delete(`/api/tasks/${task.id}`, {
+        headers: getMockAuthHeaders(testUser),
+      });
+    }
   });
 
   test('can create and view a note', async ({ page, request }) => {
