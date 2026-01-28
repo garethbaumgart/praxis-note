@@ -38,6 +38,9 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.Decisions)
             .HasColumnType("text");
 
+        builder.Property(m => m.BehavioralAnalysis)
+            .HasColumnType("text");
+
         builder.Property(m => m.CreatedAt);
         builder.Property(m => m.UpdatedAt);
 

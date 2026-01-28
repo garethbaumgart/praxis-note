@@ -60,6 +60,15 @@ public sealed class Meeting : AggregateRoot
     public string? Decisions { get; private set; }
 
     /// <summary>
+    /// AI-generated behavioral analysis. Stored as JSON object containing:
+    /// - speakingDynamics: talk time, interruptions, question ratios per participant
+    /// - sentimentTone: sentiment scores, tone shifts, emotional indicators
+    /// - communicationPatterns: clarity, follow-ups, engagement levels
+    /// - redFlags: evasive language, hedging, defensive responses
+    /// </summary>
+    public string? BehavioralAnalysis { get; private set; }
+
+    /// <summary>
     /// When this meeting was created.
     /// </summary>
     public DateTimeOffset CreatedAt { get; private init; }
@@ -206,13 +215,15 @@ public sealed class Meeting : AggregateRoot
     /// <param name="summary">The AI-generated summary.</param>
     /// <param name="keyPoints">JSON array of key discussion points.</param>
     /// <param name="decisions">JSON array of decisions made.</param>
-    public void CompleteAnalysis(string summary, string? keyPoints, string? decisions)
+    /// <param name="behavioralAnalysis">JSON object with behavioral analysis data.</param>
+    public void CompleteAnalysis(string summary, string? keyPoints, string? decisions, string? behavioralAnalysis = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(summary, nameof(summary));
 
         Summary = summary.Trim();
         KeyPoints = keyPoints;
         Decisions = decisions;
+        BehavioralAnalysis = behavioralAnalysis;
         UpdateStatus(MeetingStatus.Ready);
     }
 
@@ -229,12 +240,13 @@ public sealed class Meeting : AggregateRoot
     /// </summary>
     public void ClearAnalysis()
     {
-        if (Summary is null && KeyPoints is null && Decisions is null && Status != MeetingStatus.Failed)
+        if (Summary is null && KeyPoints is null && Decisions is null && BehavioralAnalysis is null && Status != MeetingStatus.Failed)
             return;
 
         Summary = null;
         KeyPoints = null;
         Decisions = null;
+        BehavioralAnalysis = null;
         UpdateStatus(MeetingStatus.Draft);
     }
 }

@@ -39,7 +39,10 @@ public sealed class AnalyzeMeeting(
             meeting.CompleteAnalysis(
                 result.Summary,
                 JsonSerializer.Serialize(result.KeyPoints),
-                JsonSerializer.Serialize(result.Decisions));
+                JsonSerializer.Serialize(result.Decisions),
+                result.BehavioralAnalysis is not null
+                    ? JsonSerializer.Serialize(result.BehavioralAnalysis)
+                    : null);
         }
         catch (OperationCanceledException)
         {

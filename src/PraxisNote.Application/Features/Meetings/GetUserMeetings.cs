@@ -21,6 +21,7 @@ public sealed class GetUserMeetings(IMeetingRepository meetingRepository)
                 m.Summary,
                 m.KeyPoints,
                 m.Decisions,
+                m.BehavioralAnalysis,
                 m.CreatedAt,
                 m.UpdatedAt))
             .ToList();

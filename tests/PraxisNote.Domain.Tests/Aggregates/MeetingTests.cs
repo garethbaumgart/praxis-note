@@ -704,6 +704,54 @@ public class MeetingTests
         Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
     }
 
+    [Fact]
+    public void CompleteAnalysis_WithBehavioralAnalysis_StoresData()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var behavioralAnalysis = """{"speakingDynamics":{"talkTimeByParticipant":[{"participant":"John","percentage":60,"duration":"5:30"}]}}""";
+
+        // Act
+        meeting.CompleteAnalysis("Summary", null, null, behavioralAnalysis);
+
+        // Assert
+        Assert.Equal(MeetingStatus.Ready, meeting.Status);
+        Assert.Equal(behavioralAnalysis, meeting.BehavioralAnalysis);
+    }
+
+    [Fact]
+    public void CompleteAnalysis_WithNullBehavioralAnalysis_StoresNull()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act
+        meeting.CompleteAnalysis("Summary", null, null, null);
+
+        // Assert
+        Assert.Equal(MeetingStatus.Ready, meeting.Status);
+        Assert.Null(meeting.BehavioralAnalysis);
+    }
+
+    [Fact]
+    public void CompleteAnalysis_WithoutBehavioralAnalysisParameter_DefaultsToNull()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act
+        meeting.CompleteAnalysis("Summary", null, null);
+
+        // Assert
+        Assert.Null(meeting.BehavioralAnalysis);
+    }
+
     #endregion
 
     #region FailAnalysis Tests
@@ -760,6 +808,23 @@ public class MeetingTests
         Assert.Null(meeting.Summary);
         Assert.Null(meeting.KeyPoints);
         Assert.Null(meeting.Decisions);
+    }
+
+    [Fact]
+    public void ClearAnalysis_ClearsBehavioralAnalysis()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var behavioralAnalysis = """{"speakingDynamics":{}}""";
+        meeting.CompleteAnalysis("Summary", null, null, behavioralAnalysis);
+
+        // Act
+        meeting.ClearAnalysis();
+
+        // Assert
+        Assert.Null(meeting.BehavioralAnalysis);
     }
 
     [Fact]
