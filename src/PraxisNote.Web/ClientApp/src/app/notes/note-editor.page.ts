@@ -734,18 +734,27 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     if (this.isNewNote()) {
       // Create new note - use callback to get the real server ID
       this.isNewNote.set(false);
-      this.noteService.createNote(content, (realId) => {
-        if (this.isDestroyed) return;
-        this.noteId = realId;
-        // Find the note in the service's list to update local state
-        const n = this.noteService.notes().find(note => note.id === realId);
-        if (n) {
-          this.note.set(n);
-        }
-        // Update URL without navigation
-        this.router.navigate(['/notes', realId], { replaceUrl: true });
-        this.lastSaved.set(true);
-      });
+      this.noteService.createNote(
+        content,
+        (realId) => {
+          if (this.isDestroyed) return;
+          this.noteId = realId;
+          // Find the note in the service's list to update local state
+          const n = this.noteService.notes().find(note => note.id === realId);
+          if (n) {
+            this.note.set(n);
+          }
+          // Update URL without navigation
+          this.router.navigate(['/notes', realId], { replaceUrl: true });
+          this.lastSaved.set(true);
+        },
+        () => {
+          // Creation failed - reset so next autosave retries
+          if (!this.isDestroyed) {
+            this.isNewNote.set(true);
+          }
+        },
+      );
     } else if (this.noteId) {
       // Update existing note
       this.isSaving.set(true);

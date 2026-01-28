@@ -82,7 +82,7 @@ export class NoteService {
     });
   }
 
-  createNote(content?: string, onCreated?: (id: string) => void): void {
+  createNote(content?: string, onCreated?: (id: string) => void, onError?: () => void): void {
     const tempId = crypto.randomUUID();
     const now = new Date().toISOString();
     const newNote: Note = {
@@ -109,6 +109,7 @@ export class NoteService {
         this.toast.error('Failed to create note');
         // Remove the optimistically added note
         this._notes.update(notes => notes.filter(n => n.id !== tempId));
+        onError?.();
       },
     });
   }
