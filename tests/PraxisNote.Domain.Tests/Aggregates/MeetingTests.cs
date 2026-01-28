@@ -1016,6 +1016,141 @@ public class MeetingTests
 
     #endregion
 
+    #region StartTranscription Tests
+
+    [Fact]
+    public void StartTranscription_SetsProcessingStatus()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act
+        meeting.StartTranscription();
+
+        // Assert
+        Assert.Equal(MeetingStatus.Processing, meeting.Status);
+    }
+
+    [Fact]
+    public void StartTranscription_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.StartTranscription();
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void StartTranscription_DoesNotRequireTranscript()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act - should not throw (unlike StartAnalysis which requires transcript)
+        meeting.StartTranscription();
+
+        // Assert
+        Assert.Equal(MeetingStatus.Processing, meeting.Status);
+        Assert.Null(meeting.TranscriptContent);
+    }
+
+    #endregion
+
+    #region CompleteTranscription Tests
+
+    [Fact]
+    public void CompleteTranscription_WithValidText_SetsTranscriptAndDraftStatus()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.StartTranscription();
+        var transcribedText = "Speaker 1: Hello\nSpeaker 2: Hi there";
+
+        // Act
+        meeting.CompleteTranscription(transcribedText);
+
+        // Assert
+        Assert.Equal(transcribedText, meeting.TranscriptContent);
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+    }
+
+    [Fact]
+    public void CompleteTranscription_TrimsWhitespace()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.StartTranscription();
+
+        // Act
+        meeting.CompleteTranscription("  Transcribed content  ");
+
+        // Assert
+        Assert.Equal("Transcribed content", meeting.TranscriptContent);
+    }
+
+    [Fact]
+    public void CompleteTranscription_WithNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.StartTranscription();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            meeting.CompleteTranscription(null!));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CompleteTranscription_WithEmptyOrWhitespace_ThrowsArgumentException(string invalidText)
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.StartTranscription();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            meeting.CompleteTranscription(invalidText));
+    }
+
+    [Fact]
+    public void CompleteTranscription_TransitionsFromProcessingToDraft()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.StartTranscription();
+        Assert.Equal(MeetingStatus.Processing, meeting.Status);
+
+        // Act
+        meeting.CompleteTranscription("Transcribed text");
+
+        // Assert
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+    }
+
+    [Fact]
+    public void CompleteTranscription_OverwritesExistingTranscript()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Old transcript");
+        meeting.StartTranscription();
+
+        // Act
+        meeting.CompleteTranscription("New transcription from audio");
+
+        // Assert
+        Assert.Equal("New transcription from audio", meeting.TranscriptContent);
+    }
+
+    #endregion
+
     #region Action Item Tests
 
     [Fact]

@@ -19,6 +19,8 @@ public static class MeetingEndpoints
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteMeeting);
         group.MapPost("/{id:guid}/transcript", (Delegate)HandleSubmitTranscript);
         group.MapDelete("/{id:guid}/transcript", (Delegate)HandleClearTranscript);
+        group.MapPost("/{id:guid}/transcribe", (Delegate)HandleTranscribeAudio)
+            .DisableAntiforgery();
         group.MapPost("/{id:guid}/analyze", (Delegate)HandleAnalyzeMeeting);
         group.MapPatch("/{id:guid}/action-items/{actionItemId:guid}/toggle", (Delegate)HandleToggleActionItem);
         group.MapPost("/{id:guid}/action-items/{actionItemId:guid}/promote", (Delegate)HandlePromoteActionItem);
@@ -162,6 +164,43 @@ public static class MeetingEndpoints
 
         var command = new ClearTranscript.Command(id, userId.Value);
         var success = await clearTranscript.ExecuteAsync(command, cancellationToken);
+
+        return success ? Results.NoContent() : Results.NotFound();
+    }
+
+    private static readonly HashSet<string> SupportedAudioExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".mp3", ".mp4", ".mpeg", ".mpga", ".m4a", ".wav", ".webm"
+    };
+
+    private static async Task<IResult> HandleTranscribeAudio(
+        Guid id,
+        ClaimsPrincipal user,
+        IFormFile file,
+        [FromServices] TranscribeAudio transcribeAudio,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (file.Length == 0)
+        {
+            return Results.BadRequest("Audio file is required.");
+        }
+
+        var extension = Path.GetExtension(file.FileName);
+        if (!SupportedAudioExtensions.Contains(extension))
+        {
+            return Results.BadRequest(
+                $"Unsupported audio format '{extension}'. Supported: mp3, mp4, mpeg, mpga, m4a, wav, webm.");
+        }
+
+        using var stream = file.OpenReadStream();
+        var command = new TranscribeAudio.Command(id, userId.Value, stream, file.FileName);
+        var success = await transcribeAudio.ExecuteAsync(command, cancellationToken);
 
         return success ? Results.NoContent() : Results.NotFound();
     }
