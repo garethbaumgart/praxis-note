@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, output, inject, computed, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -26,7 +27,7 @@ interface TimeOption {
   selector: 'app-meeting-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule, SelectModule, MeetingAnalysisComponent],
+  imports: [FormsModule, NgClass, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule, SelectModule, MeetingAnalysisComponent],
   styles: `
     :host ::ng-deep .p-dialog-content {
       padding: 0 !important;
@@ -55,7 +56,7 @@ interface TimeOption {
       [style]="{ width: isEditing() ? '580px' : '520px' }"
       [header]="isEditing() ? 'Edit Meeting' : 'New Meeting'"
     >
-      <div class="px-5 py-4 space-y-4" [class.max-h-[520px]]="isEditing()" [class.overflow-y-auto]="isEditing()">
+      <div class="px-5 py-4 space-y-4" [ngClass]="isEditing() ? ['max-h-[520px]', 'overflow-y-auto'] : []">
         <!-- Title -->
         <div class="flex items-center gap-3">
           <i class="pi pi-file-edit text-foreground-muted w-5 text-center"></i>
@@ -146,14 +147,14 @@ interface TimeOption {
               (ngModelChange)="selectedHour.set($event)"
               optionLabel="label"
               optionValue="value"
-              [style]="{ width: '90px' }"
+              [style]="{ width: '110px' }"
               appendTo="body"
             />
             <p-select
               [options]="periodOptions"
               [ngModel]="selectedPeriod()"
               (ngModelChange)="selectedPeriod.set($event)"
-              [style]="{ width: '80px' }"
+              [style]="{ width: '78px', minWidth: '78px' }"
               appendTo="body"
             />
           </div>
@@ -298,13 +299,9 @@ export class MeetingEditorComponent {
 
       if (currentDate) {
         const newDate = new Date(currentDate);
-        let hour24 = hour;
-        if (period === 'PM' && hour !== 12) {
-          hour24 = hour + 12;
-        } else if (period === 'AM' && hour === 12) {
-          hour24 = 0;
-        }
-        newDate.setHours(hour24, 0, 0, 0);
+        const hour24 = this.toHour24(hour, period);
+        // Preserve minutes and seconds from the original date
+        newDate.setHours(hour24, currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
         // Only update if time actually changed to avoid infinite loop
         if (newDate.getTime() !== currentDate.getTime()) {
           this.meetingDate.set(newDate);
@@ -319,6 +316,16 @@ export class MeetingEditorComponent {
     return result;
   }
 
+  /** Convert 12-hour format to 24-hour format */
+  private toHour24(hour12: number, period: 'AM' | 'PM'): number {
+    if (period === 'PM' && hour12 !== 12) {
+      return hour12 + 12;
+    } else if (period === 'AM' && hour12 === 12) {
+      return 0;
+    }
+    return hour12;
+  }
+
   selectDateOption(option: DateOption): void {
     this.selectedDateChip.set(option.label);
     this.customDateLabel.set(null);
@@ -328,15 +335,10 @@ export class MeetingEditorComponent {
     // Preserve the current time
     const currentDate = this.meetingDate();
     if (currentDate) {
-      newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), 0, 0);
+      newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
     } else {
       // Default to selected hour
-      let hour24 = this.selectedHour();
-      if (this.selectedPeriod() === 'PM' && hour24 !== 12) {
-        hour24 = hour24 + 12;
-      } else if (this.selectedPeriod() === 'AM' && hour24 === 12) {
-        hour24 = 0;
-      }
+      const hour24 = this.toHour24(this.selectedHour(), this.selectedPeriod());
       newDate.setHours(hour24, 0, 0, 0);
     }
     this.meetingDate.set(newDate);
@@ -348,7 +350,7 @@ export class MeetingEditorComponent {
     // Preserve the current time
     const currentDate = this.meetingDate();
     if (currentDate) {
-      date.setHours(currentDate.getHours(), currentDate.getMinutes(), 0, 0);
+      date.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
     }
 
     this.meetingDate.set(date);
