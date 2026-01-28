@@ -131,3 +131,16 @@ export interface MeetingGroup {
   subLabel: string;
   meetings: Meeting[];
 }
+
+export interface ActionItemStatus {
+  actionItemId: string;
+  isLinked: boolean;
+  taskId: string | null;
+  taskStatus: 'Todo' | 'InProgress' | 'Done' | null;
+}
+
+export interface PromoteActionItemResult {
+  taskId: string;
+  title: string;
+  status: string;
+}

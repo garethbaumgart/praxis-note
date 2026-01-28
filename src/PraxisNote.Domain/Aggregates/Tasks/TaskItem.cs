@@ -60,6 +60,12 @@ public sealed class TaskItem : AggregateRoot
     public CheckboxRef? CheckboxRef { get; private init; }
 
     /// <summary>
+    /// Reference to the source meeting action item, if this task was created from a meeting.
+    /// Null for standalone tasks or tasks created from notes.
+    /// </summary>
+    public ActionItemRef? ActionItemRef { get; private init; }
+
+    /// <summary>
     /// When this task was created.
     /// </summary>
     public DateTimeOffset CreatedAt { get; private init; }
@@ -103,7 +109,8 @@ public sealed class TaskItem : AggregateRoot
         Guid id,
         Guid userId,
         string title,
-        CheckboxRef? checkboxRef) : base(id)
+        CheckboxRef? checkboxRef,
+        ActionItemRef? actionItemRef = null) : base(id)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
@@ -114,6 +121,7 @@ public sealed class TaskItem : AggregateRoot
         Title = title.Trim();
         Status = TaskStatus.Todo;
         CheckboxRef = checkboxRef;
+        ActionItemRef = actionItemRef;
         CreatedAt = now;
         UpdatedAt = now;
     }
@@ -133,6 +141,15 @@ public sealed class TaskItem : AggregateRoot
     {
         ArgumentNullException.ThrowIfNull(checkboxRef);
         return new TaskItem(Guid.NewGuid(), userId, title, checkboxRef);
+    }
+
+    /// <summary>
+    /// Creates a task from a meeting's action item.
+    /// </summary>
+    public static TaskItem CreateFromActionItem(Guid userId, string title, ActionItemRef actionItemRef)
+    {
+        ArgumentNullException.ThrowIfNull(actionItemRef);
+        return new TaskItem(Guid.NewGuid(), userId, title, checkboxRef: null, actionItemRef: actionItemRef);
     }
 
     /// <summary>
@@ -277,6 +294,11 @@ public sealed class TaskItem : AggregateRoot
     /// Returns true if this task was created from a note checkbox.
     /// </summary>
     public bool IsLinkedToNote => CheckboxRef?.IsLinked ?? false;
+
+    /// <summary>
+    /// Returns true if this task was created from a meeting action item.
+    /// </summary>
+    public bool IsLinkedToMeeting => ActionItemRef?.IsLinked ?? false;
 
     /// <summary>
     /// Adds a comment to this task.

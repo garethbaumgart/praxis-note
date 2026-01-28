@@ -1,13 +1,15 @@
-import { Component, ChangeDetectionStrategy, signal, output, inject, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, output, inject, computed, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
-import { Meeting } from './meeting.model';
+import { Meeting, ActionItemStatus } from './meeting.model';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingService } from './meeting.service';
+import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-meeting-editor',
@@ -89,8 +91,12 @@ import { MeetingService } from './meeting.service';
           @if (currentMeeting()) {
             <app-meeting-analysis
               [meeting]="currentMeeting()!"
+              [actionItemStatuses]="actionItemStatuses()"
+              [promotingIds]="promotingIds()"
               (onAnalyze)="analyze()"
               (onToggleActionItem)="toggleActionItem($event)"
+              (onPromoteActionItem)="promoteActionItem($event)"
+              (onNavigateToTask)="navigateToTask($event)"
             />
           }
         }
@@ -115,11 +121,16 @@ import { MeetingService } from './meeting.service';
 })
 export class MeetingEditorComponent {
   private readonly meetingService = inject(MeetingService);
+  private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
 
   readonly visible = signal(false);
   readonly isEditing = signal(false);
   private readonly meetingId = signal<string | null>(null);
   readonly onSave = output<{ title?: string; meetingDate?: string; attendees?: string; transcript?: string }>();
+
+  readonly actionItemStatuses = signal<ActionItemStatus[]>([]);
+  readonly promotingIds = signal<Set<string>>(new Set());
 
   readonly currentMeeting = computed(() => {
     const id = this.meetingId();
@@ -127,12 +138,32 @@ export class MeetingEditorComponent {
     return this.meetingService.meetings().find(m => m.id === id) ?? null;
   });
 
+  // Track action items count to avoid effect running on every meeting change
+  private readonly actionItemsCount = computed(() =>
+    this.currentMeeting()?.actionItems.length ?? 0
+  );
+
   title = '';
   meetingDate: Date | null = null;
   attendees = '';
   transcript = '';
 
+  constructor() {
+    // Reload action item statuses only when action items count changes (e.g., after analysis completes)
+    effect(() => {
+      const count = this.actionItemsCount();
+      const id = this.meetingId();
+      if (id && count > 0) {
+        this.loadActionItemStatuses();
+      }
+    });
+  }
+
   open(meeting?: Meeting): void {
+    // Reset statuses immediately to avoid stale data
+    this.actionItemStatuses.set([]);
+    this.promotingIds.set(new Set());
+
     if (meeting) {
       this.isEditing.set(true);
       this.meetingId.set(meeting.id);
@@ -140,6 +171,7 @@ export class MeetingEditorComponent {
       this.meetingDate = meeting.meetingDate ? new Date(meeting.meetingDate) : new Date();
       this.attendees = meeting.attendees ?? '';
       this.transcript = meeting.transcriptContent ?? '';
+      // Action item statuses will be loaded via the effect when currentMeeting changes
     } else {
       this.isEditing.set(false);
       this.meetingId.set(null);
@@ -163,6 +195,56 @@ export class MeetingEditorComponent {
     if (id) {
       this.meetingService.toggleActionItem(id, actionItemId);
     }
+  }
+
+  promoteActionItem(actionItemId: string): void {
+    const id = this.meetingId();
+    if (!id) return;
+
+    // Add to promoting set
+    this.promotingIds.update(ids => new Set([...ids, actionItemId]));
+
+    this.meetingService.promoteActionItem(id, actionItemId).subscribe({
+      next: result => {
+        this.toast.success({ summary: 'Task created', detail: result.title });
+        this.loadActionItemStatuses();
+        this.promotingIds.update(ids => {
+          const newSet = new Set(ids);
+          newSet.delete(actionItemId);
+          return newSet;
+        });
+      },
+      error: () => {
+        this.toast.error('Failed to promote action item');
+        this.promotingIds.update(ids => {
+          const newSet = new Set(ids);
+          newSet.delete(actionItemId);
+          return newSet;
+        });
+      },
+    });
+  }
+
+  navigateToTask(taskId: string): void {
+    this.visible.set(false);
+    this.router.navigate(['/tasks'], { queryParams: { highlight: taskId } });
+  }
+
+  private loadActionItemStatuses(): void {
+    const id = this.meetingId();
+    if (!id) return;
+
+    this.meetingService.getActionItemStatus(id).subscribe({
+      next: statuses => {
+        // Guard against stale responses when meeting changes
+        if (this.meetingId() !== id) return;
+        this.actionItemStatuses.set(statuses);
+      },
+      error: () => {
+        if (this.meetingId() !== id) return;
+        this.actionItemStatuses.set([]);
+      },
+    });
   }
 
   save(): void {

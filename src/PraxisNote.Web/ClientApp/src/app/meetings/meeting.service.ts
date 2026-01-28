@@ -1,8 +1,8 @@
 import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
-import { timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, EMPTY } from 'rxjs';
-import { Meeting, MeetingGroup } from './meeting.model';
+import { Observable, timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, EMPTY } from 'rxjs';
+import { Meeting, MeetingGroup, ActionItemStatus, PromoteActionItemResult } from './meeting.model';
 import { ToastService } from '../shared/services/toast.service';
 
 interface PendingDeletion {
@@ -369,6 +369,17 @@ export class MeetingService {
         this.loadMeetings();
       },
     });
+  }
+
+  promoteActionItem(meetingId: string, actionItemId: string): Observable<PromoteActionItemResult> {
+    return this.http.post<PromoteActionItemResult>(
+      `/api/meetings/${meetingId}/action-items/${actionItemId}/promote`,
+      {}
+    );
+  }
+
+  getActionItemStatus(meetingId: string): Observable<ActionItemStatus[]> {
+    return this.http.get<ActionItemStatus[]>(`/api/meetings/${meetingId}/action-item-status`);
   }
 
   private groupMeetingsByDate(meetings: Meeting[]): MeetingGroup[] {

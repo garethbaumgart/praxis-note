@@ -1165,6 +1165,58 @@ public class MeetingTests
         Assert.Empty(meeting.ActionItems);
     }
 
+    [Fact]
+    public void GetActionItem_WithExistingItem_ReturnsItem()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var actionItem = ActionItem.Create("Test item");
+        meeting.CompleteAnalysis("Summary", null, null, null, new[] { actionItem });
+        var itemId = meeting.ActionItems.First().Id;
+
+        // Act
+        var result = meeting.GetActionItem(itemId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(itemId, result.Id);
+        Assert.Equal("Test item", result.Description);
+    }
+
+    [Fact]
+    public void GetActionItem_WithNonExistentItem_ReturnsNull()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+
+        // Act
+        var result = meeting.GetActionItem(Guid.NewGuid());
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetActionItem_WithEmptyActionItems_ReturnsNull()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        meeting.CompleteAnalysis("Summary", null, null);
+
+        // Act
+        var result = meeting.GetActionItem(Guid.NewGuid());
+
+        // Assert
+        Assert.Null(result);
+    }
+
     #endregion
 
     #region ActionItem Value Object Tests

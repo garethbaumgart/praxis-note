@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { Meeting, parseJsonArray, parseBehavioralAnalysis } from './meeting.model';
+import { Meeting, ActionItemStatus, parseJsonArray, parseBehavioralAnalysis } from './meeting.model';
 import { MeetingBehavioralAnalysisComponent } from './meeting-behavioral-analysis.component';
 import { MeetingActionItemsComponent } from './meeting-action-items.component';
 
@@ -91,7 +91,11 @@ import { MeetingActionItemsComponent } from './meeting-action-items.component';
           <!-- Action Items -->
           <app-meeting-action-items
             [actionItems]="meeting().actionItems"
+            [actionItemStatuses]="actionItemStatuses()"
+            [promotingIds]="promotingIds()"
             (onToggle)="onToggleActionItem.emit($event)"
+            (onPromote)="onPromoteActionItem.emit($event)"
+            (onNavigateToTask)="onNavigateToTask.emit($event)"
           />
         </div>
 
@@ -115,8 +119,13 @@ import { MeetingActionItemsComponent } from './meeting-action-items.component';
 })
 export class MeetingAnalysisComponent {
   readonly meeting = input.required<Meeting>();
+  readonly actionItemStatuses = input<ActionItemStatus[]>([]);
+  readonly promotingIds = input<Set<string>>(new Set());
+
   readonly onAnalyze = output<void>();
   readonly onToggleActionItem = output<string>();
+  readonly onPromoteActionItem = output<string>();
+  readonly onNavigateToTask = output<string>();
 
   readonly hasTranscript = computed(() => !!this.meeting().transcriptContent);
   readonly isProcessing = computed(() => this.meeting().status === 'Processing');
