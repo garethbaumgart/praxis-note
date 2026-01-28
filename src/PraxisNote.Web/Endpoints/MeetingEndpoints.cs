@@ -21,6 +21,8 @@ public static class MeetingEndpoints
         group.MapDelete("/{id:guid}/transcript", (Delegate)HandleClearTranscript);
         group.MapPost("/{id:guid}/analyze", (Delegate)HandleAnalyzeMeeting);
         group.MapPatch("/{id:guid}/action-items/{actionItemId:guid}/toggle", (Delegate)HandleToggleActionItem);
+        group.MapPost("/{id:guid}/action-items/{actionItemId:guid}/promote", (Delegate)HandlePromoteActionItem);
+        group.MapGet("/{id:guid}/action-item-status", (Delegate)HandleGetActionItemStatus);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -210,6 +212,45 @@ public static class MeetingEndpoints
         {
             return Results.NotFound(new { error = "Action item not found" });
         }
+    }
+
+    private static async Task<IResult> HandlePromoteActionItem(
+        Guid id,
+        Guid actionItemId,
+        ClaimsPrincipal user,
+        [FromServices] PromoteActionItemToTask promoteActionItemToTask,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var command = new PromoteActionItemToTask.Command(id, userId.Value, actionItemId);
+        var result = await promoteActionItemToTask.ExecuteAsync(command, cancellationToken);
+
+        return result is not null
+            ? Results.Ok(new { result.TaskId, result.Title, result.Status })
+            : Results.NotFound();
+    }
+
+    private static async Task<IResult> HandleGetActionItemStatus(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] GetActionItemStatus getActionItemStatus,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var query = new GetActionItemStatus.Query(id, userId.Value);
+        var result = await getActionItemStatus.ExecuteAsync(query, cancellationToken);
+
+        return result is not null ? Results.Ok(result) : Results.NotFound();
     }
 }
 

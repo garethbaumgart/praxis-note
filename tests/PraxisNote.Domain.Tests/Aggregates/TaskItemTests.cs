@@ -94,6 +94,45 @@ public class TaskItemTests
 
     #endregion
 
+    #region CreateFromActionItem Tests
+
+    [Fact]
+    public void CreateFromActionItem_WithValidInputs_CreatesLinkedTask()
+    {
+        // Arrange
+        var actionItemRef = new ActionItemRef(Guid.NewGuid(), Guid.NewGuid());
+
+        // Act
+        var task = TaskItem.CreateFromActionItem(_validUserId, _validTitle, actionItemRef);
+
+        // Assert
+        Assert.Equal(actionItemRef, task.ActionItemRef);
+        Assert.True(task.IsLinkedToMeeting);
+        Assert.Null(task.CheckboxRef);
+        Assert.False(task.IsLinkedToNote);
+    }
+
+    [Fact]
+    public void CreateFromActionItem_WithNullActionItemRef_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            TaskItem.CreateFromActionItem(_validUserId, _validTitle, null!));
+    }
+
+    [Fact]
+    public void IsLinkedToMeeting_WithNoActionItemRef_ReturnsFalse()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+
+        // Assert
+        Assert.False(task.IsLinkedToMeeting);
+        Assert.Null(task.ActionItemRef);
+    }
+
+    #endregion
+
     #region Status Transition Tests
 
     [Fact]

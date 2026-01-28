@@ -327,5 +327,12 @@ public sealed class Meeting : AggregateRoot
         return true;
     }
 
+    /// <summary>
+    /// Gets an action item by ID.
+    /// </summary>
+    /// <returns>The action item if found, null otherwise.</returns>
+    public ActionItem? GetActionItem(Guid actionItemId) =>
+        _actionItems.Find(a => a.Id == actionItemId);
+
     #endregion
 }

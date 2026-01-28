@@ -53,6 +53,15 @@ public sealed class TaskConfiguration : IEntityTypeConfiguration<TaskItem>
                 .HasMaxLength(100);
         });
 
+        // Optional ActionItemRef value object (for tasks created from meeting action items)
+        builder.OwnsOne(t => t.ActionItemRef, ar =>
+        {
+            ar.Property(a => a.MeetingId)
+                .HasColumnName("ActionItemMeetingId");
+            ar.Property(a => a.ActionItemId)
+                .HasColumnName("ActionItemId");
+        });
+
         // TagIds stored as JSON array - use backing field which is HashSet<Guid>
         var tagIdsComparer = new ValueComparer<HashSet<Guid>>(
             (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SetEquals(c2)),
