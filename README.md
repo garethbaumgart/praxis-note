@@ -20,6 +20,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Due Dates** - Set due dates with visual urgency indicators (overdue, today, tomorrow, this week)
 - ✅ **Task Comments** - Add comments to tasks with click-to-edit
 - ✅ **Task Tags** - Organize tasks with reusable tags, displayed inline with expandable overflow
+- ✅ **Note Tags** - Add tags to notes for organization and filtering
 - ✅ **Google OAuth** - Secure authentication with user accounts
 - ✅ **Notes** - Google Keep-style card grid with TipTap rich text editor
 - ✅ **Checkbox-Task Sync** - Promote checkboxes to tasks with bidirectional sync (complete a task, checkbox is checked; check a checkbox, task is done)
