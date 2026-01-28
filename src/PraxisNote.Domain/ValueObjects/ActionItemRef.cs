@@ -8,7 +8,8 @@ namespace PraxisNote.Domain.ValueObjects;
 /// <remarks>
 /// This is a value object that represents the relationship between a Task and
 /// the action item in a Meeting that created it. When a task is created from a meeting's
-/// action item, this reference enables bidirectional sync.
+/// action item, this reference enables the UI to display the task's current status
+/// on the action item.
 ///
 /// Using a primary constructor record here because:
 /// - No transformation/validation needed on the values

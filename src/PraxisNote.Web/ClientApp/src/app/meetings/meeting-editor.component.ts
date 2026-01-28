@@ -138,16 +138,22 @@ export class MeetingEditorComponent {
     return this.meetingService.meetings().find(m => m.id === id) ?? null;
   });
 
+  // Track action items count to avoid effect running on every meeting change
+  private readonly actionItemsCount = computed(() =>
+    this.currentMeeting()?.actionItems.length ?? 0
+  );
+
   title = '';
   meetingDate: Date | null = null;
   attendees = '';
   transcript = '';
 
   constructor() {
-    // Reload action item statuses when meeting changes (e.g., after analysis completes)
+    // Reload action item statuses only when action items count changes (e.g., after analysis completes)
     effect(() => {
-      const meeting = this.currentMeeting();
-      if (meeting && meeting.actionItems.length > 0) {
+      const count = this.actionItemsCount();
+      const id = this.meetingId();
+      if (id && count > 0) {
         this.loadActionItemStatuses();
       }
     });

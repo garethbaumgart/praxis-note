@@ -1,14 +1,13 @@
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CheckboxModule } from 'primeng/checkbox';
-import { ButtonModule } from 'primeng/button';
 import { ActionItem, ActionItemStatus } from './meeting.model';
 
 @Component({
   selector: 'app-meeting-action-items',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CheckboxModule, ButtonModule],
+  imports: [FormsModule, CheckboxModule],
   template: `
     <div>
       <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Action Items</h4>

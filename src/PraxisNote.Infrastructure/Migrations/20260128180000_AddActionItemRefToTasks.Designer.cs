@@ -13,7 +13,7 @@ using PraxisNote.Infrastructure.Persistence;
 namespace PraxisNote.Infrastructure.Migrations
 {
     [DbContext(typeof(PraxisNoteDbContext))]
-    [Migration("20260128093520_AddActionItemRefToTasks")]
+    [Migration("20260128180000_AddActionItemRefToTasks")]
     partial class AddActionItemRefToTasks
     {
         /// <inheritdoc />
