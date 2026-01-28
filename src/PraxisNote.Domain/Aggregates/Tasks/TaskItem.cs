@@ -149,7 +149,7 @@ public sealed class TaskItem : AggregateRoot
     public static TaskItem CreateFromActionItem(Guid userId, string title, ActionItemRef actionItemRef)
     {
         ArgumentNullException.ThrowIfNull(actionItemRef);
-        return new TaskItem(Guid.NewGuid(), userId, title, checkboxRef: null, actionItemRef);
+        return new TaskItem(Guid.NewGuid(), userId, title, checkboxRef: null, actionItemRef: actionItemRef);
     }
 
     /// <summary>

@@ -230,9 +230,12 @@ public static class MeetingEndpoints
         var command = new PromoteActionItemToTask.Command(id, userId.Value, actionItemId);
         var result = await promoteActionItemToTask.ExecuteAsync(command, cancellationToken);
 
-        return result is not null
-            ? Results.Ok(new { result.TaskId, result.Title, result.Status })
-            : Results.NotFound();
+        if (result is null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Created($"/api/tasks/{result.TaskId}", result);
     }
 
     private static async Task<IResult> HandleGetActionItemStatus(

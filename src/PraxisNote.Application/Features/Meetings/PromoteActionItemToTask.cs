@@ -55,30 +55,33 @@ public sealed class PromoteActionItemToTask(
                 existingTask.Status.ToString());
         }
 
-        // 4. Push down existing Todo tasks to make room at position 0
-        var todoTasks = existingTasks.Where(t => t.Status == TaskStatus.Todo);
-        foreach (var todoTask in todoTasks)
+        // 4. Determine initial status for the promoted task
+        var initialStatus = actionItem.IsCompleted ? TaskStatus.Done : TaskStatus.Todo;
+
+        // 5. Push down existing tasks in the target status column to make room at position 0
+        var targetStatusTasks = existingTasks.Where(t => t.Status == initialStatus);
+        foreach (var taskInStatus in targetStatusTasks)
         {
-            todoTask.SetPosition(todoTask.Position + 1);
+            taskInStatus.SetPosition(taskInStatus.Position + 1);
         }
 
-        // 5. Create task from action item
+        // 6. Create task from action item
         var actionItemRef = new ActionItemRef(command.MeetingId, command.ActionItemId);
         var task = TaskItem.CreateFromActionItem(command.UserId, actionItem.Description, actionItemRef);
 
-        // 6. Set initial status based on action item state
+        // 7. Set initial status based on action item state
         if (actionItem.IsCompleted)
         {
             task.Complete();
         }
 
-        // 7. Inherit meeting's tags
+        // 8. Inherit meeting's tags
         foreach (var tagId in meeting.TagIds)
         {
             task.AddTag(tagId);
         }
 
-        // 8. Persist
+        // 9. Persist
         await taskRepository.AddAsync(task, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

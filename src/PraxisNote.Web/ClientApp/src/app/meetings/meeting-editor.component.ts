@@ -154,6 +154,10 @@ export class MeetingEditorComponent {
   }
 
   open(meeting?: Meeting): void {
+    // Reset statuses immediately to avoid stale data
+    this.actionItemStatuses.set([]);
+    this.promotingIds.set(new Set());
+
     if (meeting) {
       this.isEditing.set(true);
       this.meetingId.set(meeting.id);
@@ -161,13 +165,7 @@ export class MeetingEditorComponent {
       this.meetingDate = meeting.meetingDate ? new Date(meeting.meetingDate) : new Date();
       this.attendees = meeting.attendees ?? '';
       this.transcript = meeting.transcriptContent ?? '';
-
-      // Load action item statuses if meeting has action items
-      if (meeting.actionItems.length > 0) {
-        this.loadActionItemStatuses();
-      } else {
-        this.actionItemStatuses.set([]);
-      }
+      // Action item statuses will be loaded via the effect when currentMeeting changes
     } else {
       this.isEditing.set(false);
       this.meetingId.set(null);
@@ -175,9 +173,7 @@ export class MeetingEditorComponent {
       this.meetingDate = new Date();
       this.attendees = '';
       this.transcript = '';
-      this.actionItemStatuses.set([]);
     }
-    this.promotingIds.set(new Set());
     this.visible.set(true);
   }
 
