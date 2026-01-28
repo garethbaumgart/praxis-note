@@ -26,6 +26,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Checkbox-Task Sync** - Promote checkboxes to tasks with bidirectional sync (complete a task, checkbox is checked; check a checkbox, task is done)
 - ✅ **Meetings** - Daily grouped meeting list with fire-and-forget capture workflow
 - ✅ **AI Analysis** - Claude-powered meeting transcript analysis for summaries, key points, and decisions
+- ✅ **Audio Transcription** - Upload audio files for Whisper-powered transcription into meeting transcripts
 
 ✅ = Implemented | 🚧 = Planned
 

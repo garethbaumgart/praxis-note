@@ -27,6 +27,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 // Configure Task settings
 builder.Services.Configure<TaskSettings>(builder.Configuration.GetSection(TaskSettings.SectionName));
 
+// HttpClient factory (used by Whisper transcription service)
+builder.Services.AddHttpClient();
+
 // Add Application services (use cases)
 builder.Services.AddApplication();
 

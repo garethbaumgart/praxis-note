@@ -192,7 +192,37 @@ interface TimeOption {
                 [value]="transcript()"
                 (input)="transcript.set(asTextarea($event).value)"
               ></textarea>
-              <div class="flex justify-end mt-1">
+              <div class="flex justify-between items-center mt-1">
+                <div class="flex items-center gap-2">
+                  <!-- Audio upload button -->
+                  @if (isTranscribing()) {
+                    <span class="flex items-center gap-2 text-xs text-foreground-muted">
+                      <i class="pi pi-spin pi-spinner text-xs"></i>
+                      Transcribing audio...
+                    </span>
+                  } @else {
+                    <input
+                      #audioFileInput
+                      type="file"
+                      accept=".mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm"
+                      class="hidden"
+                      (change)="onAudioFileSelected($event)"
+                      aria-label="Upload audio file for transcription"
+                    />
+                    <button
+                      type="button"
+                      class="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors"
+                      (click)="audioFileInput.click()"
+                      aria-label="Upload audio file for Whisper transcription"
+                    >
+                      <i class="pi pi-microphone text-xs"></i>
+                      {{ transcript() ? 'Re-transcribe' : 'Transcribe audio' }}
+                    </button>
+                  }
+                  @if (audioFileName()) {
+                    <span class="text-xs text-foreground-muted">{{ audioFileName() }}</span>
+                  }
+                </div>
                 <span class="text-xs text-foreground-muted">{{ transcript().length }} characters</span>
               </div>
             </div>
@@ -265,6 +295,8 @@ export class MeetingEditorComponent {
   readonly meetingDate = signal<Date | null>(null);
   readonly attendees = signal('');
   readonly transcript = signal('');
+  readonly audioFileName = signal<string | null>(null);
+  readonly isTranscribing = signal(false);
 
   // Date selection state
   readonly selectedDateChip = signal<string | null>('Tomorrow');
@@ -325,6 +357,17 @@ export class MeetingEditorComponent {
       const id = this.meetingId();
       if (id && count > 0) {
         this.loadActionItemStatuses();
+      }
+    });
+
+    // Sync transcript when transcription completes (meeting updated via polling)
+    effect(() => {
+      const meeting = this.currentMeeting();
+      if (meeting && meeting.status !== 'Processing' && this.isTranscribing()) {
+        this.isTranscribing.set(false);
+        if (meeting.transcriptContent) {
+          this.transcript.set(meeting.transcriptContent);
+        }
       }
     });
 
@@ -456,6 +499,8 @@ export class MeetingEditorComponent {
     this.actionItemStatuses.set([]);
     this.promotingIds.set(new Set());
     this.showDatePicker.set(false);
+    this.audioFileName.set(null);
+    this.isTranscribing.set(false);
 
     if (meeting) {
       this.isEditing.set(true);
@@ -490,6 +535,22 @@ export class MeetingEditorComponent {
       this.transcript.set('');
     }
     this.visible.set(true);
+  }
+
+  onAudioFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const id = this.meetingId();
+    if (!id) return;
+
+    this.audioFileName.set(file.name);
+    this.isTranscribing.set(true);
+    this.meetingService.transcribeAudio(id, file);
+
+    // Reset file input so the same file can be re-selected
+    input.value = '';
   }
 
   analyze(): void {

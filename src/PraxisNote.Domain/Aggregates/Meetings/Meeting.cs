@@ -211,6 +211,27 @@ public sealed class Meeting : AggregateRoot
     }
 
     /// <summary>
+    /// Marks the meeting as processing for transcription.
+    /// </summary>
+    public void StartTranscription()
+    {
+        UpdateStatus(MeetingStatus.Processing);
+    }
+
+    /// <summary>
+    /// Completes transcription by storing the transcript text and resetting status to Draft.
+    /// </summary>
+    /// <param name="transcript">The transcribed text from audio.</param>
+    public void CompleteTranscription(string transcript)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(transcript, nameof(transcript));
+
+        TranscriptContent = transcript.Trim();
+        UpdateStatus(MeetingStatus.Draft);
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
     /// Starts AI analysis of the meeting transcript.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown when no transcript exists.</exception>
