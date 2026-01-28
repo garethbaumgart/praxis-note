@@ -90,6 +90,7 @@ import { MeetingService } from './meeting.service';
             <app-meeting-analysis
               [meeting]="currentMeeting()!"
               (onAnalyze)="analyze()"
+              (onToggleActionItem)="toggleActionItem($event)"
             />
           }
         }
@@ -154,6 +155,13 @@ export class MeetingEditorComponent {
     const id = this.meetingId();
     if (id) {
       this.meetingService.analyzeMeeting(id);
+    }
+  }
+
+  toggleActionItem(actionItemId: string): void {
+    const id = this.meetingId();
+    if (id) {
+      this.meetingService.toggleActionItem(id, actionItemId);
     }
   }
 

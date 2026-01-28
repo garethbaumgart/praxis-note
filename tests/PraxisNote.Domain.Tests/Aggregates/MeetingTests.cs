@@ -859,4 +859,416 @@ public class MeetingTests
     }
 
     #endregion
+
+    #region Tag Management Tests
+
+    [Fact]
+    public void AddTag_WithValidTagId_AddsTagToMeeting()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var tagId = Guid.NewGuid();
+
+        // Act
+        meeting.AddTag(tagId);
+
+        // Assert
+        Assert.Contains(tagId, meeting.TagIds);
+        Assert.Single(meeting.TagIds);
+    }
+
+    [Fact]
+    public void AddTag_WithMultipleTags_AddsAllTags()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var tagId1 = Guid.NewGuid();
+        var tagId2 = Guid.NewGuid();
+
+        // Act
+        meeting.AddTag(tagId1);
+        meeting.AddTag(tagId2);
+
+        // Assert
+        Assert.Equal(2, meeting.TagIds.Count);
+        Assert.Contains(tagId1, meeting.TagIds);
+        Assert.Contains(tagId2, meeting.TagIds);
+    }
+
+    [Fact]
+    public void AddTag_WithDuplicateTag_IsIdempotent()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var tagId = Guid.NewGuid();
+        meeting.AddTag(tagId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.AddTag(tagId);
+
+        // Assert
+        Assert.Single(meeting.TagIds);
+        Assert.Equal(originalUpdatedAt, meeting.UpdatedAt);
+    }
+
+    [Fact]
+    public void AddTag_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            meeting.AddTag(Guid.Empty));
+    }
+
+    [Fact]
+    public void AddTag_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+        var tagId = Guid.NewGuid();
+
+        // Act
+        meeting.AddTag(tagId);
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void RemoveTag_WithExistingTag_RemovesTag()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var tagId = Guid.NewGuid();
+        meeting.AddTag(tagId);
+
+        // Act
+        meeting.RemoveTag(tagId);
+
+        // Assert
+        Assert.Empty(meeting.TagIds);
+    }
+
+    [Fact]
+    public void RemoveTag_WithNonExistentTag_IsIdempotent()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+        var tagId = Guid.NewGuid();
+
+        // Act
+        meeting.RemoveTag(tagId);
+
+        // Assert
+        Assert.Empty(meeting.TagIds);
+        Assert.Equal(originalUpdatedAt, meeting.UpdatedAt);
+    }
+
+    [Fact]
+    public void RemoveTag_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var tagId = Guid.NewGuid();
+        meeting.AddTag(tagId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.RemoveTag(tagId);
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void HasTag_WithExistingTag_ReturnsTrue()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var tagId = Guid.NewGuid();
+        meeting.AddTag(tagId);
+
+        // Act
+        var result = meeting.HasTag(tagId);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void HasTag_WithNonExistentTag_ReturnsFalse()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var tagId = Guid.NewGuid();
+
+        // Act
+        var result = meeting.HasTag(tagId);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
+
+    #region Action Item Tests
+
+    [Fact]
+    public void CompleteAnalysis_WithActionItems_StoresActionItems()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var actionItems = new[]
+        {
+            ActionItem.Create("Send follow-up email", "John"),
+            ActionItem.Create("Prepare presentation")
+        };
+
+        // Act
+        meeting.CompleteAnalysis("Summary", null, null, null, actionItems);
+
+        // Assert
+        Assert.Equal(2, meeting.ActionItems.Count);
+        Assert.Contains(meeting.ActionItems, a => a.Description == "Send follow-up email" && a.Assignee == "John");
+        Assert.Contains(meeting.ActionItems, a => a.Description == "Prepare presentation" && a.Assignee == null);
+    }
+
+    [Fact]
+    public void CompleteAnalysis_WithNullActionItems_HasEmptyList()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+
+        // Act
+        meeting.CompleteAnalysis("Summary", null, null, null, null);
+
+        // Assert
+        Assert.Empty(meeting.ActionItems);
+    }
+
+    [Fact]
+    public void CompleteAnalysis_OverwritesPreviousActionItems()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Old item") });
+        meeting.UpdateStatus(MeetingStatus.Draft);
+        meeting.StartAnalysis();
+        var newActionItems = new[] { ActionItem.Create("New item") };
+
+        // Act
+        meeting.CompleteAnalysis("New summary", null, null, null, newActionItems);
+
+        // Assert
+        Assert.Single(meeting.ActionItems);
+        Assert.Equal("New item", meeting.ActionItems.First().Description);
+    }
+
+    [Fact]
+    public void ToggleActionItem_WithExistingItem_TogglesCompletion()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var actionItem = ActionItem.Create("Test item");
+        meeting.CompleteAnalysis("Summary", null, null, null, new[] { actionItem });
+        var itemId = meeting.ActionItems.First().Id;
+
+        // Act
+        var result = meeting.ToggleActionItem(itemId);
+
+        // Assert
+        Assert.True(result);
+        Assert.True(meeting.ActionItems.First().IsCompleted);
+    }
+
+    [Fact]
+    public void ToggleActionItem_TogglesBackToIncomplete()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        var actionItem = ActionItem.Create("Test item");
+        meeting.CompleteAnalysis("Summary", null, null, null, new[] { actionItem });
+        var itemId = meeting.ActionItems.First().Id;
+
+        // Act - Toggle twice
+        meeting.ToggleActionItem(itemId);
+        meeting.ToggleActionItem(itemId);
+
+        // Assert
+        Assert.False(meeting.ActionItems.First().IsCompleted);
+    }
+
+    [Fact]
+    public void ToggleActionItem_WithNonExistentItem_ReturnsFalse()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        var result = meeting.ToggleActionItem(Guid.NewGuid());
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(originalUpdatedAt, meeting.UpdatedAt);
+    }
+
+    [Fact]
+    public void ToggleActionItem_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+        var originalUpdatedAt = meeting.UpdatedAt;
+        var itemId = meeting.ActionItems.First().Id;
+
+        // Act
+        meeting.ToggleActionItem(itemId);
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void ClearAnalysis_ClearsActionItems()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitTranscript("Some transcript");
+        meeting.StartAnalysis();
+        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+
+        // Act
+        meeting.ClearAnalysis();
+
+        // Assert
+        Assert.Empty(meeting.ActionItems);
+    }
+
+    #endregion
+
+    #region ActionItem Value Object Tests
+
+    [Fact]
+    public void ActionItem_Create_WithDescription_CreatesItem()
+    {
+        // Act
+        var item = ActionItem.Create("Send email");
+
+        // Assert
+        Assert.NotEqual(Guid.Empty, item.Id);
+        Assert.Equal("Send email", item.Description);
+        Assert.Null(item.Assignee);
+        Assert.False(item.IsCompleted);
+    }
+
+    [Fact]
+    public void ActionItem_Create_WithDescriptionAndAssignee_CreatesItem()
+    {
+        // Act
+        var item = ActionItem.Create("Send email", "John");
+
+        // Assert
+        Assert.Equal("Send email", item.Description);
+        Assert.Equal("John", item.Assignee);
+    }
+
+    [Fact]
+    public void ActionItem_Create_TrimsDescription()
+    {
+        // Act
+        var item = ActionItem.Create("  Send email  ");
+
+        // Assert
+        Assert.Equal("Send email", item.Description);
+    }
+
+    [Fact]
+    public void ActionItem_Create_TrimsAssignee()
+    {
+        // Act
+        var item = ActionItem.Create("Send email", "  John  ");
+
+        // Assert
+        Assert.Equal("John", item.Assignee);
+    }
+
+    [Fact]
+    public void ActionItem_Create_WithWhitespaceAssignee_SetsNull()
+    {
+        // Act
+        var item = ActionItem.Create("Send email", "   ");
+
+        // Assert
+        Assert.Null(item.Assignee);
+    }
+
+    [Fact]
+    public void ActionItem_Create_WithNullDescription_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            ActionItem.Create(null!));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ActionItem_Create_WithEmptyDescription_ThrowsArgumentException(string description)
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            ActionItem.Create(description));
+    }
+
+    [Fact]
+    public void ActionItem_WithCompletedToggled_ReturnsNewItemWithToggledState()
+    {
+        // Arrange
+        var item = ActionItem.Create("Send email");
+
+        // Act
+        var toggledItem = item.WithCompletedToggled();
+
+        // Assert
+        Assert.True(toggledItem.IsCompleted);
+        Assert.Equal(item.Id, toggledItem.Id);
+        Assert.Equal(item.Description, toggledItem.Description);
+    }
+
+    [Fact]
+    public void ActionItem_WithCompletedToggled_CanToggleBackToFalse()
+    {
+        // Arrange
+        var item = ActionItem.Create("Send email");
+
+        // Act
+        var toggledOnce = item.WithCompletedToggled();
+        var toggledTwice = toggledOnce.WithCompletedToggled();
+
+        // Assert
+        Assert.False(toggledTwice.IsCompleted);
+    }
+
+    #endregion
 }

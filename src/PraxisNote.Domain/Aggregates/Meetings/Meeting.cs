@@ -14,6 +14,9 @@ namespace PraxisNote.Domain.Aggregates.Meetings;
 /// </remarks>
 public sealed class Meeting : AggregateRoot
 {
+    private readonly HashSet<Guid> _tagIds = [];
+    private readonly List<ActionItem> _actionItems = [];
+
     /// <summary>
     /// The user who owns this meeting.
     /// </summary>
@@ -67,6 +70,16 @@ public sealed class Meeting : AggregateRoot
     /// - redFlags: evasive language, hedging, defensive responses
     /// </summary>
     public string? BehavioralAnalysis { get; private set; }
+
+    /// <summary>
+    /// Tag IDs associated with this meeting.
+    /// </summary>
+    public IReadOnlyCollection<Guid> TagIds => _tagIds.AsReadOnly();
+
+    /// <summary>
+    /// AI-extracted action items from the meeting transcript.
+    /// </summary>
+    public IReadOnlyCollection<ActionItem> ActionItems => _actionItems.AsReadOnly();
 
     /// <summary>
     /// When this meeting was created.
@@ -216,7 +229,13 @@ public sealed class Meeting : AggregateRoot
     /// <param name="keyPoints">JSON array of key discussion points.</param>
     /// <param name="decisions">JSON array of decisions made.</param>
     /// <param name="behavioralAnalysis">JSON object with behavioral analysis data.</param>
-    public void CompleteAnalysis(string summary, string? keyPoints, string? decisions, string? behavioralAnalysis = null)
+    /// <param name="actionItems">Extracted action items from the transcript.</param>
+    public void CompleteAnalysis(
+        string summary,
+        string? keyPoints,
+        string? decisions,
+        string? behavioralAnalysis = null,
+        IEnumerable<ActionItem>? actionItems = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(summary, nameof(summary));
 
@@ -224,6 +243,13 @@ public sealed class Meeting : AggregateRoot
         KeyPoints = keyPoints;
         Decisions = decisions;
         BehavioralAnalysis = behavioralAnalysis;
+
+        _actionItems.Clear();
+        if (actionItems is not null)
+        {
+            _actionItems.AddRange(actionItems);
+        }
+
         UpdateStatus(MeetingStatus.Ready);
     }
 
@@ -240,13 +266,66 @@ public sealed class Meeting : AggregateRoot
     /// </summary>
     public void ClearAnalysis()
     {
-        if (Summary is null && KeyPoints is null && Decisions is null && BehavioralAnalysis is null && Status != MeetingStatus.Failed)
+        if (Summary is null && KeyPoints is null && Decisions is null && BehavioralAnalysis is null && _actionItems.Count == 0 && Status != MeetingStatus.Failed)
             return;
 
         Summary = null;
         KeyPoints = null;
         Decisions = null;
         BehavioralAnalysis = null;
+        _actionItems.Clear();
         UpdateStatus(MeetingStatus.Draft);
     }
+
+    #region Tag Management
+
+    /// <summary>
+    /// Adds a tag to this meeting. Idempotent - adding an existing tag is a no-op.
+    /// </summary>
+    public void AddTag(Guid tagId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(tagId, Guid.Empty, nameof(tagId));
+
+        if (_tagIds.Add(tagId))
+        {
+            UpdatedAt = DateTimeOffset.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Removes a tag from this meeting. Idempotent - removing a non-existent tag is a no-op.
+    /// </summary>
+    public void RemoveTag(Guid tagId)
+    {
+        if (_tagIds.Remove(tagId))
+        {
+            UpdatedAt = DateTimeOffset.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Checks if this meeting has the specified tag.
+    /// </summary>
+    public bool HasTag(Guid tagId) => _tagIds.Contains(tagId);
+
+    #endregion
+
+    #region Action Item Management
+
+    /// <summary>
+    /// Toggles the completion status of an action item.
+    /// </summary>
+    /// <returns>True if the item was found and toggled, false otherwise.</returns>
+    public bool ToggleActionItem(Guid actionItemId)
+    {
+        var index = _actionItems.FindIndex(a => a.Id == actionItemId);
+        if (index < 0)
+            return false;
+
+        _actionItems[index] = _actionItems[index].WithCompletedToggled();
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return true;
+    }
+
+    #endregion
 }

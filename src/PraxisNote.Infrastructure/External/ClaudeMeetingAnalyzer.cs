@@ -22,8 +22,20 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         2. "keyPoints": An array of 3-5 key discussion points (strings)
         3. "decisions": An array of any decisions that were made (strings, can be empty if no decisions)
 
+        ATTENDEE EXTRACTION:
+        4. "extractedAttendees": An array of participant names identified from the transcript (strings).
+           - Extract actual names when mentioned (e.g., "Sarah", "John Smith", "Dr. Williams")
+           - If no names are mentioned, use role identifiers (e.g., "Project Manager", "Developer")
+           - Do not include generic labels like "Speaker 1" unless no other identification is possible
+
+        ACTION ITEMS:
+        5. "actionItems": An array of action items identified in the meeting, each with:
+           - "description": What needs to be done (string, required)
+           - "assignee": Who is responsible, if mentioned (string or null)
+           Example: [{"description": "Send updated budget proposal", "assignee": "Sarah"}, {"description": "Schedule follow-up meeting", "assignee": null}]
+
         BEHAVIORAL ANALYSIS:
-        4. "behavioralAnalysis": An object containing behavioral insights (or null if insufficient data):
+        6. "behavioralAnalysis": An object containing behavioral insights (or null if insufficient data):
            a) "speakingDynamics": {
               "talkTimeByParticipant": [{"participant": "Name", "percentage": 35.5, "duration": "12:30"}],
               "interruptionPatterns": [{"interrupter": "Name", "interrupted": "Name", "count": 3}],
@@ -143,7 +155,12 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
             result.Summary ?? "No summary provided",
             result.KeyPoints ?? [],
             result.Decisions ?? [],
-            MapBehavioralAnalysis(result.BehavioralAnalysis));
+            MapBehavioralAnalysis(result.BehavioralAnalysis),
+            result.ExtractedAttendees ?? [],
+            result.ActionItems?
+                .Where(a => !string.IsNullOrWhiteSpace(a.Description))
+                .Select(a => new ExtractedActionItem(a.Description!.Trim(), a.Assignee?.Trim()))
+                .ToList() ?? []);
     }
 
     private static BehavioralAnalysisData? MapBehavioralAnalysis(BehavioralAnalysisJson? json)
@@ -193,7 +210,15 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         public string? Summary { get; set; }
         public List<string>? KeyPoints { get; set; }
         public List<string>? Decisions { get; set; }
+        public List<string>? ExtractedAttendees { get; set; }
+        public List<ActionItemJson>? ActionItems { get; set; }
         public BehavioralAnalysisJson? BehavioralAnalysis { get; set; }
+    }
+
+    private sealed class ActionItemJson
+    {
+        public string? Description { get; set; }
+        public string? Assignee { get; set; }
     }
 
     private sealed class BehavioralAnalysisJson

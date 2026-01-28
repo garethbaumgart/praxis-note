@@ -20,6 +20,7 @@ public static class MeetingEndpoints
         group.MapPost("/{id:guid}/transcript", (Delegate)HandleSubmitTranscript);
         group.MapDelete("/{id:guid}/transcript", (Delegate)HandleClearTranscript);
         group.MapPost("/{id:guid}/analyze", (Delegate)HandleAnalyzeMeeting);
+        group.MapPatch("/{id:guid}/action-items/{actionItemId:guid}/toggle", (Delegate)HandleToggleActionItem);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -179,6 +180,36 @@ public static class MeetingEndpoints
         var success = await analyzeMeeting.ExecuteAsync(command, cancellationToken);
 
         return success ? Results.NoContent() : Results.NotFound();
+    }
+
+    private static async Task<IResult> HandleToggleActionItem(
+        Guid id,
+        Guid actionItemId,
+        ClaimsPrincipal user,
+        [FromServices] ToggleActionItem toggleActionItem,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var command = new ToggleActionItem.Command(userId.Value, id, actionItemId);
+            await toggleActionItem.ExecuteAsync(command, cancellationToken);
+
+            return Results.NoContent();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == ToggleActionItem.MeetingNotFoundError)
+        {
+            return Results.NotFound(new { error = "Meeting not found" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == ToggleActionItem.ActionItemNotFoundError)
+        {
+            return Results.NotFound(new { error = "Action item not found" });
+        }
     }
 }
 

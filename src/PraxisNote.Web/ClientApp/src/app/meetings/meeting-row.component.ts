@@ -26,6 +26,17 @@ import { Meeting, MeetingStatus } from './meeting.model';
           @if (meeting().transcriptContent) {
             <i class="pi pi-file-edit text-xs text-foreground-muted" title="Has transcript"></i>
           }
+          <!-- Tags -->
+          @if (meeting().tags.length > 0) {
+            <div class="flex items-center gap-1">
+              @for (tag of meeting().tags.slice(0, 3); track tag.id) {
+                <span class="tag-badge">{{ tag.name }}</span>
+              }
+              @if (meeting().tags.length > 3) {
+                <span class="text-xs text-foreground-muted">+{{ meeting().tags.length - 3 }}</span>
+              }
+            </div>
+          }
         </div>
         <p class="text-xs text-foreground-muted truncate">
           {{ formatAttendees(meeting().attendees) }}

@@ -9,7 +9,18 @@ public record MeetingAnalysisResult(
     string Summary,
     List<string> KeyPoints,
     List<string> Decisions,
-    BehavioralAnalysisData? BehavioralAnalysis = null);
+    BehavioralAnalysisData? BehavioralAnalysis = null,
+    List<string> ExtractedAttendees = default!,
+    List<ExtractedActionItem> ExtractedActionItems = default!)
+{
+    public List<string> ExtractedAttendees { get; init; } = ExtractedAttendees ?? [];
+    public List<ExtractedActionItem> ExtractedActionItems { get; init; } = ExtractedActionItems ?? [];
+}
+
+/// <summary>
+/// Action item extracted from meeting transcript by AI.
+/// </summary>
+public record ExtractedActionItem(string Description, string? Assignee);
 
 #region Behavioral Analysis Types
 
