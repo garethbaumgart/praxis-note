@@ -180,7 +180,8 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
                     .ToList() ?? []
             ),
             RedFlags: json.RedFlags?
-                .Select(r => new RedFlag(r.Type ?? "unknown", r.Participant ?? "Unknown", r.Description ?? "", r.Context ?? "", r.Severity ?? "low"))
+                .Where(r => !string.IsNullOrWhiteSpace(r.Type) && !string.IsNullOrWhiteSpace(r.Severity))
+                .Select(r => new RedFlag(r.Type!, r.Participant ?? "Unknown", r.Description ?? "", r.Context ?? "", r.Severity!))
                 .ToList() ?? []
         );
     }
