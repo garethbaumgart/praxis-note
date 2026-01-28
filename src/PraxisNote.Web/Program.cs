@@ -214,6 +214,7 @@ app.MapDueDateEndpoints();
 app.MapTagEndpoints();
 app.MapTaskTagEndpoints();
 app.MapNoteEndpoints();
+app.MapNoteTagEndpoints();
 app.MapMeetingEndpoints();
 app.MapNotificationEndpoints();
 
