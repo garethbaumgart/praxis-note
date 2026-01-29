@@ -1189,6 +1189,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.isDestroyed = true;
     this.cancelPolling();
     this.recorder.discard();
+    this.metadataChange$.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
