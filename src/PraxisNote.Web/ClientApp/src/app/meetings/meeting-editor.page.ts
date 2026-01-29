@@ -134,7 +134,7 @@ interface TimeOption {
                       </button>
                     }
                     @if (selectedDateChip() === 'custom' && customDateLabel()) {
-                      <button type="button" class="date-chip active">
+                      <button type="button" class="date-chip active" [attr.aria-label]="'Selected date: ' + customDateLabel()">
                         {{ customDateLabel() }}
                       </button>
                     }
@@ -981,6 +981,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
   private readonly metadataChange$ = new Subject<void>();
+  private readonly transcriptChange$ = new Subject<void>();
 
   // Core state
   readonly loading = signal(true);
@@ -1116,11 +1117,13 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   });
 
   constructor() {
-    // Reload action item statuses when count changes
+    // Reload action item statuses when action items count changes
+    let lastActionItemCount = -1;
     effect(() => {
       const count = this.actionItemsCount();
       const id = this.meetingId();
-      if (id && count > 0) {
+      if (id && count > 0 && count !== lastActionItemCount) {
+        lastActionItemCount = count;
         this.loadActionItemStatuses();
       }
     });
@@ -1149,6 +1152,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
         newDate.setHours(hour24, minute, 0, 0);
         if (newDate.getTime() !== currentDate.getTime()) {
           this.meetingDate.set(newDate);
+          this.lastSaved.set(false);
           this.metadataChange$.next();
         }
       }
@@ -1171,6 +1175,11 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       .pipe(debounceTime(1000), takeUntil(this.destroy$))
       .subscribe(() => this.saveMetadata());
 
+    // Auto-save transcript with debounce (longer delay for larger content)
+    this.transcriptChange$
+      .pipe(debounceTime(2000), takeUntil(this.destroy$))
+      .subscribe(() => this.saveTranscript());
+
     // Get meeting ID from route
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params.get('id');
@@ -1190,6 +1199,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.cancelPolling();
     this.recorder.discard();
     this.metadataChange$.complete();
+    this.transcriptChange$.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -1237,9 +1247,18 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   private initNewMeeting(): void {
     this.isNewMeeting.set(true);
     this.loading.set(false);
+    this.notFound.set(false);
+    this.meetingId.set(null);
+    this.lastSaved.set(false);
+    this.isSaving.set(false);
     this.title.set('');
     this.attendees.set('');
     this.transcript.set('');
+    this.audioFileName.set(null);
+    this.isTranscribing.set(false);
+    this.showTabWarning.set(false);
+    this.actionItemStatuses.set([]);
+    this.promotingIds.set(new Set());
 
     // Default to tomorrow at 10 AM
     const tomorrow = this.addDays(new Date(), 1);
@@ -1257,6 +1276,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.cancelPolling();
     this.meetingId.set(id);
     this.loading.set(true);
+    this.notFound.set(false);
     this.actionItemStatuses.set([]);
     this.promotingIds.set(new Set());
     this.audioFileName.set(null);
@@ -1320,8 +1340,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   onTranscriptChange(value: string): void {
     this.transcript.set(value);
     this.lastSaved.set(false);
-    // Save transcript with debounce via metadata change
-    this.metadataChange$.next();
+    this.transcriptChange$.next();
   }
 
   private saveMetadata(): void {
@@ -1361,7 +1380,11 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     }
   }
 
+  private isCreating = false;
+
   private createNewMeeting(): void {
+    if (this.isCreating) return;
+    this.isCreating = true;
     this.isNewMeeting.set(false);
     this.isSaving.set(true);
 
@@ -1370,6 +1393,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       this.meetingDate()?.toISOString(),
       this.attendees() || undefined,
       (realId) => {
+        this.isCreating = false;
         if (this.isDestroyed) return;
         this.meetingId.set(realId);
         this.router.navigate(['/meetings', realId], { replaceUrl: true });
@@ -1377,6 +1401,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
         this.lastSaved.set(true);
       },
       () => {
+        this.isCreating = false;
         if (!this.isDestroyed) {
           this.isNewMeeting.set(true);
           this.isSaving.set(false);
