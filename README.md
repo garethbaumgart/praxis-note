@@ -67,6 +67,30 @@ docker compose --profile dev-stack up
 
 Without the API key, the app runs normally but clicking "Analyze" on meetings will show "Analysis failed".
 
+#### Optional: Google Calendar Sync
+
+To enable importing meetings from Google Calendar, you need to configure a Google OAuth client:
+
+1. **Create a Google Cloud project** at https://console.cloud.google.com/
+2. **Enable the Google Calendar API**: Go to **APIs & Services** > **Library**, search for "Google Calendar API", and click **Enable**
+3. **Configure the OAuth consent screen**: Go to **APIs & Services** > **OAuth consent screen**
+   - Set the app to **Testing** mode
+   - Add your Google account email under **Test users**
+4. **Create OAuth credentials**: Go to **APIs & Services** > **Credentials** > **Create Credentials** > **OAuth client ID**
+   - Application type: **Web application**
+   - Add these **Authorized redirect URIs**:
+     - `http://localhost:5002/api/calendar/callback/google` (local development)
+     - `https://your-production-domain/api/calendar/callback/google` (production)
+5. **Set the environment variables** before starting the dev stack:
+
+```bash
+export Authentication__Google__ClientId="your-client-id.apps.googleusercontent.com"
+export Authentication__Google__ClientSecret="your-client-secret"
+docker compose --profile dev-stack up
+```
+
+Without these credentials, the app runs normally but the Google Calendar connect button in Settings will show an error.
+
 To stop:
 ```bash
 docker compose --profile dev-stack down
@@ -106,6 +130,13 @@ To enable AI meeting analysis in production:
 3. Grant the Cloud Run service account access to the secret
 
 The deploy workflow automatically maps this to `MeetingAnalysis__ApiKey` in Cloud Run.
+
+To enable Google Calendar sync in production:
+
+1. Create secrets in GCP Secret Manager: `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+2. Add your Google OAuth credentials as the secret values
+3. Grant the Cloud Run service account access to the secrets
+4. Ensure the production redirect URI (`https://your-domain/api/calendar/callback/google`) is added to the Google OAuth client's authorized redirect URIs
 
 ## Architecture
 
