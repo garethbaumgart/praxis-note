@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'Feature',
                     'Google Calendar sync',
                     'Connect your Google Calendar from Settings and sync upcoming events as meetings.',
-                    'https://github.com/garethbaumgart/praxis-note/pull/269',
+                    'https://github.com/garethbaumgart/praxis-note/pull/272',
                     '2026-01-29T08:53:00Z'
                 );
                 """);
