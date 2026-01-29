@@ -141,9 +141,9 @@ export class SettingsPage implements OnInit {
         token_exchange_failed: 'Failed to connect. Please try again.',
         no_refresh_token: 'Could not get full access. Please revoke PraxisNote access in your Google account settings and try again.',
       };
-      this.toast.error({
-        summary: errorMessages[params['error']] ?? 'An error occurred connecting your calendar.',
-      });
+      this.toast.error(
+        errorMessages[params['error']] ?? 'An error occurred connecting your calendar.',
+      );
     }
   }
 
