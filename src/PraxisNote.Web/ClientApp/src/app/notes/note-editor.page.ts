@@ -732,11 +732,29 @@ export class NoteEditorPage implements OnInit, OnDestroy {
 
   private autoSave(content: string): void {
     if (this.isNewNote()) {
-      // Create new note - service handles optimistic updates
-      this.noteService.createNote(content);
+      // Create new note - use callback to get the real server ID
       this.isNewNote.set(false);
-      // Watch for the new note to appear in the service's notes
-      this.watchForNewNote(content);
+      this.noteService.createNote(
+        content,
+        (realId) => {
+          if (this.isDestroyed) return;
+          this.noteId = realId;
+          // Find the note in the service's list to update local state
+          const n = this.noteService.notes().find(note => note.id === realId);
+          if (n) {
+            this.note.set(n);
+          }
+          // Update URL without navigation
+          this.router.navigate(['/notes', realId], { replaceUrl: true });
+          this.lastSaved.set(true);
+        },
+        () => {
+          // Creation failed - reset so next autosave retries
+          if (!this.isDestroyed) {
+            this.isNewNote.set(true);
+          }
+        },
+      );
     } else if (this.noteId) {
       // Update existing note
       this.isSaving.set(true);
@@ -747,39 +765,6 @@ export class NoteEditorPage implements OnInit, OnDestroy {
         this.lastSaved.set(true);
       }, 300);
     }
-  }
-
-  private watchForNewNote(content: string): void {
-    // Cancel any existing polling
-    this.cancelPolling();
-
-    let attempts = 0;
-    const maxAttempts = 100; // 5 seconds max (100 * 50ms)
-
-    // Poll for the new note (created optimistically by the service)
-    const checkForNote = () => {
-      // Stop polling if component is destroyed
-      if (this.isDestroyed) {
-        return;
-      }
-
-      attempts++;
-      const notes = this.noteService.notes();
-      // Find note with matching content that was just created
-      const newNote = notes.find((n) => n.content === content);
-      if (newNote) {
-        this.note.set(newNote);
-        this.noteId = newNote.id;
-        // Update URL without navigation
-        this.router.navigate(['/notes', newNote.id], { replaceUrl: true });
-        this.lastSaved.set(true);
-      } else if (attempts < maxAttempts) {
-        // Try again shortly
-        this.pollingTimeoutId = setTimeout(checkForNote, 50);
-      }
-      // After maxAttempts, stop polling silently - the note may still be syncing
-    };
-    checkForNote();
   }
 
   private saveNow(): void {
@@ -808,17 +793,17 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   }
 
   deleteNote(): void {
-    const n = this.note();
-    if (!n) return;
+    // Use noteId (always the real server ID) rather than note().id which may be stale
+    const id = this.noteId;
+    if (!id) return;
 
-    // Use deleteNoteWithUndo for undo capability, consistent with other pages
-    const deleted = this.noteService.deleteNoteWithUndo(n.id);
+    const deleted = this.noteService.deleteNoteWithUndo(id);
     if (deleted) {
       this.toast.success({
         summary: 'Note deleted',
         action: {
           label: 'Undo',
-          callback: () => this.noteService.undoDelete(n.id),
+          callback: () => this.noteService.undoDelete(id),
         },
       });
       this.router.navigate(['/notes']);
