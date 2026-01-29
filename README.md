@@ -27,6 +27,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Meetings** - Daily grouped meeting list with fire-and-forget capture workflow
 - ✅ **AI Analysis** - Claude-powered meeting transcript analysis for summaries, key points, and decisions
 - ✅ **Audio Transcription** - Upload audio files for Whisper-powered transcription into meeting transcripts
+- ✅ **Browser Recording** - Record meeting audio directly from the browser microphone with real-time level metering
 
 ✅ = Implemented | 🚧 = Planned
 
