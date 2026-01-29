@@ -115,7 +115,7 @@ interface TimeOption {
             <!-- Details Section - Cyan border -->
             <div class="section-card details-card">
               <div class="section-header details-header">
-                <i class="pi pi-info-circle"></i> Details
+                <span><i class="pi pi-info-circle"></i> Details</span>
               </div>
               <div class="details-grid">
                 <div>
