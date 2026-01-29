@@ -91,6 +91,7 @@ public class SyncCalendarEventsTests
 
         Assert.Equal(2, result.ImportedCount);
         Assert.Equal(0, result.SkippedCount);
+        Assert.NotNull(connection.LastSyncedAt);
         await _meetingRepo.Received(2).AddAsync(Arg.Any<Meeting>(), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }

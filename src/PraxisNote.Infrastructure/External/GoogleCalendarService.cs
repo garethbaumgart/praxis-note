@@ -52,7 +52,7 @@ public sealed class GoogleCalendarService : ICalendarService
 
             result.Add(new CalendarEvent(
                 EventId: evt.Id,
-                Title: evt.Summary,
+                Title: evt.Summary ?? "(No title)",
                 StartTime: evt.Start.DateTimeDateTimeOffset,
                 Attendees: attendees is { Count: > 0 } ? string.Join(", ", attendees) : null
             ));
@@ -71,7 +71,7 @@ public sealed class GoogleCalendarService : ICalendarService
         var clientSecret = _configuration["Authentication:Google:ClientSecret"]
             ?? throw new InvalidOperationException("Google OAuth ClientSecret not configured");
 
-        var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+        using var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
         {
             ClientSecrets = new ClientSecrets
             {

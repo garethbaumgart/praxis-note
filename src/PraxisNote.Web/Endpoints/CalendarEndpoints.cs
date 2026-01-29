@@ -123,7 +123,7 @@ public static class CalendarEndpoints
 
         // Exchange auth code for tokens
         using var httpClient = httpClientFactory.CreateClient();
-        var tokenRequest = new FormUrlEncodedContent(new Dictionary<string, string>
+        using var tokenRequest = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["code"] = code,
             ["client_id"] = clientId,

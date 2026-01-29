@@ -202,5 +202,16 @@ public class CalendarConnectionTests
         Assert.False(connection.IsTokenExpired(bufferMinutes: 1));
     }
 
+    [Fact]
+    public void IsTokenExpired_WithNegativeBuffer_ThrowsArgumentOutOfRangeException()
+    {
+        var connection = CalendarConnection.Create(
+            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken,
+            DateTimeOffset.UtcNow.AddHours(1));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            connection.IsTokenExpired(bufferMinutes: -1));
+    }
+
     #endregion
 }

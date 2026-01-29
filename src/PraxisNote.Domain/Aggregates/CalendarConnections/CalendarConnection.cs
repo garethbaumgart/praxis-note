@@ -112,6 +112,7 @@ public sealed class CalendarConnection : AggregateRoot
     /// <param name="bufferMinutes">Minutes before actual expiry to consider expired.</param>
     public bool IsTokenExpired(int bufferMinutes = 5)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(bufferMinutes, nameof(bufferMinutes));
         return DateTimeOffset.UtcNow >= TokenExpiresAt.AddMinutes(-bufferMinutes);
     }
 }
