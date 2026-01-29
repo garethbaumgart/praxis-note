@@ -1,16 +1,16 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, HostListener, ElementRef, viewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { MeetingService } from './meeting.service';
 import { Meeting } from './meeting.model';
 import { MeetingRowComponent } from './meeting-row.component';
 import { MeetingRowSkeletonComponent } from './meeting-row-skeleton.component';
-import { MeetingEditorComponent } from './meeting-editor.component';
 import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-meetings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, MeetingEditorComponent],
+  imports: [MeetingRowComponent, MeetingRowSkeletonComponent],
   template: `
     <div class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <!-- Header -->
@@ -114,11 +114,6 @@ import { ToastService } from '../shared/services/toast.service';
       }
     </div>
 
-    <!-- Meeting Editor Dialog -->
-    <app-meeting-editor
-      #editor
-      (onSave)="handleSave($event)"
-    />
   `,
   styles: [`
     .day-header {
@@ -133,13 +128,11 @@ import { ToastService } from '../shared/services/toast.service';
 export class MeetingsPage implements OnInit {
   readonly meetingService = inject(MeetingService);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
 
   private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
-  private readonly editorRef = viewChild<MeetingEditorComponent>('editor');
 
   readonly skeletonArray = Array.from({ length: 4 }, (_, i) => i);
-
-  private editingMeeting: Meeting | null = null;
 
   ngOnInit(): void {
     this.meetingService.loadMeetings();
@@ -175,35 +168,11 @@ export class MeetingsPage implements OnInit {
   }
 
   openNewMeeting(): void {
-    this.editingMeeting = null;
-    this.editorRef()?.open();
+    this.router.navigate(['/meetings', 'new']);
   }
 
   openMeeting(meeting: Meeting): void {
-    this.editingMeeting = meeting;
-    this.editorRef()?.open(meeting);
-  }
-
-  handleSave(data: { title?: string; meetingDate?: string; attendees?: string; transcript?: string }): void {
-    if (this.editingMeeting) {
-      this.meetingService.updateMeeting(
-        this.editingMeeting.id,
-        data.title,
-        data.meetingDate,
-        data.attendees
-      );
-      // Handle transcript changes
-      const hadTranscript = !!this.editingMeeting.transcriptContent;
-      const hasTranscript = !!data.transcript;
-      if (hasTranscript && data.transcript !== this.editingMeeting.transcriptContent) {
-        this.meetingService.submitTranscript(this.editingMeeting.id, data.transcript!);
-      } else if (hadTranscript && !hasTranscript) {
-        this.meetingService.clearTranscript(this.editingMeeting.id);
-      }
-    } else {
-      this.meetingService.createMeeting(data.title, data.meetingDate, data.attendees);
-    }
-    this.editingMeeting = null;
+    this.router.navigate(['/meetings', meeting.id]);
   }
 
   deleteMeeting(meeting: Meeting): void {
