@@ -1066,7 +1066,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     } else if (isNewNote) {
       this.editor.commands.clearContent();
-      this.editor.commands.setHeading({ level: 2 });
+      this.editor.commands.setHeading({ level: 1 });
     } else {
       this.editor.commands.clearContent();
     }
@@ -1133,8 +1133,11 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
+    // Save selection before window.prompt() steals focus
     const { from, to } = this.editor.state.selection;
-    if (from === to) {
+    const hasSelection = from !== to;
+
+    if (!hasSelection) {
       const rawUrl = window.prompt('Enter the URL:');
       if (!rawUrl) return;
 
@@ -1150,6 +1153,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.editor
         .chain()
         .focus()
+        .setTextSelection(from)
         .insertContent({
           type: 'text',
           marks: [{ type: 'link', attrs: { href: url } }],
@@ -1166,7 +1170,12 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         return;
       }
 
-      this.editor.chain().focus().setLink({ href: url }).run();
+      this.editor
+        .chain()
+        .focus()
+        .setTextSelection({ from, to })
+        .setLink({ href: url })
+        .run();
     }
   }
 

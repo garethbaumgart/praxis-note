@@ -472,6 +472,15 @@ export class MeetingService {
       groups.get(dateKey)!.push(meeting);
     }
 
+    // Sort meetings within each group by time descending (newest first)
+    for (const meetings of groups.values()) {
+      meetings.sort((a, b) => {
+        const dateA = new Date(a.meetingDate ?? a.createdAt).getTime();
+        const dateB = new Date(b.meetingDate ?? b.createdAt).getTime();
+        return dateB - dateA;
+      });
+    }
+
     // Sort groups by date descending
     const sortedEntries = Array.from(groups.entries()).sort(
       (a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime()
