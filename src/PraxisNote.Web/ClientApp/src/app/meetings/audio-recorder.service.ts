@@ -11,6 +11,7 @@ export class AudioRecorderService implements OnDestroy {
   private chunks: Blob[] = [];
   private timerInterval: ReturnType<typeof setInterval> | null = null;
   private levelAnimationId: number | null = null;
+  private isStarting = false;
 
   readonly state = signal<RecordingState>('idle');
   readonly elapsedSeconds = signal(0);
@@ -33,7 +34,8 @@ export class AudioRecorderService implements OnDestroy {
   }
 
   async start(): Promise<void> {
-    if (this.state() !== 'idle') return;
+    if (this.state() !== 'idle' || this.isStarting) return;
+    this.isStarting = true;
 
     this.error.set(null);
 
@@ -45,6 +47,7 @@ export class AudioRecorderService implements OnDestroy {
       } else {
         this.error.set('Could not access microphone. Please check your audio settings.');
       }
+      this.isStarting = false;
       return;
     }
 
@@ -82,6 +85,8 @@ export class AudioRecorderService implements OnDestroy {
     } catch (err) {
       this.cleanup();
       this.error.set('Failed to start recording. Your browser may not support audio recording.');
+    } finally {
+      this.isStarting = false;
     }
   }
 
@@ -206,7 +211,9 @@ export class AudioRecorderService implements OnDestroy {
     this.stopLevelMetering();
 
     if (this.audioStream) {
-      this.audioStream.getTracks().forEach(track => track.stop());
+      for (const track of this.audioStream.getTracks()) {
+        track.stop();
+      }
       this.audioStream = null;
     }
 
