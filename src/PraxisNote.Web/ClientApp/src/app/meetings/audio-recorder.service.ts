@@ -29,10 +29,12 @@ export class AudioRecorderService implements OnDestroy {
   });
 
   ngOnDestroy(): void {
-    this.stop();
+    this.discard();
   }
 
   async start(): Promise<void> {
+    if (this.state() !== 'idle') return;
+
     this.error.set(null);
 
     try {
@@ -49,18 +51,21 @@ export class AudioRecorderService implements OnDestroy {
     try {
       // Set up Web Audio API for level metering
       this.audioContext = new AudioContext();
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
       const source = this.audioContext.createMediaStreamSource(this.audioStream);
       this.analyserNode = this.audioContext.createAnalyser();
       this.analyserNode.fftSize = 64;
       source.connect(this.analyserNode);
 
-      // Determine best supported mime type
+      // Determine best supported mime type; omit option to let browser use default
       const mimeType = this.getSupportedMimeType();
       this.chunks = [];
 
-      this.mediaRecorder = new MediaRecorder(this.audioStream, {
-        mimeType,
-      });
+      this.mediaRecorder = new MediaRecorder(this.audioStream,
+        mimeType ? { mimeType } : undefined,
+      );
 
       this.mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
@@ -106,7 +111,8 @@ export class AudioRecorderService implements OnDestroy {
 
       this.mediaRecorder.onstop = () => {
         const mimeType = this.mediaRecorder?.mimeType ?? 'audio/webm';
-        const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        const baseMime = mimeType.split(';')[0].toLowerCase();
+        const extension = baseMime.includes('ogg') ? 'ogg' : baseMime.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(this.chunks, { type: mimeType });
         const file = new File([blob], `recording-${Date.now()}.${extension}`, { type: mimeType });
 
@@ -128,7 +134,7 @@ export class AudioRecorderService implements OnDestroy {
     this.cleanup();
   }
 
-  private getSupportedMimeType(): string {
+  private getSupportedMimeType(): string | undefined {
     const types = [
       'audio/webm;codecs=opus',
       'audio/webm',
@@ -140,7 +146,7 @@ export class AudioRecorderService implements OnDestroy {
         return type;
       }
     }
-    return '';
+    return undefined;
   }
 
   private startTimer(): void {

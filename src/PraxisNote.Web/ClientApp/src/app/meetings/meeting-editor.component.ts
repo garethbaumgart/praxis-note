@@ -665,23 +665,29 @@ export class MeetingEditorComponent {
   }
 
   async stopRecording(): Promise<void> {
-    const file = await this.recorder.stop();
-    this.showTabWarning.set(false);
+    try {
+      const file = await this.recorder.stop();
+      this.showTabWarning.set(false);
 
-    if (!file) return;
+      if (!file) return;
 
-    const id = this.meetingId();
-    if (!id) return;
+      const id = this.meetingId();
+      if (!id) return;
 
-    this.audioFileName.set(file.name);
-    this.isTranscribing.set(true);
-    this.meetingService.transcribeAudio(id, file);
+      this.audioFileName.set(file.name);
+      this.isTranscribing.set(true);
+      this.meetingService.transcribeAudio(id, file);
+    } catch {
+      this.showTabWarning.set(false);
+      this.toast.error('Failed to stop recording. Please try again.');
+    }
   }
 
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
     if (this.recorder.isActive()) {
       event.preventDefault();
+      event.returnValue = '';
     }
   }
 
