@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, output, inject, computed, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, output, inject, computed, effect, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { Meeting, ActionItemStatus } from './meeting.model';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingService } from './meeting.service';
+import { AudioRecorderService } from './audio-recorder.service';
 import { ToastService } from '../shared/services/toast.service';
 
 interface DateOption {
@@ -43,6 +44,16 @@ interface TimeOption {
     :host ::ng-deep .p-datepicker {
       border: none;
       background: transparent;
+    }
+    @keyframes pulse-recording {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .recording-pulse {
+      animation: pulse-recording 1.5s ease-in-out infinite;
+    }
+    .audio-bar {
+      transition: height 0.1s ease-out;
     }
   `],
   template: `
@@ -180,6 +191,82 @@ interface TimeOption {
 
         <!-- Transcript (only shown when editing) -->
         @if (isEditing()) {
+          <!-- Audio Recording Section -->
+          @if (recorder.isActive()) {
+            <div class="flex gap-3">
+              <i class="pi pi-microphone text-danger w-5 text-center mt-2" aria-hidden="true"></i>
+              <div class="flex-1 bg-surface-subtle rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 bg-danger rounded-full recording-pulse" aria-hidden="true"></span>
+                    <span class="text-sm font-medium text-foreground">
+                      {{ recorder.isPaused() ? 'Paused' : 'Recording' }}
+                    </span>
+                  </div>
+                  <span class="text-sm text-foreground-muted font-mono" aria-label="Recording duration">{{ recorder.formattedTime() }}</span>
+                </div>
+                <!-- Audio level bars -->
+                <div class="flex items-end gap-0.5 h-8 mb-3" aria-hidden="true">
+                  @for (level of recorder.audioLevels(); track $index) {
+                    <div
+                      class="audio-bar flex-1 rounded-sm"
+                      [class.bg-accent-solid]="level > 0.05"
+                      [class.bg-surface-muted]="level <= 0.05"
+                      [style.height.%]="Math.max(level * 100, 10)"
+                    ></div>
+                  }
+                </div>
+                <div class="flex justify-center gap-2">
+                  @if (recorder.isRecording()) {
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded-md hover:bg-surface-muted/80 transition-colors"
+                      (click)="recorder.pause()"
+                      aria-label="Pause recording"
+                    >
+                      <i class="pi pi-pause mr-1"></i>Pause
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded-md hover:bg-surface-muted/80 transition-colors"
+                      (click)="recorder.resume()"
+                      aria-label="Resume recording"
+                    >
+                      <i class="pi pi-play mr-1"></i>Resume
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="px-3 py-1.5 text-xs bg-danger text-white rounded-md hover:opacity-90 transition-opacity"
+                    (click)="stopRecording()"
+                    aria-label="Stop recording"
+                  >
+                    <i class="pi pi-stop-circle mr-1"></i>Stop
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (recorder.error()) {
+            <div class="flex gap-3">
+              <div class="w-5"></div>
+              <p class="text-xs text-danger">{{ recorder.error() }}</p>
+            </div>
+          }
+
+          <!-- Tab visibility warning -->
+          @if (showTabWarning()) {
+            <div class="flex gap-3">
+              <div class="w-5"></div>
+              <div class="flex items-center gap-2 text-xs text-foreground-muted bg-surface-muted rounded px-3 py-1.5">
+                <i class="pi pi-info-circle text-xs"></i>
+                <span>Keep this tab active for best recording quality.</span>
+              </div>
+            </div>
+          }
+
           <div class="flex gap-3">
             <i class="pi pi-align-left text-foreground-muted w-5 text-center mt-2" aria-hidden="true"></i>
             <div class="flex-1">
@@ -194,13 +281,13 @@ interface TimeOption {
               ></textarea>
               <div class="flex justify-between items-center mt-1">
                 <div class="flex items-center gap-2">
-                  <!-- Audio upload button -->
+                  <!-- Audio controls -->
                   @if (isTranscribing()) {
                     <span class="flex items-center gap-2 text-xs text-foreground-muted">
                       <i class="pi pi-spin pi-spinner text-xs"></i>
                       Transcribing audio...
                     </span>
-                  } @else {
+                  } @else if (!recorder.isActive()) {
                     <input
                       #audioFileInput
                       type="file"
@@ -215,8 +302,18 @@ interface TimeOption {
                       (click)="audioFileInput.click()"
                       aria-label="Upload audio file for Whisper transcription"
                     >
-                      <i class="pi pi-microphone text-xs"></i>
-                      {{ transcript() ? 'Re-transcribe' : 'Transcribe audio' }}
+                      <i class="pi pi-upload text-xs"></i>
+                      Upload audio
+                    </button>
+                    <span class="text-foreground-muted text-xs">|</span>
+                    <button
+                      type="button"
+                      class="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-danger transition-colors"
+                      (click)="startRecording()"
+                      aria-label="Record audio from microphone"
+                    >
+                      <i class="pi pi-circle-fill text-[8px] text-danger"></i>
+                      Record
                     </button>
                   }
                   @if (audioFileName()) {
@@ -270,6 +367,10 @@ export class MeetingEditorComponent {
   private readonly meetingService = inject(MeetingService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  readonly recorder = inject(AudioRecorderService);
+
+  /** Expose Math for template */
+  readonly Math = Math;
 
   readonly visible = signal(false);
   readonly isEditing = signal(false);
@@ -297,6 +398,7 @@ export class MeetingEditorComponent {
   readonly transcript = signal('');
   readonly audioFileName = signal<string | null>(null);
   readonly isTranscribing = signal(false);
+  readonly showTabWarning = signal(false);
 
   // Date selection state
   readonly selectedDateChip = signal<string | null>('Tomorrow');
@@ -501,6 +603,8 @@ export class MeetingEditorComponent {
     this.showDatePicker.set(false);
     this.audioFileName.set(null);
     this.isTranscribing.set(false);
+    this.showTabWarning.set(false);
+    this.recorder.discard();
 
     if (meeting) {
       this.isEditing.set(true);
@@ -551,6 +655,34 @@ export class MeetingEditorComponent {
 
     // Reset file input so the same file can be re-selected
     input.value = '';
+  }
+
+  async startRecording(): Promise<void> {
+    await this.recorder.start();
+    if (this.recorder.isActive()) {
+      this.showTabWarning.set(true);
+    }
+  }
+
+  async stopRecording(): Promise<void> {
+    const file = await this.recorder.stop();
+    this.showTabWarning.set(false);
+
+    if (!file) return;
+
+    const id = this.meetingId();
+    if (!id) return;
+
+    this.audioFileName.set(file.name);
+    this.isTranscribing.set(true);
+    this.meetingService.transcribeAudio(id, file);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.recorder.isActive()) {
+      event.preventDefault();
+    }
   }
 
   analyze(): void {
