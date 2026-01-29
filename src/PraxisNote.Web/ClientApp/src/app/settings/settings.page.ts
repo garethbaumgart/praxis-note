@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, effect } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
@@ -65,11 +65,11 @@ import { ToastService } from '../shared/services/toast.service';
               </div>
             }
 
-            @if (lastSyncResult()) {
+            @if (calendarService.lastSyncResult()) {
               <div class="py-2 px-4 bg-done/20 border border-done/30 rounded-lg">
                 <p class="text-sm text-foreground">
-                  Imported {{ lastSyncResult()!.imported }} new meeting{{ lastSyncResult()!.imported !== 1 ? 's' : '' }},
-                  {{ lastSyncResult()!.skipped }} already existed.
+                  Imported {{ calendarService.lastSyncResult()!.importedCount }} new meeting{{ calendarService.lastSyncResult()!.importedCount !== 1 ? 's' : '' }},
+                  {{ calendarService.lastSyncResult()!.skippedCount }} already existed.
                 </p>
               </div>
             }
@@ -123,7 +123,15 @@ export class SettingsPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
 
-  readonly lastSyncResult = signal<{ imported: number; skipped: number } | null>(null);
+  constructor() {
+    // Show toast when sync completes successfully
+    effect(() => {
+      const result = this.calendarService.lastSyncResult();
+      if (result) {
+        this.toast.success({ summary: 'Calendar synced!' });
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.calendarService.loadConnectionStatus();
@@ -152,18 +160,7 @@ export class SettingsPage implements OnInit {
   }
 
   syncCalendar(): void {
-    this.lastSyncResult.set(null);
     this.calendarService.syncEvents();
-
-    // Listen for sync completion by watching the syncing signal
-    const checkInterval = setInterval(() => {
-      if (!this.calendarService.syncing()) {
-        clearInterval(checkInterval);
-        if (!this.calendarService.error()) {
-          this.toast.success({ summary: 'Calendar synced!' });
-        }
-      }
-    }, 200);
   }
 
   disconnectCalendar(): void {

@@ -10,11 +10,13 @@ export class CalendarService {
   private readonly _loading = signal(false);
   private readonly _syncing = signal(false);
   private readonly _error = signal<string | null>(null);
+  private readonly _lastSyncResult = signal<SyncResult | null>(null);
 
   readonly status = this._status.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly syncing = this._syncing.asReadonly();
   readonly error = this._error.asReadonly();
+  readonly lastSyncResult = this._lastSyncResult.asReadonly();
 
   loadConnectionStatus(): void {
     this._loading.set(true);
@@ -40,13 +42,14 @@ export class CalendarService {
   syncEvents(): void {
     this._syncing.set(true);
     this._error.set(null);
+    this._lastSyncResult.set(null);
 
     this.http.post<SyncResult>('/api/calendar/sync', {}).subscribe({
       next: result => {
         this._syncing.set(false);
+        this._lastSyncResult.set(result);
         // Refresh status to update lastSyncedAt
         this.loadConnectionStatus();
-        return result;
       },
       error: (err) => {
         this._syncing.set(false);

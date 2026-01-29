@@ -1,12 +1,16 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using PraxisNote.Application.Features.Calendar;
+using PraxisNote.Web.Extensions;
 
 namespace PraxisNote.Web.Endpoints;
 
 public static class CalendarEndpoints
 {
+    private const string OAuthStateCookieName = ".CalendarOAuthState";
+
     public static void MapCalendarEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/calendar")
@@ -24,7 +28,7 @@ public static class CalendarEndpoints
         GetCalendarConnectionStatus getStatus,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null) return Results.Unauthorized();
 
         var result = await getStatus.ExecuteAsync(
@@ -48,6 +52,16 @@ public static class CalendarEndpoints
         var request = context.Request;
         var callbackUrl = $"{request.Scheme}://{request.Host}/api/calendar/callback/google";
 
+        // Generate cryptographically random state for CSRF protection
+        var state = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        context.Response.Cookies.Append(OAuthStateCookieName, state, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            MaxAge = TimeSpan.FromMinutes(10)
+        });
+
         // Construct Google OAuth URL with calendar-specific scopes
         var authUrl = QueryHelpers.AddQueryString("https://accounts.google.com/o/oauth2/v2/auth", new Dictionary<string, string?>
         {
@@ -57,7 +71,7 @@ public static class CalendarEndpoints
             ["scope"] = "https://www.googleapis.com/auth/calendar.events.readonly",
             ["access_type"] = "offline",
             ["prompt"] = "consent",
-            ["state"] = "calendar_connect"
+            ["state"] = state
         });
 
         return Results.Redirect(authUrl);
@@ -66,6 +80,7 @@ public static class CalendarEndpoints
     private static async Task<IResult> HandleGoogleCallback(
         HttpContext context,
         IConfiguration configuration,
+        IHttpClientFactory httpClientFactory,
         ConnectGoogleCalendar connectCalendar,
         ILogger<Program> logger,
         CancellationToken cancellationToken)
@@ -84,9 +99,20 @@ public static class CalendarEndpoints
             return Results.Redirect("/settings?error=no_code");
         }
 
+        // Validate CSRF state
+        var returnedState = context.Request.Query["state"].ToString();
+        var expectedState = context.Request.Cookies[OAuthStateCookieName];
+        context.Response.Cookies.Delete(OAuthStateCookieName);
+
+        if (string.IsNullOrEmpty(expectedState) || !string.Equals(returnedState, expectedState, StringComparison.Ordinal))
+        {
+            logger.LogWarning("OAuth state mismatch. Expected: {Expected}, Received: {Received}", expectedState, returnedState);
+            return Results.Redirect("/settings?error=auth_denied");
+        }
+
         // Get user from cookie auth
-        var userIdStr = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+        var userId = context.User.GetUserId();
+        if (userId is null)
         {
             return Results.Redirect("/settings?error=not_authenticated");
         }
@@ -96,7 +122,7 @@ public static class CalendarEndpoints
         var callbackUrl = $"{context.Request.Scheme}://{context.Request.Host}/api/calendar/callback/google";
 
         // Exchange auth code for tokens
-        using var httpClient = new HttpClient();
+        using var httpClient = httpClientFactory.CreateClient();
         var tokenRequest = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["code"] = code,
@@ -115,12 +141,30 @@ public static class CalendarEndpoints
             return Results.Redirect("/settings?error=token_exchange_failed");
         }
 
-        var tokenData = JsonDocument.Parse(tokenJson);
-        var accessToken = tokenData.RootElement.GetProperty("access_token").GetString()!;
-        var refreshToken = tokenData.RootElement.TryGetProperty("refresh_token", out var rt)
-            ? rt.GetString()
-            : null;
-        var expiresIn = tokenData.RootElement.GetProperty("expires_in").GetInt32();
+        string? accessToken;
+        string? refreshToken;
+        int expiresIn;
+
+        try
+        {
+            using var tokenData = JsonDocument.Parse(tokenJson);
+            accessToken = tokenData.RootElement.GetProperty("access_token").GetString();
+            refreshToken = tokenData.RootElement.TryGetProperty("refresh_token", out var rt)
+                ? rt.GetString()
+                : null;
+            expiresIn = tokenData.RootElement.GetProperty("expires_in").GetInt32();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to parse Google token response");
+            return Results.Redirect("/settings?error=token_exchange_failed");
+        }
+
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            logger.LogError("No access token received from Google");
+            return Results.Redirect("/settings?error=token_exchange_failed");
+        }
 
         if (string.IsNullOrEmpty(refreshToken))
         {
@@ -130,13 +174,13 @@ public static class CalendarEndpoints
 
         await connectCalendar.ExecuteAsync(
             new ConnectGoogleCalendar.Command(
-                userId,
+                userId.Value,
                 accessToken,
                 refreshToken,
                 DateTimeOffset.UtcNow.AddSeconds(expiresIn)),
             cancellationToken);
 
-        logger.LogInformation("User {UserId} connected Google Calendar", userId);
+        logger.LogInformation("User {UserId} connected Google Calendar", userId.Value);
         return Results.Redirect("/settings?connected=true");
     }
 
@@ -145,7 +189,7 @@ public static class CalendarEndpoints
         SyncCalendarEvents syncEvents,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null) return Results.Unauthorized();
 
         try
@@ -167,7 +211,7 @@ public static class CalendarEndpoints
         DisconnectGoogleCalendar disconnectCalendar,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
+        var userId = user.GetUserId();
         if (userId is null) return Results.Unauthorized();
 
         await disconnectCalendar.ExecuteAsync(
@@ -175,11 +219,5 @@ public static class CalendarEndpoints
             cancellationToken);
 
         return Results.Ok(new { message = "Calendar disconnected" });
-    }
-
-    private static Guid? GetUserId(ClaimsPrincipal user)
-    {
-        var userIdStr = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        return Guid.TryParse(userIdStr, out var userId) ? userId : null;
     }
 }
