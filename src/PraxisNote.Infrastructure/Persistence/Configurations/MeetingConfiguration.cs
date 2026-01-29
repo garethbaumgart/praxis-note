@@ -23,6 +23,9 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.Attendees)
             .HasMaxLength(2000);
 
+        builder.Property(m => m.CalendarEventId)
+            .HasMaxLength(500);
+
         builder.Property(m => m.Status)
             .HasConversion<string>()
             .HasMaxLength(50)
@@ -91,6 +94,11 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
 
         // Index for querying by date (for daily grouped list)
         builder.HasIndex(m => m.MeetingDate);
+
+        // Unique filtered index for calendar event deduplication
+        builder.HasIndex(m => new { m.UserId, m.CalendarEventId })
+            .IsUnique()
+            .HasFilter("\"CalendarEventId\" IS NOT NULL");
 
         builder.Ignore(m => m.DomainEvents);
     }

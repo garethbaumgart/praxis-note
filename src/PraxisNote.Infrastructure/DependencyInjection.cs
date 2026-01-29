@@ -2,8 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Common;
+using PraxisNote.Application.Features.Calendar;
+using PraxisNote.Application.Features.Calendar.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Notifications;
@@ -40,9 +43,12 @@ public static class DependencyInjection
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<INoteRepository, NoteRepository>();
         services.AddScoped<IMeetingRepository, MeetingRepository>();
+        services.AddScoped<ICalendarConnectionRepository, CalendarConnectionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
 
         // External services
+        services.Configure<GoogleCalendarSettings>(configuration.GetSection(GoogleCalendarSettings.SectionName));
+        services.AddScoped<ICalendarService, GoogleCalendarService>();
         services.Configure<MeetingAnalysisSettings>(configuration.GetSection(MeetingAnalysisSettings.SectionName));
         services.AddScoped<IMeetingAnalyzer, ClaudeMeetingAnalyzer>();
 

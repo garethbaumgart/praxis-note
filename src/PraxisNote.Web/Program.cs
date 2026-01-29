@@ -221,6 +221,7 @@ app.MapNoteTagEndpoints();
 app.MapMeetingEndpoints();
 app.MapMeetingTagEndpoints();
 app.MapNotificationEndpoints();
+app.MapCalendarEndpoints();
 
 // SPA fallback - serves index.html for client-side routing
 if (angularAppExists)
