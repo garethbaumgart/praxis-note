@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Notes;
 using PraxisNote.Application.Features.Notes.Services;
+using PraxisNote.Application.Features.Calendar;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
@@ -77,6 +78,12 @@ public static class DependencyInjection
         services.AddScoped<ToggleActionItem>();
         services.AddScoped<PromoteActionItemToTask>();
         services.AddScoped<GetActionItemStatus>();
+
+        // Calendar use cases
+        services.AddScoped<ConnectGoogleCalendar>();
+        services.AddScoped<DisconnectGoogleCalendar>();
+        services.AddScoped<GetCalendarConnectionStatus>();
+        services.AddScoped<SyncCalendarEvents>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();

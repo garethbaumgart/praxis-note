@@ -6,4 +6,5 @@ public interface IMeetingRepository
     Task<IReadOnlyList<Meeting>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task AddAsync(Meeting meeting, CancellationToken cancellationToken = default);
     void Remove(Meeting meeting);
+    Task<HashSet<string>> GetExistingCalendarEventIdsAsync(Guid userId, IEnumerable<string> eventIds, CancellationToken cancellationToken = default);
 }

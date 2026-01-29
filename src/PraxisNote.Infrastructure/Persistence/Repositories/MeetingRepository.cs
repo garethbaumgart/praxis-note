@@ -27,4 +27,15 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
     {
         context.Meetings.Remove(meeting);
     }
+
+    public async Task<HashSet<string>> GetExistingCalendarEventIdsAsync(Guid userId, IEnumerable<string> eventIds, CancellationToken cancellationToken = default)
+    {
+        var eventIdList = eventIds.ToList();
+        var existing = await context.Meetings
+            .Where(m => m.UserId == userId && m.CalendarEventId != null && eventIdList.Contains(m.CalendarEventId))
+            .Select(m => m.CalendarEventId!)
+            .ToListAsync(cancellationToken);
+
+        return existing.ToHashSet();
+    }
 }

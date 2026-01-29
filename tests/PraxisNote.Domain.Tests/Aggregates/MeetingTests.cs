@@ -1368,6 +1368,66 @@ public class MeetingTests
 
     #endregion
 
+    #region CreateFromCalendar Tests
+
+    [Fact]
+    public void CreateFromCalendar_WithValidInputs_CreatesMeetingWithCalendarEventId()
+    {
+        // Arrange
+        var calendarEventId = "google_event_abc123";
+        var meetingDate = DateTimeOffset.UtcNow.AddHours(2);
+
+        // Act
+        var meeting = Meeting.CreateFromCalendar(_validUserId, _validTitle, meetingDate, _validAttendees, calendarEventId);
+
+        // Assert
+        Assert.NotEqual(Guid.Empty, meeting.Id);
+        Assert.Equal(_validUserId, meeting.UserId);
+        Assert.Equal(_validTitle, meeting.Title);
+        Assert.Equal(meetingDate, meeting.MeetingDate);
+        Assert.Equal(_validAttendees, meeting.Attendees);
+        Assert.Equal(calendarEventId, meeting.CalendarEventId);
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+    }
+
+    [Fact]
+    public void CreateFromCalendar_TrimsCalendarEventId()
+    {
+        // Act
+        var meeting = Meeting.CreateFromCalendar(_validUserId, _validTitle, null, null, "  event_123  ");
+
+        // Assert
+        Assert.Equal("event_123", meeting.CalendarEventId);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CreateFromCalendar_WithInvalidCalendarEventId_ThrowsArgumentException(string? eventId)
+    {
+        Assert.ThrowsAny<ArgumentException>(() =>
+            Meeting.CreateFromCalendar(_validUserId, _validTitle, null, null, eventId!));
+    }
+
+    [Fact]
+    public void CreateFromCalendar_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Meeting.CreateFromCalendar(Guid.Empty, _validTitle, null, null, "event_123"));
+    }
+
+    [Fact]
+    public void Create_RegularMeeting_HasNullCalendarEventId()
+    {
+        // Verify regular Create method does not set CalendarEventId
+        var meeting = Meeting.Create(_validUserId, _validTitle);
+
+        Assert.Null(meeting.CalendarEventId);
+    }
+
+    #endregion
+
     #region ActionItem Value Object Tests
 
     [Fact]

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Notifications;
@@ -17,6 +18,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<Meeting> Meetings => Set<Meeting>();
+    public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
     public DbSet<FeatureNotification> FeatureNotifications => Set<FeatureNotification>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 

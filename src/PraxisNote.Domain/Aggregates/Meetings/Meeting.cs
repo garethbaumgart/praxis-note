@@ -38,6 +38,12 @@ public sealed class Meeting : AggregateRoot
     public string? Attendees { get; private set; }
 
     /// <summary>
+    /// External calendar event ID for deduplication during calendar sync.
+    /// Null for manually created meetings.
+    /// </summary>
+    public string? CalendarEventId { get; private init; }
+
+    /// <summary>
     /// Current status in the processing pipeline.
     /// </summary>
     public MeetingStatus Status { get; private set; }
@@ -121,6 +127,29 @@ public sealed class Meeting : AggregateRoot
     public static Meeting Create(Guid userId, string? title = null, DateTimeOffset? meetingDate = null, string? attendees = null)
     {
         return new Meeting(Guid.NewGuid(), userId, title, meetingDate, attendees);
+    }
+
+    /// <summary>
+    /// Creates a meeting imported from an external calendar event.
+    /// </summary>
+    /// <param name="userId">The user who owns this meeting.</param>
+    /// <param name="title">The calendar event title.</param>
+    /// <param name="meetingDate">The calendar event start time.</param>
+    /// <param name="attendees">Comma-separated attendee names.</param>
+    /// <param name="calendarEventId">The external calendar event ID for deduplication.</param>
+    public static Meeting CreateFromCalendar(
+        Guid userId,
+        string? title,
+        DateTimeOffset? meetingDate,
+        string? attendees,
+        string calendarEventId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(calendarEventId, nameof(calendarEventId));
+
+        return new Meeting(Guid.NewGuid(), userId, title, meetingDate, attendees)
+        {
+            CalendarEventId = calendarEventId.Trim()
+        };
     }
 
     /// <summary>

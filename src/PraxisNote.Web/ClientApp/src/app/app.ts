@@ -1,5 +1,5 @@
 import { Component, inject, signal, effect, ChangeDetectionStrategy } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { Toast } from 'primeng/toast';
 import { AuthService } from './auth';
 import { MockAuthToolbarComponent } from './auth/mock-auth-toolbar.component';
@@ -20,6 +20,7 @@ export class App {
   protected readonly auth = inject(AuthService);
   protected readonly notificationService = inject(NotificationService);
   private readonly themeService = inject(ThemeService); // Initialize theme detection at app startup
+  private readonly router = inject(Router);
   protected readonly sidebarOpen = signal(false);
   protected readonly notificationPanelOpen = signal(false);
 
@@ -52,5 +53,9 @@ export class App {
 
   logout(): void {
     this.auth.logout();
+  }
+
+  goToSettings(): void {
+    this.router.navigate(['/settings']);
   }
 }
