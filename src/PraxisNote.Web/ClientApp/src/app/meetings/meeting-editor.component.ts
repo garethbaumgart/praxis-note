@@ -677,8 +677,9 @@ export class MeetingEditorComponent {
       this.audioFileName.set(file.name);
       this.isTranscribing.set(true);
       this.meetingService.transcribeAudio(id, file);
-    } catch {
+    } catch (error) {
       this.showTabWarning.set(false);
+      console.error('Failed to stop audio recording:', error);
       this.toast.error('Failed to stop recording. Please try again.');
     }
   }

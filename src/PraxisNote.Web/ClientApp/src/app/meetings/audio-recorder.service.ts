@@ -12,6 +12,7 @@ export class AudioRecorderService implements OnDestroy {
   private timerInterval: ReturnType<typeof setInterval> | null = null;
   private levelAnimationId: number | null = null;
   private isStarting = false;
+  private startToken = 0;
 
   readonly state = signal<RecordingState>('idle');
   readonly elapsedSeconds = signal(0);
@@ -36,11 +37,13 @@ export class AudioRecorderService implements OnDestroy {
   async start(): Promise<void> {
     if (this.state() !== 'idle' || this.isStarting) return;
     this.isStarting = true;
+    const token = ++this.startToken;
 
     this.error.set(null);
 
+    let stream: MediaStream;
     try {
-      this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
         this.error.set('Microphone access denied. Please allow microphone permissions and try again.');
@@ -50,6 +53,17 @@ export class AudioRecorderService implements OnDestroy {
       this.isStarting = false;
       return;
     }
+
+    // If discard() was called while waiting for permission, release the stream
+    if (token !== this.startToken) {
+      for (const track of stream.getTracks()) {
+        track.stop();
+      }
+      this.isStarting = false;
+      return;
+    }
+
+    this.audioStream = stream;
 
     try {
       // Set up Web Audio API for level metering
@@ -115,7 +129,7 @@ export class AudioRecorderService implements OnDestroy {
       }
 
       this.mediaRecorder.onstop = () => {
-        const mimeType = this.mediaRecorder?.mimeType ?? 'audio/webm';
+        const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
         const baseMime = mimeType.split(';')[0].toLowerCase();
         const extension = baseMime.includes('ogg') ? 'ogg' : baseMime.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(this.chunks, { type: mimeType });
@@ -131,6 +145,7 @@ export class AudioRecorderService implements OnDestroy {
 
   /** Discard the recording without producing a file */
   discard(): void {
+    this.startToken++;
     if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
       // Override onstop to prevent file creation
       this.mediaRecorder.onstop = () => {};
