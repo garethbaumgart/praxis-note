@@ -1444,11 +1444,12 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
   onDatePickerChange(date: Date | null): void {
     if (!date) return;
+    const newDate = new Date(date);
     const currentDate = this.meetingDate();
     if (currentDate) {
-      date.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
+      newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
     }
-    this.meetingDate.set(date);
+    this.meetingDate.set(newDate);
     this.selectedDateChip.set('custom');
     this.customDateLabel.set(this.formatDateLabel(date));
     this.showDatePicker.set(false);
@@ -1570,25 +1571,29 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
     this.promotingIds.update(ids => new Set([...ids, actionItemId]));
 
-    this.meetingService.promoteActionItem(id, actionItemId).subscribe({
-      next: result => {
-        this.toast.success({ summary: 'Task created', detail: result.title });
-        this.loadActionItemStatuses();
-        this.promotingIds.update(ids => {
-          const newSet = new Set(ids);
-          newSet.delete(actionItemId);
-          return newSet;
-        });
-      },
-      error: () => {
-        this.toast.error('Failed to promote action item');
-        this.promotingIds.update(ids => {
-          const newSet = new Set(ids);
-          newSet.delete(actionItemId);
-          return newSet;
-        });
-      },
-    });
+    this.meetingService.promoteActionItem(id, actionItemId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: result => {
+          if (this.meetingId() !== id) return;
+          this.toast.success({ summary: 'Task created', detail: result.title });
+          this.loadActionItemStatuses();
+          this.promotingIds.update(ids => {
+            const newSet = new Set(ids);
+            newSet.delete(actionItemId);
+            return newSet;
+          });
+        },
+        error: () => {
+          if (this.isDestroyed) return;
+          this.toast.error('Failed to promote action item');
+          this.promotingIds.update(ids => {
+            const newSet = new Set(ids);
+            newSet.delete(actionItemId);
+            return newSet;
+          });
+        },
+      });
   }
 
   navigateToTask(taskId: string): void {
