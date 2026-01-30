@@ -1,10 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 import { BehavioralTrends, DateRange } from './insights.model';
 
 @Injectable({ providedIn: 'root' })
 export class InsightsService {
   private readonly http = inject(HttpClient);
+  private pendingRequest?: Subscription;
 
   private readonly _trends = signal<BehavioralTrends | null>(null);
   private readonly _loading = signal(false);
@@ -29,6 +31,7 @@ export class InsightsService {
   }
 
   loadTrends(): void {
+    this.pendingRequest?.unsubscribe();
     this._loading.set(true);
     this._error.set(null);
 
@@ -38,7 +41,7 @@ export class InsightsService {
       url += `&participant=${encodeURIComponent(participant)}`;
     }
 
-    this.http.get<BehavioralTrends>(url).subscribe({
+    this.pendingRequest = this.http.get<BehavioralTrends>(url).subscribe({
       next: data => {
         this._trends.set(data);
         this._loading.set(false);

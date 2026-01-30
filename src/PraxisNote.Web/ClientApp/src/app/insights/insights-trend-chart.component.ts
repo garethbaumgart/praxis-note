@@ -1,4 +1,5 @@
-import { Component, computed, input, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, computed, input, ChangeDetectionStrategy, inject, PLATFORM_ID } from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { UIChart } from 'primeng/chart';
 import { Tooltip } from 'primeng/tooltip';
 import { TrendDataPoint } from './insights.model';
@@ -25,6 +26,8 @@ import { ThemeService } from '../shared/theme.service';
 })
 export class InsightsTrendChartComponent {
   private readonly themeService = inject(ThemeService);
+  private readonly document = inject(DOCUMENT);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly title = input.required<string>();
   readonly infoText = input.required<string>();
@@ -38,24 +41,28 @@ export class InsightsTrendChartComponent {
     this.themeService.theme();
 
     const points = this.dataPoints();
+    const type = this.chartType();
     const color = this.getThemeColor(this.colorVar());
     const fillColor = this.getThemeColor(this.fillColorVar());
 
+    const dataset: Record<string, unknown> = {
+      data: points.map(p => p.value),
+      borderColor: color,
+      backgroundColor: fillColor,
+      borderWidth: 2,
+    };
+
+    if (type === 'line') {
+      dataset['fill'] = true;
+      dataset['tension'] = 0.3;
+      dataset['pointRadius'] = 3;
+      dataset['pointHoverRadius'] = 5;
+      dataset['pointBackgroundColor'] = color;
+    }
+
     return {
       labels: points.map(p => this.formatDate(p.date)),
-      datasets: [
-        {
-          data: points.map(p => p.value),
-          borderColor: color,
-          backgroundColor: fillColor,
-          fill: this.chartType() === 'line',
-          borderWidth: 2,
-          tension: 0.3,
-          pointRadius: 3,
-          pointHoverRadius: 5,
-          pointBackgroundColor: color,
-        },
-      ],
+      datasets: [dataset],
     };
   });
 
@@ -95,12 +102,14 @@ export class InsightsTrendChartComponent {
   });
 
   private getThemeColor(varName: string): string {
-    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || '#5e81ac';
+    if (!isPlatformBrowser(this.platformId)) return '#5e81ac';
+    return getComputedStyle(this.document.documentElement).getPropertyValue(varName).trim() || '#5e81ac';
   }
 
   private formatDate(dateStr: string): string {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const locale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : undefined;
+    return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
   }
 }

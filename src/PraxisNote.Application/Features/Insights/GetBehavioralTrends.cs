@@ -6,12 +6,12 @@ namespace PraxisNote.Application.Features.Insights;
 
 public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
 {
+    public static readonly string[] ValidRanges = ["7d", "30d", "90d", "all"];
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNameCaseInsensitive = true
     };
-
-    private static readonly string[] ValidRanges = ["7d", "30d", "90d", "all"];
 
     public record Query(Guid UserId, string Range, string? ParticipantName = null);
 
@@ -123,12 +123,15 @@ public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
                 .ToList();
             redFlagTotalPoints.Add(new TrendDataPoint(date, participantFlags.Count, label));
 
-            foreach (var flag in participantFlags)
+            foreach (var group in participantFlags.GroupBy(f => f.Type, StringComparer.OrdinalIgnoreCase))
             {
-                var type = flag.Type.ToLowerInvariant();
-                if (!redFlagByType.ContainsKey(type))
-                    redFlagByType[type] = [];
-                redFlagByType[type].Add(new TrendDataPoint(date, 1, label));
+                var type = group.Key.ToLowerInvariant();
+                if (!redFlagByType.TryGetValue(type, out var series))
+                {
+                    series = [];
+                    redFlagByType[type] = series;
+                }
+                series.Add(new TrendDataPoint(date, group.Count(), label));
             }
 
             // Engagement
@@ -229,7 +232,8 @@ public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
         var firstHalf = points.Take(mid).Average(p => p.Value);
         var secondHalf = points.Skip(mid).Average(p => p.Value);
 
-        if (firstHalf == 0) return secondHalf > 0 ? 100 : 0;
+        const double epsilon = 1e-6;
+        if (Math.Abs(firstHalf) < epsilon) return secondHalf > 0 ? 100 : 0;
 
         return Math.Round(((secondHalf - firstHalf) / firstHalf) * 100, 1);
     }
