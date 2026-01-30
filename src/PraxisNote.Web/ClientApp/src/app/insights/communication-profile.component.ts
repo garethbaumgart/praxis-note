@@ -201,18 +201,17 @@ export class CommunicationProfileComponent {
   protected readonly profileService = inject(CommunicationProfileService);
   protected readonly insightsService = inject(InsightsService);
 
-  // Hexagon axis endpoints (6 vertices at 60-degree intervals starting from top)
-  protected readonly axisEndpoints = [
-    { x: 0, y: -100 },      // Top (0°)
-    { x: 86.6, y: -50 },    // Top-right (60°)
-    { x: 86.6, y: 50 },     // Bottom-right (120°)
-    { x: 0, y: 100 },       // Bottom (180°)
-    { x: -86.6, y: 50 },    // Bottom-left (240°)
-    { x: -86.6, y: -50 },   // Top-left (300°)
-  ];
-
   // Archetype order for radar chart (matches axis positions)
   private readonly archetypeOrder = ['Facilitator', 'Challenger', 'Driver', 'Supporter', 'Mediator', 'Observer'];
+
+  // Hexagon axis endpoints derived from the same formula as hexagonPoints/dataPoints
+  protected readonly axisEndpoints = this.archetypeOrder.map((_, i) => {
+    const angle = (Math.PI / 2) + (i * 2 * Math.PI / 6);
+    return {
+      x: Math.round(100 * Math.cos(angle) * 10) / 10,
+      y: Math.round(-100 * Math.sin(angle) * 10) / 10,
+    };
+  });
 
   protected readonly meetingsRemaining = computed(() => {
     const profile = this.profileService.profile();

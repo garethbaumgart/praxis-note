@@ -393,7 +393,13 @@ public sealed class GetCommunicationProfileTests
 
         Assert.Equal(3, strengths.Count);
         Assert.Contains("Balanced airtime", strengths);
+        Assert.Contains("Thoughtful questions", strengths);
+        Assert.Contains("High engagement", strengths);
+        // Growth areas should be based on the weakest archetype (Driver, score 25)
         Assert.Equal(3, growth.Count);
+        Assert.Contains("Take more initiative", growth);
+        Assert.Contains("Share direct opinions", growth);
+        Assert.Contains("Drive decisions", growth);
     }
 
     [Fact]
@@ -416,13 +422,13 @@ public sealed class GetCommunicationProfileTests
     }
 
     [Theory]
-    [InlineData("Facilitator")]
-    [InlineData("Driver")]
-    [InlineData("Observer")]
-    [InlineData("Mediator")]
-    [InlineData("Challenger")]
-    [InlineData("Supporter")]
-    public void DetermineStrengthsAndGrowth_AllArchetypes_ReturnNonEmpty(string archetype)
+    [InlineData("Facilitator", "Balanced airtime")]
+    [InlineData("Driver", "Clear direction")]
+    [InlineData("Observer", "Active listening")]
+    [InlineData("Mediator", "Conflict resolution")]
+    [InlineData("Challenger", "Critical thinking")]
+    [InlineData("Supporter", "Encouraging tone")]
+    public void DetermineStrengthsAndGrowth_AllArchetypes_ReturnExpectedStrength(string archetype, string expectedStrength)
     {
         var scores = new List<ArchetypeScoreDto>
         {
@@ -432,7 +438,8 @@ public sealed class GetCommunicationProfileTests
 
         var (strengths, growth) = GetCommunicationProfile.DetermineStrengthsAndGrowth(scores, archetype);
 
-        Assert.NotEmpty(strengths);
+        Assert.Equal(3, strengths.Count);
+        Assert.Contains(expectedStrength, strengths);
         Assert.NotEmpty(growth);
     }
 

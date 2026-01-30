@@ -325,8 +325,6 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
     internal static (List<string> Strengths, List<string> GrowthAreas) DetermineStrengthsAndGrowth(
         List<ArchetypeScoreDto> scores, string primaryArchetype)
     {
-        var scoreMap = scores.ToDictionary(s => s.Name, s => s.Score);
-
         var strengths = primaryArchetype switch
         {
             "Facilitator" => new List<string> { "Balanced airtime", "Thoughtful questions", "High engagement" },
