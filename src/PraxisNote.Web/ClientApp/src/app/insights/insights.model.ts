@@ -91,6 +91,32 @@ export interface GoalPreset {
   description: string;
 }
 
+export interface CommunicationProfile {
+  primaryArchetype: string;
+  primaryDescription: string;
+  secondaryArchetype: string | null;
+  styleConsistency: number;
+  meetingCount: number;
+  minimumMeetings: number;
+  hasEnoughData: boolean;
+  scores: ArchetypeScore[];
+  contextShifts: ContextShift[];
+  strengths: string[];
+  growthAreas: string[];
+}
+
+export interface ArchetypeScore {
+  name: string;
+  score: number;
+}
+
+export interface ContextShift {
+  context: string;
+  icon: string;
+  archetype: string;
+  description: string;
+}
+
 export const GOAL_PRESETS: GoalPreset[] = [
   {
     title: 'Keep talk time under 50%',

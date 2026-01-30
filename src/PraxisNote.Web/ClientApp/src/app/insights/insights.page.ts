@@ -6,13 +6,14 @@ import { InsightsService } from './insights.service';
 import { InsightsSummaryCardsComponent } from './insights-summary-cards.component';
 import { InsightsTrendChartComponent } from './insights-trend-chart.component';
 import { GoalsSectionComponent } from './goals-section.component';
+import { CommunicationProfileComponent } from './communication-profile.component';
 import { DateRange } from './insights.model';
 
 @Component({
   selector: 'app-insights-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent],
+  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, CommunicationProfileComponent],
   template: `
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
       <!-- Header -->
@@ -71,11 +72,19 @@ import { DateRange } from './insights.model';
           </p>
         </div>
 
+        <!-- Communication Profile (always visible) -->
+        <app-communication-profile />
+
         <!-- Goals Section (always visible) -->
         <app-goals-section />
       } @else {
         <!-- Summary Cards -->
         <app-insights-summary-cards [summary]="insightsService.trends()!.summary" />
+
+        <!-- Communication Profile -->
+        <div class="mt-6">
+          <app-communication-profile />
+        </div>
 
         <!-- Goals Section -->
         <div class="mt-6">

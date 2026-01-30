@@ -16,6 +16,7 @@ public static class InsightEndpoints
 
         group.MapGet("/behavioral-trends", (Delegate)HandleGetBehavioralTrends);
         group.MapGet("/summary", (Delegate)HandleGetInsightsSummary);
+        group.MapGet("/communication-profile", (Delegate)HandleGetCommunicationProfile);
 
         group.MapGet("/goals", (Delegate)HandleGetGoals);
         group.MapGet("/goals/progress", (Delegate)HandleGetGoalProgress);
@@ -62,6 +63,30 @@ public static class InsightEndpoints
 
         var query = new GetInsightsSummary.Query(userId.Value);
         var result = await getInsightsSummary.ExecuteAsync(query, cancellationToken);
+
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> HandleGetCommunicationProfile(
+        ClaimsPrincipal user,
+        [FromQuery] string? range,
+        [FromServices] GetCommunicationProfile getCommunicationProfile,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var effectiveRange = range ?? "90d";
+        if (!GetBehavioralTrends.ValidRanges.Contains(effectiveRange, StringComparer.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
+        }
+
+        var query = new GetCommunicationProfile.Query(userId.Value, effectiveRange);
+        var result = await getCommunicationProfile.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
     }

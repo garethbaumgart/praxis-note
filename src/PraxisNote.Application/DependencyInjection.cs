@@ -92,6 +92,7 @@ public static class DependencyInjection
         // Insight use cases
         services.AddScoped<GetBehavioralTrends>();
         services.AddScoped<GetInsightsSummary>();
+        services.AddScoped<GetCommunicationProfile>();
 
         // Goal use cases
         services.AddScoped<CreateBehavioralGoal>();
