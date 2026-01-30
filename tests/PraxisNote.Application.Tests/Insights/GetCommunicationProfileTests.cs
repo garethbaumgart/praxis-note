@@ -212,9 +212,10 @@ public sealed class GetCommunicationProfileTests
 
         var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
 
-        // Secondary can be null if second-highest is below 30
-        // We won't assert null here since actual scoring may vary, but we verify it's handled
         Assert.True(result.HasEnoughData);
+        var secondScore = result.Scores[1].Score;
+        Assert.True(secondScore < 30 ? result.SecondaryArchetype is null : result.SecondaryArchetype is not null,
+            $"Secondary archetype should be null when second score ({secondScore}) < 30, or non-null when >= 30");
     }
 
     #endregion

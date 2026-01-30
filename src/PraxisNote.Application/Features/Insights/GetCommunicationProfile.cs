@@ -269,7 +269,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
 
         var shifts = new List<ContextShiftDto>();
 
-        if (oneOnOne.Count >= 2)
+        if (oneOnOne.Count >= 3)
         {
             var scores = CalculateArchetypeScores(oneOnOne, targetParticipant);
             var dominant = scores.OrderByDescending(s => s.Score).First();
@@ -280,7 +280,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
                 GetContextShiftDescription(dominant.Name, "1:1")));
         }
 
-        if (smallGroup.Count >= 2)
+        if (smallGroup.Count >= 3)
         {
             var scores = CalculateArchetypeScores(smallGroup, targetParticipant);
             var dominant = scores.OrderByDescending(s => s.Score).First();
@@ -291,7 +291,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
                 GetContextShiftDescription(dominant.Name, "team")));
         }
 
-        if (largeGroup.Count >= 2)
+        if (largeGroup.Count >= 3)
         {
             var scores = CalculateArchetypeScores(largeGroup, targetParticipant);
             var dominant = scores.OrderByDescending(s => s.Score).First();
@@ -411,7 +411,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
             {
                 var engagement = ma.Analysis.CommunicationPatterns.EngagementLevels
                     .FirstOrDefault(el => string.Equals(el.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase));
-                return engagement?.Level.ToLowerInvariant() switch
+                return engagement?.Level?.ToLowerInvariant() switch
                 {
                     "high" => 3.0,
                     "medium" => 2.0,
