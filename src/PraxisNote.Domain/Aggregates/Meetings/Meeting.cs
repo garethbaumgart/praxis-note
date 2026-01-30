@@ -88,6 +88,17 @@ public sealed class Meeting : AggregateRoot
     public IReadOnlyCollection<ActionItem> ActionItems => _actionItems.AsReadOnly();
 
     /// <summary>
+    /// User's self-reflection data stored as JSON object containing self-assessments
+    /// and prompt responses. Used to build the Johari Window.
+    /// </summary>
+    public string? ReflectionData { get; private set; }
+
+    /// <summary>
+    /// When the user submitted their post-meeting reflection.
+    /// </summary>
+    public DateTimeOffset? ReflectionSubmittedAt { get; private set; }
+
+    /// <summary>
     /// When this meeting was created.
     /// </summary>
     public DateTimeOffset CreatedAt { get; private init; }
@@ -326,6 +337,28 @@ public sealed class Meeting : AggregateRoot
         _actionItems.Clear();
         UpdateStatus(MeetingStatus.Draft);
     }
+
+    #region Reflection
+
+    /// <summary>
+    /// Whether this meeting has a completed self-reflection.
+    /// </summary>
+    public bool HasReflection => ReflectionData is not null;
+
+    /// <summary>
+    /// Submits or updates the user's post-meeting reflection.
+    /// </summary>
+    /// <param name="reflectionJson">JSON object containing reflection data.</param>
+    public void SubmitReflection(string reflectionJson)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reflectionJson, nameof(reflectionJson));
+
+        ReflectionData = reflectionJson.Trim();
+        ReflectionSubmittedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    #endregion
 
     #region Tag Management
 

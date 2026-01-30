@@ -13,6 +13,8 @@ public record MeetingDto(
     string? KeyPoints,
     string? Decisions,
     string? BehavioralAnalysis,
+    string? ReflectionData,
+    DateTimeOffset? ReflectionSubmittedAt,
     IReadOnlyList<MeetingTagDto> Tags,
     IReadOnlyList<ActionItemDto> ActionItems,
     DateTimeOffset CreatedAt,
@@ -26,3 +28,22 @@ public record ActionItemDto(
     string? Assignee,
     bool IsCompleted,
     DateTimeOffset CreatedAt);
+
+public record ReflectionPromptDto(
+    string PromptId,
+    string Category,
+    string PromptText,
+    IReadOnlyList<string> QuickOptions);
+
+public record ReflectionDto(
+    int? SelfAssessedTalkTime,
+    string? SelfAssessedEngagement,
+    string? SelfAssessedTone,
+    string? InterruptionAwareness,
+    string? FreeformReflection,
+    IReadOnlyList<PromptResponseDto> PromptResponses);
+
+public record PromptResponseDto(
+    string PromptId,
+    string PromptText,
+    string Response);

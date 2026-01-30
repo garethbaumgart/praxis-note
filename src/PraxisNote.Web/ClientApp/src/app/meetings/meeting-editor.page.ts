@@ -21,6 +21,7 @@ import { SelectModule } from 'primeng/select';
 import { Meeting, MeetingTag, ActionItemStatus } from './meeting.model';
 import { MeetingService } from './meeting.service';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
+import { MeetingReflectionComponent } from './meeting-reflection.component';
 import { AudioRecorderService } from './audio-recorder.service';
 import { ToastService } from '../shared/services/toast.service';
 import { TagService } from '../tasks/tag.service';
@@ -40,7 +41,7 @@ interface TimeOption {
   selector: 'app-meeting-editor-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DatePickerModule, SelectModule, MeetingAnalysisComponent],
+  imports: [FormsModule, DatePickerModule, SelectModule, MeetingAnalysisComponent, MeetingReflectionComponent],
   template: `
     <div class="meeting-editor-page">
       <!-- Header bar -->
@@ -352,6 +353,18 @@ interface TimeOption {
                   </div>
                 }
               </div>
+
+              <!-- Reflection Section - Purple border -->
+              @if (currentMeeting()?.behavioralAnalysis) {
+                <div class="section-card reflection-card">
+                  <div class="section-header reflection-header">
+                    <span><i class="pi pi-comments"></i> Self-Reflection</span>
+                  </div>
+                  <app-meeting-reflection
+                    [meeting]="currentMeeting()!"
+                  />
+                </div>
+              }
             }
           </div>
         }
@@ -626,6 +639,10 @@ interface TimeOption {
       border-left: 3px solid var(--color-meeting-analysis-border);
     }
 
+    .reflection-card {
+      border-left: 3px solid var(--color-meeting-reflection-border);
+    }
+
     /* Section headers */
     .section-header {
       font-size: 12px;
@@ -647,6 +664,10 @@ interface TimeOption {
 
     .analysis-header {
       color: var(--color-done-text);
+    }
+
+    .reflection-header {
+      color: var(--color-meeting-reflection-border);
     }
 
     .section-actions {

@@ -1,8 +1,8 @@
 import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
-import { Observable, timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, EMPTY } from 'rxjs';
-import { Meeting, MeetingGroup, ActionItemStatus, PromoteActionItemResult } from './meeting.model';
+import { Observable, timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, throwError, EMPTY, of } from 'rxjs';
+import { Meeting, MeetingGroup, ActionItemStatus, PromoteActionItemResult, ReflectionPrompt, MeetingReflection } from './meeting.model';
 import { ToastService } from '../shared/services/toast.service';
 
 interface PendingDeletion {
@@ -89,6 +89,8 @@ export class MeetingService {
       keyPoints: null,
       decisions: null,
       behavioralAnalysis: null,
+      reflectionData: null,
+      reflectionSubmittedAt: null,
       tags: [],
       actionItems: [],
       createdAt: now,
@@ -458,6 +460,35 @@ export class MeetingService {
 
   getActionItemStatus(meetingId: string): Observable<ActionItemStatus[]> {
     return this.http.get<ActionItemStatus[]>(`/api/meetings/${meetingId}/action-item-status`);
+  }
+
+  getReflectionPrompts(meetingId: string): Observable<ReflectionPrompt[]> {
+    return this.http.get<ReflectionPrompt[]>(`/api/meetings/${meetingId}/reflection/prompts`);
+  }
+
+  getReflection(meetingId: string): Observable<MeetingReflection | null> {
+    return this.http.get<MeetingReflection>(`/api/meetings/${meetingId}/reflection`).pipe(
+      catchError(err => err.status === 404 ? of(null) : throwError(() => err)),
+    );
+  }
+
+  submitReflection(meetingId: string, reflection: MeetingReflection): void {
+    const json = JSON.stringify(reflection);
+    this._meetings.update(meetings =>
+      meetings.map(m =>
+        m.id === meetingId
+          ? { ...m, reflectionData: json, reflectionSubmittedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+          : m
+      )
+    );
+
+    this.http.post(`/api/meetings/${meetingId}/reflection`, reflection).subscribe({
+      next: () => this.toast.success({ summary: 'Reflection saved' }),
+      error: () => {
+        this.toast.error('Failed to save reflection');
+        this.loadMeetings();
+      },
+    });
   }
 
   private groupMeetingsByDate(meetings: Meeting[]): MeetingGroup[] {
