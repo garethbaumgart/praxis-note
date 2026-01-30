@@ -52,9 +52,6 @@ public static class DependencyInjection
         services.Configure<MeetingAnalysisSettings>(configuration.GetSection(MeetingAnalysisSettings.SectionName));
         services.AddScoped<IMeetingAnalyzer, ClaudeMeetingAnalyzer>();
 
-        services.Configure<WhisperTranscriptionSettings>(configuration.GetSection(WhisperTranscriptionSettings.SectionName));
-        services.AddScoped<ITranscriptionService, OpenAiWhisperTranscriber>();
-
         return services;
     }
 }
