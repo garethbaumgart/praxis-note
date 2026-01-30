@@ -20,7 +20,8 @@ import { ThemeService } from '../shared/theme.service';
            role="img"
            [attr.aria-label]="infoText()"></i>
       </div>
-      <p-chart [type]="chartType()" [data]="chartData()" [options]="chartOptions()" [height]="'250px'" />
+      <p-chart [type]="chartType()" [data]="chartData()" [options]="chartOptions()" [height]="'250px'"
+               [attr.aria-label]="title() + ' chart'" role="img" />
     </div>
   `,
 })
