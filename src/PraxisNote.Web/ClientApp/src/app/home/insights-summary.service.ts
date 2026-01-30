@@ -9,10 +9,12 @@ export class InsightsSummaryService {
   private readonly _summary = signal<InsightsSummary | null>(null);
   private readonly _loading = signal(false);
   private readonly _loaded = signal(false);
+  private readonly _error = signal(false);
 
   readonly summary = this._summary.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly loaded = this._loaded.asReadonly();
+  readonly error = this._error.asReadonly();
 
   load(): void {
     if (this._loaded()) return;
@@ -29,6 +31,7 @@ export class InsightsSummaryService {
         this._summary.set(null);
         this._loading.set(false);
         this._loaded.set(true);
+        this._error.set(true);
       },
     });
   }

@@ -58,11 +58,16 @@ public sealed class GetInsightsSummary(IMeetingRepository meetingRepository)
         var avgTalkTime = talkTimePoints.Count > 0 ? talkTimePoints.Average() : 0;
         var talkTimeChange = CalculateChange(talkTimePoints);
 
-        // Question ratio
+        // Question ratio — only include meetings where the participant has a ratio entry
         var questionRatioValues = meetingAnalyses
-            .Select(ma => ma.Analysis.SpeakingDynamics.QuestionVsStatementRatio
-                .FirstOrDefault(kv => string.Equals(kv.Key, targetParticipant, StringComparison.OrdinalIgnoreCase))
-                .Value)
+            .Select(ma =>
+            {
+                var match = ma.Analysis.SpeakingDynamics.QuestionVsStatementRatio
+                    .FirstOrDefault(kv => string.Equals(kv.Key, targetParticipant, StringComparison.OrdinalIgnoreCase));
+                return match.Key is not null ? (double?)match.Value : null;
+            })
+            .Where(v => v.HasValue)
+            .Select(v => v!.Value)
             .ToList();
 
         var avgQuestionRatio = questionRatioValues.Count > 0 ? questionRatioValues.Average() : 0;

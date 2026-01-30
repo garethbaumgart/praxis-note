@@ -62,6 +62,23 @@ public sealed class GetInsightsSummaryTests
         Assert.Null(result);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_MixOfValidAndInvalidJson_ReturnsSummaryFromValidMeetings()
+    {
+        var validAnalysis = CreateAnalysis(talkTime: [("Alice", 55), ("Bob", 45)]);
+        var validMeeting = CreateAnalyzedMeeting(Serialize(validAnalysis), DateTimeOffset.UtcNow.AddDays(-3));
+        var invalidMeeting = CreateAnalyzedMeeting("not valid json", DateTimeOffset.UtcNow.AddDays(-2));
+
+        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(new[] { validMeeting, invalidMeeting });
+
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+
+        Assert.NotNull(result);
+        Assert.Equal(1, result.MeetingCount);
+        Assert.Equal("Alice", result.ParticipantName);
+    }
+
     #endregion
 
     #region With Data
@@ -204,6 +221,76 @@ public sealed class GetInsightsSummaryTests
         Assert.NotNull(result);
         Assert.NotNull(result.NudgeText);
         Assert.Contains("question ratio", result.NudgeText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_TalkTimeDecreasing_ReturnsNudge()
+    {
+        var meetings = new List<Meeting>();
+        for (int i = 0; i < 6; i++)
+        {
+            var talkPct = i < 3 ? 42.0 : 30.0; // drops significantly in second half
+            var analysis = CreateAnalysis(
+                talkTime: [("Alice", talkPct), ("Bob", 100 - talkPct)]);
+            meetings.Add(CreateAnalyzedMeeting(Serialize(analysis), DateTimeOffset.UtcNow.AddDays(-20 + i * 3)));
+        }
+
+        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(meetings);
+
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.NudgeText);
+        Assert.Contains("talk time", result.NudgeText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_RedFlagsIncreasing_ReturnsNudge()
+    {
+        var meetings = new List<Meeting>();
+        for (int i = 0; i < 6; i++)
+        {
+            var flags = i < 3
+                ? Array.Empty<(string, string, string, string, string)>()
+                : new[] { ("evasive", "Alice", "Avoided question", "Context", "high"),
+                          ("hedging", "Alice", "Uncertain language", "Context", "medium") };
+            var analysis = CreateAnalysis(
+                talkTime: [("Alice", 50), ("Bob", 50)],
+                redFlags: flags);
+            meetings.Add(CreateAnalyzedMeeting(Serialize(analysis), DateTimeOffset.UtcNow.AddDays(-20 + i * 3)));
+        }
+
+        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(meetings);
+
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.NudgeText);
+        Assert.Contains("red flag", result.NudgeText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoSignificantTrends_ReturnsNullNudge()
+    {
+        // Stable metrics across all meetings — no nudge expected
+        var meetings = new List<Meeting>();
+        for (int i = 0; i < 6; i++)
+        {
+            var analysis = CreateAnalysis(
+                talkTime: [("Alice", 50), ("Bob", 50)],
+                questionRatios: new Dictionary<string, double> { ["Alice"] = 0.3, ["Bob"] = 0.3 });
+            meetings.Add(CreateAnalyzedMeeting(Serialize(analysis), DateTimeOffset.UtcNow.AddDays(-20 + i * 3)));
+        }
+
+        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(meetings);
+
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+
+        Assert.NotNull(result);
+        Assert.Null(result.NudgeText);
     }
 
     #endregion

@@ -38,8 +38,7 @@ import { InsightsSummaryService } from './insights-summary.service';
       <button
         class="w-full group p-5 bg-surface border border-border rounded-xl hover:border-accent-foreground hover:shadow-md transition-all duration-200 text-left"
         aria-label="View insights dashboard"
-        (click)="goToInsights()"
-        (keydown.enter)="goToInsights()">
+        (click)="goToInsights()">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
@@ -139,6 +138,21 @@ import { InsightsSummaryService } from './insights-summary.service';
           </div>
         }
       </button>
+    } @else if (service.error()) {
+      <!-- Error state: API failed -->
+      <div class="p-5 bg-surface border border-border rounded-xl">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i class="pi pi-chart-line text-accent-foreground text-sm" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-foreground mb-1">Insights</h3>
+            <p class="text-sm text-foreground-muted">
+              Unable to load insights right now. Try refreshing the page.
+            </p>
+          </div>
+        </div>
+      </div>
     } @else if (service.loaded()) {
       <!-- Empty state: no insights data -->
       <div class="p-5 bg-surface border border-border rounded-xl">
@@ -154,8 +168,7 @@ import { InsightsSummaryService } from './insights-summary.service';
             <button
               class="text-sm text-accent-foreground font-medium mt-2 inline-block hover:underline"
               aria-label="Go to meetings"
-              (click)="goToMeetings()"
-              (keydown.enter)="goToMeetings()">
+              (click)="goToMeetings()">
               Go to Meetings <i class="pi pi-arrow-right text-xs ml-1" aria-hidden="true"></i>
             </button>
           </div>
