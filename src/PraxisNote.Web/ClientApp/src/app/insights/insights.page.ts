@@ -5,13 +5,14 @@ import { Skeleton } from 'primeng/skeleton';
 import { InsightsService } from './insights.service';
 import { InsightsSummaryCardsComponent } from './insights-summary-cards.component';
 import { InsightsTrendChartComponent } from './insights-trend-chart.component';
+import { GoalsSectionComponent } from './goals-section.component';
 import { DateRange } from './insights.model';
 
 @Component({
   selector: 'app-insights-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent],
+  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent],
   template: `
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
       <!-- Header -->
@@ -72,6 +73,11 @@ import { DateRange } from './insights.model';
       } @else {
         <!-- Summary Cards -->
         <app-insights-summary-cards [summary]="insightsService.trends()!.summary" />
+
+        <!-- Goals Section -->
+        <div class="mt-6">
+          <app-goals-section />
+        </div>
 
         <!-- Participant info -->
         @if (insightsService.trends()!.availableParticipants.length > 1) {

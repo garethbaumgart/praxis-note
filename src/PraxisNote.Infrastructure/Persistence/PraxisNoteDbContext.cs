@@ -5,6 +5,7 @@ using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Notifications;
+using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.Users;
@@ -20,6 +21,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<Meeting> Meetings => Set<Meeting>();
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
     public DbSet<FeatureNotification> FeatureNotifications => Set<FeatureNotification>();
+    public DbSet<BehavioralGoal> BehavioralGoals => Set<BehavioralGoal>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public PraxisNoteDbContext(DbContextOptions<PraxisNoteDbContext> options)

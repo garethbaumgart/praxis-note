@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using PraxisNote.Application.Features.Goals;
 using PraxisNote.Application.Features.Insights;
+using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Web.Extensions;
 
 namespace PraxisNote.Web.Endpoints;
@@ -14,6 +16,12 @@ public static class InsightEndpoints
 
         group.MapGet("/behavioral-trends", (Delegate)HandleGetBehavioralTrends);
         group.MapGet("/summary", (Delegate)HandleGetInsightsSummary);
+
+        group.MapGet("/goals", (Delegate)HandleGetGoals);
+        group.MapGet("/goals/progress", (Delegate)HandleGetGoalProgress);
+        group.MapPost("/goals", (Delegate)HandleCreateGoal);
+        group.MapPut("/goals/{id:guid}", (Delegate)HandleUpdateGoal);
+        group.MapDelete("/goals/{id:guid}", (Delegate)HandleDeleteGoal);
     }
 
     private static async Task<IResult> HandleGetBehavioralTrends(
@@ -57,4 +65,134 @@ public static class InsightEndpoints
 
         return Results.Ok(result);
     }
+
+    private static async Task<IResult> HandleGetGoals(
+        ClaimsPrincipal user,
+        [FromServices] GetUserGoals getUserGoals,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+            return Results.Unauthorized();
+
+        var query = new GetUserGoals.Query(userId.Value);
+        var goals = await getUserGoals.ExecuteAsync(query, cancellationToken);
+
+        return Results.Ok(goals);
+    }
+
+    private static async Task<IResult> HandleGetGoalProgress(
+        ClaimsPrincipal user,
+        [FromServices] EvaluateGoalProgress evaluateGoalProgress,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+            return Results.Unauthorized();
+
+        var query = new EvaluateGoalProgress.Query(userId.Value);
+        var progress = await evaluateGoalProgress.ExecuteAsync(query, cancellationToken);
+
+        return Results.Ok(progress);
+    }
+
+    private static async Task<IResult> HandleCreateGoal(
+        ClaimsPrincipal user,
+        CreateGoalRequest request,
+        [FromServices] CreateBehavioralGoal createGoal,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+            return Results.Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(request.Title))
+            return Results.BadRequest(new { error = "Title is required" });
+
+        if (!Enum.TryParse<MetricType>(request.MetricType, true, out var metricType))
+            return Results.BadRequest(new { error = "Invalid metric type" });
+
+        if (!Enum.TryParse<GoalOperator>(request.Operator, true, out var goalOperator))
+            return Results.BadRequest(new { error = "Invalid operator" });
+
+        var command = new CreateBehavioralGoal.Command(
+            userId.Value, metricType, goalOperator,
+            request.TargetValue, request.TargetValueUpper, request.Title);
+        var result = await createGoal.ExecuteAsync(command, cancellationToken);
+
+        return Results.Created($"/api/insights/goals/{result.GoalId}", new { id = result.GoalId });
+    }
+
+    private static async Task<IResult> HandleUpdateGoal(
+        Guid id,
+        ClaimsPrincipal user,
+        UpdateGoalRequest request,
+        [FromServices] UpdateBehavioralGoal updateGoal,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+            return Results.Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(request.Title))
+            return Results.BadRequest(new { error = "Title is required" });
+
+        if (!Enum.TryParse<MetricType>(request.MetricType, true, out var metricType))
+            return Results.BadRequest(new { error = "Invalid metric type" });
+
+        if (!Enum.TryParse<GoalOperator>(request.Operator, true, out var goalOperator))
+            return Results.BadRequest(new { error = "Invalid operator" });
+
+        try
+        {
+            var command = new UpdateBehavioralGoal.Command(
+                userId.Value, id, metricType, goalOperator,
+                request.TargetValue, request.TargetValueUpper, request.Title, request.IsActive);
+            await updateGoal.ExecuteAsync(command, cancellationToken);
+
+            return Results.NoContent();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == UpdateBehavioralGoal.NotFoundError)
+        {
+            return Results.NotFound();
+        }
+    }
+
+    private static async Task<IResult> HandleDeleteGoal(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] DeleteBehavioralGoal deleteGoal,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+            return Results.Unauthorized();
+
+        try
+        {
+            var command = new DeleteBehavioralGoal.Command(userId.Value, id);
+            await deleteGoal.ExecuteAsync(command, cancellationToken);
+
+            return Results.NoContent();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == DeleteBehavioralGoal.NotFoundError)
+        {
+            return Results.NotFound();
+        }
+    }
 }
+
+public record CreateGoalRequest(
+    string MetricType,
+    string Operator,
+    double TargetValue,
+    double? TargetValueUpper,
+    string Title);
+
+public record UpdateGoalRequest(
+    string MetricType,
+    string Operator,
+    double TargetValue,
+    double? TargetValueUpper,
+    string Title,
+    bool IsActive);
