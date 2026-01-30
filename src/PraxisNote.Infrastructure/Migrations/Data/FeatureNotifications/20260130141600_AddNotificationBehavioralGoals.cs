@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'Feature',
                     'Behavioral goals tracking',
                     'Set communication goals and track your progress across meetings with streak indicators and pass/fail history.',
-                    'https://github.com/garethbaumgart/praxis-note/issues/283',
+                    'https://github.com/garethbaumgart/praxis-note/pull/291',
                     '2026-01-30T14:16:00Z'
                 );
                 """);
