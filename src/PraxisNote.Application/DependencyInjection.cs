@@ -6,6 +6,7 @@ using PraxisNote.Application.Features.Calendar;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
+using PraxisNote.Application.Features.Goals;
 using PraxisNote.Application.Features.Insights;
 using PraxisNote.Application.Features.Users;
 
@@ -91,6 +92,13 @@ public static class DependencyInjection
         // Insight use cases
         services.AddScoped<GetBehavioralTrends>();
         services.AddScoped<GetInsightsSummary>();
+
+        // Goal use cases
+        services.AddScoped<CreateBehavioralGoal>();
+        services.AddScoped<UpdateBehavioralGoal>();
+        services.AddScoped<DeleteBehavioralGoal>();
+        services.AddScoped<GetUserGoals>();
+        services.AddScoped<EvaluateGoalProgress>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();

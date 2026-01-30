@@ -5,13 +5,14 @@ import { Skeleton } from 'primeng/skeleton';
 import { InsightsService } from './insights.service';
 import { InsightsSummaryCardsComponent } from './insights-summary-cards.component';
 import { InsightsTrendChartComponent } from './insights-trend-chart.component';
+import { GoalsSectionComponent } from './goals-section.component';
 import { DateRange } from './insights.model';
 
 @Component({
   selector: 'app-insights-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent],
+  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent],
   template: `
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
       <!-- Header -->
@@ -62,16 +63,24 @@ import { DateRange } from './insights.model';
         </div>
       } @else if (!insightsService.trends() || insightsService.trends()!.meetingCount === 0) {
         <!-- Empty state -->
-        <div class="bg-surface-subtle border border-border rounded-xl p-12 text-center">
+        <div class="bg-surface-subtle border border-border rounded-xl p-12 text-center mb-6">
           <i class="pi pi-chart-line text-5xl text-foreground-muted mb-4"></i>
           <h2 class="text-lg font-semibold text-foreground mb-2">No insights yet</h2>
           <p class="text-foreground-muted text-sm max-w-md mx-auto">
             Insights appear after you analyze meetings with behavioral analysis. Record and analyze a few meetings to start seeing your communication trends.
           </p>
         </div>
+
+        <!-- Goals Section (always visible) -->
+        <app-goals-section />
       } @else {
         <!-- Summary Cards -->
         <app-insights-summary-cards [summary]="insightsService.trends()!.summary" />
+
+        <!-- Goals Section -->
+        <div class="mt-6">
+          <app-goals-section />
+        </div>
 
         <!-- Participant info -->
         @if (insightsService.trends()!.availableParticipants.length > 1) {
