@@ -1,5 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject, OnInit } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject } from '@angular/core';
 import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { Meeting, ReflectionPrompt, MeetingReflection, PromptResponse, parseReflection, parseBehavioralAnalysis } from './meeting.model';
@@ -163,7 +162,7 @@ import { MeetingService } from './meeting.service';
     }
   `]
 })
-export class MeetingReflectionComponent implements OnInit {
+export class MeetingReflectionComponent {
   private readonly meetingService = inject(MeetingService);
 
   readonly meeting = input.required<Meeting>();
@@ -239,10 +238,6 @@ export class MeetingReflectionComponent implements OnInit {
 
     return insights;
   });
-
-  ngOnInit(): void {
-    // If there's already a reflection, don't auto-load prompts
-  }
 
   startReflection(): void {
     this.loadPrompts();
