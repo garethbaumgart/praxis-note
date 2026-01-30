@@ -212,6 +212,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       width: 12px;
       height: 12px;
       accent-color: var(--color-accent-solid);
+      pointer-events: none;
     }
 
     :host ::ng-deep .note-preview ul[data-type="taskList"] li[data-checked="true"] > div {
@@ -255,7 +256,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
     }
 
     :host ::ng-deep .note-preview mark {
-      background: #fef08a;
+      background: var(--color-editor-mark);
       padding: 0 0.15em;
       border-radius: 2px;
     }
@@ -375,7 +376,7 @@ export class NoteCardComponent {
     if (!doc?.content?.length) {
       // Plain text fallback
       const content = this.note().content;
-      if (content && !this.parsedContent()) return `<p>${this.escapeHtml(content)}</p>`;
+      if (content && !this.parsedContent()) return `<p style="white-space:pre-wrap">${this.escapeHtml(content)}</p>`;
       return '';
     }
 

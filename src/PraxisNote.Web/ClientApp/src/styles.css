@@ -110,6 +110,9 @@
   --color-highlight-text: #2e3440;
   --color-highlight-underline: #88c0d0;            /* Frost cyan for underline */
 
+  /* Editor mark/highlight - Aurora yellow */
+  --color-editor-mark-bg: rgba(235, 203, 139, 0.4);
+
   /* Due date section (expanded panel) - Aurora yellow */
   --color-duedate-section-bg: rgba(235, 203, 139, 0.2);
   --color-duedate-section-border-base: rgba(235, 203, 139, 0.4);
@@ -253,6 +256,9 @@
   --color-highlight-bg: rgba(136, 192, 208, 0.5);
   --color-highlight-text: #eceff4;
   --color-highlight-underline: #88c0d0;            /* Frost cyan for underline */
+
+  /* Editor mark/highlight - Aurora yellow */
+  --color-editor-mark-bg: rgba(235, 203, 139, 0.3);
 
   /* Due date section (expanded panel) - Aurora yellow */
   --color-duedate-section-bg: rgba(235, 203, 139, 0.15);
@@ -399,6 +405,9 @@
   /* Search highlight */
   --color-highlight: var(--color-highlight-bg);
   --color-highlight-foreground: var(--color-highlight-text);
+
+  /* Editor mark/highlight */
+  --color-editor-mark: var(--color-editor-mark-bg);
 
   /* Due date section */
   --color-duedate-section: var(--color-duedate-section-bg);
