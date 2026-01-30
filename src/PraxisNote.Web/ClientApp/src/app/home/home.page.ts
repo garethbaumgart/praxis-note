@@ -2,11 +2,12 @@ import { Component, inject, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { AuthService } from '../auth';
+import { InsightsWidgetComponent } from './insights-widget.component';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [Button],
+  imports: [Button, InsightsWidgetComponent],
   template: `
     <div class="max-w-4xl mx-auto px-6 py-10 lg:py-16">
       <!-- Welcome section -->
@@ -15,6 +16,11 @@ import { AuthService } from '../auth';
           Welcome back, {{ firstName() }}
         </h1>
         <p class="text-foreground-secondary text-lg">Ready to capture your thoughts and turn them into action.</p>
+      </div>
+
+      <!-- Insights widget -->
+      <div class="mb-6">
+        <app-insights-widget />
       </div>
 
       <!-- Quick actions -->
