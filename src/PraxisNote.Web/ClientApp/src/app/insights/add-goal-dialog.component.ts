@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
@@ -15,7 +15,7 @@ import { GOAL_PRESETS, GoalPreset, MetricType, GoalOperator } from './insights.m
     <p-dialog
       header="Add Goal"
       [visible]="visible()"
-      (visibleChange)="onClose.emit()"
+      (visibleChange)="!$event && (resetForm(), onClose.emit())"
       [modal]="true"
       [style]="{ width: '28rem' }"
       [draggable]="false">
@@ -146,15 +146,13 @@ export class AddGoalDialogComponent {
     { label: 'Between', value: 'Between' },
   ];
 
-  protected isCustomValid(): boolean {
-    return (
-      this.customTitle().trim().length > 0 &&
-      this.customMetric() !== null &&
-      this.customOperator() !== null &&
-      this.customTarget() !== null &&
-      (this.customOperator() !== 'Between' || this.customTargetUpper() !== null)
-    );
-  }
+  protected readonly isCustomValid = computed(() =>
+    this.customTitle().trim().length > 0 &&
+    this.customMetric() !== null &&
+    this.customOperator() !== null &&
+    this.customTarget() !== null &&
+    (this.customOperator() !== 'Between' || this.customTargetUpper() !== null),
+  );
 
   protected selectPreset(preset: GoalPreset): void {
     this.onAdd.emit({
@@ -179,7 +177,7 @@ export class AddGoalDialogComponent {
     this.resetForm();
   }
 
-  private resetForm(): void {
+  protected resetForm(): void {
     this.showCustom.set(false);
     this.customTitle.set('');
     this.customMetric.set(null);

@@ -18,7 +18,8 @@ public sealed class EvaluateGoalProgress(
 
     public async Task<IReadOnlyList<GoalProgressDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        var goals = await goalRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var allGoals = await goalRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var goals = allGoals.Where(g => g.IsActive).ToList();
         if (goals.Count == 0)
             return [];
 

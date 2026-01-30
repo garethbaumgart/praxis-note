@@ -1,17 +1,15 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehavioralGoal, GoalProgress } from './insights.model';
+import { GoalProgress } from './insights.model';
 
 @Injectable({ providedIn: 'root' })
 export class GoalsService {
   private readonly http = inject(HttpClient);
 
-  private readonly _goals = signal<BehavioralGoal[]>([]);
   private readonly _progress = signal<GoalProgress[]>([]);
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
 
-  readonly goals = this._goals.asReadonly();
   readonly progress = this._progress.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();

@@ -18,7 +18,8 @@ import { GoalProgress } from './insights.model';
 
       <!-- Ring + Value -->
       <div class="flex items-center gap-3">
-        <svg viewBox="0 0 40 40" class="w-11 h-11 shrink-0">
+        <svg viewBox="0 0 40 40" class="w-11 h-11 shrink-0"
+             role="img" [attr.aria-label]="goal().isMet ? 'Goal met' : 'Goal progress: ' + progressPercent() + '%'">
           <!-- Background ring -->
           <circle cx="20" cy="20" r="16" fill="none"
                   stroke="var(--color-border)" stroke-width="3" />
@@ -59,7 +60,8 @@ import { GoalProgress } from './insights.model';
 
       <!-- Dot track -->
       @if (goal().recentResults.length > 0) {
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1" role="img"
+             [attr.aria-label]="'Recent results: ' + passedCount() + ' of ' + goal().recentResults.length + ' meetings passed'">
           @for (passed of goal().recentResults; track $index) {
             <span class="w-2 h-2 rounded-full"
                   [class.bg-done-foreground]="passed"
@@ -100,6 +102,10 @@ export class GoalCardComponent {
     if (pct >= 70) return 'var(--color-inprogress-text)';
     return 'var(--color-danger-base)';
   });
+
+  protected readonly passedCount = computed(() =>
+    this.goal().recentResults.filter(r => r).length,
+  );
 
   protected readonly metricLabel = computed(() => {
     const labels: Record<string, string> = {

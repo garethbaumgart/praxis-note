@@ -37,6 +37,11 @@ import { AddGoalDialogComponent } from './add-goal-dialog.component';
             </div>
           }
         </div>
+      } @else if (goalsService.error()) {
+        <div class="bg-surface-subtle border border-border rounded-xl p-6 text-center">
+          <i class="pi pi-exclamation-triangle text-3xl text-danger mb-2"></i>
+          <p class="text-sm text-danger">{{ goalsService.error() }}</p>
+        </div>
       } @else if (goalsService.progress().length === 0) {
         <div class="bg-surface-subtle border border-border rounded-xl p-6 text-center">
           <i class="pi pi-flag text-3xl text-foreground-muted mb-2"></i>

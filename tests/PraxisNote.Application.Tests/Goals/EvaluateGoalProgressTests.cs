@@ -37,7 +37,7 @@ public sealed class EvaluateGoalProgressTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_GoalMet_ReturnsIsMetTrue()
+    public async Task ExecuteAsync_GoalNotMet_ReturnsIsMetFalse()
     {
         var goal = BehavioralGoal.Create(UserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Talk less");
         _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
@@ -72,7 +72,6 @@ public sealed class EvaluateGoalProgressTests
         var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
 
         Assert.Single(result);
-        Assert.Equal("Bob", result[0].MetricType is not null ? "Bob" : "");
         Assert.Equal(55, result[0].CurrentValue);
         Assert.True(result[0].IsMet); // 55 <= 55
     }

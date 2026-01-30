@@ -115,12 +115,23 @@ public static class InsightEndpoints
         if (!Enum.TryParse<GoalOperator>(request.Operator, true, out var goalOperator))
             return Results.BadRequest(new { error = "Invalid operator" });
 
-        var command = new CreateBehavioralGoal.Command(
-            userId.Value, metricType, goalOperator,
-            request.TargetValue, request.TargetValueUpper, request.Title);
-        var result = await createGoal.ExecuteAsync(command, cancellationToken);
+        if (goalOperator == GoalOperator.Between &&
+            (request.TargetValueUpper is null || request.TargetValueUpper <= request.TargetValue))
+            return Results.BadRequest(new { error = "Between operator requires an upper bound greater than the target value" });
 
-        return Results.Created($"/api/insights/goals/{result.GoalId}", new { id = result.GoalId });
+        try
+        {
+            var command = new CreateBehavioralGoal.Command(
+                userId.Value, metricType, goalOperator,
+                request.TargetValue, request.TargetValueUpper, request.Title);
+            var result = await createGoal.ExecuteAsync(command, cancellationToken);
+
+            return Results.Created($"/api/insights/goals/{result.GoalId}", new { id = result.GoalId });
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     private static async Task<IResult> HandleUpdateGoal(
@@ -143,6 +154,10 @@ public static class InsightEndpoints
         if (!Enum.TryParse<GoalOperator>(request.Operator, true, out var goalOperator))
             return Results.BadRequest(new { error = "Invalid operator" });
 
+        if (goalOperator == GoalOperator.Between &&
+            (request.TargetValueUpper is null || request.TargetValueUpper <= request.TargetValue))
+            return Results.BadRequest(new { error = "Between operator requires an upper bound greater than the target value" });
+
         try
         {
             var command = new UpdateBehavioralGoal.Command(
@@ -155,6 +170,10 @@ public static class InsightEndpoints
         catch (InvalidOperationException ex) when (ex.Message == UpdateBehavioralGoal.NotFoundError)
         {
             return Results.NotFound();
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
         }
     }
 
