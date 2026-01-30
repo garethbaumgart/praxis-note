@@ -24,6 +24,7 @@ export class NoteService {
   private readonly _loading = signal(false);
   private readonly _initialLoadComplete = signal(false);
   private readonly _searchQuery = signal('');
+  private readonly _selectedTagIds = signal<Set<string>>(new Set());
 
   constructor() {
     // Debounce content updates to avoid excessive API calls while typing
@@ -43,11 +44,21 @@ export class NoteService {
   readonly loading = this._loading.asReadonly();
   readonly initialLoadComplete = this._initialLoadComplete.asReadonly();
   readonly searchQuery = this._searchQuery.asReadonly();
+  readonly selectedTagIds = computed(() => new Set(this._selectedTagIds()));
 
   readonly filteredNotes = computed(() => {
     const query = this._searchQuery().toLowerCase().trim();
-    const notes = this._notes();
+    const selectedTags = this._selectedTagIds();
+    let notes = this._notes();
 
+    // Filter by selected tags first
+    if (selectedTags.size > 0) {
+      notes = notes.filter(n =>
+        n.tags.some(t => selectedTags.has(t.id))
+      );
+    }
+
+    // Then filter by search query
     if (!query) return notes;
 
     return notes.filter(
@@ -273,6 +284,26 @@ export class NoteService {
         onError?.();
       },
     });
+  }
+
+  toggleTagFilter(tagId: string): void {
+    this._selectedTagIds.update(ids => {
+      const next = new Set(ids);
+      if (next.has(tagId)) {
+        next.delete(tagId);
+      } else {
+        next.add(tagId);
+      }
+      return next;
+    });
+  }
+
+  clearTagFilter(): void {
+    this._selectedTagIds.set(new Set());
+  }
+
+  isTagSelected(tagId: string): boolean {
+    return this._selectedTagIds().has(tagId);
   }
 
   removeTagFromNote(noteId: string, tagId: string, onSuccess?: () => void, onError?: () => void): void {

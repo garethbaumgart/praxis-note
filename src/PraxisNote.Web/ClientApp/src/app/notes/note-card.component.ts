@@ -1,7 +1,8 @@
-import { Component, ChangeDetectionStrategy, input, output, computed, signal, inject, DestroyRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, inject, DestroyRef, afterNextRender, Injector, viewChild, ElementRef } from '@angular/core';
 import { generateHTML } from '@tiptap/core';
-import { Note } from './note.model';
+import { Note, NoteTag } from './note.model';
 import { tiptapExtensions } from './tiptap-extensions';
+import { Tag } from '../tasks/tag.model';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 
@@ -62,15 +63,100 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
           </div>
         }
 
-        <!-- Tags -->
-        @if (note().tags.length > 0) {
-          <div class="mt-3 flex flex-wrap gap-1">
+        <!-- Tags (interactive) -->
+        @if (note().tags.length > 0 || showTagPicker()) {
+          <div class="mt-3 flex flex-wrap items-center gap-1">
             @for (tag of visibleTags(); track tag.id) {
-              <span class="tag-badge">{{ tag.name }}</span>
+              <span class="tag-badge">
+                {{ tag.name }}
+                <button
+                  type="button"
+                  class="tag-badge-remove"
+                  (click)="removeTag(tag.id); $event.stopPropagation()"
+                  [attr.aria-label]="'Remove tag ' + tag.name"
+                >
+                  <i class="pi pi-times"></i>
+                </button>
+              </span>
             }
-            @if (hiddenTagCount() > 0) {
-              <span class="tag-badge">+{{ hiddenTagCount() }}</span>
+            @if (hiddenTagCount() > 0 && !showTagPicker()) {
+              <button
+                type="button"
+                class="overflow-btn"
+                (click)="inlineTagsExpanded.set(true); $event.stopPropagation()"
+                [attr.aria-label]="'Show ' + hiddenTagCount() + ' more tags'"
+              >
+                +{{ hiddenTagCount() }}
+              </button>
             }
+            @if (showTagPicker()) {
+              <div class="flex-1 min-w-[100px] relative">
+                <input
+                  #inlineTagInput
+                  type="text"
+                  [placeholder]="note().tags.length > 0 ? 'Add tag...' : 'Add first tag...'"
+                  [value]="tagSearch()"
+                  (input)="tagSearch.set(asInput($event).value)"
+                  (keydown.enter)="onTagEnter(); $event.preventDefault()"
+                  (keydown.escape)="showTagPicker.set(false); $event.stopPropagation()"
+                  (click)="$event.stopPropagation()"
+                  class="tag-search-input"
+                  aria-label="Search or create tag"
+                >
+                @if (tooltipSuggestions().length > 0 || canCreateTag()) {
+                  <div class="tag-dropdown">
+                    @for (tag of tooltipSuggestions(); track tag.id) {
+                      @let parts = getTagHighlightParts(tag.name);
+                      <button
+                        type="button"
+                        class="tag-dropdown-item"
+                        (click)="addTag({ id: tag.id, name: tag.name }); $event.stopPropagation()"
+                      >
+                        <span>{{ parts.before }}@if (parts.match) {<mark class="search-highlight">{{ parts.match }}</mark>}{{ parts.after }}</span>
+                        <span class="text-foreground-muted">{{ tag.usageCount }}</span>
+                      </button>
+                    }
+                    @if (canCreateTag()) {
+                      @if (tooltipSuggestions().length > 0) {
+                        <div class="tag-dropdown-divider"></div>
+                      }
+                      <button
+                        type="button"
+                        class="tag-dropdown-item create"
+                        (click)="createAndAddTag(tagSearch().trim()); $event.stopPropagation()"
+                      >
+                        <i class="pi pi-plus text-[10px] mr-1"></i>
+                        Create "{{ tagSearch().trim() }}"
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <!-- Add tag + button, visible on hover -->
+              <button
+                type="button"
+                class="add-tag-card-btn"
+                (click)="openInlineTagInput(); $event.stopPropagation()"
+                aria-label="Add tag"
+              >
+                <i class="pi pi-plus" style="font-size:9px"></i>
+              </button>
+            }
+          </div>
+        }
+        <!-- Hover-only add tag button when no tags exist yet -->
+        @if (note().tags.length === 0 && !showTagPicker()) {
+          <div class="mt-2 add-tag-card-row">
+            <button
+              type="button"
+              class="add-tag-label-btn"
+              (click)="openInlineTagInput(); $event.stopPropagation()"
+              aria-label="Add tag"
+            >
+              <i class="pi pi-tag" style="font-size:9px"></i>
+              <span>Tag</span>
+            </button>
           </div>
         }
       </div>
@@ -324,6 +410,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
     .tag-badge {
       display: inline-flex;
       align-items: center;
+      gap: 4px;
       background: var(--color-tag-bg);
       color: var(--color-tag-text);
       font-size: 10px;
@@ -332,20 +419,204 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       border-radius: 9999px;
       height: 18px;
     }
+
+    .tag-badge-remove {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--color-tag-text);
+      opacity: 0;
+      transition: opacity 0.15s;
+      font-size: 7px;
+    }
+
+    .tag-badge:hover .tag-badge-remove,
+    .tag-badge:focus-within .tag-badge-remove {
+      opacity: 0.6;
+    }
+
+    .tag-badge-remove:hover {
+      opacity: 1 !important;
+    }
+
+    .tag-badge-remove:focus-visible {
+      opacity: 1 !important;
+      outline: 2px solid var(--color-tag-text);
+      outline-offset: 1px;
+    }
+
+    .overflow-btn {
+      padding: 2px 6px;
+      border-radius: 9999px;
+      font-size: 10px;
+      background: var(--color-tag-bg);
+      color: var(--color-foreground-muted);
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .overflow-btn:hover {
+      color: var(--color-tag-text);
+    }
+
+    /* Add tag button on card (hidden until card hover) */
+    .add-tag-card-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 9999px;
+      color: var(--color-foreground-muted);
+      opacity: 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: none;
+      border: none;
+    }
+
+    .note-card:hover .add-tag-card-btn,
+    .note-card:focus-within .add-tag-card-btn {
+      opacity: 0.4;
+    }
+
+    .add-tag-card-btn:hover {
+      opacity: 1 !important;
+      color: var(--color-tag-text);
+      background: var(--color-tag-bg);
+    }
+
+    .add-tag-card-btn:focus-visible {
+      opacity: 1 !important;
+      color: var(--color-tag-text);
+      background: var(--color-tag-bg);
+      outline: 2px solid var(--color-tag-text);
+      outline-offset: 1px;
+    }
+
+    /* Hover-only "Tag" label button for untagged notes */
+    .add-tag-card-row {
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .note-card:hover .add-tag-card-row,
+    .note-card:focus-within .add-tag-card-row {
+      opacity: 1;
+    }
+
+    .add-tag-label-btn {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      height: 18px;
+      border-radius: 9999px;
+      border: 1px dashed var(--color-border-default);
+      color: var(--color-foreground-muted);
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .add-tag-label-btn:hover {
+      border-color: var(--color-tag-text);
+      color: var(--color-tag-text);
+      background: var(--color-tag-bg);
+    }
+
+    .add-tag-label-btn:focus-visible {
+      outline: 2px solid var(--color-tag-text);
+      outline-offset: 2px;
+    }
+
+    /* Tag search input */
+    .tag-search-input {
+      width: 100%;
+      height: 24px;
+      padding: 0 8px;
+      font-size: 12px;
+      background: var(--color-surface-muted);
+      border-radius: 9999px;
+      border: none;
+      outline: none;
+      color: var(--color-foreground);
+    }
+
+    /* Tag dropdown */
+    .tag-dropdown {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 4px);
+      width: 192px;
+      background: var(--color-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--color-border-default);
+      padding: 4px 0;
+      z-index: 50;
+    }
+
+    .tag-dropdown-item {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+      box-sizing: border-box;
+      color: var(--color-foreground);
+    }
+
+    .tag-dropdown-item:hover,
+    .tag-dropdown-item:focus-visible {
+      background: var(--color-surface-subtle);
+    }
+
+    .tag-dropdown-item:focus-visible {
+      outline: 2px solid var(--color-border-default);
+      outline-offset: -2px;
+    }
+
+    .tag-dropdown-item.create {
+      color: var(--color-accent-solid);
+    }
+
+    .tag-dropdown-divider {
+      border-top: 1px solid var(--color-border-default);
+      margin: 4px 0;
+    }
   `],
 })
 export class NoteCardComponent {
   private readonly deleteConfirmation = inject(DeleteConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   readonly note = input.required<Note>();
+  readonly allTags = input<Tag[]>([]);
   readonly onOpen = output<void>();
   readonly onDelete = output<void>();
+  readonly onAddTag = output<NoteTag>();
+  readonly onRemoveTag = output<string>();
+  readonly onCreateTag = output<string>();
 
   readonly confirmingDelete = signal(false);
+  readonly showTagPicker = signal(false);
+  readonly inlineTagsExpanded = signal(false);
+  readonly tagSearch = signal('');
+  readonly inlineTagInput = viewChild<ElementRef<HTMLInputElement>>('inlineTagInput');
 
   private readonly maxVisibleCheckboxes = 4;
-  private readonly maxVisibleTags = 3;
+  private readonly MAX_VISIBLE_TAGS = 3;
 
   /** Parsed TipTap JSON doc (null if not valid JSON) */
   private readonly parsedContent = computed(() => {
@@ -401,18 +672,111 @@ export class NoteCardComponent {
     Math.max(0, this.note().checkboxes.length - this.maxVisibleCheckboxes)
   );
 
-  readonly visibleTags = computed(() =>
-    this.note().tags.slice(0, this.maxVisibleTags)
-  );
+  readonly visibleTags = computed(() => {
+    const tags = this.note().tags;
+    if (this.inlineTagsExpanded() || this.showTagPicker() || tags.length <= this.MAX_VISIBLE_TAGS) {
+      return tags;
+    }
+    return tags.slice(0, this.MAX_VISIBLE_TAGS);
+  });
 
-  readonly hiddenTagCount = computed(() =>
-    Math.max(0, this.note().tags.length - this.maxVisibleTags)
-  );
+  readonly hiddenTagCount = computed(() => {
+    const tags = this.note().tags;
+    if (this.inlineTagsExpanded() || this.showTagPicker() || tags.length <= this.MAX_VISIBLE_TAGS) {
+      return 0;
+    }
+    return tags.length - this.MAX_VISIBLE_TAGS;
+  });
+
+  readonly existingTagIds = computed(() => new Set(this.note().tags.map(t => t.id)));
+
+  readonly tooltipSuggestions = computed(() => {
+    const query = this.tagSearch().toLowerCase().trim();
+    const existingIds = this.existingTagIds();
+    const available = this.allTags().filter(tag => !existingIds.has(tag.id));
+    if (!query) return available.slice(0, 4);
+    return available
+      .filter(tag => tag.name.toLowerCase().includes(query))
+      .slice(0, 4);
+  });
+
+  readonly canCreateTag = computed(() => {
+    const query = this.tagSearch().trim();
+    if (!query || query.length < 2) return false;
+    return !this.allTags().some(tag =>
+      tag.name.toLowerCase() === query.toLowerCase()
+    );
+  });
 
   constructor() {
     this.destroyRef.onDestroy(() => {
       this.deleteConfirmation.cleanup();
     });
+  }
+
+  // Tag methods
+  openInlineTagInput(): void {
+    this.showTagPicker.set(true);
+    this.tagSearch.set('');
+    afterNextRender(() => {
+      this.inlineTagInput()?.nativeElement.focus();
+    }, { injector: this.injector });
+  }
+
+  onTagEnter(): void {
+    const query = this.tagSearch().trim();
+    const suggestions = this.tooltipSuggestions();
+
+    const exactMatch = suggestions.find(t =>
+      t.name.toLowerCase() === query.toLowerCase()
+    );
+    if (exactMatch) {
+      this.addTag({ id: exactMatch.id, name: exactMatch.name });
+      return;
+    }
+
+    if (this.canCreateTag()) {
+      this.createAndAddTag(query);
+      return;
+    }
+
+    if (suggestions.length === 1) {
+      this.addTag({ id: suggestions[0].id, name: suggestions[0].name });
+    }
+  }
+
+  addTag(tag: NoteTag): void {
+    if (this.note().tags.some(t => t.id === tag.id)) {
+      this.showTagPicker.set(false);
+      this.tagSearch.set('');
+      return;
+    }
+    this.onAddTag.emit(tag);
+    this.showTagPicker.set(false);
+    this.tagSearch.set('');
+  }
+
+  removeTag(tagId: string): void {
+    this.onRemoveTag.emit(tagId);
+  }
+
+  createAndAddTag(name: string): void {
+    this.onCreateTag.emit(name);
+    this.showTagPicker.set(false);
+    this.tagSearch.set('');
+  }
+
+  getTagHighlightParts(tagName: string): { before: string; match: string; after: string } {
+    const query = this.tagSearch().toLowerCase().trim();
+    if (!query) return { before: tagName, match: '', after: '' };
+    const lowerName = tagName.toLowerCase();
+    const index = lowerName.indexOf(query);
+    if (index === -1) return { before: tagName, match: '', after: '' };
+    return {
+      before: tagName.slice(0, index),
+      match: tagName.slice(index, index + query.length),
+      after: tagName.slice(index + query.length),
+    };
   }
 
   startDeleteConfirm(): void {
@@ -429,17 +793,21 @@ export class NoteCardComponent {
     this.onDelete.emit();
   }
 
-  /** Type-safe helper for keyboard events (Angular filtered events pass Event, not KeyboardEvent) */
+  /** Type-safe helper for keyboard events */
   asKeyboardEvent(event: Event): KeyboardEvent {
     return event as KeyboardEvent;
   }
 
+  /** Type-safe helper for input events */
+  asInput(event: Event): HTMLInputElement {
+    return event.target as HTMLInputElement;
+  }
+
   /** Handle keydown on card, preventing bubbled events from child controls */
   handleCardKeydown(event: KeyboardEvent): void {
-    // Only trigger open if the event target is the card itself (not a child button)
     if (event.target === event.currentTarget) {
       if (event.key === ' ') {
-        event.preventDefault(); // Prevent page scroll on space
+        event.preventDefault();
       }
       this.onOpen.emit();
     }
