@@ -15,7 +15,7 @@ import { GOAL_PRESETS, GoalPreset, MetricType, GoalOperator } from './insights.m
     <p-dialog
       header="Add Goal"
       [visible]="visible()"
-      (visibleChange)="!$event && (resetForm(), onClose.emit())"
+      (visibleChange)="onDialogVisibleChange($event)"
       [modal]="true"
       [style]="{ width: '28rem' }"
       [draggable]="false">
@@ -153,6 +153,13 @@ export class AddGoalDialogComponent {
     this.customTarget() !== null &&
     (this.customOperator() !== 'Between' || this.customTargetUpper() !== null),
   );
+
+  protected onDialogVisibleChange(visible: boolean): void {
+    if (!visible) {
+      this.resetForm();
+      this.onClose.emit();
+    }
+  }
 
   protected selectPreset(preset: GoalPreset): void {
     this.onAdd.emit({
