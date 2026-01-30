@@ -1,4 +1,4 @@
-import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, input, ChangeDetectionStrategy } from '@angular/core';
 import { Tooltip } from 'primeng/tooltip';
 import { TrendSummary } from './insights.model';
 
@@ -24,7 +24,9 @@ interface MetricCard {
             <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">{{ card.label }}</p>
             <i class="pi pi-info-circle text-foreground-muted text-xs cursor-help"
                [pTooltip]="card.infoText"
-               tooltipPosition="top"></i>
+               tooltipPosition="top"
+               role="img"
+               [attr.aria-label]="card.infoText"></i>
           </div>
           <div class="flex items-baseline gap-2 mt-1">
             <span class="text-2xl font-bold text-foreground">{{ card.value }}</span>
@@ -50,7 +52,7 @@ interface MetricCard {
 export class InsightsSummaryCardsComponent {
   readonly summary = input.required<TrendSummary>();
 
-  protected cards(): MetricCard[] {
+  protected readonly cards = computed<MetricCard[]>(() => {
     const s = this.summary();
     return [
       {
@@ -90,7 +92,7 @@ export class InsightsSummaryCardsComponent {
         infoText: 'Your most common engagement level across meetings: high (active contributor), medium (participates when prompted), or low (mostly observing).',
       },
     ];
-  }
+  });
 
   protected isTrendPositive(card: MetricCard): boolean {
     if (card.invertTrend) {

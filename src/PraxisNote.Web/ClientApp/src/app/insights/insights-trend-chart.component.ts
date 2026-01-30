@@ -15,7 +15,9 @@ import { ThemeService } from '../shared/theme.service';
         <h3 class="text-sm font-semibold text-foreground">{{ title() }}</h3>
         <i class="pi pi-info-circle text-foreground-muted text-sm cursor-help"
            [pTooltip]="infoText()"
-           tooltipPosition="top"></i>
+           tooltipPosition="top"
+           role="img"
+           [attr.aria-label]="infoText()"></i>
       </div>
       <p-chart [type]="chartType()" [data]="chartData()" [options]="chartOptions()" [height]="'250px'" />
     </div>
