@@ -1,10 +1,11 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, computed, HostListener, ElementRef, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NoteService } from './note.service';
-import { Note } from './note.model';
+import { Note, NoteTag } from './note.model';
 import { NoteCardComponent } from './note-card.component';
 import { NoteCardSkeletonComponent } from './note-card-skeleton.component';
 import { ToastService } from '../shared/services/toast.service';
+import { TagService } from '../tasks/tag.service';
 
 @Component({
   selector: 'app-notes-page',
@@ -16,7 +17,13 @@ import { ToastService } from '../shared/services/toast.service';
       <!-- Header -->
       <div class="flex items-center gap-3 mb-6">
         <h1 class="text-lg font-semibold text-foreground">Notes</h1>
-        <span class="text-sm text-foreground-muted">{{ noteCount() }} notes</span>
+        <span class="text-sm text-foreground-muted">
+          @if (isFiltered()) {
+            {{ noteService.filteredNotes().length }} of {{ noteCount() }} notes
+          } @else {
+            {{ noteCount() }} notes
+          }
+        </span>
       </div>
 
       <!-- Search -->
@@ -46,6 +53,35 @@ import { ToastService } from '../shared/services/toast.service';
         }
       </div>
 
+      <!-- Tag filter chips -->
+      @if (tagChips().length > 0) {
+        <div class="flex flex-wrap items-center gap-1.5 mb-4">
+          @for (chip of tagChips(); track chip.id) {
+            <button
+              type="button"
+              class="tag-chip"
+              [class.active]="noteService.isTagSelected(chip.id)"
+              (click)="noteService.toggleTagFilter(chip.id)"
+              [attr.aria-label]="'Filter by tag ' + chip.name"
+              [attr.aria-pressed]="noteService.isTagSelected(chip.id)"
+            >
+              {{ chip.name }}
+              <span class="tag-chip-count">{{ chip.noteCount }}</span>
+            </button>
+          }
+          @if (noteService.selectedTagIds().size > 0) {
+            <button
+              type="button"
+              class="text-xs text-foreground-muted hover:text-foreground transition-colors ml-1"
+              (click)="noteService.clearTagFilter()"
+              aria-label="Clear tag filters"
+            >
+              Clear
+            </button>
+          }
+        </div>
+      }
+
       <!-- Quick add -->
       <button
         type="button"
@@ -68,7 +104,17 @@ import { ToastService } from '../shared/services/toast.service';
       } @else if (noteService.filteredNotes().length === 0) {
         <!-- Empty state -->
         <div class="text-center py-16">
-          @if (noteService.searchQuery()) {
+          @if (noteService.selectedTagIds().size > 0) {
+            <i class="pi pi-tag text-4xl text-foreground-muted mb-4"></i>
+            <p class="text-foreground-muted mb-2">No notes match the selected tags</p>
+            <button
+              type="button"
+              class="text-sm text-accent hover:underline"
+              (click)="noteService.clearTagFilter()"
+            >
+              Clear tag filters
+            </button>
+          } @else if (noteService.searchQuery()) {
             <i class="pi pi-search text-4xl text-foreground-muted mb-4"></i>
             <p class="text-foreground-muted">No notes match your search</p>
           } @else {
@@ -84,8 +130,12 @@ import { ToastService } from '../shared/services/toast.service';
             <div class="masonry-item">
               <app-note-card
                 [note]="note"
+                [allTags]="tagService.tags()"
                 (onOpen)="openNote(note)"
                 (onDelete)="deleteNote(note)"
+                (onAddTag)="addTagToNote(note.id, $event)"
+                (onRemoveTag)="removeTagFromNote(note.id, $event)"
+                (onCreateTag)="createAndAddTag(note.id, $event)"
               />
             </div>
           }
@@ -116,10 +166,42 @@ import { ToastService } from '../shared/services/toast.service';
       border-color: var(--color-accent-solid, #5e81ac);
       background: var(--color-bg-subtle);
     }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--color-surface-muted);
+      color: var(--color-foreground-secondary);
+      border: 1px solid var(--color-border-default);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tag-chip:hover {
+      border-color: var(--color-tag-text);
+      color: var(--color-tag-text);
+    }
+
+    .tag-chip.active {
+      background: var(--color-tag-bg);
+      color: var(--color-tag-text);
+      border-color: var(--color-tag-text);
+    }
+
+    .tag-chip-count {
+      font-size: 10px;
+      opacity: 0.6;
+    }
   `],
 })
 export class NotesPage implements OnInit {
   readonly noteService = inject(NoteService);
+  readonly tagService = inject(TagService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
@@ -129,8 +211,32 @@ export class NotesPage implements OnInit {
 
   readonly noteCount = computed(() => this.noteService.notes().length);
 
+  readonly isFiltered = computed(() =>
+    this.noteService.selectedTagIds().size > 0 || !!this.noteService.searchQuery()
+  );
+
+  /** Tag chips with note counts, sorted by count descending, only tags used on notes */
+  readonly tagChips = computed(() => {
+    const notes = this.noteService.notes();
+    const countMap = new Map<string, { id: string; name: string; noteCount: number }>();
+
+    for (const note of notes) {
+      for (const tag of note.tags) {
+        const existing = countMap.get(tag.id);
+        if (existing) {
+          existing.noteCount++;
+        } else {
+          countMap.set(tag.id, { id: tag.id, name: tag.name, noteCount: 1 });
+        }
+      }
+    }
+
+    return Array.from(countMap.values()).sort((a, b) => b.noteCount - a.noteCount);
+  });
+
   ngOnInit(): void {
     this.noteService.loadNotes();
+    this.tagService.loadTags();
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -181,6 +287,22 @@ export class NotesPage implements OnInit {
         },
       });
     }
+  }
+
+  addTagToNote(noteId: string, tag: NoteTag): void {
+    this.noteService.addTagToNote(noteId, tag);
+    this.tagService.incrementUsageCount(tag.id);
+  }
+
+  removeTagFromNote(noteId: string, tagId: string): void {
+    this.noteService.removeTagFromNote(noteId, tagId);
+    this.tagService.decrementUsageCount(tagId);
+  }
+
+  createAndAddTag(noteId: string, tagName: string): void {
+    this.tagService.createTag(tagName, (createdTag) => {
+      this.noteService.addTagToNote(noteId, { id: createdTag.id, name: createdTag.name });
+    });
   }
 
   asInput(event: Event): HTMLInputElement {

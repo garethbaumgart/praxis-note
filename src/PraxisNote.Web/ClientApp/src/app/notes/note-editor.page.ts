@@ -198,6 +198,7 @@ import { Tag } from '../tasks/tag.model';
                 aria-label="Add tag"
               >
                 <i class="pi pi-plus text-[9px]"></i>
+                <span>Add tag</span>
               </button>
             }
             <!-- Collapse/"Less" button (only when expanded and has overflow) -->
@@ -461,22 +462,24 @@ import { Tag } from '../tasks/tag.model';
 
     .add-tag-btn {
       all: unset;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
+      gap: 0.25rem;
+      padding: 2px 10px;
+      height: 18px;
       border-radius: 9999px;
+      border: 1px dashed var(--color-border-default);
       color: var(--color-text-muted);
-      opacity: 0.3;
+      font-size: 10px;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .add-tag-btn:hover {
+      border-color: var(--color-tag-text);
       color: var(--color-tag-text);
       background: var(--color-tags-badge-bg);
-      opacity: 1;
     }
 
     .collapse-btn {
