@@ -6,6 +6,7 @@ using PraxisNote.Application.Features.Calendar;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
+using PraxisNote.Application.Features.Insights;
 using PraxisNote.Application.Features.Users;
 
 namespace PraxisNote.Application;
@@ -86,6 +87,9 @@ public static class DependencyInjection
         services.AddScoped<DisconnectGoogleCalendar>();
         services.AddScoped<GetCalendarConnectionStatus>();
         services.AddScoped<SyncCalendarEvents>();
+
+        // Insight use cases
+        services.AddScoped<GetBehavioralTrends>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();

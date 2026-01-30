@@ -49,6 +49,7 @@
     "@tiptap/extension-underline": "^3.17.1",
     "@tiptap/pm": "^3.17.0",
     "@tiptap/starter-kit": "^3.17.0",
+    "chart.js": "^4.5.1",
     "jspdf": "^4.0.0",
     "lowlight": "^3.3.0",
     "ngx-tiptap": "^14.0.1",
