@@ -1368,6 +1368,104 @@ public class MeetingTests
 
     #endregion
 
+    #region Reflection Tests
+
+    [Fact]
+    public void SubmitReflection_WithValidJson_StoresReflectionData()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var json = """{"selfAssessedTalkTime":30,"selfAssessedEngagement":"medium"}""";
+
+        // Act
+        meeting.SubmitReflection(json);
+
+        // Assert
+        Assert.Equal(json, meeting.ReflectionData);
+        Assert.NotNull(meeting.ReflectionSubmittedAt);
+        Assert.True(meeting.HasReflection);
+    }
+
+    [Fact]
+    public void SubmitReflection_WithNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            meeting.SubmitReflection(null!));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void SubmitReflection_WithEmptyOrWhitespace_ThrowsArgumentException(string invalidJson)
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            meeting.SubmitReflection(invalidJson));
+    }
+
+    [Fact]
+    public void SubmitReflection_TrimsWhitespace()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Act
+        meeting.SubmitReflection("""  {"test":true}  """);
+
+        // Assert
+        Assert.Equal("""{"test":true}""", meeting.ReflectionData);
+    }
+
+    [Fact]
+    public void SubmitReflection_UpdatesTimestamps()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var beforeSubmit = DateTimeOffset.UtcNow;
+
+        // Act
+        meeting.SubmitReflection("""{"test":true}""");
+
+        // Assert
+        Assert.True(meeting.ReflectionSubmittedAt >= beforeSubmit);
+        Assert.True(meeting.UpdatedAt >= beforeSubmit);
+    }
+
+    [Fact]
+    public void SubmitReflection_CalledTwice_OverwritesReflection()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SubmitReflection("""{"first":true}""");
+
+        // Act
+        meeting.SubmitReflection("""{"second":true}""");
+
+        // Assert
+        Assert.Equal("""{"second":true}""", meeting.ReflectionData);
+    }
+
+    [Fact]
+    public void HasReflection_WhenNoReflection_ReturnsFalse()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+
+        // Assert
+        Assert.False(meeting.HasReflection);
+        Assert.Null(meeting.ReflectionData);
+        Assert.Null(meeting.ReflectionSubmittedAt);
+    }
+
+    #endregion
+
     #region CreateFromCalendar Tests
 
     [Fact]

@@ -26,6 +26,9 @@ public static class MeetingEndpoints
         group.MapPatch("/{id:guid}/action-items/{actionItemId:guid}/toggle", (Delegate)HandleToggleActionItem);
         group.MapPost("/{id:guid}/action-items/{actionItemId:guid}/promote", (Delegate)HandlePromoteActionItem);
         group.MapGet("/{id:guid}/action-item-status", (Delegate)HandleGetActionItemStatus);
+        group.MapGet("/{id:guid}/reflection/prompts", (Delegate)HandleGetReflectionPrompts);
+        group.MapGet("/{id:guid}/reflection", (Delegate)HandleGetReflection);
+        group.MapPost("/{id:guid}/reflection", (Delegate)HandleSubmitReflection);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -303,8 +306,86 @@ public static class MeetingEndpoints
 
         return result is not null ? Results.Ok(result) : Results.NotFound();
     }
+
+    private static async Task<IResult> HandleGetReflectionPrompts(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] GenerateReflectionPrompts generateReflectionPrompts,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var query = new GenerateReflectionPrompts.Query(id, userId.Value);
+        var result = await generateReflectionPrompts.ExecuteAsync(query, cancellationToken);
+
+        return result is not null ? Results.Ok(result.Prompts) : Results.NotFound();
+    }
+
+    private static async Task<IResult> HandleGetReflection(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] GetMeetingReflection getMeetingReflection,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var query = new GetMeetingReflection.Query(id, userId.Value);
+        var result = await getMeetingReflection.ExecuteAsync(query, cancellationToken);
+
+        return result is not null ? Results.Ok(result) : Results.NotFound();
+    }
+
+    private static async Task<IResult> HandleSubmitReflection(
+        Guid id,
+        ClaimsPrincipal user,
+        SubmitReflectionRequest request,
+        [FromServices] SubmitReflection submitReflection,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var promptResponses = request.PromptResponses?
+            .Select(p => new PromptResponseDto(p.PromptId, p.PromptText, p.Response))
+            .ToList() ?? [];
+
+        var command = new SubmitReflection.Command(
+            id,
+            userId.Value,
+            request.SelfAssessedTalkTime,
+            request.SelfAssessedEngagement,
+            request.SelfAssessedTone,
+            request.InterruptionAwareness,
+            request.FreeformReflection,
+            promptResponses);
+
+        var success = await submitReflection.ExecuteAsync(command, cancellationToken);
+
+        return success ? Results.NoContent() : Results.NotFound();
+    }
 }
 
 public record CreateMeetingRequest(string? Title, DateTimeOffset? MeetingDate, string? Attendees);
 public record UpdateMeetingRequest(string? Title, DateTimeOffset? MeetingDate, string? Attendees);
 public record SubmitTranscriptRequest(string Transcript);
+
+public record SubmitReflectionRequest(
+    int? SelfAssessedTalkTime,
+    string? SelfAssessedEngagement,
+    string? SelfAssessedTone,
+    string? InterruptionAwareness,
+    string? FreeformReflection,
+    List<PromptResponseRequest>? PromptResponses);
+
+public record PromptResponseRequest(string PromptId, string PromptText, string Response);

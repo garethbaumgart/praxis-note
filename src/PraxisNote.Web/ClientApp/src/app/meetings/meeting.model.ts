@@ -24,6 +24,8 @@ export interface Meeting {
   keyPoints: string | null;
   decisions: string | null;
   behavioralAnalysis: string | null;
+  reflectionData: string | null;
+  reflectionSubmittedAt: string | null;
   tags: MeetingTag[];
   actionItems: ActionItem[];
   createdAt: string;
@@ -143,4 +145,40 @@ export interface PromoteActionItemResult {
   taskId: string;
   title: string;
   status: string;
+}
+
+// Reflection Types
+export interface ReflectionPrompt {
+  promptId: string;
+  category: 'talk-time' | 'engagement' | 'tone' | 'interruptions' | 'general';
+  promptText: string;
+  quickOptions: string[];
+}
+
+export interface PromptResponse {
+  promptId: string;
+  promptText: string;
+  response: string;
+}
+
+export interface MeetingReflection {
+  selfAssessedTalkTime: number | null;
+  selfAssessedEngagement: string | null;
+  selfAssessedTone: string | null;
+  interruptionAwareness: string | null;
+  freeformReflection: string | null;
+  promptResponses: PromptResponse[];
+}
+
+export function parseReflection(json: string | null): MeetingReflection | null {
+  if (!json) return null;
+  try {
+    const parsed = JSON.parse(json) as MeetingReflection;
+    if (parsed && typeof parsed === 'object' && 'promptResponses' in parsed) {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }

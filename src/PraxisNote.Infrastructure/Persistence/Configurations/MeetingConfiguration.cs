@@ -46,6 +46,11 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.BehavioralAnalysis)
             .HasColumnType("text");
 
+        builder.Property(m => m.ReflectionData)
+            .HasColumnType("text");
+
+        builder.Property(m => m.ReflectionSubmittedAt);
+
         builder.Property(m => m.CreatedAt);
         builder.Property(m => m.UpdatedAt);
 

@@ -78,6 +78,9 @@ public static class DependencyInjection
         services.AddScoped<ToggleActionItem>();
         services.AddScoped<PromoteActionItemToTask>();
         services.AddScoped<GetActionItemStatus>();
+        services.AddScoped<GenerateReflectionPrompts>();
+        services.AddScoped<SubmitReflection>();
+        services.AddScoped<GetMeetingReflection>();
 
         // Calendar use cases
         services.AddScoped<ConnectGoogleCalendar>();
