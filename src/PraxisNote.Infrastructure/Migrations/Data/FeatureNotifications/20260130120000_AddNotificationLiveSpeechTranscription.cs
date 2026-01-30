@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'Improvement',
                     'Live speech-to-text transcription',
                     'Meeting recordings now transcribe in real time using your browser — no external API needed. See your words appear as you speak.',
-                    'https://github.com/garethbaumgart/praxis-note/pull/281',
+                    'https://github.com/garethbaumgart/praxis-note/pull/288',
                     '2026-01-30T12:00:00Z'
                 );
                 """);
