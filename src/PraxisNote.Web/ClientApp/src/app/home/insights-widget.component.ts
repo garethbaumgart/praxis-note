@@ -166,6 +166,7 @@ import { InsightsSummaryService } from './insights-summary.service';
               Analyze meetings to unlock personal communication insights and track your growth over time.
             </p>
             <button
+              type="button"
               class="text-sm text-accent-foreground font-medium mt-2 inline-block hover:underline"
               aria-label="Go to meetings"
               (click)="goToMeetings()">
@@ -195,7 +196,7 @@ export class InsightsWidgetComponent implements OnInit {
     return values
       .map((v, i) => {
         const x = Math.round(i * step);
-        const y = Math.round(30 - ((v - min) / range) * 26 + 2);
+        const y = Math.round(2 + (1 - (v - min) / range) * 28);
         return `${i === 0 ? 'M' : 'L'}${x},${y}`;
       })
       .join(' ');

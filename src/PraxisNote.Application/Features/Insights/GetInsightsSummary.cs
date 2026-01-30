@@ -8,7 +8,7 @@ public sealed class GetInsightsSummary(IMeetingRepository meetingRepository)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNameCaseInsensitive = true
     };
 
     public record Query(Guid UserId);
@@ -119,7 +119,8 @@ public sealed class GetInsightsSummary(IMeetingRepository meetingRepository)
         var firstHalf = values.Take(mid).Average();
         var secondHalf = values.Skip(mid).Average();
 
-        if (firstHalf == 0) return secondHalf > 0 ? 100 : 0;
+        const double epsilon = 1e-6;
+        if (Math.Abs(firstHalf) < epsilon) return secondHalf > 0 ? 100 : 0;
 
         return ((secondHalf - firstHalf) / firstHalf) * 100;
     }
@@ -129,7 +130,7 @@ public sealed class GetInsightsSummary(IMeetingRepository meetingRepository)
     {
         // Prioritize the most notable positive trend
         if (questionRatioChange > 10)
-            return "Your question ratio improved this week \u2014 keep it up!";
+            return "Your question ratio improved recently \u2014 keep it up!";
 
         if (talkTimeChange < -10 && avgTalkTime < 45)
             return "Talk time trending down \u2014 you\u2019re leaving more room for others.";
