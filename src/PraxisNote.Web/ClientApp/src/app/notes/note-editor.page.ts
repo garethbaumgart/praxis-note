@@ -102,6 +102,7 @@ import { Tag } from '../tasks/tag.model';
               [isNewNote]="isNewNote()"
               [resetTrigger]="resetCounter()"
               [checkboxStatuses]="checkboxStatuses()"
+              [expandable]="true"
               (contentChange)="onContentChange($event)"
               (promoteCheckbox)="onPromoteCheckbox($event)"
             />
@@ -334,6 +335,8 @@ import { Tag } from '../tasks/tag.model';
       padding: 1.5rem 2rem;
       min-height: 100%;
       background: var(--color-bg-default);
+      display: flex;
+      flex-direction: column;
     }
 
     @media (max-width: 768px) {
