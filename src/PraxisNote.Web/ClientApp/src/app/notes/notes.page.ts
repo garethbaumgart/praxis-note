@@ -211,9 +211,10 @@ export class NotesPage implements OnInit {
 
   readonly noteCount = computed(() => this.noteService.notes().length);
 
-  readonly isFiltered = computed(() =>
-    this.noteService.selectedTagIds().size > 0 || !!this.noteService.searchQuery()
-  );
+  readonly isFiltered = computed(() => {
+    const query = this.noteService.searchQuery()?.trim();
+    return this.noteService.selectedTagIds().size > 0 || !!query;
+  });
 
   /** Tag chips with note counts, sorted by count descending, only tags used on notes */
   readonly tagChips = computed(() => {
