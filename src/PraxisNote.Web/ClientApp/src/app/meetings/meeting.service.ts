@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
-import { Observable, timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, EMPTY } from 'rxjs';
+import { Observable, timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, throwError, EMPTY, of } from 'rxjs';
 import { Meeting, MeetingGroup, ActionItemStatus, PromoteActionItemResult, ReflectionPrompt, MeetingReflection } from './meeting.model';
 import { ToastService } from '../shared/services/toast.service';
 
@@ -467,7 +467,9 @@ export class MeetingService {
   }
 
   getReflection(meetingId: string): Observable<MeetingReflection | null> {
-    return this.http.get<MeetingReflection>(`/api/meetings/${meetingId}/reflection`);
+    return this.http.get<MeetingReflection>(`/api/meetings/${meetingId}/reflection`).pipe(
+      catchError(err => err.status === 404 ? of(null) : throwError(() => err)),
+    );
   }
 
   submitReflection(meetingId: string, reflection: MeetingReflection): void {

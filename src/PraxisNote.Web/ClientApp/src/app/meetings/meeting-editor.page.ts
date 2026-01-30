@@ -362,7 +362,6 @@ interface TimeOption {
                   </div>
                   <app-meeting-reflection
                     [meeting]="currentMeeting()!"
-                    (onReflectionSaved)="onReflectionSaved()"
                   />
                 </div>
               }
@@ -1636,12 +1635,6 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
         this.actionItemStatuses.set([]);
       },
     });
-  }
-
-  // --- Reflection ---
-
-  onReflectionSaved(): void {
-    this.toast.success({ summary: 'Reflection saved' });
   }
 
   // --- Navigation ---

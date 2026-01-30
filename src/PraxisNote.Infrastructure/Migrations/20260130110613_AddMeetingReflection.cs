@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
+namespace PraxisNote.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class AddMeetingReflection : Migration

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal, computed, inject } from '@angular/core';
 import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { Meeting, ReflectionPrompt, MeetingReflection, PromptResponse, parseReflection, parseBehavioralAnalysis } from './meeting.model';
@@ -72,7 +72,6 @@ import { MeetingService } from './meeting.service';
           <p-button
             label="Save Reflection"
             size="small"
-            [loading]="saving()"
             (onClick)="save()"
             icon="pi pi-check"
           />
@@ -166,12 +165,10 @@ export class MeetingReflectionComponent {
   private readonly meetingService = inject(MeetingService);
 
   readonly meeting = input.required<Meeting>();
-  readonly onReflectionSaved = output<void>();
 
   // State
   readonly prompts = signal<ReflectionPrompt[]>([]);
   readonly loadingPrompts = signal(false);
-  readonly saving = signal(false);
   readonly editing = signal(false);
   readonly freeformReflection = signal('');
   readonly promptResponses = signal<Map<string, PromptResponse>>(new Map());
@@ -198,7 +195,7 @@ export class MeetingReflectionComponent {
     if (talkTimeResponse && dominantSpeaker) {
       if (talkTimeResponse.response === 'About Right' && dominantSpeaker.percentage > 55) {
         insights.push(
-          `You rated your talk time as "About Right" but the analysis shows ${dominantSpeaker.percentage.toFixed(0)}% — consider being more mindful of speaking balance.`
+          `You rated your talk time as "About Right" but the analysis shows a participant spoke for ${dominantSpeaker.percentage.toFixed(0)}% of the meeting — consider whether speaking balance could be improved.`
         );
       }
     }
@@ -273,8 +270,6 @@ export class MeetingReflectionComponent {
   }
 
   save(): void {
-    this.saving.set(true);
-
     const responses: PromptResponse[] = Array.from(this.promptResponses().values())
       .filter(r => r.response.trim().length > 0);
 
@@ -288,9 +283,7 @@ export class MeetingReflectionComponent {
     };
 
     this.meetingService.submitReflection(this.meeting().id, reflection);
-    this.saving.set(false);
     this.editing.set(false);
-    this.onReflectionSaved.emit();
   }
 
   private loadPrompts(): void {

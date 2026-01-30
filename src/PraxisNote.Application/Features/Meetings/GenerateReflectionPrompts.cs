@@ -52,7 +52,7 @@ public sealed class GenerateReflectionPrompts(IMeetingRepository meetingReposito
             prompts.Add(new ReflectionPromptDto(
                 "talk-time-dominant",
                 "talk-time",
-                $"You spoke for {dominantSpeaker.Percentage:F0}% of the meeting. How would you rate your talk time?",
+                $"The analysis shows one participant spoke for {dominantSpeaker.Percentage:F0}% of the meeting. Reflecting on your own participation, how would you rate your talk time?",
                 ["Too Much", "About Right", "Too Little"]));
         }
 

@@ -10,7 +10,7 @@ using PraxisNote.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
+namespace PraxisNote.Infrastructure.Migrations
 {
     [DbContext(typeof(PraxisNoteDbContext))]
     [Migration("20260130110613_AddMeetingReflection")]
