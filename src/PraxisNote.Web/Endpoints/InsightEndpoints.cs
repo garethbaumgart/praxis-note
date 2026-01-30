@@ -13,6 +13,7 @@ public static class InsightEndpoints
             .RequireAuthorization();
 
         group.MapGet("/behavioral-trends", (Delegate)HandleGetBehavioralTrends);
+        group.MapGet("/summary", (Delegate)HandleGetInsightsSummary);
     }
 
     private static async Task<IResult> HandleGetBehavioralTrends(
@@ -36,6 +37,23 @@ public static class InsightEndpoints
 
         var query = new GetBehavioralTrends.Query(userId.Value, effectiveRange, participant);
         var result = await getBehavioralTrends.ExecuteAsync(query, cancellationToken);
+
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> HandleGetInsightsSummary(
+        ClaimsPrincipal user,
+        [FromServices] GetInsightsSummary getInsightsSummary,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var query = new GetInsightsSummary.Query(userId.Value);
+        var result = await getInsightsSummary.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
     }

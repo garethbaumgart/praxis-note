@@ -90,6 +90,7 @@ public static class DependencyInjection
 
         // Insight use cases
         services.AddScoped<GetBehavioralTrends>();
+        services.AddScoped<GetInsightsSummary>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();
