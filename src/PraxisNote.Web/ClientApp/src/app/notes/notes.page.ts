@@ -290,18 +290,28 @@ export class NotesPage implements OnInit {
   }
 
   addTagToNote(noteId: string, tag: NoteTag): void {
-    this.noteService.addTagToNote(noteId, tag);
-    this.tagService.incrementUsageCount(tag.id);
+    this.noteService.addTagToNote(
+      noteId,
+      tag,
+      () => this.tagService.incrementUsageCount(tag.id),
+    );
   }
 
   removeTagFromNote(noteId: string, tagId: string): void {
-    this.noteService.removeTagFromNote(noteId, tagId);
-    this.tagService.decrementUsageCount(tagId);
+    this.noteService.removeTagFromNote(
+      noteId,
+      tagId,
+      () => this.tagService.decrementUsageCount(tagId),
+    );
   }
 
   createAndAddTag(noteId: string, tagName: string): void {
     this.tagService.createTag(tagName, (createdTag) => {
-      this.noteService.addTagToNote(noteId, { id: createdTag.id, name: createdTag.name });
+      this.noteService.addTagToNote(
+        noteId,
+        { id: createdTag.id, name: createdTag.name },
+        () => this.tagService.incrementUsageCount(createdTag.id),
+      );
     });
   }
 

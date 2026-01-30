@@ -106,12 +106,13 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
                 @if (tooltipSuggestions().length > 0 || canCreateTag()) {
                   <div class="tag-dropdown">
                     @for (tag of tooltipSuggestions(); track tag.id) {
+                      @let parts = getTagHighlightParts(tag.name);
                       <button
                         type="button"
                         class="tag-dropdown-item"
                         (click)="addTag({ id: tag.id, name: tag.name }); $event.stopPropagation()"
                       >
-                        <span [innerHTML]="highlightMatch(tag.name)"></span>
+                        <span>{{ parts.before }}@if (parts.match) {<mark class="search-highlight">{{ parts.match }}</mark>}{{ parts.after }}</span>
                         <span class="text-foreground-muted">{{ tag.usageCount }}</span>
                       </button>
                     }
@@ -431,12 +432,19 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       font-size: 7px;
     }
 
-    .tag-badge:hover .tag-badge-remove {
+    .tag-badge:hover .tag-badge-remove,
+    .tag-badge:focus-within .tag-badge-remove {
       opacity: 0.6;
     }
 
     .tag-badge-remove:hover {
       opacity: 1 !important;
+    }
+
+    .tag-badge-remove:focus-visible {
+      opacity: 1 !important;
+      outline: 2px solid var(--color-tag-text);
+      outline-offset: 1px;
     }
 
     .overflow-btn {
@@ -481,6 +489,14 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       background: var(--color-tag-bg);
     }
 
+    .add-tag-card-btn:focus-visible {
+      opacity: 1 !important;
+      color: var(--color-tag-text);
+      background: var(--color-tag-bg);
+      outline: 2px solid var(--color-tag-text);
+      outline-offset: 1px;
+    }
+
     /* Hover-only "Tag" label button for untagged notes */
     .add-tag-card-row {
       opacity: 0;
@@ -512,6 +528,11 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       border-color: var(--color-tag-text);
       color: var(--color-tag-text);
       background: var(--color-tag-bg);
+    }
+
+    .add-tag-label-btn:focus-visible {
+      outline: 2px solid var(--color-tag-text);
+      outline-offset: 2px;
     }
 
     /* Tag search input */
@@ -555,8 +576,14 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       color: var(--color-foreground);
     }
 
-    .tag-dropdown-item:hover {
+    .tag-dropdown-item:hover,
+    .tag-dropdown-item:focus-visible {
       background: var(--color-surface-subtle);
+    }
+
+    .tag-dropdown-item:focus-visible {
+      outline: 2px solid var(--color-border-default);
+      outline-offset: -2px;
     }
 
     .tag-dropdown-item.create {
@@ -739,16 +766,17 @@ export class NoteCardComponent {
     this.tagSearch.set('');
   }
 
-  highlightMatch(tagName: string): string {
+  getTagHighlightParts(tagName: string): { before: string; match: string; after: string } {
     const query = this.tagSearch().toLowerCase().trim();
-    if (!query) return this.escapeHtml(tagName);
+    if (!query) return { before: tagName, match: '', after: '' };
     const lowerName = tagName.toLowerCase();
     const index = lowerName.indexOf(query);
-    if (index === -1) return this.escapeHtml(tagName);
-    const before = tagName.slice(0, index);
-    const match = tagName.slice(index, index + query.length);
-    const after = tagName.slice(index + query.length);
-    return `${this.escapeHtml(before)}<mark class="search-highlight">${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
+    if (index === -1) return { before: tagName, match: '', after: '' };
+    return {
+      before: tagName.slice(0, index),
+      match: tagName.slice(index, index + query.length),
+      after: tagName.slice(index + query.length),
+    };
   }
 
   startDeleteConfirm(): void {

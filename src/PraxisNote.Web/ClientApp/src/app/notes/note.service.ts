@@ -44,7 +44,7 @@ export class NoteService {
   readonly loading = this._loading.asReadonly();
   readonly initialLoadComplete = this._initialLoadComplete.asReadonly();
   readonly searchQuery = this._searchQuery.asReadonly();
-  readonly selectedTagIds = this._selectedTagIds.asReadonly();
+  readonly selectedTagIds = computed(() => new Set(this._selectedTagIds()));
 
   readonly filteredNotes = computed(() => {
     const query = this._searchQuery().toLowerCase().trim();
