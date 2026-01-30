@@ -93,11 +93,8 @@ export class SpeechRecognitionService implements OnDestroy {
       // 'no-speech' and 'aborted' are expected during normal use
       if (event.error === 'no-speech' || event.error === 'aborted') return;
 
-      // Fatal errors that should stop auto-restart
-      const fatalErrors = ['not-allowed', 'service-not-allowed', 'network', 'language-not-supported'];
-      if (fatalErrors.includes(event.error)) {
-        this.shouldBeListening = false;
-      }
+      // All other errors are fatal — stop auto-restart to prevent error loops
+      this.shouldBeListening = false;
 
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
         this.error.set('Microphone access denied for speech recognition.');
