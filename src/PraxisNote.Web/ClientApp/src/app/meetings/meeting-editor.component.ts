@@ -12,6 +12,7 @@ import { Meeting, ActionItemStatus } from './meeting.model';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingService } from './meeting.service';
 import { AudioRecorderService } from './audio-recorder.service';
+import { SpeechRecognitionService } from './speech-recognition.service';
 import { ToastService } from '../shared/services/toast.service';
 
 interface DateOption {
@@ -54,6 +55,13 @@ interface TimeOption {
     }
     .audio-bar {
       transition: height 0.1s ease-out;
+    }
+    .live-transcript {
+      background: var(--color-bg-muted);
+      border-radius: 6px;
+      padding: 10px;
+      max-height: 150px;
+      overflow-y: auto;
     }
   `],
   template: `
@@ -255,6 +263,12 @@ interface TimeOption {
               <p class="text-xs text-danger">{{ recorder.error() }}</p>
             </div>
           }
+          @if (speechRecognition.error()) {
+            <div class="flex gap-3">
+              <div class="w-5"></div>
+              <p class="text-xs text-danger">{{ speechRecognition.error() }}</p>
+            </div>
+          }
 
           <!-- Tab visibility warning -->
           @if (showTabWarning()) {
@@ -263,6 +277,25 @@ interface TimeOption {
               <div class="flex items-center gap-2 text-xs text-foreground-muted bg-surface-muted rounded px-3 py-1.5">
                 <i class="pi pi-info-circle text-xs"></i>
                 <span>Keep this tab active for best recording quality.</span>
+              </div>
+            </div>
+          }
+
+          <!-- Live transcript preview while recording -->
+          @if (recorder.isActive() && (speechRecognition.transcript() || speechRecognition.interimText())) {
+            <div class="flex gap-3">
+              <div class="w-5"></div>
+              <div class="flex-1 live-transcript">
+                <div class="flex items-center gap-1.5 mb-2">
+                  <i class="pi pi-volume-up text-xs text-accent-solid"></i>
+                  <span class="text-xs font-medium text-foreground-secondary">Live Transcript</span>
+                </div>
+                <p class="text-sm text-foreground leading-relaxed">
+                  {{ speechRecognition.transcript() }}
+                  @if (speechRecognition.interimText()) {
+                    <span class="text-foreground-muted italic">{{ speechRecognition.interimText() }}</span>
+                  }
+                </p>
               </div>
             </div>
           }
@@ -281,43 +314,23 @@ interface TimeOption {
               ></textarea>
               <div class="flex justify-between items-center mt-1">
                 <div class="flex items-center gap-2">
-                  <!-- Audio controls -->
-                  @if (isTranscribing()) {
-                    <span class="flex items-center gap-2 text-xs text-foreground-muted">
-                      <i class="pi pi-spin pi-spinner text-xs"></i>
-                      Transcribing audio...
-                    </span>
-                  } @else if (!recorder.isActive()) {
-                    <input
-                      #audioFileInput
-                      type="file"
-                      accept=".mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm"
-                      class="hidden"
-                      (change)="onAudioFileSelected($event)"
-                      aria-label="Upload audio file for transcription"
-                    />
-                    <button
-                      type="button"
-                      class="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors"
-                      (click)="audioFileInput.click()"
-                      aria-label="Upload audio file for Whisper transcription"
-                    >
-                      <i class="pi pi-upload text-xs"></i>
-                      Upload audio
-                    </button>
-                    <span class="text-foreground-muted text-xs">|</span>
-                    <button
-                      type="button"
-                      class="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-danger transition-colors"
-                      (click)="startRecording()"
-                      aria-label="Record audio from microphone"
-                    >
-                      <i class="pi pi-circle-fill text-[8px] text-danger"></i>
-                      Record
-                    </button>
-                  }
-                  @if (audioFileName()) {
-                    <span class="text-xs text-foreground-muted">{{ audioFileName() }}</span>
+                  @if (!recorder.isActive()) {
+                    @if (speechRecognition.isSupported()) {
+                      <button
+                        type="button"
+                        class="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-danger transition-colors"
+                        (click)="startRecording()"
+                        aria-label="Record and transcribe from microphone"
+                      >
+                        <i class="pi pi-circle-fill text-[8px] text-danger"></i>
+                        Record
+                      </button>
+                    } @else {
+                      <span class="flex items-center gap-1.5 text-xs text-foreground-muted">
+                        <i class="pi pi-exclamation-triangle text-xs"></i>
+                        Speech recognition not supported
+                      </span>
+                    }
                   }
                 </div>
                 <span class="text-xs text-foreground-muted">{{ transcript().length }} characters</span>
@@ -368,6 +381,7 @@ export class MeetingEditorComponent {
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   readonly recorder = inject(AudioRecorderService);
+  readonly speechRecognition = inject(SpeechRecognitionService);
 
   /** Expose Math for template */
   readonly Math = Math;
@@ -396,8 +410,6 @@ export class MeetingEditorComponent {
   readonly meetingDate = signal<Date | null>(null);
   readonly attendees = signal('');
   readonly transcript = signal('');
-  readonly audioFileName = signal<string | null>(null);
-  readonly isTranscribing = signal(false);
   readonly showTabWarning = signal(false);
 
   // Date selection state
@@ -459,17 +471,6 @@ export class MeetingEditorComponent {
       const id = this.meetingId();
       if (id && count > 0) {
         this.loadActionItemStatuses();
-      }
-    });
-
-    // Sync transcript when transcription completes (meeting updated via polling)
-    effect(() => {
-      const meeting = this.currentMeeting();
-      if (meeting && meeting.status !== 'Processing' && this.isTranscribing()) {
-        this.isTranscribing.set(false);
-        if (meeting.transcriptContent) {
-          this.transcript.set(meeting.transcriptContent);
-        }
       }
     });
 
@@ -601,9 +602,8 @@ export class MeetingEditorComponent {
     this.actionItemStatuses.set([]);
     this.promotingIds.set(new Set());
     this.showDatePicker.set(false);
-    this.audioFileName.set(null);
-    this.isTranscribing.set(false);
     this.showTabWarning.set(false);
+    this.speechRecognition.reset();
     this.recorder.discard();
 
     if (meeting) {
@@ -641,43 +641,30 @@ export class MeetingEditorComponent {
     this.visible.set(true);
   }
 
-  onAudioFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-
-    const id = this.meetingId();
-    if (!id) return;
-
-    this.audioFileName.set(file.name);
-    this.isTranscribing.set(true);
-    this.meetingService.transcribeAudio(id, file);
-
-    // Reset file input so the same file can be re-selected
-    input.value = '';
-  }
-
   async startRecording(): Promise<void> {
+    this.speechRecognition.reset();
     await this.recorder.start();
     if (this.recorder.isActive()) {
+      this.speechRecognition.start();
       this.showTabWarning.set(true);
     }
   }
 
   async stopRecording(): Promise<void> {
     try {
-      const file = await this.recorder.stop();
+      this.speechRecognition.stop();
+      await this.recorder.stop();
       this.showTabWarning.set(false);
 
-      if (!file) return;
-
-      const id = this.meetingId();
-      if (!id) return;
-
-      this.audioFileName.set(file.name);
-      this.isTranscribing.set(true);
-      this.meetingService.transcribeAudio(id, file);
+      // Set transcript from speech recognition results
+      const recognizedText = this.speechRecognition.transcript();
+      if (recognizedText) {
+        const current = this.transcript();
+        const separator = current ? '\n\n' : '';
+        this.transcript.set(current + separator + recognizedText);
+      }
     } catch (error) {
+      this.speechRecognition.stop();
       this.showTabWarning.set(false);
       console.error('Failed to stop audio recording:', error);
       this.toast.error('Failed to stop recording. Please try again.');
