@@ -26,6 +26,10 @@ export const routes: Routes = [
     loadComponent: () => import('./meetings/meetings.page').then(m => m.MeetingsPage),
   },
   {
+    path: 'meetings/:id',
+    loadComponent: () => import('./meetings/meeting-editor.page').then(m => m.MeetingEditorPage),
+  },
+  {
     path: 'settings',
     loadComponent: () => import('./settings/settings.page').then(m => m.SettingsPage),
   },

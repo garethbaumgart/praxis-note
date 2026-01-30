@@ -152,6 +152,11 @@
   --color-tag-bg: rgba(163, 190, 140, 0.5);
   --color-tag-text: #4a6638;
 
+  /* Meeting section borders */
+  --color-meeting-details-border: rgba(136, 192, 208, 0.8);   /* Cyan - matches todo */
+  --color-meeting-transcript-border: rgba(94, 129, 172, 0.6);  /* Blue - matches accent */
+  --color-meeting-analysis-border: rgba(163, 190, 140, 0.6);   /* Green - matches done */
+
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
 }
@@ -290,6 +295,11 @@
   --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.3);
   --color-tag-bg: rgba(163, 190, 140, 0.5);
   --color-tag-text: #a3be8c;
+
+  /* Meeting section borders */
+  --color-meeting-details-border: rgba(136, 192, 208, 0.5);   /* Cyan - matches todo */
+  --color-meeting-transcript-border: rgba(94, 129, 172, 0.4);  /* Blue - matches accent */
+  --color-meeting-analysis-border: rgba(163, 190, 140, 0.4);   /* Green - matches done */
 
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #88c0d0);

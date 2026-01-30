@@ -69,7 +69,13 @@ export class MeetingService {
     });
   }
 
-  createMeeting(title?: string, meetingDate?: string, attendees?: string): void {
+  createMeeting(
+    title?: string,
+    meetingDate?: string,
+    attendees?: string,
+    onSuccess?: (id: string) => void,
+    onError?: () => void,
+  ): void {
     const tempId = crypto.randomUUID();
     const now = new Date().toISOString();
     const newMeeting: Meeting = {
@@ -98,11 +104,13 @@ export class MeetingService {
         this._meetings.update(meetings =>
           meetings.map(m => (m.id === tempId ? { ...m, id: result.id } : m))
         );
+        onSuccess?.(result.id);
       },
       error: () => {
         this.toast.error('Failed to create meeting');
         // Remove the optimistically added meeting
         this._meetings.update(meetings => meetings.filter(m => m.id !== tempId));
+        onError?.();
       },
     });
   }
