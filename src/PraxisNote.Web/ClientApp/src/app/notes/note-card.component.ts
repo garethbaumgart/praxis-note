@@ -1,5 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, output, computed, signal, inject, DestroyRef } from '@angular/core';
+import { generateHTML } from '@tiptap/core';
 import { Note } from './note.model';
+import { tiptapExtensions } from './tiptap-extensions';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 
@@ -18,12 +20,18 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       (keydown.space)="handleCardKeydown(asKeyboardEvent($event))"
     >
       <div class="p-3">
-        <!-- Content preview -->
-        @if (contentPreview()) {
-          <p class="text-sm text-foreground line-clamp-6 whitespace-pre-wrap break-words">
-            {{ contentPreview() }}
-          </p>
-        } @else {
+        <!-- Title (extracted from first heading) -->
+        @if (cardTitle()) {
+          <h3 class="card-title">{{ cardTitle() }}</h3>
+        }
+
+        <!-- Rich content preview -->
+        @if (contentHtml()) {
+          <div class="note-preview-wrapper">
+            <div class="note-preview" [innerHTML]="contentHtml()"></div>
+            <div class="note-preview-fade"></div>
+          </div>
+        } @else if (!cardTitle()) {
           <p class="text-sm text-foreground-muted italic">Empty note</p>
         }
 
@@ -104,6 +112,193 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       opacity: 0;
       transition: opacity 0.15s;
     }
+
+    /* Title */
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--color-foreground);
+      margin: 0 0 0.5rem 0;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Rich preview container */
+    .note-preview-wrapper {
+      position: relative;
+      max-height: 140px;
+      overflow: hidden;
+    }
+
+    .note-preview-fade {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 24px;
+      background: linear-gradient(to top, var(--color-surface-subtle), transparent);
+      pointer-events: none;
+    }
+
+    /* Rich preview typography (scaled down) — ::ng-deep needed for innerHTML content */
+    .note-preview {
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: var(--color-foreground);
+    }
+
+    :host ::ng-deep .note-preview > :first-child {
+      margin-top: 0;
+    }
+
+    :host ::ng-deep .note-preview h1 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin: 0.3em 0;
+    }
+
+    :host ::ng-deep .note-preview h2 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin: 0.3em 0;
+    }
+
+    :host ::ng-deep .note-preview h3 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 0.2em 0;
+    }
+
+    :host ::ng-deep .note-preview p {
+      margin: 0.25em 0;
+    }
+
+    :host ::ng-deep .note-preview ul {
+      padding-left: 1.2em;
+      margin: 0.25em 0;
+      list-style: disc;
+    }
+
+    :host ::ng-deep .note-preview ol {
+      padding-left: 1.2em;
+      margin: 0.25em 0;
+      list-style: decimal;
+    }
+
+    :host ::ng-deep .note-preview li {
+      margin: 0.1em 0;
+    }
+
+    :host ::ng-deep .note-preview ul[data-type="taskList"] {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    :host ::ng-deep .note-preview ul[data-type="taskList"] li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.35em;
+    }
+
+    :host ::ng-deep .note-preview ul[data-type="taskList"] li label {
+      flex-shrink: 0;
+      margin-top: 0.15em;
+    }
+
+    :host ::ng-deep .note-preview ul[data-type="taskList"] li label input[type="checkbox"] {
+      width: 12px;
+      height: 12px;
+      accent-color: var(--color-accent-solid);
+      pointer-events: none;
+    }
+
+    :host ::ng-deep .note-preview ul[data-type="taskList"] li[data-checked="true"] > div {
+      text-decoration: line-through;
+      color: var(--color-foreground-muted);
+    }
+
+    :host ::ng-deep .note-preview ul[data-type="taskList"] li > div {
+      flex: 1;
+    }
+
+    :host ::ng-deep .note-preview blockquote {
+      border-left: 2px solid var(--color-border);
+      padding-left: 0.6em;
+      margin: 0.3em 0;
+      color: var(--color-foreground-secondary);
+    }
+
+    :host ::ng-deep .note-preview code {
+      background: var(--color-surface-default);
+      padding: 0.1em 0.3em;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+
+    :host ::ng-deep .note-preview pre {
+      background: var(--color-surface-muted);
+      padding: 0.4em 0.6em;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.8em;
+      overflow: hidden;
+      margin: 0.3em 0;
+      line-height: 1.4;
+    }
+
+    :host ::ng-deep .note-preview pre code {
+      background: none;
+      padding: 0;
+    }
+
+    :host ::ng-deep .note-preview mark {
+      background: var(--color-editor-mark);
+      padding: 0 0.15em;
+      border-radius: 2px;
+    }
+
+    :host ::ng-deep .note-preview hr {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: 0.4em 0;
+    }
+
+    :host ::ng-deep .note-preview img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 3px;
+      margin: 0.25em 0;
+    }
+
+    :host ::ng-deep .note-preview table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 0.3em 0;
+    }
+
+    :host ::ng-deep .note-preview th,
+    :host ::ng-deep .note-preview td {
+      border: 1px solid var(--color-border);
+      padding: 0.2em 0.4em;
+      text-align: left;
+      font-size: 0.85em;
+    }
+
+    :host ::ng-deep .note-preview th {
+      background: var(--color-surface-hover);
+      font-weight: 600;
+    }
+
+    :host ::ng-deep .note-preview a {
+      color: var(--color-accent-solid);
+      text-decoration: underline;
+    }
+
+    /* Checkboxes */
     .note-checkbox {
       width: 14px;
       height: 14px;
@@ -116,7 +311,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       border-color: var(--color-accent-solid, #5e81ac);
     }
     .note-checkbox.checked::after {
-      content: '✓';
+      content: '\\2713';
       color: white;
       font-size: 9px;
       font-weight: bold;
@@ -124,6 +319,8 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       align-items: center;
       justify-content: center;
     }
+
+    /* Tags */
     .tag-badge {
       display: inline-flex;
       align-items: center;
@@ -134,12 +331,6 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       padding: 2px 8px;
       border-radius: 9999px;
       height: 18px;
-    }
-    .line-clamp-6 {
-      display: -webkit-box;
-      -webkit-line-clamp: 6;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
     }
   `],
 })
@@ -156,20 +347,50 @@ export class NoteCardComponent {
   private readonly maxVisibleCheckboxes = 4;
   private readonly maxVisibleTags = 3;
 
-  readonly contentPreview = computed(() => {
+  /** Parsed TipTap JSON doc (null if not valid JSON) */
+  private readonly parsedContent = computed(() => {
     const content = this.note().content;
-    if (!content) return '';
-
-    // Try to parse as TipTap JSON
+    if (!content) return null;
     try {
       const parsed = JSON.parse(content);
-      if (parsed.type === 'doc' && parsed.content) {
-        return this.extractTextFromTiptap(parsed.content);
-      }
-    } catch {
-      // Not JSON, return as plain text
+      if (parsed.type === 'doc' && parsed.content) return parsed;
+    } catch { /* not JSON */ }
+    return null;
+  });
+
+  /** Extract the first heading as the card title */
+  readonly cardTitle = computed(() => {
+    const doc = this.parsedContent();
+    if (!doc?.content?.length) return '';
+
+    const firstNode = doc.content[0];
+    if (firstNode.type === 'heading') {
+      return this.extractText(firstNode).trim();
     }
-    return content;
+    return '';
+  });
+
+  /** Generate rich HTML preview from the remaining content (after title) */
+  readonly contentHtml = computed(() => {
+    const doc = this.parsedContent();
+    if (!doc?.content?.length) {
+      // Plain text fallback
+      const content = this.note().content;
+      if (content && !this.parsedContent()) return `<p style="white-space:pre-wrap">${this.escapeHtml(content)}</p>`;
+      return '';
+    }
+
+    const hasTitle = this.cardTitle();
+    const nodes = hasTitle ? doc.content.slice(1) : doc.content;
+
+    if (nodes.length === 0) return '';
+
+    const previewDoc = { type: 'doc', content: nodes };
+    try {
+      return generateHTML(previewDoc, tiptapExtensions);
+    } catch {
+      return '';
+    }
   });
 
   readonly visibleCheckboxes = computed(() =>
@@ -240,30 +461,20 @@ export class NoteCardComponent {
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 
-  /**
-   * Recursively extracts text from TipTap JSON content nodes.
-   */
-  private extractTextFromTiptap(nodes: any[]): string {
-    // Guard against non-array content
-    if (!Array.isArray(nodes)) {
-      return '';
-    }
+  /** Recursively extract plain text from a TipTap node */
+  private extractText(node: { type: string; text?: string; content?: unknown[] }): string {
+    if (node.type === 'text' && node.text) return node.text;
+    if (!node.content) return '';
+    return (node.content as { type: string; text?: string; content?: unknown[] }[])
+      .map(child => this.extractText(child))
+      .join('');
+  }
 
-    const textParts: string[] = [];
-
-    for (const node of nodes) {
-      if (node.type === 'text' && node.text) {
-        textParts.push(node.text);
-      } else if (node.content) {
-        textParts.push(this.extractTextFromTiptap(node.content));
-      }
-
-      // Add newline after block-level nodes
-      if (['paragraph', 'heading', 'bulletList', 'orderedList', 'taskList', 'blockquote'].includes(node.type)) {
-        textParts.push('\n');
-      }
-    }
-
-    return textParts.join('').trim();
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 }

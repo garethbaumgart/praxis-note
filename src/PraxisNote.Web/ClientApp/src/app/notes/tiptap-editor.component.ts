@@ -15,32 +15,14 @@ import {
   computed,
 } from '@angular/core';
 import { Editor } from '@tiptap/core';
-import StarterKit from '@tiptap/starter-kit';
-import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
 import Placeholder from '@tiptap/extension-placeholder';
-import Link from '@tiptap/extension-link';
-import { Underline } from '@tiptap/extension-underline';
-import { Highlight } from '@tiptap/extension-highlight';
-import { TextStyle } from '@tiptap/extension-text-style';
-import { Color } from '@tiptap/extension-color';
-import { TextAlign } from '@tiptap/extension-text-align';
-import { Image } from '@tiptap/extension-image';
-import { Table } from '@tiptap/extension-table';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
-import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
-import { common, createLowlight } from 'lowlight';
 import { TiptapEditorDirective } from 'ngx-tiptap';
 import { CheckboxStatus } from './note.model';
+import { tiptapExtensions } from './tiptap-extensions';
 import { Select } from 'primeng/select';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
-
-// Create lowlight instance with common languages
-const lowlight = createLowlight(common);
 
 // Block type options for the dropdown
 interface BlockType {
@@ -55,6 +37,9 @@ interface BlockType {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TiptapEditorDirective, Select, Menu, FormsModule],
+  host: {
+    '[class.expandable]': 'expandable()',
+  },
   template: `
     <!-- Toolbar -->
     <div class="toolbar-container">
@@ -326,6 +311,22 @@ interface BlockType {
   styles: [`
     :host {
       display: block;
+    }
+
+    :host(.expandable) {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    :host(.expandable) .tiptap-editor-wrapper {
+      flex: 1;
+      max-height: none;
+    }
+
+    :host(.expandable) ::ng-deep .ProseMirror {
+      min-height: 100%;
     }
 
     .toolbar-container {
@@ -758,6 +759,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /** Whether this is a new note (will start with heading format) */
   readonly isNewNote = input<boolean>(false);
 
+  /** Whether the editor should expand to fill available space */
+  readonly expandable = input<boolean>(false);
+
   /** Trigger to force editor reset (incremented each time dialog opens) */
   readonly resetTrigger = input<number>(0);
 
@@ -864,48 +868,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   editor = new Editor({
     editable: true,
     extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
-        },
-        codeBlock: false, // Disable default, use CodeBlockLowlight instead
-      }),
-      TaskList,
-      TaskItem.configure({
-        nested: true,
-      }),
+      ...tiptapExtensions,
       Placeholder.configure({
         placeholder: 'Take a note...',
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'note-link',
-          rel: 'noopener noreferrer',
-          target: '_blank',
-        },
-      }),
-      Underline,
-      Highlight.configure({
-        multicolor: false,
-      }),
-      TextStyle,
-      Color,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Image.configure({
-        inline: false,
-        allowBase64: true,
-      }),
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableCell,
-      TableHeader,
-      CodeBlockLowlight.configure({
-        lowlight,
       }),
     ],
     onCreate: () => {
