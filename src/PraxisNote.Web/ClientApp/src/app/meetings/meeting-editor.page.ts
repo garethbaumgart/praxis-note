@@ -1343,6 +1343,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.title.set(meeting.title ?? '');
     this.attendees.set(meeting.attendees ?? '');
     this.transcript.set(meeting.transcriptContent ?? '');
+    this.dismissedSuggestedTags.set(new Set());
 
     const meetingDate = meeting.meetingDate ? new Date(meeting.meetingDate) : new Date();
     this.meetingDate.set(meetingDate);
