@@ -53,7 +53,11 @@ public sealed class AnalyzeMeeting(
                 result.BehavioralAnalysis is not null
                     ? JsonSerializer.Serialize(result.BehavioralAnalysis, camelCaseOptions)
                     : null,
-                actionItems);
+                actionItems,
+                result.SuggestedTitle,
+                result.SuggestedTags.Count > 0
+                    ? JsonSerializer.Serialize(result.SuggestedTags)
+                    : null);
         }
         catch (OperationCanceledException)
         {

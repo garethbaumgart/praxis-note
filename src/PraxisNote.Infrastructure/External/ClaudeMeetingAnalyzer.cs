@@ -34,8 +34,20 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
            - "assignee": Who is responsible, if mentioned (string or null)
            Example: [{"description": "Send updated budget proposal", "assignee": "Sarah"}, {"description": "Schedule follow-up meeting", "assignee": null}]
 
+        TITLE GENERATION:
+        6. "suggestedTitle": A concise topic-focused title for this meeting.
+           - Format: "[Topic] with [Participants]" (e.g., "Q3 Budget Review with Sarah & Mike")
+           - Maximum 60 characters
+           - Focus on the primary topic discussed
+           - Include participant first names if identified
+
+        TAG SUGGESTIONS:
+        7. "suggestedTags": An array of 2-3 short, relevant tags (strings, lowercase).
+           - Tags should categorize the meeting topic (e.g., "budget", "planning", "engineering")
+           - Keep tags short (1-2 words each)
+
         BEHAVIORAL ANALYSIS:
-        6. "behavioralAnalysis": An object containing behavioral insights (or null if insufficient data):
+        8. "behavioralAnalysis": An object containing behavioral insights (or null if insufficient data):
            a) "speakingDynamics": {
               "talkTimeByParticipant": [{"participant": "Name", "percentage": 35.5, "duration": "12:30"}],
               "interruptionPatterns": [{"interrupter": "Name", "interrupted": "Name", "count": 3}],
@@ -160,7 +172,9 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
             result.ActionItems?
                 .Where(a => !string.IsNullOrWhiteSpace(a.Description))
                 .Select(a => new ExtractedActionItem(a.Description!.Trim(), a.Assignee?.Trim()))
-                .ToList() ?? []);
+                .ToList() ?? [],
+            result.SuggestedTitle?.Trim(),
+            result.SuggestedTags ?? []);
     }
 
     private static BehavioralAnalysisData? MapBehavioralAnalysis(BehavioralAnalysisJson? json)
@@ -213,6 +227,8 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         public List<string>? ExtractedAttendees { get; set; }
         public List<ActionItemJson>? ActionItems { get; set; }
         public BehavioralAnalysisJson? BehavioralAnalysis { get; set; }
+        public string? SuggestedTitle { get; set; }
+        public List<string>? SuggestedTags { get; set; }
     }
 
     private sealed class ActionItemJson

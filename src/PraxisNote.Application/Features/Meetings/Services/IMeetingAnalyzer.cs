@@ -11,10 +11,13 @@ public record MeetingAnalysisResult(
     List<string> Decisions,
     BehavioralAnalysisData? BehavioralAnalysis = null,
     List<string> ExtractedAttendees = default!,
-    List<ExtractedActionItem> ExtractedActionItems = default!)
+    List<ExtractedActionItem> ExtractedActionItems = default!,
+    string? SuggestedTitle = null,
+    List<string> SuggestedTags = default!)
 {
     public List<string> ExtractedAttendees { get; init; } = ExtractedAttendees ?? [];
     public List<ExtractedActionItem> ExtractedActionItems { get; init; } = ExtractedActionItems ?? [];
+    public List<string> SuggestedTags { get; init; } = SuggestedTags ?? [];
 }
 
 /// <summary>
