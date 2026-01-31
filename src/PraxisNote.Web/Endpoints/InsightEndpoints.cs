@@ -17,6 +17,7 @@ public static class InsightEndpoints
         group.MapGet("/behavioral-trends", (Delegate)HandleGetBehavioralTrends);
         group.MapGet("/summary", (Delegate)HandleGetInsightsSummary);
         group.MapGet("/communication-profile", (Delegate)HandleGetCommunicationProfile);
+        group.MapGet("/johari-window", (Delegate)HandleGetJohariWindow);
 
         group.MapGet("/goals", (Delegate)HandleGetGoals);
         group.MapGet("/goals/progress", (Delegate)HandleGetGoalProgress);
@@ -87,6 +88,30 @@ public static class InsightEndpoints
 
         var query = new GetCommunicationProfile.Query(userId.Value, effectiveRange);
         var result = await getCommunicationProfile.ExecuteAsync(query, cancellationToken);
+
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> HandleGetJohariWindow(
+        ClaimsPrincipal user,
+        [FromQuery] string? range,
+        [FromServices] GetJohariWindow getJohariWindow,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var effectiveRange = range ?? "90d";
+        if (!GetJohariWindow.ValidRanges.Contains(effectiveRange, StringComparer.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
+        }
+
+        var query = new GetJohariWindow.Query(userId.Value, effectiveRange);
+        var result = await getJohariWindow.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
     }

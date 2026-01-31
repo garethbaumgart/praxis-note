@@ -17,7 +17,7 @@ public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
 
     public async Task<BehavioralTrendsDto> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        if (!ValidRanges.Contains(query.Range))
+        if (!ValidRanges.Contains(query.Range, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException($"Invalid range: {query.Range}. Must be one of: {string.Join(", ", ValidRanges)}");
 
         var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, cancellationToken);
@@ -165,7 +165,7 @@ public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
             EngagementTrend: new TrendSeriesDto(engagementPoints));
     }
 
-    private static DateTimeOffset GetCutoffDate(string range) => range switch
+    private static DateTimeOffset GetCutoffDate(string range) => range.ToLowerInvariant() switch
     {
         "7d" => DateTimeOffset.UtcNow.AddDays(-7),
         "30d" => DateTimeOffset.UtcNow.AddDays(-30),
