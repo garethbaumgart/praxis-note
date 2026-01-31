@@ -121,7 +121,7 @@ import { ArchetypeScore } from './insights.model';
                 @for (label of radarLabels(); track $index) {
                   <text [attr.x]="label.x" [attr.y]="label.y"
                         [attr.text-anchor]="label.anchor"
-                        [attr.font-size]="label.bold ? 11 : 11"
+                        [attr.font-size]="label.bold ? 12 : 10"
                         [attr.font-weight]="label.bold ? 600 : 400"
                         [attr.fill]="label.bold ? 'var(--color-primary-text)' : 'var(--color-text-muted)'">
                     {{ label.text }}

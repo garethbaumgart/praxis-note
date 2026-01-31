@@ -7,6 +7,7 @@ namespace PraxisNote.Application.Features.Insights;
 public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository)
 {
     public const int MinimumMeetings = 5;
+    public static readonly string[] ValidRanges = ["7d", "30d", "90d", "all"];
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -93,7 +94,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
         var contextShifts = DetectContextShifts(meetingAnalyses, targetParticipant);
 
         // Determine strengths and growth areas based on profile
-        var (strengths, growthAreas) = DetermineStrengthsAndGrowth(scores, primary.Name);
+        var (strengths, growthAreas) = DetermineStrengthsAndGrowth(sorted, primary.Name);
 
         return new CommunicationProfileDto(
             PrimaryArchetype: primary.Name,
@@ -336,8 +337,8 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
             _ => new List<string> { "Engaged participant" }
         };
 
-        // Growth areas are based on the weakest archetypes
-        var weakest = scores.OrderBy(s => s.Score).First();
+        // Growth areas are based on the weakest archetype (scores expected sorted descending)
+        var weakest = scores[^1];
         var growthAreas = weakest.Name switch
         {
             "Facilitator" => new List<string> { "Balance airtime", "Ask more questions", "Include others" },
@@ -451,7 +452,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
             .ToList();
 
         var mean = perMeetingScores.Average();
-        var variance = perMeetingScores.Sum(s => Math.Pow(s - mean, 2)) / perMeetingScores.Count;
+        var variance = perMeetingScores.Sum(s => Math.Pow(s - mean, 2)) / (perMeetingScores.Count - 1);
         var stdDev = Math.Sqrt(variance);
 
         // Convert standard deviation to a consistency percentage (lower stdDev = more consistent)

@@ -80,7 +80,7 @@ public static class InsightEndpoints
         }
 
         var effectiveRange = range ?? "90d";
-        if (!GetBehavioralTrends.ValidRanges.Contains(effectiveRange, StringComparer.OrdinalIgnoreCase))
+        if (!GetCommunicationProfile.ValidRanges.Contains(effectiveRange, StringComparer.OrdinalIgnoreCase))
         {
             return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
         }

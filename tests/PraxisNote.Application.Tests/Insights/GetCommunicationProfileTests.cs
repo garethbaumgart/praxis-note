@@ -416,7 +416,7 @@ public sealed class GetCommunicationProfileTests
             new("Mediator", 20)
         };
 
-        var (strengths, growth) = GetCommunicationProfile.DetermineStrengthsAndGrowth(scores, "Driver");
+        var (strengths, _) = GetCommunicationProfile.DetermineStrengthsAndGrowth(scores, "Driver");
 
         Assert.Contains("Clear direction", strengths);
         Assert.Contains("Decisive action", strengths);
