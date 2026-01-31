@@ -159,3 +159,31 @@ export const GOAL_PRESETS: GoalPreset[] = [
     description: 'Interrupt others no more than twice per meeting',
   },
 ];
+
+// Johari Window types
+export interface JohariWindow {
+  openPercentage: number;
+  blindSpotPercentage: number;
+  hiddenPercentage: number;
+  unknownPercentage: number;
+  meetingCount: number;
+  minimumMeetings: number;
+  hasEnoughData: boolean;
+  openTrend: number | null;
+  dimensions: JohariDimension[];
+  blindSpots: BlindSpotDetail[];
+}
+
+export interface JohariDimension {
+  name: string;
+  quadrant: string;
+  selfValue: string;
+  aiValue: string;
+  explanation: string | null;
+}
+
+export interface BlindSpotDetail {
+  dimension: string;
+  description: string;
+  meetingCount: number;
+}

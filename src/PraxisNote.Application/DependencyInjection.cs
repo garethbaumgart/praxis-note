@@ -93,6 +93,7 @@ public static class DependencyInjection
         services.AddScoped<GetBehavioralTrends>();
         services.AddScoped<GetInsightsSummary>();
         services.AddScoped<GetCommunicationProfile>();
+        services.AddScoped<GetJohariWindow>();
 
         // Goal use cases
         services.AddScoped<CreateBehavioralGoal>();
