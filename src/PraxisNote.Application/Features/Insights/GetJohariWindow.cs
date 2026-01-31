@@ -132,15 +132,24 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         var hiddenPct = (int)Math.Round(hiddenCount * 100.0 / total);
         var unknownPct = 100 - openPct - blindPct - hiddenPct;
 
-        // Ensure non-negative (rounding could cause -1)
+        // Ensure non-negative and keep total at 100 (rounding could cause -1, -2, ...)
         if (unknownPct < 0)
         {
+            var deficit = -unknownPct;
             unknownPct = 0;
-            // Adjust the largest quadrant down by 1
-            var max = Math.Max(openPct, Math.Max(blindPct, hiddenPct));
-            if (openPct == max) openPct--;
-            else if (blindPct == max) blindPct--;
-            else hiddenPct--;
+
+            // Distribute the deficit across the largest non-zero quadrants
+            while (deficit > 0)
+            {
+                var max = Math.Max(openPct, Math.Max(blindPct, hiddenPct));
+                if (max <= 0) break;
+
+                if (openPct == max && openPct > 0) openPct--;
+                else if (blindPct == max && blindPct > 0) blindPct--;
+                else if (hiddenPct > 0) hiddenPct--;
+
+                deficit--;
+            }
         }
 
         // Calculate open trend (first half vs second half)

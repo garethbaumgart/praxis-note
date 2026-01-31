@@ -247,20 +247,24 @@ export class JohariWindowComponent {
     return `Johari Window: Open ${data.openPercentage}%, Blind Spot ${data.blindSpotPercentage}%, Hidden ${data.hiddenPercentage}%, Unknown ${data.unknownPercentage}%`;
   });
 
-  // Proportional grid sizing with a minimum floor of 15fr per quadrant
+  // Proportional grid sizing — apply minimum only when combined percentage is non-zero
   protected readonly gridCols = computed(() => {
     const data = this.johariService.johariWindow();
     if (!data?.hasEnoughData) return '1fr 1fr';
-    const left = Math.max(15, data.openPercentage + data.hiddenPercentage);
-    const right = Math.max(15, data.blindSpotPercentage + data.unknownPercentage);
+    const leftPct = data.openPercentage + data.hiddenPercentage;
+    const rightPct = data.blindSpotPercentage + data.unknownPercentage;
+    const left = leftPct === 0 ? 5 : Math.max(5, leftPct);
+    const right = rightPct === 0 ? 5 : Math.max(5, rightPct);
     return `${left}fr ${right}fr`;
   });
 
   protected readonly gridRows = computed(() => {
     const data = this.johariService.johariWindow();
     if (!data?.hasEnoughData) return '1fr 1fr';
-    const top = Math.max(15, data.openPercentage + data.blindSpotPercentage);
-    const bottom = Math.max(15, data.hiddenPercentage + data.unknownPercentage);
+    const topPct = data.openPercentage + data.blindSpotPercentage;
+    const bottomPct = data.hiddenPercentage + data.unknownPercentage;
+    const top = topPct === 0 ? 5 : Math.max(5, topPct);
+    const bottom = bottomPct === 0 ? 5 : Math.max(5, bottomPct);
     return `${top}fr ${bottom}fr`;
   });
 
