@@ -72,7 +72,12 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
             .GroupBy(p => p.Participant, StringComparer.OrdinalIgnoreCase)
             .OrderByDescending(g => g.Average(p => p.Percentage))
             .Select(g => g.Key)
-            .FirstOrDefault() ?? "Unknown";
+            .FirstOrDefault();
+
+        if (string.IsNullOrEmpty(targetParticipant))
+        {
+            return CreateEmptyResult(meetingData.Count);
+        }
 
         // Classify each dimension for each meeting
         var allClassifications = new List<(string Dimension, string Quadrant, string SelfValue, string AiValue)>();
