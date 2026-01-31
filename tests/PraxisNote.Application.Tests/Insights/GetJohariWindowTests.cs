@@ -224,7 +224,9 @@ public sealed class GetJohariWindowTests
     [InlineData("Partially", 5, "BlindSpot")] // Partially aware, > 2
     [InlineData(null, 3, "Unknown")]       // No self-assessment
     [InlineData("other", 1, "Unknown")]    // Unrecognized value
-    public void ClassifyInterruptions_VariousInputs_CorrectQuadrant(string? self, int actual, string expected)
+    [InlineData("Yes", null, "Unknown")]   // No AI data
+    [InlineData(null, null, "Unknown")]    // Neither available
+    public void ClassifyInterruptions_VariousInputs_CorrectQuadrant(string? self, int? actual, string expected)
     {
         var result = GetJohariWindow.ClassifyInterruptions(self, actual);
         Assert.Equal(expected, result);

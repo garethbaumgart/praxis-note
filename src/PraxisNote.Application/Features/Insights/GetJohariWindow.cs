@@ -97,9 +97,13 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
                 .FirstOrDefault(ps => string.Equals(ps.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase))
                 ?.Score;
 
-            var actualInterruptions = analysis.SpeakingDynamics.InterruptionPatterns
+            // If participant is absent from talk-time data, treat all metrics as missing
+            var interruptionMatches = analysis.SpeakingDynamics.InterruptionPatterns
                 .Where(ip => string.Equals(ip.Interrupter, targetParticipant, StringComparison.OrdinalIgnoreCase))
-                .Sum(ip => ip.Count);
+                .ToList();
+            int? actualInterruptions = actualTalkTime is null
+                ? null
+                : interruptionMatches.Sum(ip => ip.Count);
 
             allClassifications.Add(("Talk Time",
                 ClassifyTalkTime(reflection.SelfAssessedTalkTime, actualTalkTime),
@@ -119,7 +123,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
             allClassifications.Add(("Interruptions",
                 ClassifyInterruptions(reflection.InterruptionAwareness, actualInterruptions),
                 reflection.InterruptionAwareness ?? "—",
-                actualInterruptions.ToString()));
+                actualInterruptions is null ? "—" : actualInterruptions.Value.ToString()));
 
             hiddenCount += CalculateHiddenCount(reflection);
         }
@@ -228,15 +232,15 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         };
     }
 
-    internal static string ClassifyInterruptions(string? selfAwareness, int actualCount)
+    internal static string ClassifyInterruptions(string? selfAwareness, int? actualCount)
     {
-        if (selfAwareness is null) return QuadrantUnknown;
+        if (selfAwareness is null || actualCount is null) return QuadrantUnknown;
 
         return selfAwareness.ToLowerInvariant() switch
         {
-            "yes" => actualCount > 0 ? QuadrantOpen : QuadrantBlindSpot,
-            "no" => actualCount == 0 ? QuadrantOpen : QuadrantBlindSpot,
-            "partially" => actualCount <= PartialInterruptionMax ? QuadrantOpen : QuadrantBlindSpot,
+            "yes" => actualCount.Value > 0 ? QuadrantOpen : QuadrantBlindSpot,
+            "no" => actualCount.Value == 0 ? QuadrantOpen : QuadrantBlindSpot,
+            "partially" => actualCount.Value <= PartialInterruptionMax ? QuadrantOpen : QuadrantBlindSpot,
             _ => QuadrantUnknown
         };
     }
@@ -291,9 +295,12 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
             var actualSentiment = analysis.SentimentTone.ParticipantSentiments
                 .FirstOrDefault(ps => string.Equals(ps.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase))
                 ?.Score;
-            var actualInterruptions = analysis.SpeakingDynamics.InterruptionPatterns
+            var interruptionMatches = analysis.SpeakingDynamics.InterruptionPatterns
                 .Where(ip => string.Equals(ip.Interrupter, targetParticipant, StringComparison.OrdinalIgnoreCase))
-                .Sum(ip => ip.Count);
+                .ToList();
+            int? actualInterruptions = actualTalkTime is null
+                ? null
+                : interruptionMatches.Sum(ip => ip.Count);
 
             if (ClassifyTalkTime(reflection.SelfAssessedTalkTime, actualTalkTime) == QuadrantOpen) open++;
             if (ClassifyEngagement(reflection.SelfAssessedEngagement, actualEngagement) == QuadrantOpen) open++;

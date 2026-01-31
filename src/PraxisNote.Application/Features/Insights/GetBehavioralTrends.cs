@@ -17,7 +17,7 @@ public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
 
     public async Task<BehavioralTrendsDto> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        if (!ValidRanges.Contains(query.Range))
+        if (!ValidRanges.Contains(query.Range, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException($"Invalid range: {query.Range}. Must be one of: {string.Join(", ", ValidRanges)}");
 
         var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, cancellationToken);
