@@ -110,6 +110,26 @@ public sealed class GetJohariWindowTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_InvalidReflectionJson_ExcludesMeeting()
+    {
+        // 2 valid + 2 with invalid reflection JSON = only 2 valid → not enough
+        var validMeetings = CreateMeetingsWithReflections(2);
+        var invalidMeetings = Enumerable.Range(0, 2)
+            .Select(i => CreateAnalyzedMeeting(
+                CreateDefaultAnalysisJson(),
+                "not valid json",
+                DateTimeOffset.UtcNow.AddDays(-5 + i)))
+            .ToArray();
+
+        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(validMeetings.Concat(invalidMeetings).ToArray());
+
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+
+        Assert.False(result.HasEnoughData);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_EmptyResult_AllPercentagesZero()
     {
         _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
@@ -151,8 +171,11 @@ public sealed class GetJohariWindowTests
     [InlineData("Disengaged", "low", "Open")]            // Both map to 1
     [InlineData("Highly Engaged", "low", "BlindSpot")]   // 3 vs 1
     [InlineData("Disengaged", "high", "BlindSpot")]      // 1 vs 3
-    [InlineData(null, "high", "Unknown")]                 // No self-assessment
-    [InlineData("Moderate", null, "Unknown")]             // No AI data
+    [InlineData(null, "high", "Unknown")]                          // No self-assessment
+    [InlineData("Moderate", null, "Unknown")]                      // No AI data
+    [InlineData("Sometimes Engaged", "high", "BlindSpot")]         // Unrecognized self (0 vs 3)
+    [InlineData("Highly Engaged", "sometimes", "BlindSpot")]       // Unrecognized AI (3 vs 0)
+    [InlineData("Sometimes Engaged", "sometimes", "Open")]         // Both unrecognized (0 vs 0)
     public void ClassifyEngagement_VariousInputs_CorrectQuadrant(string? self, string? actual, string expected)
     {
         var result = GetJohariWindow.ClassifyEngagement(self, actual);

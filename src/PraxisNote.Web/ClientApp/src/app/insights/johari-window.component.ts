@@ -53,22 +53,23 @@ import { InsightsService } from './insights.service';
           </div>
         </div>
       } @else {
+        @let jw = johariService.johariWindow()!;
         <!-- Full Johari Window -->
         <div class="bg-surface-subtle border border-border rounded-xl overflow-hidden">
           <!-- Grid + Legend -->
           <div class="p-6">
             <!-- Trend banner -->
-            @if (johariService.johariWindow()!.openTrend !== null) {
+            @if (jw.openTrend !== null) {
               <div class="flex items-center gap-2 mb-4 text-sm">
-                @if (johariService.johariWindow()!.openTrend! > 0) {
+                @if (jw.openTrend! > 0) {
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-done text-done-foreground text-xs font-medium">
                     <i class="pi pi-arrow-up text-[10px]"></i>
-                    +{{ johariService.johariWindow()!.openTrend }}% self-awareness growth
+                    +{{ jw.openTrend }}% self-awareness growth
                   </span>
-                } @else if (johariService.johariWindow()!.openTrend! < 0) {
+                } @else if (jw.openTrend! < 0) {
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-inprogress text-inprogress-foreground text-xs font-medium">
                     <i class="pi pi-arrow-down text-[10px]"></i>
-                    {{ johariService.johariWindow()!.openTrend }}% self-awareness change
+                    {{ jw.openTrend }}% self-awareness change
                   </span>
                 } @else {
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-muted text-foreground-muted text-xs font-medium">
@@ -87,7 +88,7 @@ import { InsightsService } from './insights.service';
               <!-- Open (top-left) -->
               <div class="rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-24"
                    style="background: var(--color-done-bg); border: 1px solid var(--color-done-border, var(--color-done-bg));">
-                <span class="text-2xl font-bold" style="color: var(--color-done-text);">{{ johariService.johariWindow()!.openPercentage }}%</span>
+                <span class="text-2xl font-bold" style="color: var(--color-done-text);">{{ jw.openPercentage }}%</span>
                 <span class="text-xs font-medium mt-1" style="color: var(--color-done-text);">Open</span>
                 <span class="text-[10px] mt-0.5 text-foreground-muted">Known to self & others</span>
               </div>
@@ -95,7 +96,7 @@ import { InsightsService } from './insights.service';
               <!-- Blind Spot (top-right) -->
               <div class="rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-24"
                    style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border, var(--color-inprogress-bg));">
-                <span class="text-2xl font-bold" style="color: var(--color-inprogress-text);">{{ johariService.johariWindow()!.blindSpotPercentage }}%</span>
+                <span class="text-2xl font-bold" style="color: var(--color-inprogress-text);">{{ jw.blindSpotPercentage }}%</span>
                 <span class="text-xs font-medium mt-1" style="color: var(--color-inprogress-text);">Blind Spot</span>
                 <span class="text-[10px] mt-0.5 text-foreground-muted">Others see, you don't</span>
               </div>
@@ -103,14 +104,14 @@ import { InsightsService } from './insights.service';
               <!-- Hidden (bottom-left) -->
               <div class="rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-24"
                    style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-border, var(--color-primary-bg));">
-                <span class="text-2xl font-bold" style="color: var(--color-primary-text);">{{ johariService.johariWindow()!.hiddenPercentage }}%</span>
+                <span class="text-2xl font-bold" style="color: var(--color-primary-text);">{{ jw.hiddenPercentage }}%</span>
                 <span class="text-xs font-medium mt-1" style="color: var(--color-primary-text);">Hidden</span>
                 <span class="text-[10px] mt-0.5 text-foreground-muted">Known to self only</span>
               </div>
 
               <!-- Unknown (bottom-right) -->
               <div class="rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-24 bg-surface-muted border border-border">
-                <span class="text-2xl font-bold text-foreground-muted">{{ johariService.johariWindow()!.unknownPercentage }}%</span>
+                <span class="text-2xl font-bold text-foreground-muted">{{ jw.unknownPercentage }}%</span>
                 <span class="text-xs font-medium mt-1 text-foreground-muted">Unknown</span>
                 <span class="text-[10px] mt-0.5 text-foreground-muted">Undiscovered</span>
               </div>
@@ -134,11 +135,11 @@ import { InsightsService } from './insights.service';
           </div>
 
           <!-- Dimensions breakdown -->
-          @if (johariService.johariWindow()!.dimensions.length > 0) {
+          @if (jw.dimensions.length > 0) {
             <div class="border-t border-border p-5">
               <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Dimension Breakdown</h4>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                @for (dim of johariService.johariWindow()!.dimensions; track dim.name) {
+                @for (dim of jw.dimensions; track dim.name) {
                   <div class="flex items-start gap-3 p-3 rounded-lg bg-surface border border-border">
                     <span class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                           [class.bg-done]="dim.quadrant === 'Open'"
@@ -180,13 +181,13 @@ import { InsightsService } from './insights.service';
           }
 
           <!-- Blind spot details -->
-          @if (johariService.johariWindow()!.blindSpots.length > 0) {
+          @if (jw.blindSpots.length > 0) {
             <div class="border-t border-border p-5">
               <h4 class="text-xs font-semibold text-inprogress-foreground uppercase tracking-wider mb-3">
                 <i class="pi pi-eye mr-1"></i> Blind Spots to Explore
               </h4>
               <div class="space-y-2">
-                @for (spot of johariService.johariWindow()!.blindSpots; track spot.dimension) {
+                @for (spot of jw.blindSpots; track spot.dimension) {
                   <div class="flex items-start gap-2 p-2.5 rounded-lg bg-inprogress/5 border border-inprogress/20">
                     <i class="pi pi-info-circle text-inprogress-foreground text-xs mt-0.5 shrink-0"></i>
                     <div>
@@ -205,8 +206,8 @@ import { InsightsService } from './insights.service';
           <div class="border-t border-border px-5 py-3 flex items-center justify-between text-xs text-foreground-muted">
             <span>
               <i class="pi pi-chart-bar text-accent-foreground mr-1"></i>
-              Based on <strong class="text-foreground">{{ johariService.johariWindow()!.meetingCount }}</strong>
-              meeting{{ johariService.johariWindow()!.meetingCount === 1 ? '' : 's' }} with reflections
+              Based on <strong class="text-foreground">{{ jw.meetingCount }}</strong>
+              meeting{{ jw.meetingCount === 1 ? '' : 's' }} with reflections
             </span>
             <span pTooltip="Compares your self-assessment against AI behavioral analysis across talk time, engagement, tone, and interruptions."
                   tooltipPosition="left" class="cursor-help">

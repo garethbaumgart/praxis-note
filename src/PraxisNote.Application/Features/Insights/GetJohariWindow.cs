@@ -10,6 +10,20 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
     public const int MinimumMeetings = 3;
     public static readonly string[] ValidRanges = ["7d", "30d", "90d", "all"];
 
+    // Quadrant names used consistently across classification, aggregation, and DTOs
+    internal const string QuadrantOpen = "Open";
+    internal const string QuadrantBlindSpot = "BlindSpot";
+    internal const string QuadrantUnknown = "Unknown";
+
+    // Classification thresholds — tune these to adjust sensitivity
+    private const double TalkTimeTolerancePercent = 15.0;
+    private const double CollaborativeSentimentMin = 0.6;
+    private const double NeutralSentimentMin = 0.35;
+    private const double NeutralSentimentMax = 0.65;
+    private const double TenseSentimentMax = 0.4;
+    private const int PartialInterruptionMax = 2;
+    private const int MinFreeformReflectionLength = 20;
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -106,9 +120,9 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         }
 
         // Aggregate counts
-        var openCount = allClassifications.Count(c => c.Quadrant == "Open");
-        var blindCount = allClassifications.Count(c => c.Quadrant == "BlindSpot");
-        var unknownCount = allClassifications.Count(c => c.Quadrant == "Unknown");
+        var openCount = allClassifications.Count(c => c.Quadrant == QuadrantOpen);
+        var blindCount = allClassifications.Count(c => c.Quadrant == QuadrantBlindSpot);
+        var unknownCount = allClassifications.Count(c => c.Quadrant == QuadrantUnknown);
         var total = openCount + blindCount + hiddenCount + unknownCount;
 
         if (total == 0) total = 1; // Prevent division by zero
@@ -155,44 +169,48 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
 
     internal static string ClassifyTalkTime(int? selfAssessed, double actualPercentage)
     {
-        if (selfAssessed is null) return "Unknown";
-        return Math.Abs(selfAssessed.Value - actualPercentage) <= 15 ? "Open" : "BlindSpot";
+        if (selfAssessed is null) return QuadrantUnknown;
+        return Math.Abs(selfAssessed.Value - actualPercentage) <= TalkTimeTolerancePercent
+            ? QuadrantOpen
+            : QuadrantBlindSpot;
     }
 
     internal static string ClassifyEngagement(string? selfAssessed, string? actualLevel)
     {
-        if (selfAssessed is null) return "Unknown";
-        if (actualLevel is null) return "Unknown";
+        if (selfAssessed is null) return QuadrantUnknown;
+        if (actualLevel is null) return QuadrantUnknown;
 
         var selfScore = MapEngagementToScore(selfAssessed);
         var actualScore = MapEngagementLevelToScore(actualLevel);
 
-        return selfScore == actualScore ? "Open" : "BlindSpot";
+        // Unrecognized strings map to 0, which only matches other unrecognized strings
+        return selfScore == actualScore ? QuadrantOpen : QuadrantBlindSpot;
     }
 
     internal static string ClassifyTone(string? selfAssessed, double sentimentScore)
     {
-        if (selfAssessed is null) return "Unknown";
+        if (selfAssessed is null) return QuadrantUnknown;
 
         return selfAssessed.ToLowerInvariant() switch
         {
-            "collaborative" => sentimentScore >= 0.6 ? "Open" : "BlindSpot",
-            "neutral" => sentimentScore is >= 0.35 and <= 0.65 ? "Open" : "BlindSpot",
-            "tense" => sentimentScore <= 0.4 ? "Open" : "BlindSpot",
-            _ => "Unknown"
+            "collaborative" => sentimentScore >= CollaborativeSentimentMin ? QuadrantOpen : QuadrantBlindSpot,
+            "neutral" => sentimentScore >= NeutralSentimentMin && sentimentScore <= NeutralSentimentMax
+                ? QuadrantOpen : QuadrantBlindSpot,
+            "tense" => sentimentScore <= TenseSentimentMax ? QuadrantOpen : QuadrantBlindSpot,
+            _ => QuadrantUnknown
         };
     }
 
     internal static string ClassifyInterruptions(string? selfAwareness, int actualCount)
     {
-        if (selfAwareness is null) return "Unknown";
+        if (selfAwareness is null) return QuadrantUnknown;
 
         return selfAwareness.ToLowerInvariant() switch
         {
-            "yes" => actualCount > 0 ? "Open" : "BlindSpot",
-            "no" => actualCount == 0 ? "Open" : "BlindSpot",
-            "partially" => actualCount <= 2 ? "Open" : "BlindSpot",
-            _ => "Unknown"
+            "yes" => actualCount > 0 ? QuadrantOpen : QuadrantBlindSpot,
+            "no" => actualCount == 0 ? QuadrantOpen : QuadrantBlindSpot,
+            "partially" => actualCount <= PartialInterruptionMax ? QuadrantOpen : QuadrantBlindSpot,
+            _ => QuadrantUnknown
         };
     }
 
@@ -201,7 +219,8 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         var count = 0;
 
         // Freeform reflection represents private self-knowledge not in analysis
-        if (!string.IsNullOrWhiteSpace(reflection.FreeformReflection) && reflection.FreeformReflection.Length > 20)
+        if (!string.IsNullOrWhiteSpace(reflection.FreeformReflection)
+            && reflection.FreeformReflection.Length > MinFreeformReflectionLength)
             count++;
 
         return count;
@@ -249,10 +268,10 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
                 .Where(ip => string.Equals(ip.Interrupter, targetParticipant, StringComparison.OrdinalIgnoreCase))
                 .Sum(ip => ip.Count);
 
-            if (ClassifyTalkTime(reflection.SelfAssessedTalkTime, actualTalkTime) == "Open") open++;
-            if (ClassifyEngagement(reflection.SelfAssessedEngagement, actualEngagement) == "Open") open++;
-            if (ClassifyTone(reflection.SelfAssessedTone, actualSentiment) == "Open") open++;
-            if (ClassifyInterruptions(reflection.InterruptionAwareness, actualInterruptions) == "Open") open++;
+            if (ClassifyTalkTime(reflection.SelfAssessedTalkTime, actualTalkTime) == QuadrantOpen) open++;
+            if (ClassifyEngagement(reflection.SelfAssessedEngagement, actualEngagement) == QuadrantOpen) open++;
+            if (ClassifyTone(reflection.SelfAssessedTone, actualSentiment) == QuadrantOpen) open++;
+            if (ClassifyInterruptions(reflection.InterruptionAwareness, actualInterruptions) == QuadrantOpen) open++;
             total += 4;
         }
 
@@ -273,7 +292,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
                     .First().Key;
 
                 var lastEntry = g.Last();
-                var explanation = GetDimensionExplanation(g.Key, dominantQuadrant, g.Count(c => c.Quadrant == "Open"), g.Count());
+                var explanation = GetDimensionExplanation(g.Key, dominantQuadrant, g.Count(c => c.Quadrant == QuadrantOpen), g.Count());
 
                 return new JohariDimensionDto(
                     Name: g.Key,
@@ -289,7 +308,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         List<(string Dimension, string Quadrant, string SelfValue, string AiValue)> allClassifications)
     {
         return allClassifications
-            .Where(c => c.Quadrant == "BlindSpot")
+            .Where(c => c.Quadrant == QuadrantBlindSpot)
             .GroupBy(c => c.Dimension)
             .Select(g => new BlindSpotDetailDto(
                 Dimension: g.Key,
