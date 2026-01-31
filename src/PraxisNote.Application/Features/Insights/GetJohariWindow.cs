@@ -146,7 +146,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
 
                 if (openPct == max && openPct > 0) openPct--;
                 else if (blindPct == max && blindPct > 0) blindPct--;
-                else if (hiddenPct > 0) hiddenPct--;
+                else if (hiddenPct == max && hiddenPct > 0) hiddenPct--;
 
                 deficit--;
             }
