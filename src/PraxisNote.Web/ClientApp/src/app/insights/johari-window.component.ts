@@ -27,14 +27,14 @@ import { InsightsService } from './insights.service';
         </div>
       } @else if (johariService.error()) {
         <div class="bg-surface-subtle border border-border rounded-xl p-6 text-center">
-          <i class="pi pi-exclamation-triangle text-3xl text-danger mb-2"></i>
+          <i class="pi pi-exclamation-triangle text-3xl text-danger mb-2" aria-hidden="true"></i>
           <p class="text-sm text-danger">{{ johariService.error() }}</p>
         </div>
       } @else if (!johariService.johariWindow()?.hasEnoughData) {
         <!-- Empty state: not enough meetings with reflections -->
         <div class="bg-surface-subtle border border-border rounded-xl p-8 text-center">
           <div class="w-14 h-14 rounded-2xl bg-surface-muted flex items-center justify-center mx-auto mb-4">
-            <i class="pi pi-th-large text-2xl text-foreground-muted"></i>
+            <i class="pi pi-th-large text-2xl text-foreground-muted" aria-hidden="true"></i>
           </div>
           <h3 class="text-base font-semibold text-foreground mb-2">Johari Window building...</h3>
           <p class="text-sm text-foreground-muted max-w-md mx-auto mb-4">
@@ -63,17 +63,17 @@ import { InsightsService } from './insights.service';
               <div class="flex items-center gap-2 mb-4 text-sm">
                 @if (jw.openTrend! > 0) {
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-done text-done-foreground text-xs font-medium">
-                    <i class="pi pi-arrow-up text-[10px]"></i>
+                    <i class="pi pi-arrow-up text-[10px]" aria-hidden="true"></i>
                     +{{ jw.openTrend }}% self-awareness growth
                   </span>
                 } @else if (jw.openTrend! < 0) {
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-inprogress text-inprogress-foreground text-xs font-medium">
-                    <i class="pi pi-arrow-down text-[10px]"></i>
+                    <i class="pi pi-arrow-down text-[10px]" aria-hidden="true"></i>
                     {{ jw.openTrend }}% self-awareness change
                   </span>
                 } @else {
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-muted text-foreground-muted text-xs font-medium">
-                    <i class="pi pi-minus text-[10px]"></i>
+                    <i class="pi pi-minus text-[10px]" aria-hidden="true"></i>
                     Stable self-awareness
                   </span>
                 }
@@ -145,7 +145,7 @@ import { InsightsService } from './insights.service';
                           [class.bg-done]="dim.quadrant === 'Open'"
                           [class.bg-inprogress]="dim.quadrant === 'BlindSpot'"
                           [class.bg-accent]="dim.quadrant === 'Hidden' || dim.quadrant === 'Unknown'">
-                      <i class="pi text-[11px]"
+                      <i class="pi text-[11px]" aria-hidden="true"
                          [class.pi-check]="dim.quadrant === 'Open'"
                          [class.pi-eye]="dim.quadrant === 'BlindSpot'"
                          [class.pi-eye-slash]="dim.quadrant === 'Hidden' || dim.quadrant === 'Unknown'"
@@ -184,12 +184,12 @@ import { InsightsService } from './insights.service';
           @if (jw.blindSpots.length > 0) {
             <div class="border-t border-border p-5">
               <h4 class="text-xs font-semibold text-inprogress-foreground uppercase tracking-wider mb-3">
-                <i class="pi pi-eye mr-1"></i> Blind Spots to Explore
+                <i class="pi pi-eye mr-1" aria-hidden="true"></i> Blind Spots to Explore
               </h4>
               <div class="space-y-2">
                 @for (spot of jw.blindSpots; track spot.dimension) {
                   <div class="flex items-start gap-2 p-2.5 rounded-lg bg-inprogress/5 border border-inprogress/20">
-                    <i class="pi pi-info-circle text-inprogress-foreground text-xs mt-0.5 shrink-0"></i>
+                    <i class="pi pi-info-circle text-inprogress-foreground text-xs mt-0.5 shrink-0" aria-hidden="true"></i>
                     <div>
                       <p class="text-sm text-foreground">{{ spot.description }}</p>
                       <p class="text-[10px] text-foreground-muted mt-0.5">
@@ -205,13 +205,13 @@ import { InsightsService } from './insights.service';
           <!-- Footer -->
           <div class="border-t border-border px-5 py-3 flex items-center justify-between text-xs text-foreground-muted">
             <span>
-              <i class="pi pi-chart-bar text-accent-foreground mr-1"></i>
+              <i class="pi pi-chart-bar text-accent-foreground mr-1" aria-hidden="true"></i>
               Based on <strong class="text-foreground">{{ jw.meetingCount }}</strong>
               meeting{{ jw.meetingCount === 1 ? '' : 's' }} with reflections
             </span>
             <span pTooltip="Compares your self-assessment against AI behavioral analysis across talk time, engagement, tone, and interruptions."
                   tooltipPosition="left" class="cursor-help">
-              <i class="pi pi-question-circle"></i> How it works
+              <i class="pi pi-question-circle" aria-hidden="true"></i> How it works
             </span>
           </div>
         </div>

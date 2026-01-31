@@ -165,7 +165,7 @@ public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
             EngagementTrend: new TrendSeriesDto(engagementPoints));
     }
 
-    private static DateTimeOffset GetCutoffDate(string range) => range switch
+    private static DateTimeOffset GetCutoffDate(string range) => range.ToLowerInvariant() switch
     {
         "7d" => DateTimeOffset.UtcNow.AddDays(-7),
         "30d" => DateTimeOffset.UtcNow.AddDays(-30),

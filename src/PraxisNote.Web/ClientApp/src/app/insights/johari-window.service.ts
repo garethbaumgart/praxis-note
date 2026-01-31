@@ -22,7 +22,7 @@ export class JohariWindowService {
     this._error.set(null);
 
     this.pendingRequest = this.http
-      .get<JohariWindow>(`/api/insights/johari-window?range=${range}`)
+      .get<JohariWindow>(`/api/insights/johari-window?range=${encodeURIComponent(range)}`)
       .subscribe({
         next: data => {
           this._johariWindow.set(data);

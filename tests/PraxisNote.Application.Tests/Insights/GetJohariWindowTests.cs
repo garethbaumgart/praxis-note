@@ -149,13 +149,15 @@ public sealed class GetJohariWindowTests
     #region Classification — Talk Time
 
     [Theory]
-    [InlineData(40, 40, "Open")]      // Exact match
-    [InlineData(50, 40, "Open")]      // Within 15 tolerance (diff=10)
-    [InlineData(25, 40, "Open")]      // Within 15 tolerance (diff=15)
-    [InlineData(60, 40, "BlindSpot")] // Off by 20
-    [InlineData(10, 40, "BlindSpot")] // Off by 30
-    [InlineData(null, 40, "Unknown")] // No self-assessment
-    public void ClassifyTalkTime_VariousInputs_CorrectQuadrant(int? selfAssessed, double actual, string expected)
+    [InlineData(40, 40.0, "Open")]      // Exact match
+    [InlineData(50, 40.0, "Open")]      // Within 15 tolerance (diff=10)
+    [InlineData(25, 40.0, "Open")]      // Within 15 tolerance (diff=15)
+    [InlineData(60, 40.0, "BlindSpot")] // Off by 20
+    [InlineData(10, 40.0, "BlindSpot")] // Off by 30
+    [InlineData(null, 40.0, "Unknown")] // No self-assessment
+    [InlineData(40, null, "Unknown")]   // No AI data
+    [InlineData(null, null, "Unknown")] // Neither available
+    public void ClassifyTalkTime_VariousInputs_CorrectQuadrant(int? selfAssessed, double? actual, string expected)
     {
         var result = GetJohariWindow.ClassifyTalkTime(selfAssessed, actual);
         Assert.Equal(expected, result);
@@ -200,7 +202,9 @@ public sealed class GetJohariWindowTests
     [InlineData("Tense", 0.8, "BlindSpot")]           // > 0.4
     [InlineData(null, 0.5, "Unknown")]                 // No self-assessment
     [InlineData("nonsense", 0.5, "Unknown")]           // Unrecognized value
-    public void ClassifyTone_VariousInputs_CorrectQuadrant(string? self, double sentimentScore, string expected)
+    [InlineData("Collaborative", null, "Unknown")]     // No AI sentiment data
+    [InlineData(null, null, "Unknown")]                // Neither available
+    public void ClassifyTone_VariousInputs_CorrectQuadrant(string? self, double? sentimentScore, string expected)
     {
         var result = GetJohariWindow.ClassifyTone(self, sentimentScore);
         Assert.Equal(expected, result);
@@ -466,6 +470,24 @@ public sealed class GetJohariWindowTests
         Assert.Contains("90d", GetJohariWindow.ValidRanges);
         Assert.Contains("all", GetJohariWindow.ValidRanges);
         Assert.Equal(4, GetJohariWindow.ValidRanges.Length);
+    }
+
+    [Theory]
+    [InlineData("7D")]
+    [InlineData("30D")]
+    [InlineData("90D")]
+    [InlineData("ALL")]
+    [InlineData("All")]
+    public async Task ExecuteAsync_UppercaseRange_FiltersSameAsLowercase(string range)
+    {
+        var meetings = CreateMeetingsWithReflections(3, DateTimeOffset.UtcNow.AddDays(-5));
+        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(meetings);
+
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, range));
+
+        Assert.True(result.HasEnoughData);
+        Assert.Equal(3, result.MeetingCount);
     }
 
     #endregion

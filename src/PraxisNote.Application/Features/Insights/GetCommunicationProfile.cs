@@ -462,7 +462,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
 
     private static double Clamp(double value) => Math.Max(0, Math.Min(100, value));
 
-    private static DateTimeOffset GetCutoffDate(string range) => range switch
+    private static DateTimeOffset GetCutoffDate(string range) => range.ToLowerInvariant() switch
     {
         "7d" => DateTimeOffset.UtcNow.AddDays(-7),
         "30d" => DateTimeOffset.UtcNow.AddDays(-30),

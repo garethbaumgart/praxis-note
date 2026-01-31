@@ -87,7 +87,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         {
             var actualTalkTime = analysis.SpeakingDynamics.TalkTimeByParticipant
                 .FirstOrDefault(p => string.Equals(p.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase))
-                ?.Percentage ?? 0;
+                ?.Percentage;
 
             var actualEngagement = analysis.CommunicationPatterns.EngagementLevels
                 .FirstOrDefault(el => string.Equals(el.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase))
@@ -95,7 +95,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
 
             var actualSentiment = analysis.SentimentTone.ParticipantSentiments
                 .FirstOrDefault(ps => string.Equals(ps.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase))
-                ?.Score ?? 0;
+                ?.Score;
 
             var actualInterruptions = analysis.SpeakingDynamics.InterruptionPatterns
                 .Where(ip => string.Equals(ip.Interrupter, targetParticipant, StringComparison.OrdinalIgnoreCase))
@@ -104,7 +104,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
             allClassifications.Add(("Talk Time",
                 ClassifyTalkTime(reflection.SelfAssessedTalkTime, actualTalkTime),
                 reflection.SelfAssessedTalkTime?.ToString() ?? "—",
-                $"{actualTalkTime:F0}%"));
+                actualTalkTime is null ? "—" : $"{actualTalkTime.Value:F0}%"));
 
             allClassifications.Add(("Engagement",
                 ClassifyEngagement(reflection.SelfAssessedEngagement, actualEngagement),
@@ -114,7 +114,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
             allClassifications.Add(("Tone",
                 ClassifyTone(reflection.SelfAssessedTone, actualSentiment),
                 reflection.SelfAssessedTone ?? "—",
-                $"{actualSentiment:F2}"));
+                actualSentiment is null ? "—" : $"{actualSentiment.Value:F2}"));
 
             allClassifications.Add(("Interruptions",
                 ClassifyInterruptions(reflection.InterruptionAwareness, actualInterruptions),
@@ -143,16 +143,28 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
             var deficit = -unknownPct;
             unknownPct = 0;
 
-            // Distribute the deficit across the largest non-zero quadrants
+            // Distribute the deficit round-robin across the largest non-zero quadrants
+            var roundRobinIndex = 0;
             while (deficit > 0)
             {
                 var max = Math.Max(openPct, Math.Max(blindPct, hiddenPct));
                 if (max <= 0) break;
 
-                if (openPct == max && openPct > 0) openPct--;
-                else if (blindPct == max && blindPct > 0) blindPct--;
-                else if (hiddenPct == max && hiddenPct > 0) hiddenPct--;
+                // Collect candidates that share the current maximum
+                var candidates = new List<int>();
+                if (openPct == max) candidates.Add(0);
+                if (blindPct == max) candidates.Add(1);
+                if (hiddenPct == max) candidates.Add(2);
 
+                var choice = candidates[roundRobinIndex % candidates.Count];
+                switch (choice)
+                {
+                    case 0: openPct--; break;
+                    case 1: blindPct--; break;
+                    case 2: hiddenPct--; break;
+                }
+
+                roundRobinIndex++;
                 deficit--;
             }
         }
@@ -181,10 +193,10 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
 
     #region Classification Methods
 
-    internal static string ClassifyTalkTime(int? selfAssessed, double actualPercentage)
+    internal static string ClassifyTalkTime(int? selfAssessed, double? actualPercentage)
     {
-        if (selfAssessed is null) return QuadrantUnknown;
-        return Math.Abs(selfAssessed.Value - actualPercentage) <= TalkTimeTolerancePercent
+        if (selfAssessed is null || actualPercentage is null) return QuadrantUnknown;
+        return Math.Abs(selfAssessed.Value - actualPercentage.Value) <= TalkTimeTolerancePercent
             ? QuadrantOpen
             : QuadrantBlindSpot;
     }
@@ -201,16 +213,17 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         return selfScore == actualScore ? QuadrantOpen : QuadrantBlindSpot;
     }
 
-    internal static string ClassifyTone(string? selfAssessed, double sentimentScore)
+    internal static string ClassifyTone(string? selfAssessed, double? sentimentScore)
     {
-        if (selfAssessed is null) return QuadrantUnknown;
+        if (selfAssessed is null || sentimentScore is null) return QuadrantUnknown;
 
+        var score = sentimentScore.Value;
         return selfAssessed.ToLowerInvariant() switch
         {
-            "collaborative" => sentimentScore >= CollaborativeSentimentMin ? QuadrantOpen : QuadrantBlindSpot,
-            "neutral" => sentimentScore >= NeutralSentimentMin && sentimentScore <= NeutralSentimentMax
+            "collaborative" => score >= CollaborativeSentimentMin ? QuadrantOpen : QuadrantBlindSpot,
+            "neutral" => score >= NeutralSentimentMin && score <= NeutralSentimentMax
                 ? QuadrantOpen : QuadrantBlindSpot,
-            "tense" => sentimentScore <= TenseSentimentMax ? QuadrantOpen : QuadrantBlindSpot,
+            "tense" => score <= TenseSentimentMax ? QuadrantOpen : QuadrantBlindSpot,
             _ => QuadrantUnknown
         };
     }
@@ -271,13 +284,13 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         {
             var actualTalkTime = analysis.SpeakingDynamics.TalkTimeByParticipant
                 .FirstOrDefault(p => string.Equals(p.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase))
-                ?.Percentage ?? 0;
+                ?.Percentage;
             var actualEngagement = analysis.CommunicationPatterns.EngagementLevels
                 .FirstOrDefault(el => string.Equals(el.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase))
                 ?.Level;
             var actualSentiment = analysis.SentimentTone.ParticipantSentiments
                 .FirstOrDefault(ps => string.Equals(ps.Participant, targetParticipant, StringComparison.OrdinalIgnoreCase))
-                ?.Score ?? 0;
+                ?.Score;
             var actualInterruptions = analysis.SpeakingDynamics.InterruptionPatterns
                 .Where(ip => string.Equals(ip.Interrupter, targetParticipant, StringComparison.OrdinalIgnoreCase))
                 .Sum(ip => ip.Count);
@@ -395,7 +408,7 @@ public sealed class GetJohariWindow(IMeetingRepository meetingRepository)
         Dimensions: [],
         BlindSpots: []);
 
-    private static DateTimeOffset GetCutoffDate(string range) => range switch
+    private static DateTimeOffset GetCutoffDate(string range) => range.ToLowerInvariant() switch
     {
         "7d" => DateTimeOffset.UtcNow.AddDays(-7),
         "30d" => DateTimeOffset.UtcNow.AddDays(-30),
