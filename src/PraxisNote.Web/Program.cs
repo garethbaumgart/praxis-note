@@ -204,6 +204,9 @@ else
         browserPath);
 }
 
+// WebSocket support (for real-time transcription proxy)
+app.UseWebSockets();
+
 // Authentication & Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
@@ -223,6 +226,7 @@ app.MapMeetingTagEndpoints();
 app.MapNotificationEndpoints();
 app.MapCalendarEndpoints();
 app.MapInsightEndpoints();
+app.MapTranscriptionEndpoints();
 
 // SPA fallback - serves index.html for client-side routing
 if (angularAppExists)
