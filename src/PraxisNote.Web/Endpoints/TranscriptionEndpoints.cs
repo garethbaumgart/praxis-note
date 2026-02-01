@@ -143,30 +143,29 @@ public static class TranscriptionEndpoints
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    // Client stopped recording — signal Deepgram to finalize
+                    // Client stopped recording — signal Deepgram to finalize.
+                    // Use CancellationToken.None since the other relay task may have already cancelled cts.
                     if (deepgramWs.State == WebSocketState.Open)
                     {
-                        // Send CloseStream message for a clean Deepgram shutdown
                         var closeMessage = System.Text.Encoding.UTF8.GetBytes("{\"type\":\"CloseStream\"}");
                         await deepgramWs.SendAsync(
                             closeMessage,
                             WebSocketMessageType.Text,
                             endOfMessage: true,
-                            cts.Token);
+                            CancellationToken.None);
                     }
                     break;
                 }
 
-                if (result.MessageType == WebSocketMessageType.Binary && result.Count > 0)
+                if (result.MessageType == WebSocketMessageType.Binary
+                    && result.Count > 0
+                    && deepgramWs.State == WebSocketState.Open)
                 {
-                    if (deepgramWs.State == WebSocketState.Open)
-                    {
-                        await deepgramWs.SendAsync(
-                            new ArraySegment<byte>(buffer, 0, result.Count),
-                            WebSocketMessageType.Binary,
-                            result.EndOfMessage,
-                            cts.Token);
-                    }
+                    await deepgramWs.SendAsync(
+                        new ArraySegment<byte>(buffer, 0, result.Count),
+                        WebSocketMessageType.Binary,
+                        result.EndOfMessage,
+                        cts.Token);
                 }
             }
         }
@@ -206,16 +205,15 @@ public static class TranscriptionEndpoints
                     break;
                 }
 
-                if (result.MessageType == WebSocketMessageType.Text && result.Count > 0)
+                if (result.MessageType == WebSocketMessageType.Text
+                    && result.Count > 0
+                    && clientWs.State == WebSocketState.Open)
                 {
-                    if (clientWs.State == WebSocketState.Open)
-                    {
-                        await clientWs.SendAsync(
-                            new ArraySegment<byte>(buffer, 0, result.Count),
-                            WebSocketMessageType.Text,
-                            result.EndOfMessage,
-                            cts.Token);
-                    }
+                    await clientWs.SendAsync(
+                        new ArraySegment<byte>(buffer, 0, result.Count),
+                        WebSocketMessageType.Text,
+                        result.EndOfMessage,
+                        cts.Token);
                 }
             }
         }

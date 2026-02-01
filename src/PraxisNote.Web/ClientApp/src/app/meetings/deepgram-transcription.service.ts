@@ -83,13 +83,15 @@ export class DeepgramTranscriptionService implements OnDestroy {
     if (this.ws?.readyState === WebSocket.OPEN) {
       blob.arrayBuffer().then(buffer => {
         this.ws?.send(buffer);
+      }).catch(() => {
+        // Blob may have been invalidated (e.g. tab backgrounded). Non-fatal — skip this chunk.
       });
     }
   }
 
   stop(): void {
     if (this.ws) {
-      if (this.ws.readyState === WebSocket.OPEN) {
+      if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
         this.ws.close(1000, 'Recording stopped');
       }
       this.ws = null;
