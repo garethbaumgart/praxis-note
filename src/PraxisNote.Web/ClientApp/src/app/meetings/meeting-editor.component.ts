@@ -12,7 +12,7 @@ import { Meeting, ActionItemStatus } from './meeting.model';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingService } from './meeting.service';
 import { AudioRecorderService } from './audio-recorder.service';
-import { SpeechRecognitionService } from './speech-recognition.service';
+import { DeepgramTranscriptionService } from './deepgram-transcription.service';
 import { ToastService } from '../shared/services/toast.service';
 
 interface DateOption {
@@ -263,10 +263,10 @@ interface TimeOption {
               <p class="text-xs text-danger">{{ recorder.error() }}</p>
             </div>
           }
-          @if (speechRecognition.error()) {
+          @if (transcription.error()) {
             <div class="flex gap-3">
               <div class="w-5"></div>
-              <p class="text-xs text-danger">{{ speechRecognition.error() }}</p>
+              <p class="text-xs text-danger">{{ transcription.error() }}</p>
             </div>
           }
 
@@ -282,7 +282,7 @@ interface TimeOption {
           }
 
           <!-- Live transcript preview while recording -->
-          @if (recorder.isActive() && (speechRecognition.transcript() || speechRecognition.interimText())) {
+          @if (recorder.isActive() && (transcription.transcript() || transcription.interimText())) {
             <div class="flex gap-3">
               <div class="w-5"></div>
               <div class="flex-1 live-transcript">
@@ -291,9 +291,9 @@ interface TimeOption {
                   <span class="text-xs font-medium text-foreground-secondary">Live Transcript</span>
                 </div>
                 <p class="text-sm text-foreground leading-relaxed">
-                  {{ speechRecognition.transcript() }}
-                  @if (speechRecognition.interimText()) {
-                    <span class="text-foreground-muted italic">{{ speechRecognition.interimText() }}</span>
+                  {{ transcription.transcript() }}
+                  @if (transcription.interimText()) {
+                    <span class="text-foreground-muted italic">{{ transcription.interimText() }}</span>
                   }
                 </p>
               </div>
@@ -315,7 +315,6 @@ interface TimeOption {
               <div class="flex justify-between items-center mt-1">
                 <div class="flex items-center gap-2">
                   @if (!recorder.isActive()) {
-                    @if (speechRecognition.isSupported()) {
                       <button
                         type="button"
                         class="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-danger transition-colors"
@@ -325,12 +324,6 @@ interface TimeOption {
                         <i class="pi pi-circle-fill text-[8px] text-danger"></i>
                         Record
                       </button>
-                    } @else {
-                      <span class="flex items-center gap-1.5 text-xs text-foreground-muted">
-                        <i class="pi pi-exclamation-triangle text-xs"></i>
-                        Speech recognition not supported
-                      </span>
-                    }
                   }
                 </div>
                 <span class="text-xs text-foreground-muted">{{ transcript().length }} characters</span>
@@ -381,7 +374,7 @@ export class MeetingEditorComponent {
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   readonly recorder = inject(AudioRecorderService);
-  readonly speechRecognition = inject(SpeechRecognitionService);
+  readonly transcription = inject(DeepgramTranscriptionService);
 
   /** Expose Math for template */
   readonly Math = Math;
@@ -603,7 +596,7 @@ export class MeetingEditorComponent {
     this.promotingIds.set(new Set());
     this.showDatePicker.set(false);
     this.showTabWarning.set(false);
-    this.speechRecognition.reset();
+    this.transcription.reset();
     this.recorder.discard();
 
     if (meeting) {
@@ -642,29 +635,32 @@ export class MeetingEditorComponent {
   }
 
   async startRecording(): Promise<void> {
-    this.speechRecognition.reset();
+    this.transcription.reset();
     await this.recorder.start();
     if (this.recorder.isActive()) {
-      this.speechRecognition.start();
+      this.transcription.start();
+      this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
       this.showTabWarning.set(true);
     }
   }
 
   async stopRecording(): Promise<void> {
     try {
-      this.speechRecognition.stop();
+      this.recorder.onAudioChunk.set(null);
+      this.transcription.stop();
       await this.recorder.stop();
       this.showTabWarning.set(false);
 
-      // Set transcript from speech recognition results
-      const recognizedText = this.speechRecognition.transcript();
+      // Set transcript from transcription results
+      const recognizedText = this.transcription.transcript();
       if (recognizedText) {
         const current = this.transcript();
         const separator = current ? '\n\n' : '';
         this.transcript.set(current + separator + recognizedText);
       }
     } catch (error) {
-      this.speechRecognition.stop();
+      this.recorder.onAudioChunk.set(null);
+      this.transcription.stop();
       this.showTabWarning.set(false);
       console.error('Failed to stop audio recording:', error);
       this.toast.error('Failed to stop recording. Please try again.');

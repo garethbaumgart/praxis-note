@@ -19,6 +19,8 @@ export class AudioRecorderService implements OnDestroy {
   readonly error = signal<string | null>(null);
   readonly audioLevels = signal<number[]>(new Array(16).fill(0));
 
+  readonly onAudioChunk = signal<((blob: Blob) => void) | null>(null);
+
   readonly isRecording = computed(() => this.state() === 'recording');
   readonly isPaused = computed(() => this.state() === 'paused');
   readonly isActive = computed(() => this.state() !== 'idle');
@@ -87,6 +89,7 @@ export class AudioRecorderService implements OnDestroy {
       this.mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           this.chunks.push(e.data);
+          this.onAudioChunk()?.(e.data);
         }
       };
 

@@ -26,7 +26,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Checkbox-Task Sync** - Promote checkboxes to tasks with bidirectional sync (complete a task, checkbox is checked; check a checkbox, task is done)
 - ✅ **Meetings** - Daily grouped meeting list with fire-and-forget capture workflow
 - ✅ **AI Analysis** - Claude-powered meeting transcript analysis for summaries, key points, and decisions
-- ✅ **Audio Transcription** - Upload audio files for Whisper-powered transcription into meeting transcripts
+- ✅ **Live Transcription** - Real-time speech-to-text via Deepgram Nova-3 during browser recording
 - ✅ **Browser Recording** - Record meeting audio directly from the browser microphone with real-time level metering
 - ✅ **Google Calendar Sync** - Connect Google Calendar via OAuth and manually sync upcoming events as meetings
 - ✅ **Self-Reflection Prompts** - Post-meeting reflection with contextual prompts generated from behavioral analysis, blind spot insights comparing self-assessment to AI analysis
@@ -59,14 +59,29 @@ Open http://localhost:4200. Use the mock auth toolbar at the bottom to log in (n
 To enable AI-powered meeting transcript analysis, you need an Anthropic API key:
 
 1. **Get an API key** from https://console.anthropic.com/ (under API Keys)
-2. **Set the environment variable** before starting the dev stack:
+2. **Set via dotnet user secrets**:
 
 ```bash
-export MeetingAnalysis__ApiKey="sk-ant-your-key-here"
-docker compose --profile dev-stack up
+cd src/PraxisNote.Web
+dotnet user-secrets set "MeetingAnalysis:ApiKey" "sk-ant-your-key-here"
 ```
 
 Without the API key, the app runs normally but clicking "Analyze" on meetings will show "Analysis failed".
+
+#### Optional: Live Transcription (Deepgram)
+
+To enable real-time speech-to-text during meeting recordings:
+
+1. **Create a free account** at https://deepgram.com (includes $200 free credit)
+2. **Create an API key** in the Deepgram console
+3. **Set via dotnet user secrets**:
+
+```bash
+cd src/PraxisNote.Web
+dotnet user-secrets set "Deepgram:ApiKey" "your-deepgram-api-key"
+```
+
+Without the API key, the app runs normally but recording won't produce live transcripts.
 
 #### Optional: Google Calendar Sync
 
@@ -131,6 +146,14 @@ To enable AI meeting analysis in production:
 3. Grant the Cloud Run service account access to the secret
 
 The deploy workflow automatically maps this to `MeetingAnalysis__ApiKey` in Cloud Run.
+
+To enable live transcription in production:
+
+1. Create a secret in GCP Secret Manager named `DEEPGRAM_API_KEY`
+2. Add your Deepgram API key as the secret value
+3. Grant the Cloud Run service account access to the secret
+
+The deploy workflow automatically maps this to `Deepgram__ApiKey` in Cloud Run.
 
 To enable Google Calendar sync in production:
 

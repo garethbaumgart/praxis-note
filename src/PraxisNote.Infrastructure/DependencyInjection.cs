@@ -6,6 +6,7 @@ using PraxisNote.Application.Features.Calendar;
 using PraxisNote.Application.Features.Calendar.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.Transcription;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
@@ -53,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<ICalendarService, GoogleCalendarService>();
         services.Configure<MeetingAnalysisSettings>(configuration.GetSection(MeetingAnalysisSettings.SectionName));
         services.AddScoped<IMeetingAnalyzer, ClaudeMeetingAnalyzer>();
+        services.Configure<DeepgramSettings>(configuration.GetSection(DeepgramSettings.SectionName));
 
         return services;
     }
