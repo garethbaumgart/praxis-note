@@ -1456,6 +1456,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
   private extractTimeFromDate(date: Date): void {
     this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
+    this.timeInputInvalid.set(false);
   }
 
   /** Handle time change from editable select (typed or picked) */
@@ -1469,7 +1470,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       this.selectedTimeLabel.set(formatTimeLabel(parsed.hours, parsed.minutes));
       this.timeInputInvalid.set(false);
     } else {
-      // Keep the raw value for now; the effect won't fire if it can't parse
+      // Keep the raw value; the effect will fire but won't update meetingDate since parse fails
       this.selectedTimeLabel.set(value);
       this.timeInputInvalid.set(value.trim().length > 0);
     }

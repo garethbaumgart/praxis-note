@@ -481,6 +481,7 @@ export class MeetingEditorComponent {
 
   private extractTimeFromDate(date: Date): void {
     this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
+    this.timeInputInvalid.set(false);
   }
 
   /** Handle time change from editable select (typed or picked) */
