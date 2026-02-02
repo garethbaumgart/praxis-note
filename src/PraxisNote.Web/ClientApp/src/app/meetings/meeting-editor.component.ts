@@ -452,6 +452,9 @@ export class MeetingEditorComponent {
       const parsed = parseTimeInput(this.selectedTimeLabel());
       if (parsed) {
         newDate.setHours(parsed.hours, parsed.minutes, 0, 0);
+      } else {
+        const defaultTime = getDefaultMeetingTime();
+        newDate.setHours(defaultTime.hours, defaultTime.minutes, 0, 0);
       }
     }
     this.meetingDate.set(newDate);
