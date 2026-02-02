@@ -1,4 +1,5 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
 import { Task, TaskStatus, Comment } from './task.model';
 import { Tag, TaskTag } from './tag.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
@@ -288,6 +289,25 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
             </button>
           }
 
+          <!-- Source origin pill (meeting or note) -->
+          @if (task().source; as source) {
+            <button
+              type="button"
+              class="flex items-center h-7 px-3 rounded-full text-xs shrink-0 gap-1.5 max-w-[160px] transition-colors"
+              [class.bg-source-meeting]="source.type === 'meeting'"
+              [class.text-source-meeting-foreground]="source.type === 'meeting'"
+              [class.hover:bg-source-meeting-hover]="source.type === 'meeting'"
+              [class.bg-source-note]="source.type === 'note'"
+              [class.text-source-note-foreground]="source.type === 'note'"
+              [class.hover:bg-source-note-hover]="source.type === 'note'"
+              (click)="navigateToSource(); $event.stopPropagation()"
+              [attr.aria-label]="'Open source ' + source.type + ': ' + source.title"
+            >
+              <i class="pi shrink-0" [class.pi-video]="source.type === 'meeting'" [class.pi-file-edit]="source.type === 'note'"></i>
+              <span class="truncate">{{ source.title }}</span>
+            </button>
+          }
+
           <!-- Mobile status change buttons (spacer pushes to right) -->
           <div class="flex-1"></div>
           <div class="flex md:hidden items-center gap-1">
@@ -485,6 +505,7 @@ export class TaskCardComponent {
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly deleteConfirmation = inject(DeleteConfirmationService);
+  private readonly router = inject(Router);
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   // Flag to prevent click-outside from firing during initial render
@@ -1103,5 +1124,13 @@ export class TaskCardComponent {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // Source origin navigation
+  navigateToSource(): void {
+    const source = this.task().source;
+    if (!source) return;
+
+    this.router.navigate([source.type === 'meeting' ? '/meetings' : '/notes', source.id]);
   }
 }

@@ -137,6 +137,7 @@ export class TaskService {
       comments: [],
       dueDate: null,
       tags: [],
+      source: null,
     };
 
     // Optimistic update - add task immediately
