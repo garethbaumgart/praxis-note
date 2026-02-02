@@ -155,6 +155,16 @@
   --color-tag-bg: rgba(163, 190, 140, 0.5);
   --color-tag-text: #4a6638;
 
+  /* Task source origin - Meeting (Frost blue) */
+  --color-source-meeting-bg: rgba(94, 129, 172, 0.15);
+  --color-source-meeting-text: #3d5a80;
+  --color-source-meeting-hover-base: rgba(94, 129, 172, 0.25);
+
+  /* Task source origin - Note (Aurora purple) */
+  --color-source-note-bg: rgba(180, 142, 173, 0.15);
+  --color-source-note-text: #8b5c85;
+  --color-source-note-hover-base: rgba(180, 142, 173, 0.25);
+
   /* Meeting section borders */
   --color-meeting-details-border: rgba(136, 192, 208, 0.8);   /* Cyan - matches todo */
   --color-meeting-transcript-border: rgba(94, 129, 172, 0.6);  /* Blue - matches accent */
@@ -302,6 +312,16 @@
   --color-tags-collapsed-hover-base: rgba(163, 190, 140, 0.3);
   --color-tag-bg: rgba(163, 190, 140, 0.5);
   --color-tag-text: #a3be8c;
+
+  /* Task source origin - Meeting (Frost blue) */
+  --color-source-meeting-bg: rgba(94, 129, 172, 0.25);
+  --color-source-meeting-text: #81a1c1;
+  --color-source-meeting-hover-base: rgba(94, 129, 172, 0.35);
+
+  /* Task source origin - Note (Aurora purple) */
+  --color-source-note-bg: rgba(180, 142, 173, 0.25);
+  --color-source-note-text: #b48ead;
+  --color-source-note-hover-base: rgba(180, 142, 173, 0.35);
 
   /* Meeting section borders */
   --color-meeting-details-border: rgba(136, 192, 208, 0.5);   /* Cyan - matches todo */
@@ -452,6 +472,14 @@
   --color-tags-collapsed-hover: var(--color-tags-collapsed-hover-base);
   --color-tag: var(--color-tag-bg);
   --color-tag-foreground: var(--color-tag-text);
+
+  /* Task source origin */
+  --color-source-meeting: var(--color-source-meeting-bg);
+  --color-source-meeting-foreground: var(--color-source-meeting-text);
+  --color-source-meeting-hover: var(--color-source-meeting-hover-base);
+  --color-source-note: var(--color-source-note-bg);
+  --color-source-note-foreground: var(--color-source-note-text);
+  --color-source-note-hover: var(--color-source-note-hover-base);
 }
 
 /* Brand gradient utility class */

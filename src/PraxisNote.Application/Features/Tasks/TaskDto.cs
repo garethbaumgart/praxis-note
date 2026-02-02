@@ -13,7 +13,13 @@ public record TaskDto(
     DateTimeOffset? CompletedAt,
     IReadOnlyList<CommentDto> Comments,
     DateOnly? DueDate,
-    IReadOnlyList<TaskTagDto> Tags);
+    IReadOnlyList<TaskTagDto> Tags,
+    TaskSourceDto? Source = null);
+
+/// <summary>
+/// Represents the origin source of a task (meeting action item or note checkbox).
+/// </summary>
+public record TaskSourceDto(string Type, Guid Id, string Title);
 
 public record CommentDto(
     Guid Id,

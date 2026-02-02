@@ -9,6 +9,12 @@ export interface Comment {
   updatedAt: string;
 }
 
+export interface TaskSource {
+  type: 'meeting' | 'note';
+  id: string;
+  title: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -21,4 +27,5 @@ export interface Task {
   comments: Comment[];
   dueDate: string | null;
   tags: TaskTag[];
+  source: TaskSource | null;
 }
