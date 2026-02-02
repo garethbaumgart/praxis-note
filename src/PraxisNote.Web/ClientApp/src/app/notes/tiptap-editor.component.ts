@@ -330,6 +330,9 @@ interface BlockType {
     }
 
     .toolbar-container {
+      position: sticky;
+      top: 0;
+      z-index: 10;
       border-bottom: 1px solid var(--color-border);
       background: var(--color-surface-subtle);
       border-radius: 6px 6px 0 0;
