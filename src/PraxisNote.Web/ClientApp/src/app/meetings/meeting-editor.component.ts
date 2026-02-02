@@ -160,18 +160,24 @@ interface DateOption {
         <!-- Time (editable combobox) -->
         <div class="flex items-center gap-3">
           <i class="pi pi-clock text-foreground-muted w-5 text-center" aria-hidden="true"></i>
-          <p-select
-            [options]="allTimeOptions"
-            [ngModel]="selectedTimeLabel()"
-            (ngModelChange)="onTimeChange($event)"
-            [editable]="true"
-            [filter]="true"
-            filterPlaceholder="Type time..."
-            placeholder="Type or pick time..."
-            [style]="{ width: '170px' }"
-            appendTo="body"
-            ariaLabel="Meeting time"
-          />
+          <div>
+            <p-select
+              [options]="allTimeOptions"
+              [ngModel]="selectedTimeLabel()"
+              (ngModelChange)="onTimeChange($event)"
+              [editable]="true"
+              [filter]="true"
+              filterPlaceholder="Type time..."
+              placeholder="Type or pick time..."
+              [style]="{ width: '170px' }"
+              [class.time-invalid]="timeInputInvalid()"
+              appendTo="body"
+              ariaLabel="Meeting time"
+            />
+            @if (timeInputInvalid()) {
+              <small class="text-danger text-[10px] mt-0.5 block">Invalid time format</small>
+            }
+          </div>
         </div>
 
         <!-- Transcript (only shown when editing) -->
@@ -389,6 +395,7 @@ export class MeetingEditorComponent {
 
   // Time selection state (editable combobox)
   readonly selectedTimeLabel = signal('10:00 AM');
+  readonly timeInputInvalid = signal(false);
 
   // Date options
   readonly dateOptions: DateOption[] = [
@@ -475,12 +482,17 @@ export class MeetingEditorComponent {
 
   /** Handle time change from editable select (typed or picked) */
   onTimeChange(value: string): void {
-    if (!value) return;
+    if (!value) {
+      this.timeInputInvalid.set(false);
+      return;
+    }
     const parsed = parseTimeInput(value);
     if (parsed) {
       this.selectedTimeLabel.set(formatTimeLabel(parsed.hours, parsed.minutes));
+      this.timeInputInvalid.set(false);
     } else {
       this.selectedTimeLabel.set(value);
+      this.timeInputInvalid.set(value.trim().length > 0);
     }
   }
 

@@ -163,18 +163,24 @@ interface DateOption {
                     </div>
                   }
                   <!-- Time picker (editable combobox) -->
-                  <p-select
-                    [options]="allTimeOptions"
-                    [ngModel]="selectedTimeLabel()"
-                    (ngModelChange)="onTimeChange($event)"
-                    [editable]="true"
-                    [filter]="true"
-                    filterPlaceholder="Type time..."
-                    placeholder="Type or pick time..."
-                    [style]="{ width: '170px' }"
-                    appendTo="body"
-                    ariaLabel="Meeting time"
-                  />
+                  <div>
+                    <p-select
+                      [options]="allTimeOptions"
+                      [ngModel]="selectedTimeLabel()"
+                      (ngModelChange)="onTimeChange($event)"
+                      [editable]="true"
+                      [filter]="true"
+                      filterPlaceholder="Type time..."
+                      placeholder="Type or pick time..."
+                      [style]="{ width: '170px' }"
+                      [class.time-invalid]="timeInputInvalid()"
+                      appendTo="body"
+                      ariaLabel="Meeting time"
+                    />
+                    @if (timeInputInvalid()) {
+                      <small class="text-danger text-[10px] mt-0.5 block">Invalid time format</small>
+                    }
+                  </div>
                 </div>
                 <div>
                   <label class="field-label">Attendees</label>
@@ -719,6 +725,10 @@ interface DateOption {
       font-size: 13px;
     }
 
+    :host ::ng-deep .time-invalid .p-select-label {
+      color: var(--color-danger-base);
+    }
+
     /* Transcript textarea */
     .transcript-textarea {
       width: 100%;
@@ -999,6 +1009,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
   // Time selection (editable combobox)
   readonly selectedTimeLabel = signal('10:00 AM');
+  readonly timeInputInvalid = signal(false);
 
   // Analysis state
   readonly actionItemStatuses = signal<ActionItemStatus[]>([]);
@@ -1446,13 +1457,18 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
   /** Handle time change from editable select (typed or picked) */
   onTimeChange(value: string): void {
-    if (!value) return;
+    if (!value) {
+      this.timeInputInvalid.set(false);
+      return;
+    }
     const parsed = parseTimeInput(value);
     if (parsed) {
       this.selectedTimeLabel.set(formatTimeLabel(parsed.hours, parsed.minutes));
+      this.timeInputInvalid.set(false);
     } else {
       // Keep the raw value for now; the effect won't fire if it can't parse
       this.selectedTimeLabel.set(value);
+      this.timeInputInvalid.set(value.trim().length > 0);
     }
   }
 
