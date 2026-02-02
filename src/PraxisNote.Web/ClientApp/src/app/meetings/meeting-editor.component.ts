@@ -7,7 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
-import { SelectModule } from 'primeng/select';
+import { AutoCompleteModule, AutoCompleteCompleteEvent, AutoCompleteSelectEvent } from 'primeng/autocomplete';
 import { Meeting, ActionItemStatus } from './meeting.model';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingService } from './meeting.service';
@@ -20,16 +20,115 @@ interface DateOption {
   getValue: () => Date;
 }
 
-interface TimeOption {
-  label: string;
-  value: number;
+/** Generate all 48 half-hour time labels: "12:00 AM", "12:30 AM", ..., "11:30 PM" */
+function generateTimeOptions(): string[] {
+  const options: string[] = [];
+  for (let h = 0; h < 24; h++) {
+    for (const m of [0, 30]) {
+      const period = h < 12 ? 'AM' : 'PM';
+      const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+      const min = m === 0 ? '00' : '30';
+      options.push(`${hour12}:${min} ${period}`);
+    }
+  }
+  return options;
 }
+
+/** Parse flexible time input into 24-hour { hours, minutes } or null if invalid */
+function parseTimeInput(input: string): { hours: number; minutes: number } | null {
+  if (!input || !input.trim()) return null;
+  const raw = input.trim();
+
+  const match24 = raw.match(/^(\d{1,2}):(\d{2})$/);
+  if (match24) {
+    const h = parseInt(match24[1], 10);
+    const m = parseInt(match24[2], 10);
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) return { hours: h, minutes: m };
+  }
+
+  const match12 = raw.match(/^(\d{1,2}):(\d{2})\s*([aApP][mM]?)$/);
+  if (match12) {
+    let h = parseInt(match12[1], 10);
+    const m = parseInt(match12[2], 10);
+    const p = match12[3].toLowerCase();
+    if (h >= 1 && h <= 12 && m >= 0 && m <= 59) {
+      const isPM = p.startsWith('p');
+      if (isPM && h !== 12) h += 12;
+      if (!isPM && h === 12) h = 0;
+      return { hours: h, minutes: m };
+    }
+  }
+
+  const matchCompact = raw.match(/^(\d{3,4})\s*([aApP][mM]?)$/);
+  if (matchCompact) {
+    const num = matchCompact[1];
+    const p = matchCompact[2].toLowerCase();
+    let h: number;
+    let m: number;
+    if (num.length === 3) {
+      h = parseInt(num[0], 10);
+      m = parseInt(num.substring(1), 10);
+    } else {
+      h = parseInt(num.substring(0, 2), 10);
+      m = parseInt(num.substring(2), 10);
+    }
+    if (h >= 1 && h <= 12 && m >= 0 && m <= 59) {
+      const isPM = p.startsWith('p');
+      if (isPM && h !== 12) h += 12;
+      if (!isPM && h === 12) h = 0;
+      return { hours: h, minutes: m };
+    }
+  }
+
+  const matchHourOnly = raw.match(/^(\d{1,2})\s*([aApP][mM]?)$/);
+  if (matchHourOnly) {
+    let h = parseInt(matchHourOnly[1], 10);
+    const p = matchHourOnly[2].toLowerCase();
+    if (h >= 1 && h <= 12) {
+      const isPM = p.startsWith('p');
+      if (isPM && h !== 12) h += 12;
+      if (!isPM && h === 12) h = 0;
+      return { hours: h, minutes: 0 };
+    }
+  }
+
+  return null;
+}
+
+/** Format 24-hour time as "6:30 PM" label */
+function formatTimeLabel(hours: number, minutes: number): string {
+  const period = hours < 12 ? 'AM' : 'PM';
+  const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  const min = minutes < 10 ? '0' + minutes : '' + minutes;
+  return `${hour12}:${min} ${period}`;
+}
+
+/** Get the nearest 30-min rounded time */
+function getDefaultMeetingTime(): { hours: number; minutes: number } {
+  const now = new Date();
+  const m = now.getMinutes();
+  let hours = now.getHours();
+  let minutes: number;
+
+  if (m < 15) {
+    minutes = 0;
+  } else if (m < 45) {
+    minutes = 30;
+  } else {
+    hours = (hours + 1) % 24;
+    minutes = 0;
+  }
+
+  return { hours, minutes };
+}
+
+const ALL_TIME_OPTIONS = generateTimeOptions();
 
 @Component({
   selector: 'app-meeting-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgClass, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule, SelectModule, MeetingAnalysisComponent],
+  imports: [FormsModule, NgClass, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule, AutoCompleteModule, MeetingAnalysisComponent],
   styles: [`
     :host ::ng-deep .p-dialog-content {
       padding: 0 !important;
@@ -161,40 +260,23 @@ interface TimeOption {
           </div>
         }
 
-        <!-- Time -->
+        <!-- Time (editable combobox) -->
         <div class="flex items-center gap-3">
           <i class="pi pi-clock text-foreground-muted w-5 text-center" aria-hidden="true"></i>
-          <div class="flex items-center gap-1">
-            <p-select
-              [options]="hourOptions"
-              [ngModel]="selectedHour()"
-              (ngModelChange)="selectedHour.set($event)"
-              optionLabel="label"
-              optionValue="value"
-              [style]="{ width: '80px' }"
-              appendTo="body"
-              ariaLabel="Meeting hour"
-            />
-            <span class="text-foreground-muted font-medium">:</span>
-            <p-select
-              [options]="minuteOptions()"
-              [ngModel]="selectedMinute()"
-              (ngModelChange)="selectedMinute.set($event)"
-              optionLabel="label"
-              optionValue="value"
-              [style]="{ width: '80px' }"
-              appendTo="body"
-              ariaLabel="Meeting minute"
-            />
-            <p-select
-              [options]="periodOptions"
-              [ngModel]="selectedPeriod()"
-              (ngModelChange)="selectedPeriod.set($event)"
-              [style]="{ width: '78px', minWidth: '78px' }"
-              appendTo="body"
-              ariaLabel="AM or PM"
-            />
-          </div>
+          <p-autoComplete
+            [suggestions]="filteredTimeOptions()"
+            [ngModel]="selectedTimeLabel()"
+            (ngModelChange)="onTimeInputChange($event)"
+            (completeMethod)="filterTimes($event)"
+            (onSelect)="onTimeSelect($event)"
+            (onBlur)="onTimeBlur()"
+            placeholder="Type or pick time..."
+            [dropdown]="true"
+            [style]="{ width: '170px' }"
+            [inputStyle]="{ width: '100%' }"
+            appendTo="body"
+            ariaLabel="Meeting time"
+          />
         </div>
 
         <!-- Transcript (only shown when editing) -->
@@ -410,10 +492,9 @@ export class MeetingEditorComponent {
   readonly customDateLabel = signal<string | null>(null);
   readonly showDatePicker = signal(false);
 
-  // Time selection state
-  readonly selectedHour = signal(10);
-  readonly selectedMinute = signal(0);
-  readonly selectedPeriod = signal<'AM' | 'PM'>('AM');
+  // Time selection state (editable combobox)
+  readonly selectedTimeLabel = signal('10:00 AM');
+  readonly filteredTimeOptions = signal<string[]>(ALL_TIME_OPTIONS);
 
   // Date options
   readonly dateOptions: DateOption[] = [
@@ -422,40 +503,8 @@ export class MeetingEditorComponent {
     { label: 'Next Week', getValue: () => this.addDays(new Date(), 7) },
   ];
 
-  // Time options
-  readonly hourOptions: TimeOption[] = [
-    { label: '12', value: 12 },
-    { label: '1', value: 1 },
-    { label: '2', value: 2 },
-    { label: '3', value: 3 },
-    { label: '4', value: 4 },
-    { label: '5', value: 5 },
-    { label: '6', value: 6 },
-    { label: '7', value: 7 },
-    { label: '8', value: 8 },
-    { label: '9', value: 9 },
-    { label: '10', value: 10 },
-    { label: '11', value: 11 },
-  ];
-
-  readonly defaultMinuteOptions: TimeOption[] = [
-    { label: '00', value: 0 },
-    { label: '05', value: 5 },
-    { label: '10', value: 10 },
-    { label: '15', value: 15 },
-    { label: '20', value: 20 },
-    { label: '25', value: 25 },
-    { label: '30', value: 30 },
-    { label: '35', value: 35 },
-    { label: '40', value: 40 },
-    { label: '45', value: 45 },
-    { label: '50', value: 50 },
-    { label: '55', value: 55 },
-  ];
-
-  readonly minuteOptions = signal<TimeOption[]>(this.defaultMinuteOptions);
-
-  readonly periodOptions = ['AM', 'PM'];
+  // Time options for autocomplete dropdown
+  readonly allTimeOptions = ALL_TIME_OPTIONS;
 
   constructor() {
     // Reload action item statuses only when action items count changes (e.g., after analysis completes)
@@ -467,18 +516,15 @@ export class MeetingEditorComponent {
       }
     });
 
-    // Update meetingDate when time selection changes
+    // Update meetingDate when time label changes
     effect(() => {
-      const hour = this.selectedHour();
-      const minute = this.selectedMinute();
-      const period = this.selectedPeriod();
+      const timeLabel = this.selectedTimeLabel();
       const currentDate = this.meetingDate();
+      const parsed = parseTimeInput(timeLabel);
 
-      if (currentDate) {
+      if (currentDate && parsed) {
         const newDate = new Date(currentDate);
-        const hour24 = this.toHour24(hour, period);
-        newDate.setHours(hour24, minute, 0, 0);
-        // Only update if time actually changed to avoid infinite loop
+        newDate.setHours(parsed.hours, parsed.minutes, 0, 0);
         if (newDate.getTime() !== currentDate.getTime()) {
           this.meetingDate.set(newDate);
         }
@@ -492,30 +538,20 @@ export class MeetingEditorComponent {
     return result;
   }
 
-  /** Convert 12-hour format to 24-hour format */
-  private toHour24(hour12: number, period: 'AM' | 'PM'): number {
-    if (period === 'PM' && hour12 !== 12) {
-      return hour12 + 12;
-    } else if (period === 'AM' && hour12 === 12) {
-      return 0;
-    }
-    return hour12;
-  }
-
   selectDateOption(option: DateOption): void {
     this.selectedDateChip.set(option.label);
     this.customDateLabel.set(null);
     this.showDatePicker.set(false);
 
     const newDate = option.getValue();
-    // Preserve the current time
     const currentDate = this.meetingDate();
     if (currentDate) {
       newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
     } else {
-      // Default to selected time
-      const hour24 = this.toHour24(this.selectedHour(), this.selectedPeriod());
-      newDate.setHours(hour24, this.selectedMinute(), 0, 0);
+      const parsed = parseTimeInput(this.selectedTimeLabel());
+      if (parsed) {
+        newDate.setHours(parsed.hours, parsed.minutes, 0, 0);
+      }
     }
     this.meetingDate.set(newDate);
   }
@@ -540,29 +576,42 @@ export class MeetingEditorComponent {
   }
 
   private extractTimeFromDate(date: Date): void {
-    let hours = date.getHours();
-    const period: 'AM' | 'PM' = hours >= 12 ? 'PM' : 'AM';
+    this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
+  }
 
-    if (hours === 0) {
-      hours = 12;
-    } else if (hours > 12) {
-      hours = hours - 12;
+  /** Called as user types in the time combobox */
+  onTimeInputChange(value: string): void {
+    this.selectedTimeLabel.set(value);
+  }
+
+  /** Filter autocomplete suggestions based on typed query */
+  filterTimes(event: AutoCompleteCompleteEvent): void {
+    const query = event.query.toLowerCase().trim();
+    if (!query) {
+      this.filteredTimeOptions.set(ALL_TIME_OPTIONS);
+      return;
     }
+    this.filteredTimeOptions.set(
+      ALL_TIME_OPTIONS.filter(t => t.toLowerCase().includes(query))
+    );
+  }
 
-    this.selectedHour.set(hours);
+  /** Called when user selects an option from the dropdown */
+  onTimeSelect(event: AutoCompleteSelectEvent): void {
+    this.selectedTimeLabel.set(event.value);
+  }
 
-    // Use the exact minute value; if it's not on a 5-minute interval, add it to the options
-    const minutes = date.getMinutes();
-    if (minutes % 5 !== 0) {
-      const pad = minutes < 10 ? '0' : '';
-      const customOption: TimeOption = { label: `${pad}${minutes}`, value: minutes };
-      const opts = [...this.defaultMinuteOptions, customOption].sort((a, b) => a.value - b.value);
-      this.minuteOptions.set(opts);
+  /** On blur, validate and normalize the typed value */
+  onTimeBlur(): void {
+    const parsed = parseTimeInput(this.selectedTimeLabel());
+    if (parsed) {
+      this.selectedTimeLabel.set(formatTimeLabel(parsed.hours, parsed.minutes));
     } else {
-      this.minuteOptions.set(this.defaultMinuteOptions);
+      const date = this.meetingDate();
+      if (date) {
+        this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
+      }
     }
-    this.selectedMinute.set(minutes);
-    this.selectedPeriod.set(period);
   }
 
   private determineInitialDateChip(date: Date): void {
@@ -617,16 +666,14 @@ export class MeetingEditorComponent {
       this.meetingId.set(null);
       this.title.set('');
 
-      // Default to tomorrow at 10 AM
+      // Default to tomorrow at the nearest 30-min interval
+      const defaultTime = getDefaultMeetingTime();
       const tomorrow = this.addDays(new Date(), 1);
-      tomorrow.setHours(10, 0, 0, 0);
+      tomorrow.setHours(defaultTime.hours, defaultTime.minutes, 0, 0);
       this.meetingDate.set(tomorrow);
       this.selectedDateChip.set('Tomorrow');
       this.customDateLabel.set(null);
-      this.selectedHour.set(10);
-      this.selectedMinute.set(0);
-      this.minuteOptions.set(this.defaultMinuteOptions);
-      this.selectedPeriod.set('AM');
+      this.selectedTimeLabel.set(formatTimeLabel(defaultTime.hours, defaultTime.minutes));
 
       this.attendees.set('');
       this.transcript.set('');
