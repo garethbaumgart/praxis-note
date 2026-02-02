@@ -17,7 +17,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { DatePickerModule } from 'primeng/datepicker';
-import { AutoCompleteModule, AutoCompleteCompleteEvent, AutoCompleteSelectEvent } from 'primeng/autocomplete';
+import { SelectModule } from 'primeng/select';
 import { Meeting, MeetingTag, ActionItemStatus, parseJsonArray } from './meeting.model';
 import { MeetingService } from './meeting.service';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
@@ -145,7 +145,7 @@ const ALL_TIME_OPTIONS = generateTimeOptions();
   selector: 'app-meeting-editor-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DatePickerModule, AutoCompleteModule, MeetingAnalysisComponent, MeetingReflectionComponent],
+  imports: [FormsModule, DatePickerModule, SelectModule, MeetingAnalysisComponent, MeetingReflectionComponent],
   template: `
     <div class="meeting-editor-page">
       <!-- Header bar -->
@@ -270,17 +270,15 @@ const ALL_TIME_OPTIONS = generateTimeOptions();
                     </div>
                   }
                   <!-- Time picker (editable combobox) -->
-                  <p-autoComplete
-                    [suggestions]="filteredTimeOptions()"
+                  <p-select
+                    [options]="allTimeOptions"
                     [ngModel]="selectedTimeLabel()"
-                    (ngModelChange)="onTimeInputChange($event)"
-                    (completeMethod)="filterTimes($event)"
-                    (onSelect)="onTimeSelect($event)"
-                    (onBlur)="onTimeBlur()"
+                    (ngModelChange)="onTimeChange($event)"
+                    [editable]="true"
+                    [filter]="true"
+                    filterPlaceholder="Type time..."
                     placeholder="Type or pick time..."
-                    [dropdown]="true"
                     [style]="{ width: '170px' }"
-                    [inputStyle]="{ width: '100%' }"
                     appendTo="body"
                     ariaLabel="Meeting time"
                   />
@@ -824,7 +822,7 @@ const ALL_TIME_OPTIONS = generateTimeOptions();
     }
 
     /* Time picker combobox */
-    :host ::ng-deep .p-autocomplete-input {
+    :host ::ng-deep .p-select.p-select-editable .p-select-label {
       font-size: 13px;
     }
 
@@ -1108,7 +1106,6 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
   // Time selection (editable combobox)
   readonly selectedTimeLabel = signal('10:00 AM');
-  readonly filteredTimeOptions = signal<string[]>(ALL_TIME_OPTIONS);
 
   // Analysis state
   readonly actionItemStatuses = signal<ActionItemStatus[]>([]);
@@ -1554,39 +1551,15 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
   }
 
-  /** Called as user types in the time combobox */
-  onTimeInputChange(value: string): void {
-    this.selectedTimeLabel.set(value);
-  }
-
-  /** Filter autocomplete suggestions based on typed query */
-  filterTimes(event: AutoCompleteCompleteEvent): void {
-    const query = event.query.toLowerCase().trim();
-    if (!query) {
-      this.filteredTimeOptions.set(ALL_TIME_OPTIONS);
-      return;
-    }
-    this.filteredTimeOptions.set(
-      ALL_TIME_OPTIONS.filter(t => t.toLowerCase().includes(query))
-    );
-  }
-
-  /** Called when user selects an option from the dropdown */
-  onTimeSelect(event: AutoCompleteSelectEvent): void {
-    this.selectedTimeLabel.set(event.value);
-  }
-
-  /** On blur, validate and normalize the typed value */
-  onTimeBlur(): void {
-    const parsed = parseTimeInput(this.selectedTimeLabel());
+  /** Handle time change from editable select (typed or picked) */
+  onTimeChange(value: string): void {
+    if (!value) return;
+    const parsed = parseTimeInput(value);
     if (parsed) {
       this.selectedTimeLabel.set(formatTimeLabel(parsed.hours, parsed.minutes));
     } else {
-      // Revert to current meeting date time
-      const date = this.meetingDate();
-      if (date) {
-        this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
-      }
+      // Keep the raw value for now; the effect won't fire if it can't parse
+      this.selectedTimeLabel.set(value);
     }
   }
 
