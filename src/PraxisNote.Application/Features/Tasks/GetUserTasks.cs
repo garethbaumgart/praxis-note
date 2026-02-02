@@ -132,25 +132,9 @@ public sealed class GetUserTasks(
         try
         {
             using var doc = JsonDocument.Parse(content);
-            var root = doc.RootElement;
-
-            if (root.TryGetProperty("content", out var contentArray) &&
-                contentArray.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var node in contentArray.EnumerateArray())
-                {
-                    if (!node.TryGetProperty("type", out var typeElement))
-                        continue;
-
-                    var type = typeElement.GetString();
-                    if (type is not ("heading" or "paragraph"))
-                        continue;
-
-                    var text = ExtractTextFromNode(node);
-                    if (!string.IsNullOrWhiteSpace(text))
-                        return text.Length > 60 ? text[..57] + "..." : text;
-                }
-            }
+            var title = FindFirstTitle(doc.RootElement);
+            if (!string.IsNullOrWhiteSpace(title))
+                return title.Length > 60 ? title[..57] + "..." : title;
         }
         catch (JsonException)
         {
@@ -164,7 +148,41 @@ public sealed class GetUserTasks(
     }
 
     /// <summary>
-    /// Recursively extracts text content from a TipTap node's content array.
+    /// Recursively searches a TipTap JSON tree for the first heading or paragraph with text.
+    /// Handles nested structures like taskList, bulletList, and listItem.
+    /// </summary>
+    private static string? FindFirstTitle(JsonElement node)
+    {
+        if (node.ValueKind != JsonValueKind.Object)
+            return null;
+
+        if (node.TryGetProperty("type", out var typeElement))
+        {
+            var type = typeElement.GetString();
+            if (type is "heading" or "paragraph")
+            {
+                var text = ExtractTextFromNode(node);
+                if (!string.IsNullOrWhiteSpace(text))
+                    return text;
+            }
+        }
+
+        if (node.TryGetProperty("content", out var contentArray) &&
+            contentArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var child in contentArray.EnumerateArray())
+            {
+                var found = FindFirstTitle(child);
+                if (!string.IsNullOrWhiteSpace(found))
+                    return found;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Extracts text content from a TipTap node's immediate text children.
     /// </summary>
     private static string ExtractTextFromNode(JsonElement node)
     {
@@ -172,16 +190,12 @@ public sealed class GetUserTasks(
             content.ValueKind != JsonValueKind.Array)
             return string.Empty;
 
-        var parts = new List<string>();
-        foreach (var child in content.EnumerateArray())
-        {
-            if (child.TryGetProperty("type", out var childType) &&
+        var parts = content.EnumerateArray()
+            .Where(child =>
+                child.TryGetProperty("type", out var childType) &&
                 childType.GetString() == "text" &&
-                child.TryGetProperty("text", out var textElement))
-            {
-                parts.Add(textElement.GetString() ?? string.Empty);
-            }
-        }
+                child.TryGetProperty("text", out _))
+            .Select(child => child.GetProperty("text").GetString() ?? string.Empty);
 
         return string.Join("", parts);
     }

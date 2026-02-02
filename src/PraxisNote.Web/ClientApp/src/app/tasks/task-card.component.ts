@@ -1131,9 +1131,6 @@ export class TaskCardComponent {
     const source = this.task().source;
     if (!source) return;
 
-    const route = source.type === 'meeting'
-      ? `/meetings/${source.id}`
-      : `/notes/${source.id}`;
-    this.router.navigate([route]);
+    this.router.navigate([source.type === 'meeting' ? '/meetings' : '/notes', source.id]);
   }
 }
