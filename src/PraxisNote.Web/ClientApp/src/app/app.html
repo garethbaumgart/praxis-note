@@ -70,6 +70,38 @@
 <!-- Dev toolbar for mock authentication (only visible in dev mode) -->
 <app-mock-auth-toolbar />
 
+<!-- PWA Update notification -->
+@if (pwaUpdateService.updateAvailable()) {
+  <div
+    role="status"
+    aria-live="polite"
+    aria-label="Application update available"
+    class="fixed bottom-24 right-4 z-50 bg-surface border border-border rounded-lg shadow-lg p-4 flex items-center gap-3 max-w-sm animate-slide-up"
+  >
+    <i class="pi pi-refresh text-xl text-primary shrink-0" aria-hidden="true"></i>
+    <div class="flex-1 min-w-0">
+      <p class="font-medium text-foreground">Update available</p>
+      <p class="text-sm text-foreground-muted">A new version of PraxisNote is ready.</p>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button
+        class="px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground hover:bg-surface-muted rounded transition-colors"
+        (click)="pwaUpdateService.dismissUpdate()"
+        aria-label="Dismiss update notification"
+      >
+        Later
+      </button>
+      <button
+        class="px-3 py-1.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded transition-colors"
+        (click)="pwaUpdateService.applyUpdate()"
+        aria-label="Update PraxisNote now"
+      >
+        Update
+      </button>
+    </div>
+  </div>
+}
+
 <!-- Global toast notifications -->
 <p-toast position="bottom-right">
   <ng-template let-message pTemplate="message">

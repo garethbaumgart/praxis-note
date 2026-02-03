@@ -149,11 +149,7 @@ test.describe('Icon Sizing', () => {
 });
 
 async function setupAuth(page: any, user: MockUser): Promise<void> {
-  await page.route('**/api/**', async (route: any) => {
-    const headers = {
-      ...route.request().headers(),
-      ...getMockAuthHeaders(user),
-    };
-    await route.continue({ headers });
-  });
+  // Use setExtraHTTPHeaders to ensure ALL requests get auth headers
+  // This is more reliable than page.route() which can have timing issues
+  await page.setExtraHTTPHeaders(getMockAuthHeaders(user));
 }

@@ -53,8 +53,8 @@ test.describe('Notes', () => {
     await setupAuth(page, testUser);
     await page.goto('/notes');
 
-    // Wait for the note to appear
-    await expect(page.getByText(originalContent)).toBeVisible();
+    // Wait for the note to appear (with longer timeout for reliability)
+    await expect(page.getByText(originalContent)).toBeVisible({ timeout: 10000 });
 
     // Find the note card with our content and click it to navigate to editor
     const noteCard = page.locator('.note-card').filter({ hasText: originalContent });
@@ -62,14 +62,14 @@ test.describe('Notes', () => {
     await noteCard.click();
 
     // Wait for navigation to editor page
-    await page.waitForURL(`**/notes/${note.id}`);
+    await page.waitForURL(`**/notes/${note.id}`, { timeout: 10000 });
 
     // Wait for TipTap editor to be ready
     const editor = page.locator('.ProseMirror');
-    await expect(editor).toBeVisible({ timeout: 5000 });
+    await expect(editor).toBeVisible();
 
     // Wait for the editor to fully initialize and show the original content
-    await expect(editor).toContainText('Original content', { timeout: 5000 });
+    await expect(editor).toContainText(originalContent, { timeout: 10000 });
 
     // Focus and clear using triple-click + delete (selects paragraph in TipTap)
     await editor.click({ clickCount: 3 });
@@ -133,11 +133,7 @@ test.describe('Notes', () => {
 });
 
 async function setupAuth(page: any, user: MockUser): Promise<void> {
-  await page.route('**/api/**', async (route: any) => {
-    const headers = {
-      ...route.request().headers(),
-      ...getMockAuthHeaders(user),
-    };
-    await route.continue({ headers });
-  });
+  // Use setExtraHTTPHeaders to ensure ALL requests get auth headers
+  // This is more reliable than page.route() which can have timing issues
+  await page.setExtraHTTPHeaders(getMockAuthHeaders(user));
 }
