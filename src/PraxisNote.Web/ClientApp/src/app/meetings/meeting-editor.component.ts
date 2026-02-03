@@ -402,11 +402,13 @@ export class MeetingEditorComponent {
     {
       label: 'Microphone Only',
       icon: 'pi pi-microphone',
+      title: 'Record using your microphone for in-person meetings',
       command: () => this.startRecording('microphone'),
     },
     {
       label: 'Online Meeting',
       icon: 'pi pi-desktop',
+      title: 'Capture both your mic and tab audio from Zoom, Teams, etc.',
       command: () => this.startRecording('both'),
     },
   ]);

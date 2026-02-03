@@ -2,6 +2,8 @@ import { Injectable, signal, computed, OnDestroy } from '@angular/core';
 
 export type RecordingState = 'idle' | 'recording' | 'paused';
 export type AudioCaptureMode = 'microphone' | 'both';
+// Note: 'system' mode (system audio only, no mic) was considered but isn't exposed
+// since online meetings always need the user's voice too.
 
 @Injectable({ providedIn: 'root' })
 export class AudioRecorderService implements OnDestroy {
@@ -155,10 +157,12 @@ export class AudioRecorderService implements OnDestroy {
       this.startLevelMetering();
     } catch (err) {
       this.cleanup();
-      if (err instanceof Error) {
-        this.error.set(err.message);
-      } else if (err instanceof DOMException && err.name === 'NotAllowedError') {
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
         this.error.set('Microphone access denied. Please allow microphone permissions and try again.');
+      } else if (err instanceof DOMException) {
+        this.error.set(err.message);
+      } else if (err instanceof Error) {
+        this.error.set(err.message);
       } else {
         this.error.set('Failed to start recording. Please check your audio settings.');
       }
@@ -172,9 +176,17 @@ export class AudioRecorderService implements OnDestroy {
       return await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        throw new Error('Microphone access denied. Please allow microphone permissions and try again.');
+        // Preserve DOMException type so outer catch can handle it consistently
+        throw new DOMException(
+          'Microphone access denied. Please allow microphone permissions and try again.',
+          'NotAllowedError'
+        );
       }
-      throw new Error('Could not access microphone. Please check your audio settings.');
+      // Wrap other errors as DOMException for consistent handling
+      throw new DOMException(
+        'Could not access microphone. Please check your audio settings.',
+        err instanceof DOMException ? err.name : 'NotReadableError'
+      );
     }
   }
 
