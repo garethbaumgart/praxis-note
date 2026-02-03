@@ -397,7 +397,7 @@ export class MeetingEditorComponent {
   readonly transcript = signal('');
   readonly showTabWarning = signal(false);
 
-  // Recording menu options
+  // Recording menu options (conditionally include system audio option based on browser support)
   readonly recordMenuItems = signal<MenuItem[]>([
     {
       label: 'Microphone Only',
@@ -405,12 +405,16 @@ export class MeetingEditorComponent {
       title: 'Record using your microphone for in-person meetings',
       command: () => this.startRecording('microphone'),
     },
-    {
-      label: 'Online Meeting',
-      icon: 'pi pi-desktop',
-      title: 'Capture both your mic and tab audio from Zoom, Teams, etc.',
-      command: () => this.startRecording('both'),
-    },
+    ...(AudioRecorderService.isSystemAudioSupported()
+      ? [
+          {
+            label: 'Online Meeting',
+            icon: 'pi pi-desktop',
+            title: 'Capture both your mic and tab audio from Zoom, Teams, etc.',
+            command: () => this.startRecording('both'),
+          },
+        ]
+      : []),
   ]);
 
   // Date selection state

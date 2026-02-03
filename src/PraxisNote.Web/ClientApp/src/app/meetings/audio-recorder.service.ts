@@ -135,6 +135,12 @@ export class AudioRecorderService implements OnDestroy {
         }
       };
 
+      this.mediaRecorder.onerror = (e) => {
+        console.error('MediaRecorder error:', e);
+        this.error.set('Recording error occurred. Please try again.');
+        this.cleanup();
+      };
+
       // Handle case where user stops sharing the tab
       if (this.systemStream) {
         const videoTrack = this.systemStream.getVideoTracks()[0];
@@ -193,14 +199,16 @@ export class AudioRecorderService implements OnDestroy {
   private async getSystemAudioStream(): Promise<MediaStream> {
     // getDisplayMedia captures the audio from a shared tab/screen
     // We request video too (required by most browsers) but only use the audio
+    const audioConstraints: MediaTrackConstraints = {
+      // Request high quality audio capture
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false,
+    };
+
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: true, // Required, but we won't use it
-      audio: {
-        // Request high quality audio capture
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-      } as MediaTrackConstraints,
+      audio: audioConstraints,
     });
 
     // Check if audio track was actually captured
@@ -229,6 +237,12 @@ export class AudioRecorderService implements OnDestroy {
 
     // Mix both streams using Web Audio API
     this.mixingContext = new AudioContext();
+    if (this.mixingContext.state === 'suspended') {
+      // Resume the context in case the browser started it suspended due to autoplay policies
+      this.mixingContext.resume().catch(() => {
+        // Swallow errors to avoid breaking recording flow
+      });
+    }
 
     // Create sources for both streams
     const micSource = this.mixingContext.createMediaStreamSource(this.micStream);
