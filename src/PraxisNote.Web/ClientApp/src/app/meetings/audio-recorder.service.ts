@@ -1,11 +1,14 @@
 import { Injectable, signal, computed, OnDestroy } from '@angular/core';
 
 export type RecordingState = 'idle' | 'recording' | 'paused';
+export type AudioCaptureMode = 'microphone' | 'system' | 'both';
 
 @Injectable({ providedIn: 'root' })
 export class AudioRecorderService implements OnDestroy {
   private mediaRecorder: MediaRecorder | null = null;
-  private audioStream: MediaStream | null = null;
+  private micStream: MediaStream | null = null;
+  private systemStream: MediaStream | null = null;
+  private mixedStream: MediaStream | null = null;
   private audioContext: AudioContext | null = null;
   private analyserNode: AnalyserNode | null = null;
   private chunks: Blob[] = [];
@@ -18,12 +21,17 @@ export class AudioRecorderService implements OnDestroy {
   readonly elapsedSeconds = signal(0);
   readonly error = signal<string | null>(null);
   readonly audioLevels = signal<number[]>(new Array(16).fill(0));
+  readonly captureMode = signal<AudioCaptureMode>('microphone');
 
   readonly onAudioChunk = signal<((blob: Blob) => void) | null>(null);
 
   readonly isRecording = computed(() => this.state() === 'recording');
   readonly isPaused = computed(() => this.state() === 'paused');
   readonly isActive = computed(() => this.state() !== 'idle');
+  readonly hasSystemAudio = computed(() => {
+    const mode = this.captureMode();
+    return mode === 'system' || mode === 'both';
+  });
 
   readonly formattedTime = computed(() => {
     const total = this.elapsedSeconds();
@@ -36,54 +44,85 @@ export class AudioRecorderService implements OnDestroy {
     this.discard();
   }
 
+  /**
+   * Start recording with microphone only (original behavior).
+   * Use this for in-person meetings or when system audio is not needed.
+   */
   async start(): Promise<void> {
+    return this.startRecording('microphone');
+  }
+
+  /**
+   * Start recording with system audio capture (for online meetings).
+   * This will prompt the user to share a browser tab to capture participant audio.
+   * Also captures microphone for the user's own voice.
+   */
+  async startWithSystemAudio(): Promise<void> {
+    return this.startRecording('both');
+  }
+
+  private async startRecording(mode: AudioCaptureMode): Promise<void> {
     if (this.state() !== 'idle' || this.isStarting) return;
     this.isStarting = true;
     const token = ++this.startToken;
 
     this.error.set(null);
-
-    let stream: MediaStream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        this.error.set('Microphone access denied. Please allow microphone permissions and try again.');
-      } else {
-        this.error.set('Could not access microphone. Please check your audio settings.');
-      }
-      this.isStarting = false;
-      return;
-    }
-
-    // If discard() was called while waiting for permission, release the stream
-    if (token !== this.startToken) {
-      for (const track of stream.getTracks()) {
-        track.stop();
-      }
-      this.isStarting = false;
-      return;
-    }
-
-    this.audioStream = stream;
+    this.captureMode.set(mode);
 
     try {
+      // Always get microphone for user's voice
+      this.micStream = await this.getMicrophoneStream();
+
+      // If cancelled while waiting
+      if (token !== this.startToken) {
+        this.releaseStream(this.micStream);
+        this.micStream = null;
+        this.isStarting = false;
+        return;
+      }
+
+      // Get system audio if requested
+      if (mode === 'both' || mode === 'system') {
+        try {
+          this.systemStream = await this.getSystemAudioStream();
+
+          // If cancelled while waiting
+          if (token !== this.startToken) {
+            this.releaseStream(this.micStream);
+            this.releaseStream(this.systemStream);
+            this.micStream = null;
+            this.systemStream = null;
+            this.isStarting = false;
+            return;
+          }
+        } catch (err) {
+          // If user cancels tab sharing, fall back to mic-only
+          console.warn('System audio capture cancelled, falling back to microphone only:', err);
+          this.captureMode.set('microphone');
+          // Continue with mic only
+        }
+      }
+
+      // Create the recording stream (mixed or mic-only)
+      const recordingStream = await this.createRecordingStream();
+
       // Set up Web Audio API for level metering
       this.audioContext = new AudioContext();
       if (this.audioContext.state === 'suspended') {
         await this.audioContext.resume();
       }
-      const source = this.audioContext.createMediaStreamSource(this.audioStream);
+      const source = this.audioContext.createMediaStreamSource(recordingStream);
       this.analyserNode = this.audioContext.createAnalyser();
       this.analyserNode.fftSize = 64;
       source.connect(this.analyserNode);
 
-      // Determine best supported mime type; omit option to let browser use default
+      // Determine best supported mime type
       const mimeType = this.getSupportedMimeType();
       this.chunks = [];
 
-      this.mediaRecorder = new MediaRecorder(this.audioStream,
-        mimeType ? { mimeType } : undefined,
+      this.mediaRecorder = new MediaRecorder(
+        recordingStream,
+        mimeType ? { mimeType } : undefined
       );
 
       this.mediaRecorder.ondataavailable = (e) => {
@@ -93,6 +132,18 @@ export class AudioRecorderService implements OnDestroy {
         }
       };
 
+      // Handle case where user stops sharing the tab
+      if (this.systemStream) {
+        const videoTrack = this.systemStream.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.onended = () => {
+            // Tab sharing stopped - continue with mic only
+            console.log('Tab sharing stopped, continuing with microphone only');
+            this.captureMode.set('microphone');
+          };
+        }
+      }
+
       // Collect data every 1 second for chunked access
       this.mediaRecorder.start(1000);
       this.state.set('recording');
@@ -101,9 +152,92 @@ export class AudioRecorderService implements OnDestroy {
       this.startLevelMetering();
     } catch (err) {
       this.cleanup();
-      this.error.set('Failed to start recording. Your browser may not support audio recording.');
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        this.error.set('Microphone access denied. Please allow microphone permissions and try again.');
+      } else {
+        this.error.set('Failed to start recording. Please check your audio settings.');
+      }
     } finally {
       this.isStarting = false;
+    }
+  }
+
+  private async getMicrophoneStream(): Promise<MediaStream> {
+    try {
+      return await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        throw new Error('Microphone access denied. Please allow microphone permissions and try again.');
+      }
+      throw new Error('Could not access microphone. Please check your audio settings.');
+    }
+  }
+
+  private async getSystemAudioStream(): Promise<MediaStream> {
+    // getDisplayMedia captures the audio from a shared tab/screen
+    // We request video too (required by most browsers) but only use the audio
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: true, // Required, but we won't use it
+      audio: {
+        // Request high quality audio capture
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      } as MediaTrackConstraints,
+    });
+
+    // Check if audio track was actually captured
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      // User may have shared a screen/window without audio
+      // This happens if they didn't check "Share audio" or shared a window instead of tab
+      this.releaseStream(stream);
+      throw new Error('No audio captured. Please share a browser tab and enable "Share audio".');
+    }
+
+    return stream;
+  }
+
+  private async createRecordingStream(): Promise<MediaStream> {
+    // If we only have mic, return it directly
+    if (!this.systemStream || !this.micStream) {
+      this.mixedStream = this.micStream;
+      return this.micStream!;
+    }
+
+    // Mix both streams using Web Audio API
+    const ctx = new AudioContext();
+
+    // Create sources for both streams
+    const micSource = ctx.createMediaStreamSource(this.micStream);
+    const systemSource = ctx.createMediaStreamSource(this.systemStream);
+
+    // Create a destination to mix into
+    const destination = ctx.createMediaStreamDestination();
+
+    // Create gain nodes for volume control if needed
+    const micGain = ctx.createGain();
+    const systemGain = ctx.createGain();
+
+    // Set gains (can be adjusted if one is too loud/quiet)
+    micGain.gain.value = 1.0;
+    systemGain.gain.value = 1.0;
+
+    // Connect: source -> gain -> destination
+    micSource.connect(micGain);
+    systemSource.connect(systemGain);
+    micGain.connect(destination);
+    systemGain.connect(destination);
+
+    this.mixedStream = destination.stream;
+    return destination.stream;
+  }
+
+  private releaseStream(stream: MediaStream | null): void {
+    if (stream) {
+      for (const track of stream.getTracks()) {
+        track.stop();
+      }
     }
   }
 
@@ -134,9 +268,15 @@ export class AudioRecorderService implements OnDestroy {
       this.mediaRecorder.onstop = () => {
         const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
         const baseMime = mimeType.split(';')[0].toLowerCase();
-        const extension = baseMime.includes('ogg') ? 'ogg' : baseMime.includes('mp4') ? 'mp4' : 'webm';
+        const extension = baseMime.includes('ogg')
+          ? 'ogg'
+          : baseMime.includes('mp4')
+            ? 'mp4'
+            : 'webm';
         const blob = new Blob(this.chunks, { type: mimeType });
-        const file = new File([blob], `recording-${Date.now()}.${extension}`, { type: mimeType });
+        const file = new File([blob], `recording-${Date.now()}.${extension}`, {
+          type: mimeType,
+        });
 
         this.cleanup();
         resolve(file);
@@ -157,6 +297,15 @@ export class AudioRecorderService implements OnDestroy {
     this.cleanup();
   }
 
+  /** Check if system audio capture is supported by the browser */
+  static isSystemAudioSupported(): boolean {
+    return (
+      typeof navigator !== 'undefined' &&
+      typeof navigator.mediaDevices !== 'undefined' &&
+      typeof navigator.mediaDevices.getDisplayMedia === 'function'
+    );
+  }
+
   private getSupportedMimeType(): string | undefined {
     const types = [
       'audio/webm;codecs=opus',
@@ -175,7 +324,7 @@ export class AudioRecorderService implements OnDestroy {
   private startTimer(): void {
     this.stopTimer();
     this.timerInterval = setInterval(() => {
-      this.elapsedSeconds.update(s => s + 1);
+      this.elapsedSeconds.update((s) => s + 1);
     }, 1000);
   }
 
@@ -228,12 +377,13 @@ export class AudioRecorderService implements OnDestroy {
     this.stopTimer();
     this.stopLevelMetering();
 
-    if (this.audioStream) {
-      for (const track of this.audioStream.getTracks()) {
-        track.stop();
-      }
-      this.audioStream = null;
-    }
+    this.releaseStream(this.micStream);
+    this.releaseStream(this.systemStream);
+    // Don't release mixedStream separately - it's derived from the others
+
+    this.micStream = null;
+    this.systemStream = null;
+    this.mixedStream = null;
 
     if (this.audioContext) {
       this.audioContext.close();
@@ -246,5 +396,6 @@ export class AudioRecorderService implements OnDestroy {
     this.state.set('idle');
     this.elapsedSeconds.set(0);
     this.audioLevels.set(new Array(16).fill(0));
+    this.captureMode.set('microphone');
   }
 }

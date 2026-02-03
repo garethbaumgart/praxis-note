@@ -18,6 +18,8 @@ import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 import { Meeting, MeetingTag, ActionItemStatus, parseJsonArray } from './meeting.model';
 import { MeetingService } from './meeting.service';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
@@ -38,7 +40,7 @@ interface DateOption {
   selector: 'app-meeting-editor-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DatePickerModule, SelectModule, MeetingAnalysisComponent, MeetingReflectionComponent],
+  imports: [FormsModule, DatePickerModule, SelectModule, MenuModule, MeetingAnalysisComponent, MeetingReflectionComponent],
   template: `
     <div class="meeting-editor-page">
       <!-- Header bar -->
@@ -203,14 +205,16 @@ interface DateOption {
                   <span><i class="pi pi-file-edit"></i> Transcript</span>
                   <div class="section-actions">
                     @if (!recorder.isActive()) {
-                        <button
-                          type="button"
-                          class="record-btn"
-                          (click)="startRecording()"
-                          aria-label="Record and transcribe from microphone"
-                        >
-                          <i class="pi pi-microphone"></i> Record
-                        </button>
+                      <button
+                        type="button"
+                        class="record-btn"
+                        (click)="recordMenu.toggle($event)"
+                        aria-label="Record and transcribe"
+                        aria-haspopup="true"
+                      >
+                        <i class="pi pi-microphone"></i> Record <i class="pi pi-chevron-down ml-1 text-xs"></i>
+                      </button>
+                      <p-menu #recordMenu [model]="recordMenuItems()" [popup]="true" appendTo="body" />
                     }
                   </div>
                 </div>
@@ -224,6 +228,11 @@ interface DateOption {
                         <span class="text-sm font-medium text-foreground">
                           {{ recorder.isPaused() ? 'Paused' : 'Recording' }}
                         </span>
+                        @if (recorder.hasSystemAudio()) {
+                          <span class="text-xs px-2 py-0.5 bg-accent-solid/20 text-accent-solid rounded-full">
+                            <i class="pi pi-desktop mr-1"></i>Tab Audio
+                          </span>
+                        }
                       </div>
                       <span class="text-sm text-foreground-muted font-mono" aria-label="Recording duration">{{ recorder.formattedTime() }}</span>
                     </div>
@@ -1002,6 +1011,22 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   readonly transcript = signal('');
   readonly showTabWarning = signal(false);
 
+  // Recording menu options
+  readonly recordMenuItems = signal<MenuItem[]>([
+    {
+      label: 'Microphone Only',
+      icon: 'pi pi-microphone',
+      command: () => this.startRecording('microphone'),
+      tooltip: 'Record your voice only (in-person meetings)',
+    },
+    {
+      label: 'Online Meeting',
+      icon: 'pi pi-desktop',
+      command: () => this.startRecording('system'),
+      tooltip: 'Record all participants (requires sharing your meeting tab)',
+    },
+  ]);
+
   // Date selection
   readonly selectedDateChip = signal<string | null>('Tomorrow');
   readonly customDateLabel = signal<string | null>(null);
@@ -1501,9 +1526,17 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
   // --- Audio recording with live transcription ---
 
-  async startRecording(): Promise<void> {
+  async startRecording(mode: 'microphone' | 'system' = 'microphone'): Promise<void> {
     this.transcription.reset();
-    await this.recorder.start();
+
+    if (mode === 'system') {
+      // Start with system audio capture for online meetings
+      await this.recorder.startWithSystemAudio();
+    } else {
+      // Microphone only for in-person meetings
+      await this.recorder.start();
+    }
+
     if (this.recorder.isActive()) {
       this.transcription.start();
       this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
