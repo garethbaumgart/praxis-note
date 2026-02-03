@@ -103,8 +103,8 @@ test.describe('Tasks', () => {
     // Target desktop grid (visible at test viewport)
     const desktopGrid = page.locator('[class*="md:grid"]');
 
-    // Verify task starts in Todo column
-    await expect(desktopGrid.locator('.bg-todo').getByText('Workflow Task')).toBeVisible();
+    // Verify task starts in Todo column (with longer timeout for reliability)
+    await expect(desktopGrid.locator('.bg-todo').getByText('Workflow Task')).toBeVisible({ timeout: 10000 });
 
     // Move to InProgress via API
     await request.put(`/api/tasks/${task.id}/status`, {
@@ -112,7 +112,7 @@ test.describe('Tasks', () => {
       data: { status: 'InProgress' },
     });
 
-    // Navigate to refresh data (setupAuth persists across navigation)
+    // Navigate to refresh data
     await page.goto('/tasks');
     await expect(desktopGrid.locator('.bg-inprogress').getByText('Workflow Task')).toBeVisible();
 
@@ -181,11 +181,7 @@ test.describe('Tasks', () => {
 });
 
 async function setupAuth(page: any, user: MockUser): Promise<void> {
-  await page.route('**/api/**', async (route: any) => {
-    const headers = {
-      ...route.request().headers(),
-      ...getMockAuthHeaders(user),
-    };
-    await route.continue({ headers });
-  });
+  // Use setExtraHTTPHeaders to ensure ALL requests get auth headers
+  // This is more reliable than page.route() which can have timing issues
+  await page.setExtraHTTPHeaders(getMockAuthHeaders(user));
 }

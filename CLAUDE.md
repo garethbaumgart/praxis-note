@@ -284,6 +284,24 @@ E2E tests are expensive to write, maintain, and run. Only add E2E tests for **cr
 
 When adding a new feature, ask: "If this breaks, does the app become unusable?" If no, skip the E2E test.
 
+### Flaky Tests Are Not Acceptable
+
+**Zero tolerance for flaky tests.** A flaky test is one that sometimes passes and sometimes fails without code changes. Flaky tests:
+- Erode trust in the test suite
+- Waste developer time investigating false failures
+- Train developers to ignore test failures
+
+**If a test is flaky, fix it immediately:**
+1. Identify the root cause (timing, race conditions, state leakage)
+2. Fix the underlying issue, don't just add retries
+3. Run the test multiple times locally to verify reliability
+
+**Common causes of flaky E2E tests:**
+- Using `page.route()` for auth headers (use `page.setExtraHTTPHeaders()` instead - it's more reliable)
+- Using `waitForLoadState('networkidle')` when SSE connections are open (they never complete)
+- Shared test data without proper cleanup
+- Hardcoded timeouts instead of proper waits
+
 ## Development
 
 ### Database Migrations
