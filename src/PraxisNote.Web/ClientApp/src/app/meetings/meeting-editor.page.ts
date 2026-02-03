@@ -27,15 +27,11 @@ import { DeepgramTranscriptionService } from './deepgram-transcription.service';
 import { ToastService } from '../shared/services/toast.service';
 import { TagService } from '../tasks/tag.service';
 import { Tag } from '../tasks/tag.model';
+import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
 
 interface DateOption {
   label: string;
   getValue: () => Date;
-}
-
-interface TimeOption {
-  label: string;
-  value: number;
 }
 
 @Component({
@@ -166,37 +162,24 @@ interface TimeOption {
                       />
                     </div>
                   }
-                  <!-- Time selectors -->
-                  <div class="time-selectors">
+                  <!-- Time picker (editable combobox) -->
+                  <div>
                     <p-select
-                      [options]="hourOptions"
-                      [ngModel]="selectedHour()"
-                      (ngModelChange)="selectedHour.set($event)"
-                      optionLabel="label"
-                      optionValue="value"
-                      [style]="{ width: '80px' }"
+                      [options]="allTimeOptions"
+                      [ngModel]="selectedTimeLabel()"
+                      (ngModelChange)="onTimeChange($event)"
+                      [editable]="true"
+                      [filter]="true"
+                      filterPlaceholder="Type time..."
+                      placeholder="Type or pick time..."
+                      [style]="{ width: '170px' }"
+                      [class.time-invalid]="timeInputInvalid()"
                       appendTo="body"
-                      ariaLabel="Meeting hour"
+                      ariaLabel="Meeting time"
                     />
-                    <span class="text-foreground-muted font-medium">:</span>
-                    <p-select
-                      [options]="minuteOptions()"
-                      [ngModel]="selectedMinute()"
-                      (ngModelChange)="selectedMinute.set($event)"
-                      optionLabel="label"
-                      optionValue="value"
-                      [style]="{ width: '80px' }"
-                      appendTo="body"
-                      ariaLabel="Meeting minute"
-                    />
-                    <p-select
-                      [options]="periodOptions"
-                      [ngModel]="selectedPeriod()"
-                      (ngModelChange)="selectedPeriod.set($event)"
-                      [style]="{ width: '78px', minWidth: '78px' }"
-                      appendTo="body"
-                      ariaLabel="AM or PM"
-                    />
+                    @if (timeInputInvalid()) {
+                      <small class="text-danger text-[10px] mt-0.5 block">Invalid time format</small>
+                    }
                   </div>
                 </div>
                 <div>
@@ -737,11 +720,13 @@ interface TimeOption {
       color: var(--color-primary-text);
     }
 
-    /* Time selectors */
-    .time-selectors {
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    /* Time picker combobox */
+    :host ::ng-deep .p-select.p-select-editable .p-select-label {
+      font-size: 13px;
+    }
+
+    :host ::ng-deep .time-invalid .p-select-label {
+      color: var(--color-danger-base);
     }
 
     /* Transcript textarea */
@@ -1022,10 +1007,9 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   readonly customDateLabel = signal<string | null>(null);
   readonly showDatePicker = signal(false);
 
-  // Time selection
-  readonly selectedHour = signal(10);
-  readonly selectedMinute = signal(0);
-  readonly selectedPeriod = signal<'AM' | 'PM'>('AM');
+  // Time selection (editable combobox)
+  readonly selectedTimeLabel = signal('10:00 AM');
+  readonly timeInputInvalid = signal(false);
 
   // Analysis state
   readonly actionItemStatuses = signal<ActionItemStatus[]>([]);
@@ -1077,39 +1061,8 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     { label: 'Next Week', getValue: () => this.addDays(new Date(), 7) },
   ];
 
-  // Time options
-  readonly hourOptions: TimeOption[] = [
-    { label: '12', value: 12 },
-    { label: '1', value: 1 },
-    { label: '2', value: 2 },
-    { label: '3', value: 3 },
-    { label: '4', value: 4 },
-    { label: '5', value: 5 },
-    { label: '6', value: 6 },
-    { label: '7', value: 7 },
-    { label: '8', value: 8 },
-    { label: '9', value: 9 },
-    { label: '10', value: 10 },
-    { label: '11', value: 11 },
-  ];
-
-  readonly defaultMinuteOptions: TimeOption[] = [
-    { label: '00', value: 0 },
-    { label: '05', value: 5 },
-    { label: '10', value: 10 },
-    { label: '15', value: 15 },
-    { label: '20', value: 20 },
-    { label: '25', value: 25 },
-    { label: '30', value: 30 },
-    { label: '35', value: 35 },
-    { label: '40', value: 40 },
-    { label: '45', value: 45 },
-    { label: '50', value: 50 },
-    { label: '55', value: 55 },
-  ];
-
-  readonly minuteOptions = signal<TimeOption[]>(this.defaultMinuteOptions);
-  readonly periodOptions = ['AM', 'PM'];
+  // Time options for autocomplete dropdown
+  readonly allTimeOptions = ALL_TIME_OPTIONS;
 
   // Tag computed properties
   readonly meetingTags = computed(() => this.currentMeeting()?.tags ?? []);
@@ -1162,17 +1115,15 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       }
     });
 
-    // Update meetingDate when time selection changes
+    // Update meetingDate when time label changes
     effect(() => {
-      const hour = this.selectedHour();
-      const minute = this.selectedMinute();
-      const period = this.selectedPeriod();
+      const timeLabel = this.selectedTimeLabel();
       const currentDate = this.meetingDate();
+      const parsed = parseTimeInput(timeLabel);
 
-      if (currentDate) {
+      if (currentDate && parsed) {
         const newDate = new Date(currentDate);
-        const hour24 = this.toHour24(hour, period);
-        newDate.setHours(hour24, minute, 0, 0);
+        newDate.setHours(parsed.hours, parsed.minutes, 0, 0);
         if (newDate.getTime() !== currentDate.getTime()) {
           this.meetingDate.set(newDate);
           this.lastSaved.set(false);
@@ -1282,16 +1233,14 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.actionItemStatuses.set([]);
     this.promotingIds.set(new Set());
 
-    // Default to tomorrow at 10 AM
+    // Default to tomorrow at the nearest 30-min interval
+    const defaultTime = getDefaultMeetingTime();
     const tomorrow = this.addDays(new Date(), 1);
-    tomorrow.setHours(10, 0, 0, 0);
+    tomorrow.setHours(defaultTime.hours, defaultTime.minutes, 0, 0);
     this.meetingDate.set(tomorrow);
     this.selectedDateChip.set('Tomorrow');
     this.customDateLabel.set(null);
-    this.selectedHour.set(10);
-    this.selectedMinute.set(0);
-    this.minuteOptions.set(this.defaultMinuteOptions);
-    this.selectedPeriod.set('AM');
+    this.selectedTimeLabel.set(formatTimeLabel(defaultTime.hours, defaultTime.minutes));
   }
 
   private loadMeeting(id: string): void {
@@ -1463,12 +1412,6 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     return result;
   }
 
-  private toHour24(hour12: number, period: 'AM' | 'PM'): number {
-    if (period === 'PM' && hour12 !== 12) return hour12 + 12;
-    if (period === 'AM' && hour12 === 12) return 0;
-    return hour12;
-  }
-
   selectDateOption(option: DateOption): void {
     this.selectedDateChip.set(option.label);
     this.customDateLabel.set(null);
@@ -1479,8 +1422,13 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     if (currentDate) {
       newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
     } else {
-      const hour24 = this.toHour24(this.selectedHour(), this.selectedPeriod());
-      newDate.setHours(hour24, this.selectedMinute(), 0, 0);
+      const parsed = parseTimeInput(this.selectedTimeLabel());
+      if (parsed) {
+        newDate.setHours(parsed.hours, parsed.minutes, 0, 0);
+      } else {
+        const defaultTime = getDefaultMeetingTime();
+        newDate.setHours(defaultTime.hours, defaultTime.minutes, 0, 0);
+      }
     }
     this.meetingDate.set(newDate);
     this.lastSaved.set(false);
@@ -1507,23 +1455,25 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   }
 
   private extractTimeFromDate(date: Date): void {
-    let hours = date.getHours();
-    const period: 'AM' | 'PM' = hours >= 12 ? 'PM' : 'AM';
-    if (hours === 0) hours = 12;
-    else if (hours > 12) hours = hours - 12;
-    this.selectedHour.set(hours);
+    this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
+    this.timeInputInvalid.set(false);
+  }
 
-    const minutes = date.getMinutes();
-    if (minutes % 5 !== 0) {
-      const pad = minutes < 10 ? '0' : '';
-      const customOption: TimeOption = { label: `${pad}${minutes}`, value: minutes };
-      const opts = [...this.defaultMinuteOptions, customOption].sort((a, b) => a.value - b.value);
-      this.minuteOptions.set(opts);
-    } else {
-      this.minuteOptions.set(this.defaultMinuteOptions);
+  /** Handle time change from editable select (typed or picked) */
+  onTimeChange(value: string): void {
+    if (!value) {
+      this.timeInputInvalid.set(false);
+      return;
     }
-    this.selectedMinute.set(minutes);
-    this.selectedPeriod.set(period);
+    const parsed = parseTimeInput(value);
+    if (parsed) {
+      this.selectedTimeLabel.set(formatTimeLabel(parsed.hours, parsed.minutes));
+      this.timeInputInvalid.set(false);
+    } else {
+      // Keep the raw value; the effect will fire but won't update meetingDate since parse fails
+      this.selectedTimeLabel.set(value);
+      this.timeInputInvalid.set(value.trim().length > 0);
+    }
   }
 
   private determineInitialDateChip(date: Date): void {
