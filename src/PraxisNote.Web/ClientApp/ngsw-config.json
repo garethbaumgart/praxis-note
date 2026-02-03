@@ -34,6 +34,19 @@
   ],
   "dataGroups": [
     {
+      "name": "api-streaming",
+      "urls": [
+        "/api/notifications/stream",
+        "/api/transcription/stream"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 0,
+        "maxAge": "0u",
+        "timeout": "0u"
+      }
+    },
+    {
       "name": "api-freshness",
       "urls": [
         "/api/**"
