@@ -407,7 +407,7 @@ export class MeetingEditorComponent {
     {
       label: 'Online Meeting',
       icon: 'pi pi-desktop',
-      command: () => this.startRecording('system'),
+      command: () => this.startRecording('both'),
     },
   ]);
 
@@ -590,10 +590,10 @@ export class MeetingEditorComponent {
     this.visible.set(true);
   }
 
-  async startRecording(mode: 'microphone' | 'system' = 'microphone'): Promise<void> {
+  async startRecording(mode: 'microphone' | 'both' = 'microphone'): Promise<void> {
     this.transcription.reset();
 
-    if (mode === 'system') {
+    if (mode === 'both') {
       await this.recorder.startWithSystemAudio();
     } else {
       await this.recorder.start();

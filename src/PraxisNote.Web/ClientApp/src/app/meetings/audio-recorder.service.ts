@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, OnDestroy } from '@angular/core';
 
 export type RecordingState = 'idle' | 'recording' | 'paused';
-export type AudioCaptureMode = 'microphone' | 'system' | 'both';
+export type AudioCaptureMode = 'microphone' | 'both';
 
 @Injectable({ providedIn: 'root' })
 export class AudioRecorderService implements OnDestroy {
@@ -10,6 +10,7 @@ export class AudioRecorderService implements OnDestroy {
   private systemStream: MediaStream | null = null;
   private mixedStream: MediaStream | null = null;
   private audioContext: AudioContext | null = null;
+  private mixingContext: AudioContext | null = null; // Separate context for mixing
   private analyserNode: AnalyserNode | null = null;
   private chunks: Blob[] = [];
   private timerInterval: ReturnType<typeof setInterval> | null = null;
@@ -28,10 +29,7 @@ export class AudioRecorderService implements OnDestroy {
   readonly isRecording = computed(() => this.state() === 'recording');
   readonly isPaused = computed(() => this.state() === 'paused');
   readonly isActive = computed(() => this.state() !== 'idle');
-  readonly hasSystemAudio = computed(() => {
-    const mode = this.captureMode();
-    return mode === 'system' || mode === 'both';
-  });
+  readonly hasSystemAudio = computed(() => this.captureMode() === 'both');
 
   readonly formattedTime = computed(() => {
     const total = this.elapsedSeconds();
@@ -82,7 +80,7 @@ export class AudioRecorderService implements OnDestroy {
       }
 
       // Get system audio if requested
-      if (mode === 'both' || mode === 'system') {
+      if (mode === 'both') {
         try {
           this.systemStream = await this.getSystemAudioStream();
 
@@ -104,7 +102,10 @@ export class AudioRecorderService implements OnDestroy {
       }
 
       // Create the recording stream (mixed or mic-only)
-      const recordingStream = await this.createRecordingStream();
+      const recordingStream = this.createRecordingStream();
+      if (!recordingStream) {
+        throw new Error('No audio stream available');
+      }
 
       // Set up Web Audio API for level metering
       this.audioContext = new AudioContext();
@@ -137,8 +138,10 @@ export class AudioRecorderService implements OnDestroy {
         const videoTrack = this.systemStream.getVideoTracks()[0];
         if (videoTrack) {
           videoTrack.onended = () => {
-            // Tab sharing stopped - continue with mic only
-            console.log('Tab sharing stopped, continuing with microphone only');
+            // Tab sharing stopped - update mode indicator
+            // Note: Recording continues with the mixed stream that was created,
+            // but system audio track will be silent
+            console.log('Tab sharing stopped, system audio will be silent');
             this.captureMode.set('microphone');
           };
         }
@@ -152,7 +155,9 @@ export class AudioRecorderService implements OnDestroy {
       this.startLevelMetering();
     } catch (err) {
       this.cleanup();
-      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+      if (err instanceof Error) {
+        this.error.set(err.message);
+      } else if (err instanceof DOMException && err.name === 'NotAllowedError') {
         this.error.set('Microphone access denied. Please allow microphone permissions and try again.');
       } else {
         this.error.set('Failed to start recording. Please check your audio settings.');
@@ -198,26 +203,31 @@ export class AudioRecorderService implements OnDestroy {
     return stream;
   }
 
-  private async createRecordingStream(): Promise<MediaStream> {
+  private createRecordingStream(): MediaStream | null {
     // If we only have mic, return it directly
-    if (!this.systemStream || !this.micStream) {
+    if (!this.systemStream) {
       this.mixedStream = this.micStream;
-      return this.micStream!;
+      return this.micStream;
+    }
+
+    // Need mic stream to mix
+    if (!this.micStream) {
+      return null;
     }
 
     // Mix both streams using Web Audio API
-    const ctx = new AudioContext();
+    this.mixingContext = new AudioContext();
 
     // Create sources for both streams
-    const micSource = ctx.createMediaStreamSource(this.micStream);
-    const systemSource = ctx.createMediaStreamSource(this.systemStream);
+    const micSource = this.mixingContext.createMediaStreamSource(this.micStream);
+    const systemSource = this.mixingContext.createMediaStreamSource(this.systemStream);
 
     // Create a destination to mix into
-    const destination = ctx.createMediaStreamDestination();
+    const destination = this.mixingContext.createMediaStreamDestination();
 
     // Create gain nodes for volume control if needed
-    const micGain = ctx.createGain();
-    const systemGain = ctx.createGain();
+    const micGain = this.mixingContext.createGain();
+    const systemGain = this.mixingContext.createGain();
 
     // Set gains (can be adjusted if one is too loud/quiet)
     micGain.gain.value = 1.0;
@@ -268,15 +278,9 @@ export class AudioRecorderService implements OnDestroy {
       this.mediaRecorder.onstop = () => {
         const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
         const baseMime = mimeType.split(';')[0].toLowerCase();
-        const extension = baseMime.includes('ogg')
-          ? 'ogg'
-          : baseMime.includes('mp4')
-            ? 'mp4'
-            : 'webm';
+        const extension = baseMime.includes('ogg') ? 'ogg' : baseMime.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(this.chunks, { type: mimeType });
-        const file = new File([blob], `recording-${Date.now()}.${extension}`, {
-          type: mimeType,
-        });
+        const file = new File([blob], `recording-${Date.now()}.${extension}`, { type: mimeType });
 
         this.cleanup();
         resolve(file);
@@ -388,6 +392,11 @@ export class AudioRecorderService implements OnDestroy {
     if (this.audioContext) {
       this.audioContext.close();
       this.audioContext = null;
+    }
+
+    if (this.mixingContext) {
+      this.mixingContext.close();
+      this.mixingContext = null;
     }
 
     this.analyserNode = null;

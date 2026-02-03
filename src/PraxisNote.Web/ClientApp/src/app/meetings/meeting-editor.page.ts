@@ -1017,13 +1017,11 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       label: 'Microphone Only',
       icon: 'pi pi-microphone',
       command: () => this.startRecording('microphone'),
-      tooltip: 'Record your voice only (in-person meetings)',
     },
     {
       label: 'Online Meeting',
       icon: 'pi pi-desktop',
-      command: () => this.startRecording('system'),
-      tooltip: 'Record all participants (requires sharing your meeting tab)',
+      command: () => this.startRecording('both'),
     },
   ]);
 
@@ -1526,10 +1524,10 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
   // --- Audio recording with live transcription ---
 
-  async startRecording(mode: 'microphone' | 'system' = 'microphone'): Promise<void> {
+  async startRecording(mode: 'microphone' | 'both' = 'microphone'): Promise<void> {
     this.transcription.reset();
 
-    if (mode === 'system') {
+    if (mode === 'both') {
       // Start with system audio capture for online meetings
       await this.recorder.startWithSystemAudio();
     } else {
