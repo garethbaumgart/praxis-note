@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'BugFix',
                     'Reliable meeting recordings',
                     'Meeting recordings no longer stop unexpectedly. The recorder now automatically recovers from errors and continues capturing audio.',
-                    'https://github.com/garethbaumgart/praxis-note/pull/',
+                    'https://github.com/garethbaumgart/praxis-note/pull/312',
                     '2026-02-04T09:00:00Z'
                 );
                 """);
