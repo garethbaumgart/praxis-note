@@ -347,7 +347,7 @@ public static class MeetingEndpoints
 
         var mediaType = request.MediaType ?? "image/png";
         string[] allowedMediaTypes = ["image/png", "image/jpeg", "image/webp"];
-        if (!allowedMediaTypes.Contains(mediaType))
+        if (!allowedMediaTypes.Contains(mediaType, StringComparer.OrdinalIgnoreCase))
         {
             return Results.BadRequest("Unsupported media type. Supported types: image/png, image/jpeg, image/webp.");
         }

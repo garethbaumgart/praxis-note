@@ -1558,8 +1558,9 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
     if (this.recorder.isActive()) {
       // Pass channel count so backend enables multichannel when stereo
-      // Auto-label channel 0 with the authenticated user's name
-      const userName = this.auth.user()?.name?.split(' ')[0] ?? 'You';
+      // Auto-label channel 0 with the authenticated user's first name
+      const firstName = this.auth.user()?.name?.trim().split(' ')[0];
+      const userName = firstName || 'You';
       this.transcription.start(this.recorder.channelCount(), userName);
       this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
       this.showTabWarning.set(true);

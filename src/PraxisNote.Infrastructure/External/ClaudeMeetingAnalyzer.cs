@@ -151,7 +151,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         - "location": Meeting location or video link if visible (or null)
 
         If you cannot determine exact times, make reasonable estimates based on the calendar grid.
-        If you can see the date from the calendar header, use it. Otherwise, use {0} as the base date.
+        If you can see the date from the calendar header, use it. Otherwise, use <<BASE_DATE>> as the base date.
         For events that span time slots, estimate duration from the visual size.
 
         Respond ONLY with valid JSON in this format:
@@ -198,7 +198,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
                     Content =
                     [
                         imageContent,
-                        new TextContent { Text = string.Format(ScreenshotExtractionPromptTemplate, DateTimeOffset.UtcNow.ToString("yyyy-MM-dd")) },
+                        new TextContent { Text = ScreenshotExtractionPromptTemplate.Replace("<<BASE_DATE>>", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd")) },
                     ],
                 },
             ],
@@ -228,7 +228,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
             ?? throw new InvalidOperationException("Failed to parse screenshot extraction response");
 
         var events = result.Events?
-            .Where(e => !string.IsNullOrWhiteSpace(e.Title))
+            .Where(e => !string.IsNullOrWhiteSpace(e.Title) && e.EndTime > e.StartTime)
             .Select(e => new ExtractedCalendarEvent(
                 e.Title!.Trim(),
                 e.StartTime,
