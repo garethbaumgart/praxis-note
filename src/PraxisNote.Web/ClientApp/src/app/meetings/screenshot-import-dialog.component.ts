@@ -159,6 +159,8 @@ import { ScreenshotImportService } from './screenshot-import.service';
 export class ScreenshotImportDialogComponent {
   readonly importService = inject(ScreenshotImportService);
 
+  private readonly supportedTypes = ['image/png', 'image/jpeg', 'image/webp'];
+
   readonly visible = signal(false);
   readonly onImported = output<void>();
 
@@ -197,8 +199,11 @@ export class ScreenshotImportDialogComponent {
     event.preventDefault();
     event.stopPropagation();
     const file = event.dataTransfer?.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && this.supportedTypes.includes(file.type)) {
       this.processFile(file);
+    } else if (file) {
+      this.importService.error.set('Unsupported image format. Please use PNG, JPG, or WebP.');
+      this.importService.state.set('error');
     }
   }
 
@@ -207,7 +212,7 @@ export class ScreenshotImportDialogComponent {
     if (!items) return;
 
     for (const item of Array.from(items)) {
-      if (item.type.startsWith('image/')) {
+      if (this.supportedTypes.includes(item.type)) {
         const file = item.getAsFile();
         if (file) {
           this.processFile(file);
