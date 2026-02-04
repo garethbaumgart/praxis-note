@@ -217,6 +217,9 @@ import { InsightsService } from './insights.service';
   `,
 })
 export class JohariWindowComponent {
+  /** Minimum fr value for grid axes — prevents tiny quadrants from becoming unreadable */
+  private static readonly MIN_FR = 25;
+
   protected readonly johariService = inject(JohariWindowService);
   private readonly insightsService = inject(InsightsService);
 
@@ -244,24 +247,20 @@ export class JohariWindowComponent {
     return `Johari Window: Open ${data.openPercentage}%, Blind Spot ${data.blindSpotPercentage}%, Hidden ${data.hiddenPercentage}%, Unknown ${data.unknownPercentage}%`;
   });
 
-  // Proportional grid sizing — min 25fr ensures small quadrants remain readable
+  // Proportional grid sizing — MIN_FR ensures small quadrants remain readable
   protected readonly gridCols = computed(() => {
     const data = this.johariService.johariWindow();
     if (!data?.hasEnoughData) return '1fr 1fr';
-    const leftPct = data.openPercentage + data.hiddenPercentage;
-    const rightPct = data.blindSpotPercentage + data.unknownPercentage;
-    const left = leftPct === 0 ? 25 : Math.max(25, leftPct);
-    const right = rightPct === 0 ? 25 : Math.max(25, rightPct);
+    const left = Math.max(JohariWindowComponent.MIN_FR, data.openPercentage + data.hiddenPercentage);
+    const right = Math.max(JohariWindowComponent.MIN_FR, data.blindSpotPercentage + data.unknownPercentage);
     return `${left}fr ${right}fr`;
   });
 
   protected readonly gridRows = computed(() => {
     const data = this.johariService.johariWindow();
     if (!data?.hasEnoughData) return '1fr 1fr';
-    const topPct = data.openPercentage + data.blindSpotPercentage;
-    const bottomPct = data.hiddenPercentage + data.unknownPercentage;
-    const top = topPct === 0 ? 25 : Math.max(25, topPct);
-    const bottom = bottomPct === 0 ? 25 : Math.max(25, bottomPct);
+    const top = Math.max(JohariWindowComponent.MIN_FR, data.openPercentage + data.blindSpotPercentage);
+    const bottom = Math.max(JohariWindowComponent.MIN_FR, data.hiddenPercentage + data.unknownPercentage);
     return `${top}fr ${bottom}fr`;
   });
 

@@ -23,7 +23,7 @@ import { ArchetypeScore } from './insights.model';
               <p-skeleton width="50%" height="14px" styleClass="mb-4" />
               <p-skeleton width="100%" height="48px" />
             </div>
-            <p-skeleton width="300px" height="240px" />
+            <p-skeleton width="100%" height="240px" style="max-width: 300px" />
           </div>
         </div>
       } @else if (profileService.error()) {
@@ -88,8 +88,8 @@ import { ArchetypeScore } from './insights.model';
             </div>
 
             <!-- Right: Radar chart -->
-            <div class="flex-shrink-0 flex items-center justify-center">
-              <svg viewBox="0 0 340 270" width="300" height="240" role="img" [attr.aria-label]="radarAriaLabel()">
+            <div class="flex-shrink-0 flex items-center justify-center w-full max-w-[300px]">
+              <svg viewBox="0 0 340 270" class="w-full h-auto" role="img" [attr.aria-label]="radarAriaLabel()">
                 <!-- Radar grid (3 levels) -->
                 <g transform="translate(170, 130)">
                   <!-- Outer hexagon -->
