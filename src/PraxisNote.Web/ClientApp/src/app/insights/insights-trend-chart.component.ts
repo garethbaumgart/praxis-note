@@ -94,7 +94,7 @@ export class InsightsTrendChartComponent {
     const recent = points[points.length - 1].value;
     const previous = points[points.length - 2].value;
     const diff = recent - previous;
-    const percentChange = previous !== 0 ? Math.round(Math.abs(diff / previous) * 100) : 0;
+    const percentChange = previous !== 0 ? Math.round(Math.abs(diff / previous) * 100) : (diff !== 0 ? 100 : 0);
 
     if (Math.abs(diff) < 0.01) {
       return { icon: '\u2192', label: 'stable', classes: 'bg-primary-bg text-primary-solid' };

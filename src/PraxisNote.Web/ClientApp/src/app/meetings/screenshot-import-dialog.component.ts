@@ -168,8 +168,6 @@ export class ScreenshotImportDialogComponent {
     return events.length > 0 && events.every(e => e.selected);
   });
 
-  private lastSelectedCount = 0;
-
   open(): void {
     this.importService.reset();
     this.visible.set(true);
@@ -237,6 +235,10 @@ export class ScreenshotImportDialogComponent {
       const mediaType = header.match(/data:(.*?);/)?.[1] ?? 'image/png';
       this.importService.extractFromImage(base64Data, mediaType);
     };
+    reader.onerror = () => {
+      this.importService.error.set('Failed to read the file. Please try again.');
+      this.importService.state.set('error');
+    };
     reader.readAsDataURL(file);
   }
 
@@ -245,7 +247,6 @@ export class ScreenshotImportDialogComponent {
   }
 
   importSelected(): void {
-    this.lastSelectedCount = this.selectedCount();
     this.importService.importSelected(() => {
       // Each meeting created triggers a reload
     });

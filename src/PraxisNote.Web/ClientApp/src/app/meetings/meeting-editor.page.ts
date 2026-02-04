@@ -30,6 +30,7 @@ import { ToastService } from '../shared/services/toast.service';
 import { TagService } from '../tasks/tag.service';
 import { Tag } from '../tasks/tag.model';
 import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
+import { AuthService } from '../auth/auth.service';
 
 interface DateOption {
   label: string;
@@ -1004,6 +1005,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   private readonly meetingService = inject(MeetingService);
   private readonly tagService = inject(TagService);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
   private readonly injector = inject(Injector);
   readonly recorder = inject(AudioRecorderService);
   readonly transcription = inject(DeepgramTranscriptionService);
@@ -1556,8 +1558,8 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
     if (this.recorder.isActive()) {
       // Pass channel count so backend enables multichannel when stereo
-      // Auto-label channel 0 with the logged-in user's name
-      const userName = this.attendees() ? this.attendees().split(',')[0].trim() : 'You';
+      // Auto-label channel 0 with the authenticated user's name
+      const userName = this.auth.user()?.name?.split(' ')[0] ?? 'You';
       this.transcription.start(this.recorder.channelCount(), userName);
       this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
       this.showTabWarning.set(true);

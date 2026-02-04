@@ -345,8 +345,21 @@ public static class MeetingEndpoints
             return Results.BadRequest("Image data is required.");
         }
 
+        var mediaType = request.MediaType ?? "image/png";
+        string[] allowedMediaTypes = ["image/png", "image/jpeg", "image/webp"];
+        if (!allowedMediaTypes.Contains(mediaType))
+        {
+            return Results.BadRequest("Unsupported media type. Supported types: image/png, image/jpeg, image/webp.");
+        }
+
+        // Limit base64 payload to ~10MB (base64 overhead means ~7.5MB actual image)
+        if (request.Base64Image.Length > 10_000_000)
+        {
+            return Results.BadRequest("Image is too large. Maximum size is 10MB.");
+        }
+
         var command = new ExtractMeetingsFromScreenshot.Command(
-            userId.Value, request.Base64Image, request.MediaType ?? "image/png");
+            userId.Value, request.Base64Image, mediaType);
         var result = await extractMeetings.ExecuteAsync(command, cancellationToken);
 
         return Results.Ok(result);

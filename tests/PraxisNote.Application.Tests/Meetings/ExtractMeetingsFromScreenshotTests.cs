@@ -76,7 +76,7 @@ public sealed class ExtractMeetingsFromScreenshotTests
     public async Task ExecuteAsync_PropagatesCancellation()
     {
         // Arrange
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {

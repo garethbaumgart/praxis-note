@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { ExtractedCalendarEvent, ScreenshotExtractionResult } from './screenshot-import.model';
 
 export type ImportState = 'idle' | 'extracting' | 'preview' | 'importing' | 'done' | 'error';
@@ -54,36 +55,36 @@ export class ScreenshotImportService {
     this.events.update(events => events.map(e => ({ ...e, selected })));
   }
 
-  importSelected(onCreated: (id: string) => void): void {
+  async importSelected(onCreated: (id: string) => void): Promise<void> {
     const selected = this.events().filter(e => e.selected);
     if (selected.length === 0) return;
 
     this.state.set('importing');
     this.importedCount.set(0);
-    let completed = 0;
+    let failures = 0;
 
-    for (const event of selected) {
-      this.http.post<{ id: string }>('/api/meetings', {
-        title: event.title,
-        meetingDate: event.startTime,
-        attendees: event.attendees,
-      }).subscribe({
-        next: result => {
-          completed++;
-          this.importedCount.set(completed);
-          onCreated(result.id);
-          if (completed === selected.length) {
-            this.state.set('done');
-          }
-        },
-        error: () => {
-          completed++;
-          this.importedCount.set(completed);
-          if (completed === selected.length) {
-            this.state.set('done');
-          }
-        },
-      });
+    for (let i = 0; i < selected.length; i++) {
+      const event = selected[i];
+      try {
+        const result = await firstValueFrom(this.http.post<{ id: string }>('/api/meetings', {
+          title: event.title,
+          meetingDate: event.startTime,
+          attendees: event.attendees,
+        }));
+        onCreated(result.id);
+      } catch {
+        failures++;
+      }
+      this.importedCount.set(i + 1);
     }
+
+    if (failures > 0 && failures < selected.length) {
+      this.error.set(`${failures} meeting(s) failed to import.`);
+    } else if (failures === selected.length) {
+      this.error.set('All meetings failed to import. Please try again.');
+      this.state.set('error');
+      return;
+    }
+    this.state.set('done');
   }
 }
