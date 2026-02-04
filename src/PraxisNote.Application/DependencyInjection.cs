@@ -82,6 +82,7 @@ public static class DependencyInjection
         services.AddScoped<GenerateReflectionPrompts>();
         services.AddScoped<SubmitReflection>();
         services.AddScoped<GetMeetingReflection>();
+        services.AddScoped<ExtractMeetingsFromScreenshot>();
 
         // Calendar use cases
         services.AddScoped<ConnectGoogleCalendar>();

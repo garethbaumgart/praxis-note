@@ -46,11 +46,12 @@ import { DateRange } from './insights.model';
             </div>
           }
         </div>
-        <div class="space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           @for (i of skeletonCharts; track i) {
             <div class="bg-surface-subtle border border-border rounded-xl p-4">
-              <p-skeleton width="30%" height="14px" styleClass="mb-4" />
-              <p-skeleton width="100%" height="250px" />
+              <p-skeleton width="50%" height="12px" styleClass="mb-2" />
+              <p-skeleton width="30%" height="24px" styleClass="mb-3" />
+              <p-skeleton width="100%" height="64px" />
             </div>
           }
         </div>
@@ -112,48 +113,54 @@ import { DateRange } from './insights.model';
           </p>
         }
 
-        <!-- Charts -->
-        <div class="space-y-6 mt-6">
+        <!-- Charts - compact 2-column grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
           <app-insights-trend-chart
-            title="Talk-Time % Over Time"
+            title="Talk-Time %"
             infoText="Percentage of meeting time you spent speaking per meeting. A consistent range of 30-50% in group settings indicates balanced participation."
+            [compact]="true"
             [dataPoints]="insightsService.trends()!.talkTimeTrend.dataPoints"
             colorVar="--color-primary-solid"
             fillColorVar="--color-primary-bg" />
 
           <app-insights-trend-chart
-            title="Question vs Statement Ratio"
+            title="Question Ratio"
             infoText="Ratio of questions you asked to statements you made in each meeting. Higher values indicate more curiosity and collaborative exploration."
+            [compact]="true"
             [dataPoints]="insightsService.trends()!.questionRatioTrend.dataPoints"
             colorVar="--color-done-text"
             fillColorVar="--color-done-bg" />
 
           <app-insights-trend-chart
-            title="Interruptions Per Meeting"
+            title="Interruptions"
             infoText="Number of times you interrupted others per meeting. Fewer interruptions generally indicate better listening skills. Some contexts (brainstorming) may warrant more."
             chartType="bar"
+            [compact]="true"
             [dataPoints]="insightsService.trends()!.interruptionTrend.dataPoints"
             colorVar="--color-inprogress-text"
             fillColorVar="--color-inprogress-bg" />
 
           <app-insights-trend-chart
-            title="Sentiment Trend"
+            title="Sentiment"
             infoText="Your communication sentiment score (0-1) per meeting. Higher values indicate more positive tone. Consistent scores above 0.6 suggest constructive communication."
+            [compact]="true"
             [dataPoints]="insightsService.trends()!.sentimentTrend.dataPoints"
             colorVar="--color-done-text"
             fillColorVar="--color-done-bg" />
 
           <app-insights-trend-chart
-            title="Red Flags Per Meeting"
+            title="Red Flags"
             infoText="Number of detected communication red flags (evasive language, hedging, defensiveness, inconsistency) per meeting. A downward trend indicates improving directness."
             chartType="bar"
+            [compact]="true"
             [dataPoints]="insightsService.trends()!.redFlagTrend.totalByMeeting"
             colorVar="--color-danger-base"
             fillColorVar="--color-danger-base" />
 
           <app-insights-trend-chart
-            title="Engagement Level"
+            title="Engagement"
             infoText="Your engagement level per meeting: 3 = high (active contributor), 2 = medium (participates when prompted), 1 = low (mostly observing). Higher is generally better."
+            [compact]="true"
             [dataPoints]="insightsService.trends()!.engagementTrend.dataPoints"
             colorVar="--color-primary-solid"
             fillColorVar="--color-primary-bg" />
@@ -173,7 +180,7 @@ export class InsightsPage implements OnInit {
   ];
 
   protected readonly skeletonCards = [0, 1, 2, 3, 4];
-  protected readonly skeletonCharts = [0, 1, 2];
+  protected readonly skeletonCharts = [0, 1, 2, 3, 4, 5];
 
   ngOnInit(): void {
     this.insightsService.loadTrends();

@@ -9,4 +9,5 @@ public class DeepgramSettings
     public bool Punctuate { get; set; } = true;
     public bool InterimResults { get; set; } = true;
     public string Language { get; set; } = "en-US";
+    public bool Diarize { get; set; } = true;
 }

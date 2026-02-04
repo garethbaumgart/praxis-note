@@ -4,13 +4,14 @@ import { MeetingService } from './meeting.service';
 import { Meeting } from './meeting.model';
 import { MeetingRowComponent } from './meeting-row.component';
 import { MeetingRowSkeletonComponent } from './meeting-row-skeleton.component';
+import { ScreenshotImportDialogComponent } from './screenshot-import-dialog.component';
 import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-meetings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MeetingRowComponent, MeetingRowSkeletonComponent],
+  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ScreenshotImportDialogComponent],
   template: `
     <div class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <!-- Header -->
@@ -19,14 +20,25 @@ import { ToastService } from '../shared/services/toast.service';
           <h1 class="text-lg font-semibold text-foreground">Meetings</h1>
           <span class="text-sm text-foreground-muted">{{ meetingService.meetingCount() }} meetings</span>
         </div>
-        <button
-          type="button"
-          class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium hover:bg-accent-solid/90 transition-colors"
-          (click)="openNewMeeting()"
-        >
-          <i class="pi pi-plus text-xs"></i>
-          New Meeting
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted text-foreground-secondary rounded-md text-sm font-medium hover:bg-surface-muted/80 transition-colors"
+            (click)="importDialog.open()"
+            aria-label="Import meetings from screenshot"
+          >
+            <i class="pi pi-image text-xs"></i>
+            Import
+          </button>
+          <button
+            type="button"
+            class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium hover:bg-accent-solid/90 transition-colors"
+            (click)="openNewMeeting()"
+          >
+            <i class="pi pi-plus text-xs"></i>
+            New Meeting
+          </button>
+        </div>
       </div>
 
       <!-- Search -->
@@ -114,6 +126,7 @@ import { ToastService } from '../shared/services/toast.service';
       }
     </div>
 
+    <app-screenshot-import-dialog #importDialog (onImported)="meetingService.loadMeetings()" />
   `,
   styles: [`
     .day-header {
@@ -131,6 +144,7 @@ export class MeetingsPage implements OnInit {
   private readonly router = inject(Router);
 
   private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  readonly importDialog = viewChild.required<ScreenshotImportDialogComponent>('importDialog');
 
   readonly skeletonArray = Array.from({ length: 4 }, (_, i) => i);
 

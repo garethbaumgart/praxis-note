@@ -74,7 +74,7 @@ var authBuilder = builder.Services.AddAuthentication(options =>
     options.Cookie.Name = "PraxisNote.Auth";
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
     options.SlidingExpiration = true;
     options.Events.OnRedirectToLogin = context =>
