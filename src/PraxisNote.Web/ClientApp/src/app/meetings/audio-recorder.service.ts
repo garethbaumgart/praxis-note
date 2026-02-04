@@ -19,6 +19,12 @@ export class AudioRecorderService implements OnDestroy {
   private levelAnimationId: number | null = null;
   private isStarting = false;
   private startToken = 0;
+  private recoveryAttempts = 0;
+  private static readonly MAX_RECOVERY_ATTEMPTS = 5;
+  private static readonly RECOVERY_ATTEMPT_WINDOW_MS = 60_000;
+  private lastRecoveryTime = 0;
+  private isRecovering = false;
+  private contextKeepAliveInterval: ReturnType<typeof setInterval> | null = null;
 
   readonly state = signal<RecordingState>('idle');
   readonly elapsedSeconds = signal(0);
@@ -68,6 +74,8 @@ export class AudioRecorderService implements OnDestroy {
 
     this.error.set(null);
     this.captureMode.set(mode);
+    this.recoveryAttempts = 0;
+    this.lastRecoveryTime = 0;
 
     try {
       // Always get microphone for user's voice
@@ -123,44 +131,16 @@ export class AudioRecorderService implements OnDestroy {
       const mimeType = this.getSupportedMimeType();
       this.chunks = [];
 
-      this.mediaRecorder = new MediaRecorder(
-        recordingStream,
-        mimeType ? { mimeType } : undefined
-      );
-
-      this.mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          this.chunks.push(e.data);
-          this.onAudioChunk()?.(e.data);
-        }
-      };
-
-      this.mediaRecorder.onerror = (e) => {
-        console.error('MediaRecorder error:', e);
-        this.error.set('Recording error occurred. Please try again.');
-        this.cleanup();
-      };
-
-      // Handle case where user stops sharing the tab
-      if (this.systemStream) {
-        const videoTrack = this.systemStream.getVideoTracks()[0];
-        if (videoTrack) {
-          videoTrack.onended = () => {
-            // Tab sharing stopped - update mode indicator
-            // Note: Recording continues with the mixed stream that was created,
-            // but system audio track will be silent
-            console.log('Tab sharing stopped, system audio will be silent');
-            this.captureMode.set('microphone');
-          };
-        }
-      }
+      this.initMediaRecorder(recordingStream, mimeType);
+      this.monitorAudioTracks();
 
       // Collect data every 1 second for chunked access
-      this.mediaRecorder.start(1000);
+      this.mediaRecorder!.start(1000);
       this.state.set('recording');
       this.elapsedSeconds.set(0);
       this.startTimer();
       this.startLevelMetering();
+      this.startContextKeepAlive();
     } catch (err) {
       this.cleanup();
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
@@ -175,6 +155,214 @@ export class AudioRecorderService implements OnDestroy {
     } finally {
       this.isStarting = false;
     }
+  }
+
+  private initMediaRecorder(stream: MediaStream, mimeType: string | undefined): void {
+    this.mediaRecorder = new MediaRecorder(
+      stream,
+      mimeType ? { mimeType } : undefined
+    );
+
+    this.mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) {
+        this.chunks.push(e.data);
+        this.onAudioChunk()?.(e.data);
+      }
+    };
+
+    this.mediaRecorder.onerror = (e) => {
+      console.error('MediaRecorder error:', e);
+      this.attemptRecovery('MediaRecorder error');
+    };
+  }
+
+  private monitorAudioTracks(): void {
+    // Handle case where user stops sharing the tab
+    if (this.systemStream) {
+      const videoTrack = this.systemStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.onended = () => {
+          // Tab sharing stopped - update mode indicator
+          // Recording continues with the mixed stream that was created,
+          // but system audio track will be silent
+          console.log('Tab sharing stopped, system audio will be silent');
+          this.captureMode.set('microphone');
+        };
+      }
+    }
+
+    // Monitor mic audio track for unexpected end (e.g. device disconnected)
+    if (this.micStream) {
+      for (const track of this.micStream.getAudioTracks()) {
+        track.onended = () => {
+          console.warn('Microphone audio track ended unexpectedly');
+          if (this.state() !== 'idle') {
+            this.attemptRecovery('microphone track ended');
+          }
+        };
+      }
+    }
+
+    // Monitor system audio track for unexpected end
+    if (this.systemStream) {
+      for (const track of this.systemStream.getAudioTracks()) {
+        track.onended = () => {
+          console.warn('System audio track ended unexpectedly');
+          if (this.state() !== 'idle') {
+            // System audio lost — fall back to mic-only rather than failing
+            this.captureMode.set('microphone');
+            this.attemptRecovery('system audio track ended');
+          }
+        };
+      }
+    }
+  }
+
+  private attemptRecovery(reason: string): void {
+    if (this.isRecovering || this.state() === 'idle') return;
+    this.isRecovering = true;
+
+    const now = Date.now();
+    // Reset the attempt counter if it's been long enough since the last recovery
+    if (now - this.lastRecoveryTime > AudioRecorderService.RECOVERY_ATTEMPT_WINDOW_MS) {
+      this.recoveryAttempts = 0;
+    }
+
+    this.recoveryAttempts++;
+    this.lastRecoveryTime = now;
+
+    if (this.recoveryAttempts > AudioRecorderService.MAX_RECOVERY_ATTEMPTS) {
+      console.error(`Recording recovery failed after ${AudioRecorderService.MAX_RECOVERY_ATTEMPTS} attempts, giving up`);
+      this.error.set('Recording failed repeatedly and could not recover. Please start a new recording.');
+      this.isRecovering = false;
+      this.cleanup();
+      return;
+    }
+
+    console.warn(`Attempting recording recovery (attempt ${this.recoveryAttempts}/${AudioRecorderService.MAX_RECOVERY_ATTEMPTS}), reason: ${reason}`);
+
+    this.recoverRecording().then(recovered => {
+      this.isRecovering = false;
+      if (!recovered) {
+        // If recovery failed, try again after a short delay
+        // (the mic stream re-acquisition might succeed on retry)
+        setTimeout(() => {
+          if (this.state() !== 'idle') {
+            this.attemptRecovery('retry after failed recovery');
+          }
+        }, 2000);
+      }
+    }).catch(err => {
+      console.error('Unexpected error during recording recovery:', err);
+      this.isRecovering = false;
+      this.error.set('Recording encountered an unexpected error and could not recover. Please start a new recording.');
+      this.cleanup();
+    });
+  }
+
+  private async recoverRecording(): Promise<boolean> {
+    const wasPaused = this.state() === 'paused';
+
+    // Stop the current MediaRecorder if it's still active
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      try {
+        this.mediaRecorder.onerror = null;
+        this.mediaRecorder.ondataavailable = null;
+        this.mediaRecorder.stop();
+      } catch {
+        // Already stopped or in bad state — that's fine
+      }
+    }
+    this.mediaRecorder = null;
+
+    // Check if mic stream is still alive; re-acquire if needed
+    const micAlive = this.micStream?.getAudioTracks().some(t => t.readyState === 'live') ?? false;
+    if (!micAlive) {
+      // Release the dead stream
+      this.releaseStream(this.micStream);
+      this.micStream = null;
+
+      try {
+        this.micStream = await this.getMicrophoneStream();
+      } catch (err) {
+        console.error('Failed to re-acquire microphone during recovery:', err);
+        return false;
+      }
+
+      // User may have called stop()/discard() while we were awaiting the mic stream
+      if (this.state() === 'idle') {
+        this.releaseStream(this.micStream);
+        this.micStream = null;
+        return false;
+      }
+    }
+
+    // Rebuild the mixed stream if we had system audio
+    // (system audio can't be re-acquired without user gesture, so we just use mic if it's gone)
+    const systemAlive = this.systemStream?.getAudioTracks().some(t => t.readyState === 'live') ?? false;
+    if (!systemAlive && this.systemStream) {
+      this.releaseStream(this.systemStream);
+      this.systemStream = null;
+      this.captureMode.set('microphone');
+    }
+
+    // Tear down old mixing context and rebuild
+    if (this.mixingContext) {
+      try { this.mixingContext.close(); } catch { /* ignore */ }
+      this.mixingContext = null;
+    }
+    this.mixedStream = null;
+
+    const recordingStream = this.createRecordingStream();
+    if (!recordingStream) {
+      console.error('No recording stream available during recovery');
+      return false;
+    }
+
+    // Rebuild level metering on the new stream
+    this.stopLevelMetering();
+    if (this.audioContext) {
+      try { this.audioContext.close(); } catch { /* ignore */ }
+    }
+    this.audioContext = new AudioContext();
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume();
+    }
+
+    // Check again after await — user may have stopped recording
+    if (this.state() === 'idle') {
+      return false;
+    }
+
+    const source = this.audioContext.createMediaStreamSource(recordingStream);
+    this.analyserNode = this.audioContext.createAnalyser();
+    this.analyserNode.fftSize = 64;
+    source.connect(this.analyserNode);
+
+    // Create a new MediaRecorder on the fresh stream
+    const mimeType = this.getSupportedMimeType();
+    this.initMediaRecorder(recordingStream, mimeType);
+    this.monitorAudioTracks();
+
+    try {
+      this.mediaRecorder!.start(1000);
+    } catch (err) {
+      console.error('Failed to start MediaRecorder during recovery:', err);
+      return false;
+    }
+
+    // Restore the correct state
+    if (wasPaused) {
+      this.mediaRecorder!.pause();
+      this.state.set('paused');
+    } else {
+      this.state.set('recording');
+    }
+
+    this.startLevelMetering();
+    this.error.set(null);
+    console.log('Recording recovered successfully');
+    return true;
   }
 
   private async getMicrophoneStream(): Promise<MediaStream> {
@@ -272,6 +460,7 @@ export class AudioRecorderService implements OnDestroy {
   private releaseStream(stream: MediaStream | null): void {
     if (stream) {
       for (const track of stream.getTracks()) {
+        track.onended = null;
         track.stop();
       }
     }
@@ -296,24 +485,29 @@ export class AudioRecorderService implements OnDestroy {
   stop(): Promise<File | null> {
     return new Promise((resolve) => {
       if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
+        const file = this.buildFileFromChunks();
         this.cleanup();
-        resolve(null);
+        resolve(file);
         return;
       }
 
       this.mediaRecorder.onstop = () => {
-        const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
-        const baseMime = mimeType.split(';')[0].toLowerCase();
-        const extension = baseMime.includes('ogg') ? 'ogg' : baseMime.includes('mp4') ? 'mp4' : 'webm';
-        const blob = new Blob(this.chunks, { type: mimeType });
-        const file = new File([blob], `recording-${Date.now()}.${extension}`, { type: mimeType });
-
+        const file = this.buildFileFromChunks();
         this.cleanup();
         resolve(file);
       };
 
       this.mediaRecorder.stop();
     });
+  }
+
+  private buildFileFromChunks(): File | null {
+    if (this.chunks.length === 0) return null;
+    const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
+    const baseMime = mimeType.split(';')[0].toLowerCase();
+    const extension = baseMime.includes('ogg') ? 'ogg' : baseMime.includes('mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(this.chunks, { type: mimeType });
+    return new File([blob], `recording-${Date.now()}.${extension}`, { type: mimeType });
   }
 
   /** Discard the recording without producing a file */
@@ -403,9 +597,33 @@ export class AudioRecorderService implements OnDestroy {
     }
   }
 
+  private startContextKeepAlive(): void {
+    this.stopContextKeepAlive();
+    // Periodically check and resume AudioContexts that browsers may suspend
+    // when the tab is backgrounded or after prolonged inactivity
+    this.contextKeepAliveInterval = setInterval(() => {
+      if (this.state() === 'idle') return;
+
+      if (this.audioContext?.state === 'suspended') {
+        this.audioContext.resume().catch(() => {});
+      }
+      if (this.mixingContext?.state === 'suspended') {
+        this.mixingContext.resume().catch(() => {});
+      }
+    }, 5000);
+  }
+
+  private stopContextKeepAlive(): void {
+    if (this.contextKeepAliveInterval !== null) {
+      clearInterval(this.contextKeepAliveInterval);
+      this.contextKeepAliveInterval = null;
+    }
+  }
+
   private cleanup(): void {
     this.stopTimer();
     this.stopLevelMetering();
+    this.stopContextKeepAlive();
 
     this.releaseStream(this.micStream);
     this.releaseStream(this.systemStream);
@@ -432,5 +650,7 @@ export class AudioRecorderService implements OnDestroy {
     this.elapsedSeconds.set(0);
     this.audioLevels.set(new Array(16).fill(0));
     this.captureMode.set('microphone');
+    this.recoveryAttempts = 0;
+    this.isRecovering = false;
   }
 }
