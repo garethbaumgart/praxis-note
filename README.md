@@ -30,6 +30,9 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Browser Recording** - Record meeting audio directly from the browser microphone with real-time level metering
 - ✅ **Google Calendar Sync** - Connect Google Calendar via OAuth and manually sync upcoming events as meetings
 - ✅ **Self-Reflection Prompts** - Post-meeting reflection with contextual prompts generated from behavioral analysis, blind spot insights comparing self-assessment to AI analysis
+- ✅ **Speaker Identification** - Multichannel audio separation and voice diarization to label who said what in transcripts
+- ✅ **Screenshot Import** - Paste or drop a calendar screenshot to extract and import meetings via Claude Vision
+- ✅ **Behavioral Insights Dashboard** - Compact 2-column sparkline grid with trend indicators for meeting behavioral metrics
 
 ✅ = Implemented | 🚧 = Planned
 

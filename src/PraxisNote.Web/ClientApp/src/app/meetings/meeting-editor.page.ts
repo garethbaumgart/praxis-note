@@ -30,6 +30,7 @@ import { ToastService } from '../shared/services/toast.service';
 import { TagService } from '../tasks/tag.service';
 import { Tag } from '../tasks/tag.model';
 import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
+import { AuthService } from '../auth/auth.service';
 
 interface DateOption {
   label: string;
@@ -300,12 +301,31 @@ interface DateOption {
                       <i class="pi pi-volume-up text-xs text-accent-solid"></i>
                       <span class="text-xs font-medium text-foreground-secondary">Live Transcript</span>
                     </div>
-                    <p class="text-sm text-foreground leading-relaxed">
-                      {{ transcription.transcript() }}
-                      @if (transcription.interimText()) {
-                        <span class="text-foreground-muted italic">{{ transcription.interimText() }}</span>
-                      }
-                    </p>
+                    @if (transcription.segments().length > 0) {
+                      <div class="text-sm leading-relaxed space-y-1">
+                        @for (seg of transcription.segments(); track $index) {
+                          <p>
+                            <span class="font-semibold text-accent-solid text-xs">[{{ seg.speaker }}]</span>
+                            <span class="text-foreground ml-1">{{ seg.text }}</span>
+                          </p>
+                        }
+                        @if (transcription.interimText()) {
+                          <p>
+                            @if (transcription.interimSpeaker()) {
+                              <span class="font-semibold text-foreground-muted text-xs">[{{ transcription.interimSpeaker() }}]</span>
+                            }
+                            <span class="text-foreground-muted italic ml-1">{{ transcription.interimText() }}</span>
+                          </p>
+                        }
+                      </div>
+                    } @else {
+                      <p class="text-sm text-foreground leading-relaxed">
+                        {{ transcription.transcript() }}
+                        @if (transcription.interimText()) {
+                          <span class="text-foreground-muted italic">{{ transcription.interimText() }}</span>
+                        }
+                      </p>
+                    }
                   </div>
                 }
 
@@ -985,6 +1005,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   private readonly meetingService = inject(MeetingService);
   private readonly tagService = inject(TagService);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
   private readonly injector = inject(Injector);
   readonly recorder = inject(AudioRecorderService);
   readonly transcription = inject(DeepgramTranscriptionService);
@@ -1536,7 +1557,11 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     }
 
     if (this.recorder.isActive()) {
-      this.transcription.start();
+      // Pass channel count so backend enables multichannel when stereo
+      // Auto-label channel 0 with the authenticated user's first name
+      const firstName = this.auth.user()?.name?.trim().split(' ')[0];
+      const userName = firstName || 'You';
+      this.transcription.start(this.recorder.channelCount(), userName);
       this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
       this.showTabWarning.set(true);
     }
@@ -1549,8 +1574,10 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       await this.recorder.stop();
       this.showTabWarning.set(false);
 
-      // Set transcript from transcription results
-      const recognizedText = this.transcription.transcript();
+      // Set transcript from transcription results (use labeled transcript if speaker segments exist)
+      const recognizedText = this.transcription.segments().length > 0
+        ? this.transcription.labeledTranscript()
+        : this.transcription.transcript();
       if (recognizedText) {
         const current = this.transcript();
         const separator = current ? '\n\n' : '';

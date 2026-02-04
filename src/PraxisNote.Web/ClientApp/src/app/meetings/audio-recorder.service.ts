@@ -411,10 +411,14 @@ export class AudioRecorderService implements OnDestroy {
     return stream;
   }
 
+  /** Number of audio channels in the current recording stream (1 = mono, 2 = stereo multichannel) */
+  readonly channelCount = signal(1);
+
   private createRecordingStream(): MediaStream | null {
-    // If we only have mic, return it directly
+    // If we only have mic, return it directly (single channel with diarization)
     if (!this.systemStream) {
       this.mixedStream = this.micStream;
+      this.channelCount.set(1);
       return this.micStream;
     }
 
@@ -423,37 +427,33 @@ export class AudioRecorderService implements OnDestroy {
       return null;
     }
 
-    // Mix both streams using Web Audio API
+    // Create stereo stream: channel 0 = mic (local user), channel 1 = system (remote participants)
     this.mixingContext = new AudioContext();
     if (this.mixingContext.state === 'suspended') {
-      // Resume the context in case the browser started it suspended due to autoplay policies
-      this.mixingContext.resume().catch(() => {
-        // Swallow errors to avoid breaking recording flow
-      });
+      this.mixingContext.resume().catch(() => {});
     }
 
-    // Create sources for both streams
     const micSource = this.mixingContext.createMediaStreamSource(this.micStream);
     const systemSource = this.mixingContext.createMediaStreamSource(this.systemStream);
 
-    // Create a destination to mix into
-    const destination = this.mixingContext.createMediaStreamDestination();
+    // Channel merger: input 0 (mic) -> left channel, input 1 (system) -> right channel
+    const merger = this.mixingContext.createChannelMerger(2);
 
-    // Create gain nodes for volume control if needed
     const micGain = this.mixingContext.createGain();
     const systemGain = this.mixingContext.createGain();
-
-    // Set gains (can be adjusted if one is too loud/quiet)
     micGain.gain.value = 1.0;
     systemGain.gain.value = 1.0;
 
-    // Connect: source -> gain -> destination
     micSource.connect(micGain);
     systemSource.connect(systemGain);
-    micGain.connect(destination);
-    systemGain.connect(destination);
+    micGain.connect(merger, 0, 0);    // mic -> channel 0 (left)
+    systemGain.connect(merger, 0, 1); // system -> channel 1 (right)
+
+    const destination = this.mixingContext.createMediaStreamDestination();
+    merger.connect(destination);
 
     this.mixedStream = destination.stream;
+    this.channelCount.set(2);
     return destination.stream;
   }
 
@@ -650,6 +650,7 @@ export class AudioRecorderService implements OnDestroy {
     this.elapsedSeconds.set(0);
     this.audioLevels.set(new Array(16).fill(0));
     this.captureMode.set('microphone');
+    this.channelCount.set(1);
     this.recoveryAttempts = 0;
     this.isRecovering = false;
   }

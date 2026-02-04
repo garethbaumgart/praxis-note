@@ -83,6 +83,9 @@ public static class TranscriptionEndpoints
         using var clientWs = await context.WebSockets.AcceptWebSocketAsync();
 
         // Build Deepgram streaming URL
+        var channels = context.Request.Query["channels"].FirstOrDefault();
+        var isMultichannel = int.TryParse(channels, out var channelCount) && channelCount > 1;
+
         var queryParams = new List<string>
         {
             $"model={Uri.EscapeDataString(deepgramSettings.Model)}",
@@ -90,7 +93,15 @@ public static class TranscriptionEndpoints
             $"interim_results={deepgramSettings.InterimResults.ToString().ToLowerInvariant()}",
             $"language={Uri.EscapeDataString(deepgramSettings.Language)}",
             "utterance_end_ms=1000",
+            $"diarize={deepgramSettings.Diarize.ToString().ToLowerInvariant()}",
         };
+
+        if (isMultichannel)
+        {
+            queryParams.Add("multichannel=true");
+            queryParams.Add($"channels={channelCount}");
+        }
+
         var deepgramUrl = $"wss://api.deepgram.com/v1/listen?{string.Join("&", queryParams)}";
 
         using var deepgramWs = new ClientWebSocket();

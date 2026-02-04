@@ -140,25 +140,128 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         return ParseAnalysisResponse(content);
     }
 
-    private static MeetingAnalysisResult ParseAnalysisResponse(string jsonResponse)
+    private const string ScreenshotExtractionPromptTemplate = """
+        Extract all calendar events/meetings visible in this screenshot. The image is from a calendar application (Google Calendar, Outlook, Apple Calendar, or similar).
+
+        For each event you can identify, extract:
+        - "title": The event/meeting title
+        - "startTime": Start date and time in ISO 8601 format (e.g., "2025-01-15T10:00:00")
+        - "endTime": End date and time in ISO 8601 format
+        - "attendees": Comma-separated list of attendee names if visible (or null)
+        - "location": Meeting location or video link if visible (or null)
+
+        If you cannot determine exact times, make reasonable estimates based on the calendar grid.
+        If you can see the date from the calendar header, use it. Otherwise, use <<BASE_DATE>> as the base date.
+        For events that span time slots, estimate duration from the visual size.
+
+        Respond ONLY with valid JSON in this format:
+        {
+          "events": [
+            {
+              "title": "Team Standup",
+              "startTime": "2025-01-15T09:00:00",
+              "endTime": "2025-01-15T09:30:00",
+              "attendees": "Alice, Bob",
+              "location": null
+            }
+          ]
+        }
+        """;
+
+    public async Task<ScreenshotExtractionResult> ExtractFromScreenshotAsync(
+        string base64Image, string mediaType, CancellationToken cancellationToken = default)
     {
-        // Clean up the response - remove any markdown code blocks if present
+        if (_client is null)
+        {
+            throw new InvalidOperationException(
+                "Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+        }
+
+        var imageContent = new ImageContent
+        {
+            Source = new ImageSource
+            {
+                MediaType = mediaType,
+                Data = base64Image,
+            },
+        };
+
+        var parameters = new MessageParameters
+        {
+            Model = _settings.Model,
+            MaxTokens = _settings.MaxTokens,
+            Messages =
+            [
+                new Message
+                {
+                    Role = RoleType.User,
+                    Content =
+                    [
+                        imageContent,
+                        new TextContent { Text = ScreenshotExtractionPromptTemplate.Replace("<<BASE_DATE>>", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd")) },
+                    ],
+                },
+            ],
+        };
+
+        _logger.LogInformation("Extracting meetings from calendar screenshot with model {Model}", _settings.Model);
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
+
+        var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
+        var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            throw new InvalidOperationException("Claude returned an empty response for screenshot extraction");
+        }
+
+        return ParseScreenshotExtractionResponse(content);
+    }
+
+    private static ScreenshotExtractionResult ParseScreenshotExtractionResponse(string jsonResponse)
+    {
+        var cleanJson = CleanJsonResponse(jsonResponse);
+
+        var result = JsonSerializer.Deserialize<ScreenshotExtractionJsonResponse>(cleanJson, JsonOptions)
+            ?? throw new InvalidOperationException("Failed to parse screenshot extraction response");
+
+        var events = result.Events?
+            .Where(e => !string.IsNullOrWhiteSpace(e.Title) && e.EndTime > e.StartTime)
+            .Select(e => new ExtractedCalendarEvent(
+                e.Title!.Trim(),
+                e.StartTime,
+                e.EndTime,
+                e.Attendees?.Trim(),
+                e.Location?.Trim()))
+            .ToList() ?? [];
+
+        return new ScreenshotExtractionResult(events);
+    }
+
+    private static string CleanJsonResponse(string jsonResponse)
+    {
         var cleanJson = jsonResponse.Trim();
+        var hadCodeBlock = false;
         if (cleanJson.StartsWith("```json", StringComparison.OrdinalIgnoreCase))
         {
             cleanJson = cleanJson[7..];
+            hadCodeBlock = true;
         }
         else if (cleanJson.StartsWith("```"))
         {
             cleanJson = cleanJson[3..];
+            hadCodeBlock = true;
         }
-
-        if (cleanJson.EndsWith("```"))
-        {
+        if (hadCodeBlock && cleanJson.EndsWith("```"))
             cleanJson = cleanJson[..^3];
-        }
+        return cleanJson.Trim();
+    }
 
-        cleanJson = cleanJson.Trim();
+    private static MeetingAnalysisResult ParseAnalysisResponse(string jsonResponse)
+    {
+        var cleanJson = CleanJsonResponse(jsonResponse);
 
         var result = JsonSerializer.Deserialize<AnalysisJsonResponse>(cleanJson, JsonOptions)
             ?? throw new InvalidOperationException("Failed to parse analysis response");
@@ -218,6 +321,20 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
     }
 
     #region JSON Response Classes
+
+    private sealed class ScreenshotExtractionJsonResponse
+    {
+        public List<CalendarEventJson>? Events { get; set; }
+    }
+
+    private sealed class CalendarEventJson
+    {
+        public string? Title { get; set; }
+        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset EndTime { get; set; }
+        public string? Attendees { get; set; }
+        public string? Location { get; set; }
+    }
 
     private sealed class AnalysisJsonResponse
     {

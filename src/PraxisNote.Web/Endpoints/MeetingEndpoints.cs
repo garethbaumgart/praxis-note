@@ -26,6 +26,7 @@ public static class MeetingEndpoints
         group.MapGet("/{id:guid}/reflection/prompts", (Delegate)HandleGetReflectionPrompts);
         group.MapGet("/{id:guid}/reflection", (Delegate)HandleGetReflection);
         group.MapPost("/{id:guid}/reflection", (Delegate)HandleSubmitReflection);
+        group.MapPost("/extract-from-screenshot", (Delegate)HandleExtractFromScreenshot);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -326,6 +327,43 @@ public static class MeetingEndpoints
 
         return success ? Results.NoContent() : Results.NotFound();
     }
+
+    private static async Task<IResult> HandleExtractFromScreenshot(
+        ClaimsPrincipal user,
+        ExtractFromScreenshotRequest request,
+        [FromServices] ExtractMeetingsFromScreenshot extractMeetings,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Base64Image))
+        {
+            return Results.BadRequest("Image data is required.");
+        }
+
+        var mediaType = request.MediaType ?? "image/png";
+        string[] allowedMediaTypes = ["image/png", "image/jpeg", "image/webp"];
+        if (!allowedMediaTypes.Contains(mediaType, StringComparer.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest("Unsupported media type. Supported types: image/png, image/jpeg, image/webp.");
+        }
+
+        // Limit base64 payload to ~10MB (base64 overhead means ~7.5MB actual image)
+        if (request.Base64Image.Length > 10_000_000)
+        {
+            return Results.BadRequest("Image is too large. Maximum size is 10MB.");
+        }
+
+        var command = new ExtractMeetingsFromScreenshot.Command(
+            userId.Value, request.Base64Image, mediaType);
+        var result = await extractMeetings.ExecuteAsync(command, cancellationToken);
+
+        return Results.Ok(result);
+    }
 }
 
 public record CreateMeetingRequest(string? Title, DateTimeOffset? MeetingDate, string? Attendees);
@@ -341,3 +379,5 @@ public record SubmitReflectionRequest(
     List<PromptResponseRequest>? PromptResponses);
 
 public record PromptResponseRequest(string PromptId, string PromptText, string Response);
+
+public record ExtractFromScreenshotRequest(string Base64Image, string? MediaType);
