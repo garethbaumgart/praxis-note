@@ -252,6 +252,9 @@ export class AudioRecorderService implements OnDestroy {
           }
         }, 2000);
       }
+    }).catch(err => {
+      console.error('Unexpected error during recording recovery:', err);
+      this.isRecovering = false;
     });
   }
 
