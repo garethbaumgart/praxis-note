@@ -81,39 +81,36 @@ import { InsightsService } from './insights.service';
             }
 
             <!-- 2x2 Grid -->
-            <div class="grid gap-2 mb-5" role="img" [attr.aria-label]="gridAriaLabel()"
+            <div class="grid gap-1.5 mb-5" role="img" [attr.aria-label]="gridAriaLabel()"
+                 style="height: 160px;"
                  [style.grid-template-columns]="gridCols()"
                  [style.grid-template-rows]="gridRows()">
 
               <!-- Open (top-left) -->
-              <div class="rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-24"
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center"
                    style="background: var(--color-done-bg); border: 1px solid var(--color-done-border, var(--color-done-bg));">
-                <span class="text-2xl font-bold" style="color: var(--color-done-text);">{{ jw.openPercentage }}%</span>
-                <span class="text-xs font-medium mt-1" style="color: var(--color-done-text);">Open</span>
-                <span class="text-[10px] mt-0.5 text-foreground-muted">Known to self & others</span>
+                <span class="text-xl font-bold" style="color: var(--color-done-text);">{{ jw.openPercentage }}%</span>
+                <span class="text-[10px] font-medium mt-0.5" style="color: var(--color-done-text);">Open</span>
               </div>
 
               <!-- Blind Spot (top-right) -->
-              <div class="rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-24"
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center"
                    style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border, var(--color-inprogress-bg));">
-                <span class="text-2xl font-bold" style="color: var(--color-inprogress-text);">{{ jw.blindSpotPercentage }}%</span>
-                <span class="text-xs font-medium mt-1" style="color: var(--color-inprogress-text);">Blind Spot</span>
-                <span class="text-[10px] mt-0.5 text-foreground-muted">Others see, you don't</span>
+                <span class="text-base font-bold" style="color: var(--color-inprogress-text);">{{ jw.blindSpotPercentage }}%</span>
+                <span class="text-[9px] font-medium mt-0.5" style="color: var(--color-inprogress-text);">Blind Spot</span>
               </div>
 
               <!-- Hidden (bottom-left) -->
-              <div class="rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-24"
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center"
                    style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-border, var(--color-primary-bg));">
-                <span class="text-2xl font-bold" style="color: var(--color-primary-text);">{{ jw.hiddenPercentage }}%</span>
-                <span class="text-xs font-medium mt-1" style="color: var(--color-primary-text);">Hidden</span>
-                <span class="text-[10px] mt-0.5 text-foreground-muted">Known to self only</span>
+                <span class="text-base font-bold" style="color: var(--color-primary-text);">{{ jw.hiddenPercentage }}%</span>
+                <span class="text-[9px] font-medium mt-0.5" style="color: var(--color-primary-text);">Hidden</span>
               </div>
 
               <!-- Unknown (bottom-right) -->
-              <div class="rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-24 bg-surface-muted border border-border">
-                <span class="text-2xl font-bold text-foreground-muted">{{ jw.unknownPercentage }}%</span>
-                <span class="text-xs font-medium mt-1 text-foreground-muted">Unknown</span>
-                <span class="text-[10px] mt-0.5 text-foreground-muted">Undiscovered</span>
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center bg-surface-muted border border-border">
+                <span class="text-base font-bold text-foreground-muted">{{ jw.unknownPercentage }}%</span>
+                <span class="text-[9px] font-medium mt-0.5 text-foreground-muted">Unknown</span>
               </div>
             </div>
 
@@ -247,14 +244,14 @@ export class JohariWindowComponent {
     return `Johari Window: Open ${data.openPercentage}%, Blind Spot ${data.blindSpotPercentage}%, Hidden ${data.hiddenPercentage}%, Unknown ${data.unknownPercentage}%`;
   });
 
-  // Proportional grid sizing — apply minimum only when combined percentage is non-zero
+  // Proportional grid sizing — min 25fr ensures small quadrants remain readable
   protected readonly gridCols = computed(() => {
     const data = this.johariService.johariWindow();
     if (!data?.hasEnoughData) return '1fr 1fr';
     const leftPct = data.openPercentage + data.hiddenPercentage;
     const rightPct = data.blindSpotPercentage + data.unknownPercentage;
-    const left = leftPct === 0 ? 5 : Math.max(5, leftPct);
-    const right = rightPct === 0 ? 5 : Math.max(5, rightPct);
+    const left = leftPct === 0 ? 25 : Math.max(25, leftPct);
+    const right = rightPct === 0 ? 25 : Math.max(25, rightPct);
     return `${left}fr ${right}fr`;
   });
 
@@ -263,8 +260,8 @@ export class JohariWindowComponent {
     if (!data?.hasEnoughData) return '1fr 1fr';
     const topPct = data.openPercentage + data.blindSpotPercentage;
     const bottomPct = data.hiddenPercentage + data.unknownPercentage;
-    const top = topPct === 0 ? 5 : Math.max(5, topPct);
-    const bottom = bottomPct === 0 ? 5 : Math.max(5, bottomPct);
+    const top = topPct === 0 ? 25 : Math.max(25, topPct);
+    const bottom = bottomPct === 0 ? 25 : Math.max(25, bottomPct);
     return `${top}fr ${bottom}fr`;
   });
 

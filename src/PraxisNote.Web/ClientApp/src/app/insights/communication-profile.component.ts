@@ -23,7 +23,7 @@ import { ArchetypeScore } from './insights.model';
               <p-skeleton width="50%" height="14px" styleClass="mb-4" />
               <p-skeleton width="100%" height="48px" />
             </div>
-            <p-skeleton width="280px" height="240px" />
+            <p-skeleton width="300px" height="240px" />
           </div>
         </div>
       } @else if (profileService.error()) {
@@ -89,9 +89,9 @@ import { ArchetypeScore } from './insights.model';
 
             <!-- Right: Radar chart -->
             <div class="flex-shrink-0 flex items-center justify-center">
-              <svg viewBox="0 0 300 260" width="280" height="240" role="img" [attr.aria-label]="radarAriaLabel()">
+              <svg viewBox="0 0 340 270" width="300" height="240" role="img" [attr.aria-label]="radarAriaLabel()">
                 <!-- Radar grid (3 levels) -->
-                <g transform="translate(150, 130)">
+                <g transform="translate(170, 130)">
                   <!-- Outer hexagon -->
                   <polygon [attr.points]="hexagonPoints(100)"
                            fill="none" stroke="var(--color-border-default)" stroke-width="1" opacity="0.5"/>
@@ -251,14 +251,14 @@ export class CommunicationProfileComponent {
     if (!profile?.hasEnoughData) return [];
 
     const primary = profile.primaryArchetype;
-    // Label positions (outside the hexagon)
+    // Label positions (outside the hexagon, offset to match center at 170,130)
     return [
-      { x: 150, y: 18, anchor: 'middle', text: this.archetypeOrder[0], bold: this.archetypeOrder[0] === primary },
-      { x: 260, y: 72, anchor: 'start', text: this.archetypeOrder[1], bold: this.archetypeOrder[1] === primary },
-      { x: 260, y: 192, anchor: 'start', text: this.archetypeOrder[2], bold: this.archetypeOrder[2] === primary },
-      { x: 150, y: 252, anchor: 'middle', text: this.archetypeOrder[3], bold: this.archetypeOrder[3] === primary },
-      { x: 40, y: 192, anchor: 'end', text: this.archetypeOrder[4], bold: this.archetypeOrder[4] === primary },
-      { x: 40, y: 72, anchor: 'end', text: this.archetypeOrder[5], bold: this.archetypeOrder[5] === primary },
+      { x: 170, y: 18, anchor: 'middle', text: this.archetypeOrder[0], bold: this.archetypeOrder[0] === primary },
+      { x: 280, y: 72, anchor: 'start', text: this.archetypeOrder[1], bold: this.archetypeOrder[1] === primary },
+      { x: 280, y: 192, anchor: 'start', text: this.archetypeOrder[2], bold: this.archetypeOrder[2] === primary },
+      { x: 170, y: 252, anchor: 'middle', text: this.archetypeOrder[3], bold: this.archetypeOrder[3] === primary },
+      { x: 60, y: 192, anchor: 'end', text: this.archetypeOrder[4], bold: this.archetypeOrder[4] === primary },
+      { x: 60, y: 72, anchor: 'end', text: this.archetypeOrder[5], bold: this.archetypeOrder[5] === primary },
     ];
   });
 
