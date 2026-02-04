@@ -255,6 +255,8 @@ export class AudioRecorderService implements OnDestroy {
     }).catch(err => {
       console.error('Unexpected error during recording recovery:', err);
       this.isRecovering = false;
+      this.error.set('Recording encountered an unexpected error and could not recover. Please start a new recording.');
+      this.cleanup();
     });
   }
 
@@ -284,6 +286,13 @@ export class AudioRecorderService implements OnDestroy {
         this.micStream = await this.getMicrophoneStream();
       } catch (err) {
         console.error('Failed to re-acquire microphone during recovery:', err);
+        return false;
+      }
+
+      // User may have called stop()/discard() while we were awaiting the mic stream
+      if (this.state() === 'idle') {
+        this.releaseStream(this.micStream);
+        this.micStream = null;
         return false;
       }
     }
@@ -319,6 +328,12 @@ export class AudioRecorderService implements OnDestroy {
     if (this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
     }
+
+    // Check again after await — user may have stopped recording
+    if (this.state() === 'idle') {
+      return false;
+    }
+
     const source = this.audioContext.createMediaStreamSource(recordingStream);
     this.analyserNode = this.audioContext.createAnalyser();
     this.analyserNode.fftSize = 64;
