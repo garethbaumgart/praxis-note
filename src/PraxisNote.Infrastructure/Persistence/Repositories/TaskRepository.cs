@@ -20,9 +20,13 @@ public sealed class TaskRepository(PraxisNoteDbContext context) : ITaskRepositor
 
     public async Task<IReadOnlyList<TaskItem>> GetTasksWithTagAsync(Guid userId, Guid tagId, CancellationToken cancellationToken = default)
     {
-        return await context.Tasks
-            .Where(t => t.UserId == userId && t.TagIds.Contains(tagId))
+        // In-memory filtering required because TagIds uses a JSON value conversion
+        // that EF Core can't translate Contains() on. Same pattern as GetTagUsageCountsAsync.
+        var tasks = await context.Tasks
+            .Where(t => t.UserId == userId)
             .ToListAsync(cancellationToken);
+
+        return tasks.Where(t => t.TagIds.Contains(tagId)).ToList();
     }
 
     public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, CancellationToken cancellationToken = default)
