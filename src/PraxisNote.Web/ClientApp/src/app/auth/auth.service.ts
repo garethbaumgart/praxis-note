@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, of, Subscription, tap } from 'rxjs';
 import { User } from './user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -10,6 +10,7 @@ export class AuthService {
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(true);
   private readonly _initialized = signal(false);
+  private authCheckSub?: Subscription;
 
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -50,7 +51,8 @@ export class AuthService {
     }
 
     this._loading.set(true);
-    this.http
+    this.authCheckSub?.unsubscribe();
+    this.authCheckSub = this.http
       .get<User>('/api/auth/me')
       .pipe(
         tap((user) => {
