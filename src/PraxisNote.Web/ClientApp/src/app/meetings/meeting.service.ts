@@ -470,7 +470,8 @@ export class MeetingService {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    // Parse the date key to get the date object in local timezone
+    // Parse the date key (YYYY-MM-DD) into a Date object
+    // Using 'T00:00:00' without timezone offset makes the browser interpret it as local time
     const date = new Date(dateKey + 'T00:00:00');
     const subLabel = `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
 

@@ -12,8 +12,8 @@
  * Use this instead of .toISOString() when sending dates to the API.
  *
  * Example: For Feb 5, 2025 10:00 AM AEST (UTC+10):
- * - .toISOString() → "2025-02-05T00:00:00.000Z" (wrong - converts to UTC)
- * - toLocalISOString() → "2025-02-05T10:00:00+10:00" (correct - preserves local time)
+ * - .toISOString() → "2025-02-04T14:00:00.000Z" (wrong - converts to UTC, loses local context)
+ * - toLocalISOString() → "2025-02-05T10:00:00+10:00" (correct - preserves local time and offset)
  */
 export function toLocalISOString(date: Date): string {
   const offset = -date.getTimezoneOffset();
