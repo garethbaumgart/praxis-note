@@ -20,9 +20,9 @@ public sealed class TagRepository(PraxisNoteDbContext context) : ITagRepository
 
     public async Task<Tag?> GetByNameAsync(Guid userId, string name, CancellationToken cancellationToken = default)
     {
-        var normalizedName = name.ToLower();
+        var normalizedName = name.ToLowerInvariant();
         return await context.Tags
-            .FirstOrDefaultAsync(t => t.UserId == userId && t.Name.ToLower() == normalizedName, cancellationToken);
+            .FirstOrDefaultAsync(t => t.UserId == userId && t.Name == normalizedName, cancellationToken);
     }
 
     public async Task AddAsync(Tag tag, CancellationToken cancellationToken = default)
