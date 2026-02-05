@@ -42,7 +42,7 @@ public sealed class Tag : AggregateRoot
     /// Creates a new tag for the specified user.
     /// </summary>
     /// <param name="userId">The user who owns this tag.</param>
-    /// <param name="name">The display name. Must be unique per user.</param>
+    /// <param name="name">The display name. Automatically normalized to lowercase. Must be unique per user.</param>
     /// <returns>A new Tag instance.</returns>
     public static Tag Create(Guid userId, string name)
     {
@@ -52,7 +52,7 @@ public sealed class Tag : AggregateRoot
     /// <summary>
     /// Renames this tag.
     /// </summary>
-    /// <param name="newName">The new name for the tag.</param>
+    /// <param name="newName">The new name for the tag. Automatically normalized to lowercase.</param>
     public void Rename(string newName)
     {
         ValidateName(newName);

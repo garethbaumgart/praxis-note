@@ -42,16 +42,16 @@ namespace PraxisNote.Infrastructure.Migrations
                                 -- Update rows that contain the old tag ID
                                 EXECUTE format(
                                     'UPDATE %I SET "TagIds" = (
-                                        SELECT jsonb_agg(DISTINCT elem)::text
-                                        FROM jsonb_array_elements(
-                                            REPLACE("TagIds", %L, %L)::jsonb
-                                        ) AS elem
+                                        SELECT to_jsonb(array_agg(DISTINCT
+                                            CASE WHEN elem = %L THEN %L ELSE elem END
+                                        ))::text
+                                        FROM jsonb_array_elements_text("TagIds"::jsonb) AS elem
                                     )
-                                    WHERE "TagIds"::jsonb @> %L::jsonb',
+                                    WHERE "TagIds"::jsonb ? %L',
                                     tbl,
                                     old_id::text,
                                     dup.survivor_id::text,
-                                    jsonb_build_array(old_id::text)
+                                    old_id::text
                                 );
                             END LOOP;
                         END LOOP;
