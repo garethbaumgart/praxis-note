@@ -113,12 +113,9 @@ export class DeepgramTranscriptionService implements OnDestroy {
     };
 
     this.ws.onerror = () => {
+      this.isListening.set(false);
       if (!this.intentionallyStopped) {
-        this.isListening.set(false);
         this.attemptReconnect();
-      } else {
-        this.error.set('Transcription connection error. Check your network.');
-        this.isListening.set(false);
       }
     };
 
@@ -126,8 +123,6 @@ export class DeepgramTranscriptionService implements OnDestroy {
       this.isListening.set(false);
       if (event.code !== 1000 && !this.intentionallyStopped) {
         this.attemptReconnect();
-      } else if (event.code !== 1000 && !this.error()) {
-        this.error.set('Transcription disconnected unexpectedly.');
       }
     };
   }
