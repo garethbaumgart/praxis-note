@@ -72,6 +72,8 @@ jobs:
             --cpu=1
             --min-instances=0
             --max-instances=3
+            --timeout=3600
+            --session-affinity
           env_vars: |
             ASPNETCORE_ENVIRONMENT=Production
           secrets: |

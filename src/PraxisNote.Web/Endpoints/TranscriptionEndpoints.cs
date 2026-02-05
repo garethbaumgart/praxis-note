@@ -8,7 +8,7 @@ namespace PraxisNote.Web.Endpoints;
 
 public static class TranscriptionEndpoints
 {
-    private const int BufferSize = 8192;
+    private const int BufferSize = 16384;
 
     public static void MapTranscriptionEndpoints(this IEndpointRouteBuilder routes)
     {
@@ -81,6 +81,8 @@ public static class TranscriptionEndpoints
         }
 
         using var clientWs = await context.WebSockets.AcceptWebSocketAsync();
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
+        logger.LogInformation("Transcription session started for user {UserId}", userId);
 
         // Build Deepgram streaming URL
         var channels = context.Request.Query["channels"].FirstOrDefault();
@@ -133,6 +135,8 @@ public static class TranscriptionEndpoints
         // Clean up connections
         await CloseIfOpenAsync(deepgramWs, logger);
         await CloseIfOpenAsync(clientWs, logger);
+
+        logger.LogInformation("Transcription session ended for user {UserId}", userId);
     }
 
     /// <summary>
@@ -186,7 +190,7 @@ public static class TranscriptionEndpoints
         }
         catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
         {
-            logger.LogDebug("Client WebSocket closed prematurely");
+            logger.LogWarning("Client WebSocket closed prematurely");
         }
         catch (Exception ex)
         {
@@ -234,7 +238,7 @@ public static class TranscriptionEndpoints
         }
         catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
         {
-            logger.LogDebug("Deepgram WebSocket closed prematurely");
+            logger.LogWarning("Deepgram WebSocket closed prematurely");
         }
         catch (Exception ex)
         {
