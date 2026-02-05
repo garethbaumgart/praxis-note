@@ -13,11 +13,22 @@ export class DeepgramTranscriptionService implements OnDestroy {
   private channels = 1;
   private localUserName = 'You';
 
+  // Reconnection state
+  private intentionallyStopped = false;
+  private reconnectAttempts = 0;
+  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private pendingAudioChunks: ArrayBuffer[] = [];
+  private static readonly MAX_RECONNECT_ATTEMPTS = 10;
+  private static readonly INITIAL_RECONNECT_DELAY_MS = 500;
+  private static readonly MAX_RECONNECT_DELAY_MS = 15000;
+  private static readonly MAX_PENDING_CHUNKS = 30;
+
   readonly transcript = signal('');
   readonly segments = signal<TranscriptSegment[]>([]);
   readonly interimText = signal('');
   readonly interimSpeaker = signal('');
   readonly isListening = signal(false);
+  readonly isReconnecting = signal(false);
   readonly error = signal<string | null>(null);
 
   readonly isSupported = computed(() => true);
@@ -40,7 +51,19 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.error.set(null);
     this.channels = channelCount;
     this.localUserName = userName;
+    this.intentionallyStopped = false;
+    this.reconnectAttempts = 0;
+    this.isReconnecting.set(false);
+    this.pendingAudioChunks = [];
+    if (this.reconnectTimeoutId !== null) {
+      clearTimeout(this.reconnectTimeoutId);
+      this.reconnectTimeoutId = null;
+    }
 
+    this.connectWebSocket();
+  }
+
+  private buildWsUrl(): string {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     let wsUrl = `${protocol}//${location.host}/api/transcription/stream`;
 
@@ -54,8 +77,8 @@ export class DeepgramTranscriptionService implements OnDestroy {
       }
     }
 
-    if (channelCount > 1) {
-      params.set('channels', String(channelCount));
+    if (this.channels > 1) {
+      params.set('channels', String(this.channels));
     }
 
     const qs = params.toString();
@@ -63,11 +86,38 @@ export class DeepgramTranscriptionService implements OnDestroy {
       wsUrl += `?${qs}`;
     }
 
+    return wsUrl;
+  }
+
+  private connectWebSocket(): void {
+    // Clean up any existing WebSocket before creating a new one
+    if (this.ws) {
+      this.ws.onopen = null;
+      this.ws.onmessage = null;
+      this.ws.onerror = null;
+      this.ws.onclose = null;
+      if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+        this.ws.close();
+      }
+      this.ws = null;
+    }
+
+    const wsUrl = this.buildWsUrl();
+
     this.ws = new WebSocket(wsUrl);
     this.ws.binaryType = 'arraybuffer';
 
     this.ws.onopen = () => {
       this.isListening.set(true);
+      this.error.set(null);
+      this.reconnectTimeoutId = null;
+
+      // If reconnecting, flush buffered audio and reset state
+      if (this.isReconnecting()) {
+        this.flushPendingAudio();
+        this.isReconnecting.set(false);
+        this.reconnectAttempts = 0;
+      }
     };
 
     this.ws.onmessage = (event: MessageEvent) => {
@@ -80,16 +130,54 @@ export class DeepgramTranscriptionService implements OnDestroy {
     };
 
     this.ws.onerror = () => {
-      this.error.set('Transcription connection error. Check your network.');
       this.isListening.set(false);
+      if (!this.intentionallyStopped) {
+        this.attemptReconnect();
+      }
     };
 
     this.ws.onclose = (event: CloseEvent) => {
       this.isListening.set(false);
-      if (event.code !== 1000 && !this.error()) {
-        this.error.set('Transcription disconnected unexpectedly.');
+      if (event.code !== 1000 && !this.intentionallyStopped) {
+        this.attemptReconnect();
       }
     };
+  }
+
+  private attemptReconnect(): void {
+    if (this.intentionallyStopped) return;
+    // Guard against duplicate calls (onerror + onclose can both fire for the same failure)
+    if (this.isReconnecting() && this.reconnectTimeoutId !== null) return;
+    if (this.reconnectAttempts >= DeepgramTranscriptionService.MAX_RECONNECT_ATTEMPTS) {
+      this.isReconnecting.set(false);
+      this.pendingAudioChunks = [];
+      this.error.set('Transcription connection lost after multiple retries.');
+      return;
+    }
+
+    this.isReconnecting.set(true);
+    this.reconnectAttempts++;
+
+    const delay = Math.min(
+      DeepgramTranscriptionService.INITIAL_RECONNECT_DELAY_MS * Math.pow(2, this.reconnectAttempts - 1),
+      DeepgramTranscriptionService.MAX_RECONNECT_DELAY_MS,
+    );
+
+    this.reconnectTimeoutId = setTimeout(() => {
+      this.reconnectTimeoutId = null;
+      if (!this.intentionallyStopped) {
+        this.connectWebSocket();
+      }
+    }, delay);
+  }
+
+  private flushPendingAudio(): void {
+    for (const chunk of this.pendingAudioChunks) {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(chunk);
+      }
+    }
+    this.pendingAudioChunks = [];
   }
 
   private handleDeepgramResult(data: Record<string, unknown>): void {
@@ -190,10 +278,33 @@ export class DeepgramTranscriptionService implements OnDestroy {
       }).catch(() => {
         // Blob may have been invalidated (e.g. tab backgrounded). Non-fatal — skip this chunk.
       });
+    } else if (this.isReconnecting()) {
+      // Buffer audio during reconnect so it can be flushed when the connection is restored
+      blob.arrayBuffer().then(buffer => {
+        // Re-check: connection may have been restored while arrayBuffer() resolved
+        if (!this.isReconnecting() && this.ws?.readyState === WebSocket.OPEN) {
+          this.ws.send(buffer);
+          return;
+        }
+        if (this.pendingAudioChunks.length < DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
+          this.pendingAudioChunks.push(buffer);
+        }
+      }).catch(() => {
+        // Non-fatal
+      });
     }
   }
 
   stop(): void {
+    this.intentionallyStopped = true;
+    if (this.reconnectTimeoutId !== null) {
+      clearTimeout(this.reconnectTimeoutId);
+      this.reconnectTimeoutId = null;
+    }
+    this.isReconnecting.set(false);
+    this.pendingAudioChunks = [];
+    this.reconnectAttempts = 0;
+
     if (this.ws) {
       if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
         this.ws.close(1000, 'Recording stopped');

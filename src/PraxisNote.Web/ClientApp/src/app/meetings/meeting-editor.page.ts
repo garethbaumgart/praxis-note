@@ -283,7 +283,12 @@ interface DateOption {
                 @if (recorder.error()) {
                   <p class="text-xs text-danger mt-2">{{ recorder.error() }}</p>
                 }
-                @if (transcription.error()) {
+                @if (transcription.isReconnecting()) {
+                  <div class="flex items-center gap-2 text-xs text-foreground-muted bg-surface-muted rounded px-3 py-1.5 mt-2">
+                    <i class="pi pi-spin pi-spinner text-xs"></i>
+                    <span>Reconnecting transcription...</span>
+                  </div>
+                } @else if (transcription.error()) {
                   <p class="text-xs text-danger mt-2">{{ transcription.error() }}</p>
                 }
 
