@@ -31,6 +31,7 @@ import { TagService } from '../tasks/tag.service';
 import { Tag } from '../tasks/tag.model';
 import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
 import { AuthService } from '../auth/auth.service';
+import { toLocalISOString, formatDateLabel } from '../shared/date-utils';
 
 interface DateOption {
   label: string;
@@ -1399,7 +1400,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.meetingService.updateMeeting(
       id,
       this.title() || undefined,
-      this.meetingDate()?.toISOString(),
+      this.meetingDate() ? toLocalISOString(this.meetingDate()!) : undefined,
       this.attendees() || undefined,
     );
 
@@ -1433,7 +1434,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
 
     this.meetingService.createMeeting(
       this.title() || undefined,
-      this.meetingDate()?.toISOString(),
+      this.meetingDate() ? toLocalISOString(this.meetingDate()!) : undefined,
       this.attendees() || undefined,
       (realId) => {
         this.isCreating = false;
@@ -1500,7 +1501,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   }
 
   private formatDateLabel(date: Date): string {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return formatDateLabel(date);
   }
 
   private extractTimeFromDate(date: Date): void {

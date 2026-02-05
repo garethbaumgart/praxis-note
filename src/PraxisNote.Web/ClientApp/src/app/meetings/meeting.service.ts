@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, throwError, EMPTY, of } from 'rxjs';
 import { Meeting, MeetingGroup, ActionItemStatus, PromoteActionItemResult, ReflectionPrompt, MeetingReflection } from './meeting.model';
 import { ToastService } from '../shared/services/toast.service';
+import { getLocalDateKey } from '../shared/date-utils';
 
 interface PendingDeletion {
   meeting: Meeting;
@@ -431,11 +432,13 @@ export class MeetingService {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
+    const todayKey = getLocalDateKey(today);
+    const yesterdayKey = getLocalDateKey(yesterday);
+
     for (const meeting of meetings) {
       const meetingDate = meeting.meetingDate ? new Date(meeting.meetingDate) : new Date(meeting.createdAt);
-      meetingDate.setHours(0, 0, 0, 0);
-
-      const dateKey = meetingDate.toISOString().split('T')[0];
+      // Use local date components for grouping instead of mixing UTC and local operations
+      const dateKey = getLocalDateKey(meetingDate);
 
       if (!groups.has(dateKey)) {
         groups.set(dateKey, []);
@@ -458,26 +461,30 @@ export class MeetingService {
     );
 
     return sortedEntries.map(([dateKey, meetings]) => {
-      const date = new Date(dateKey);
-      const { label, subLabel } = this.formatDateLabel(date, today, yesterday);
+      const { label, subLabel } = this.formatDateLabel(dateKey, todayKey, yesterdayKey);
       return { label, subLabel, meetings };
     });
   }
 
-  private formatDateLabel(date: Date, today: Date, yesterday: Date): { label: string; subLabel: string } {
+  private formatDateLabel(dateKey: string, todayKey: string, yesterdayKey: string): { label: string; subLabel: string } {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+    // Parse the date key to get the date object in local timezone
+    const date = new Date(dateKey + 'T00:00:00');
     const subLabel = `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
 
-    if (date.getTime() === today.getTime()) {
+    // Compare using date key strings instead of timestamps
+    if (dateKey === todayKey) {
       return { label: 'Today', subLabel };
     }
-    if (date.getTime() === yesterday.getTime()) {
+    if (dateKey === yesterdayKey) {
       return { label: 'Yesterday', subLabel };
     }
 
     // Check if same week
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
     if (date >= weekStart) {

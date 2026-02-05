@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { Meeting, MeetingStatus } from './meeting.model';
+import { formatTime, formatAmPm } from '../shared/date-utils';
 
 @Component({
   selector: 'app-meeting-row',
@@ -113,20 +114,8 @@ export class MeetingRowComponent {
   readonly onOpen = output<void>();
   readonly onDelete = output<void>();
 
-  formatTime(dateStr: string | null): string {
-    if (!dateStr) return '--:--';
-    const date = new Date(dateStr);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const displayHours = hours % 12 || 12;
-    return `${displayHours}:${minutes.toString().padStart(2, '0')}`;
-  }
-
-  formatAmPm(dateStr: string | null): string {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.getHours() >= 12 ? 'PM' : 'AM';
-  }
+  formatTime = formatTime;
+  formatAmPm = formatAmPm;
 
   formatAttendees(attendees: string | null): string {
     if (!attendees) return 'No attendees';
