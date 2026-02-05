@@ -86,6 +86,18 @@ export class DeepgramTranscriptionService implements OnDestroy {
   }
 
   private connectWebSocket(): void {
+    // Clean up any existing WebSocket before creating a new one
+    if (this.ws) {
+      this.ws.onopen = null;
+      this.ws.onmessage = null;
+      this.ws.onerror = null;
+      this.ws.onclose = null;
+      if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+        this.ws.close();
+      }
+      this.ws = null;
+    }
+
     const wsUrl = this.buildWsUrl();
 
     this.ws = new WebSocket(wsUrl);
@@ -129,8 +141,11 @@ export class DeepgramTranscriptionService implements OnDestroy {
 
   private attemptReconnect(): void {
     if (this.intentionallyStopped) return;
+    // Guard against duplicate calls (onerror + onclose can both fire for the same failure)
+    if (this.isReconnecting() && this.reconnectTimeoutId !== null) return;
     if (this.reconnectAttempts >= DeepgramTranscriptionService.MAX_RECONNECT_ATTEMPTS) {
       this.isReconnecting.set(false);
+      this.pendingAudioChunks = [];
       this.error.set('Transcription connection lost after multiple retries.');
       return;
     }
