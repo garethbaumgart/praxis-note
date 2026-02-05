@@ -303,6 +303,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
     }
     this.isReconnecting.set(false);
     this.pendingAudioChunks = [];
+    this.reconnectAttempts = 0;
 
     if (this.ws) {
       if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
