@@ -33,6 +33,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Speaker Identification** - Multichannel audio separation and voice diarization to label who said what in transcripts
 - ✅ **Screenshot Import** - Paste or drop a calendar screenshot to extract and import meetings via Claude Vision with automatic timezone detection
 - ✅ **Behavioral Insights Dashboard** - Compact 2-column sparkline grid with trend indicators for meeting behavioral metrics
+- ✅ **Tag Hub** - Dedicated Tags page with searchable dropdown to browse and select tags across all items
 
 ✅ = Implemented | 🚧 = Planned
 
