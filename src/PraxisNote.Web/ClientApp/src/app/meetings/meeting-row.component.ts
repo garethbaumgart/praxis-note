@@ -9,7 +9,8 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
   template: `
     <div
       class="meeting-row group cursor-pointer flex items-center gap-4 p-3 bg-surface-subtle border border-border rounded-lg hover:shadow-md transition-shadow"
-      [class.recording]="meeting().status === 'Processing'"
+      [class.recording]="meeting().status === 'Processing' && !meeting().transcriptContent"
+      [class.analyzing]="meeting().status === 'Processing' && meeting().transcriptContent"
       (click)="onOpen.emit()"
     >
       <!-- Time -->
@@ -29,6 +30,9 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
           }
           @if (meeting().transcriptContent) {
             <i class="pi pi-file-edit text-xs text-foreground-muted" title="Has transcript"></i>
+          }
+          @if (meeting().excludeFromInsights) {
+            <i class="pi pi-eye-slash text-xs text-foreground-muted" title="Excluded from insights"></i>
           }
           <!-- Tags -->
           @if (meeting().tags.length > 0) {
@@ -50,10 +54,13 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
       <!-- Status & Actions -->
       <div class="flex items-center gap-2">
         <span class="status-badge {{ getStatusClass(meeting().status) }}">
-          @if (meeting().status === 'Processing') {
+          @if (meeting().status === 'Processing' && !meeting().transcriptContent) {
             <span class="w-2 h-2 bg-current rounded-full animate-pulse mr-1"></span>
           }
-          {{ getStatusLabel(meeting().status) }}
+          @if (meeting().status === 'Processing' && meeting().transcriptContent) {
+            <i class="pi pi-spin pi-spinner text-xs mr-1"></i>
+          }
+          {{ getStatusLabel() }}
         </span>
 
         <!-- Delete button (hover reveal) -->
@@ -71,6 +78,11 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
   styles: [`
     .meeting-row.recording {
       border: 2px dashed var(--color-inprogress-text);
+      background: var(--color-inprogress-bg);
+    }
+
+    .meeting-row.analyzing {
+      border: 1px solid var(--color-inprogress-text);
       background: var(--color-inprogress-bg);
     }
 
@@ -138,15 +150,19 @@ export class MeetingRowComponent {
     return classes[status];
   }
 
-  getStatusLabel(status: MeetingStatus): string {
+  getStatusLabel(): string {
+    const meeting = this.meeting();
+    if (meeting.status === 'Processing') {
+      return meeting.transcriptContent ? 'Analyzing' : 'Recording';
+    }
     const labels: Record<MeetingStatus, string> = {
       Draft: 'Draft',
-      Processing: 'Recording',
+      Processing: 'Processing',
       Ready: 'Ready',
       Reviewed: 'Reviewed',
       Failed: 'Failed',
     };
-    return labels[status];
+    return labels[meeting.status];
   }
 
   handleDelete(event: Event): void {

@@ -33,6 +33,7 @@ export class AudioRecorderService implements OnDestroy {
   readonly captureMode = signal<AudioCaptureMode>('microphone');
 
   readonly onAudioChunk = signal<((blob: Blob) => void) | null>(null);
+  readonly activeMeetingId = signal<string | null>(null);
 
   readonly isRecording = computed(() => this.state() === 'recording');
   readonly isPaused = computed(() => this.state() === 'paused');
@@ -651,6 +652,7 @@ export class AudioRecorderService implements OnDestroy {
     this.audioLevels.set(new Array(16).fill(0));
     this.captureMode.set('microphone');
     this.channelCount.set(1);
+    this.activeMeetingId.set(null);
     this.recoveryAttempts = 0;
     this.isRecovering = false;
   }

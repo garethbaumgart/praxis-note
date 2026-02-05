@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, effect, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { Toast } from 'primeng/toast';
 import { AuthService } from './auth';
@@ -7,6 +7,8 @@ import { LoginComponent } from './shared/login/login.component';
 import { SidebarComponent } from './shared/sidebar/sidebar.component';
 import { NotificationService } from './notifications/notification.service';
 import { NotificationPanelComponent } from './notifications/notification-panel.component';
+import { RecordingIndicatorComponent } from './shared/recording-indicator.component';
+import { AudioRecorderService } from './meetings/audio-recorder.service';
 import { ThemeService } from './shared/theme.service';
 import { PwaUpdateService } from './shared/services/pwa-update.service';
 
@@ -14,7 +16,7 @@ import { PwaUpdateService } from './shared/services/pwa-update.service';
   selector: 'app-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, Toast, SidebarComponent, LoginComponent, MockAuthToolbarComponent, NotificationPanelComponent],
+  imports: [RouterOutlet, Toast, SidebarComponent, LoginComponent, MockAuthToolbarComponent, NotificationPanelComponent, RecordingIndicatorComponent],
   templateUrl: './app.html',
 })
 export class App {
@@ -23,8 +25,17 @@ export class App {
   protected readonly pwaUpdateService = inject(PwaUpdateService);
   private readonly themeService = inject(ThemeService); // Initialize theme detection at app startup
   private readonly router = inject(Router);
+  private readonly recorder = inject(AudioRecorderService);
   protected readonly sidebarOpen = signal(false);
   protected readonly notificationPanelOpen = signal(false);
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.recorder.isActive()) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  }
 
   constructor() {
     // Connect SSE when authenticated

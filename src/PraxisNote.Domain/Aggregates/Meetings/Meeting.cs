@@ -110,6 +110,12 @@ public sealed class Meeting : AggregateRoot
     public DateTimeOffset? ReflectionSubmittedAt { get; private set; }
 
     /// <summary>
+    /// Whether this meeting is excluded from behavioral insights calculations.
+    /// Useful for non-interactive meetings (live streams, webinars) that would skew metrics.
+    /// </summary>
+    public bool ExcludeFromInsights { get; private set; }
+
+    /// <summary>
     /// When this meeting was created.
     /// </summary>
     public DateTimeOffset CreatedAt { get; private init; }
@@ -362,6 +368,22 @@ public sealed class Meeting : AggregateRoot
         _actionItems.Clear();
         UpdateStatus(MeetingStatus.Draft);
     }
+
+    #region Insights Exclusion
+
+    /// <summary>
+    /// Sets whether this meeting should be excluded from behavioral insights calculations.
+    /// </summary>
+    public void SetExcludeFromInsights(bool exclude)
+    {
+        if (ExcludeFromInsights == exclude)
+            return;
+
+        ExcludeFromInsights = exclude;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    #endregion
 
     #region Reflection
 

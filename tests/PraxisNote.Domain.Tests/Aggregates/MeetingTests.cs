@@ -1652,6 +1652,64 @@ public class MeetingTests
 
     #endregion
 
+    #region ExcludeFromInsights Tests
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public void SetExcludeFromInsights_SetsExcludedFlag(bool initial, bool target)
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        meeting.SetExcludeFromInsights(initial);
+
+        // Act
+        meeting.SetExcludeFromInsights(target);
+
+        // Assert
+        Assert.Equal(target, meeting.ExcludeFromInsights);
+    }
+
+    [Fact]
+    public void SetExcludeFromInsights_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.SetExcludeFromInsights(true);
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void SetExcludeFromInsights_WithSameValue_DoesNotUpdateUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.SetExcludeFromInsights(false); // Same as default
+
+        // Assert
+        Assert.Equal(originalUpdatedAt, meeting.UpdatedAt);
+    }
+
+    [Fact]
+    public void ExcludeFromInsights_DefaultsFalse()
+    {
+        // Act
+        var meeting = Meeting.Create(_validUserId);
+
+        // Assert
+        Assert.False(meeting.ExcludeFromInsights);
+    }
+
+    #endregion
+
     #region Suggested Tags Tests
 
     [Fact]

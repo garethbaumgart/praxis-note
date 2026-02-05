@@ -94,6 +94,7 @@ export class MeetingService {
       suggestedTags: null,
       reflectionData: null,
       reflectionSubmittedAt: null,
+      excludeFromInsights: false,
       tags: [],
       actionItems: [],
       createdAt: now,
@@ -322,6 +323,23 @@ export class MeetingService {
       clearTimeout(pending.timeoutId);
       this.pendingDeletions.delete(id);
     }
+  }
+
+  toggleExcludeFromInsights(id: string, exclude: boolean): void {
+    // Optimistic update
+    this._meetings.update(meetings =>
+      meetings.map(m => m.id === id ? { ...m, excludeFromInsights: exclude } : m)
+    );
+
+    this.http.patch(`/api/meetings/${id}/exclude-from-insights`, { exclude }).subscribe({
+      error: () => {
+        // Revert on failure
+        this._meetings.update(meetings =>
+          meetings.map(m => m.id === id ? { ...m, excludeFromInsights: !exclude } : m)
+        );
+        this.toast.error('Failed to update meeting');
+      },
+    });
   }
 
   addTag(meetingId: string, tagId: string, tagName: string): void {
