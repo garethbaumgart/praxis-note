@@ -138,7 +138,7 @@ public sealed class Meeting : AggregateRoot
 
         UserId = userId;
         Title = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
-        MeetingDate = meetingDate ?? now;
+        MeetingDate = meetingDate?.ToUniversalTime() ?? now;
         Attendees = string.IsNullOrWhiteSpace(attendees) ? null : attendees.Trim();
         Status = MeetingStatus.Draft;
         CreatedAt = now;
@@ -200,10 +200,11 @@ public sealed class Meeting : AggregateRoot
     /// </summary>
     public void UpdateMeetingDate(DateTimeOffset? meetingDate)
     {
-        if (MeetingDate == meetingDate)
+        var utcDate = meetingDate?.ToUniversalTime();
+        if (MeetingDate == utcDate)
             return;
 
-        MeetingDate = meetingDate;
+        MeetingDate = utcDate;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
