@@ -67,9 +67,9 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
           @if (meeting().status === 'Processing' && !meeting().transcriptContent) {
             <span class="w-2 h-2 bg-current rounded-full animate-pulse mr-1"></span>
           } @else if (meeting().status === 'Processing' && meeting().transcriptContent) {
-            <i class="pi pi-spin pi-spinner text-xs mr-1"></i>
+            <i class="pi pi-spin pi-spinner text-xs mr-1" aria-hidden="true"></i>
           } @else {
-            <i class="{{ getStatusIcon(meeting().status) }} text-xs mr-1"></i>
+            <i class="{{ getStatusIcon(meeting().status) }} text-xs mr-1" aria-hidden="true"></i>
           }
           {{ getStatusLabel() }}
         </span>
@@ -189,12 +189,14 @@ export class MeetingRowComponent {
 
   getTranscriptPreview(transcript: string): string {
     const cleaned = transcript.trim().replace(/\s+/g, ' ');
+    if (!cleaned) return 'Empty transcript';
     if (cleaned.length <= 60) return cleaned;
     return cleaned.slice(0, 60) + '...';
   }
 
   getRelativeCreationTime(createdAt: string): string {
     const date = new Date(createdAt);
+    if (isNaN(date.getTime())) return 'Unknown date';
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);

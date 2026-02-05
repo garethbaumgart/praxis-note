@@ -164,7 +164,8 @@ interface DateOption {
                         [options]="allTimeOptions"
                         [ngModel]="selectedTimeLabel()"
                         (ngModelChange)="onTimeChange($event)"
-                        (onShow)="showDatePicker.set(false)"
+                        (onShow)="showDatePicker.set(false); timeSelectOpen.set(true)"
+                        (onHide)="timeSelectOpen.set(false)"
                         [editable]="true"
                         [filter]="true"
                         filterPlaceholder="Type time..."
@@ -242,7 +243,7 @@ interface DateOption {
                       >
                         <i class="pi pi-microphone"></i> Record <i class="pi pi-chevron-down ml-1 text-xs"></i>
                       </button>
-                      <p-menu #recordMenu [model]="recordMenuItems()" [popup]="true" appendTo="body" />
+                      <p-menu #recordMenu [model]="recordMenuItems()" [popup]="true" appendTo="body" (onShow)="recordMenuOpen.set(true)" (onHide)="recordMenuOpen.set(false)" />
                     }
                   </div>
                 </div>
@@ -859,6 +860,10 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   readonly recordMenuRef = viewChild<Menu>('recordMenu');
   readonly transcriptArea = viewChild<ElementRef<HTMLTextAreaElement>>('transcriptArea');
 
+  // Overlay open tracking (avoids accessing internal PrimeNG properties)
+  readonly recordMenuOpen = signal(false);
+  readonly timeSelectOpen = signal(false);
+
   private isDestroyed = false;
   private pollingTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -934,6 +939,15 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
         lastActionItemCount = count;
         this.loadActionItemStatuses();
       }
+    });
+
+    // Auto-resize transcript on any change (including programmatic updates)
+    effect(() => {
+      this.transcript();
+      afterNextRender(() => {
+        const ta = this.transcriptArea()?.nativeElement;
+        if (ta) this.autoResizeTextarea(ta);
+      }, { injector: this.injector });
     });
 
     // Update meetingDate when time label changes
@@ -1052,14 +1066,12 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   }
 
   private closeAnyOpenOverlay(): boolean {
-    const menu = this.recordMenuRef();
-    if (menu && (menu as any).visible) {
-      menu.hide();
+    if (this.recordMenuOpen()) {
+      this.recordMenuRef()?.hide();
       return true;
     }
-    const select = this.timeSelect();
-    if (select && select.overlayVisible) {
-      select.hide();
+    if (this.timeSelectOpen()) {
+      this.timeSelect()?.hide();
       return true;
     }
     if (this.showDatePicker()) {
@@ -1155,12 +1167,6 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.meetingDate.set(meetingDate);
     this.extractTimeFromDate(meetingDate);
     this.determineInitialDateChip(meetingDate);
-
-    // Auto-resize transcript textarea after render
-    afterNextRender(() => {
-      const ta = this.transcriptArea()?.nativeElement;
-      if (ta) this.autoResizeTextarea(ta);
-    }, { injector: this.injector });
   }
 
   // --- Form change handlers with debounced save ---
