@@ -12,9 +12,9 @@
  * preserving the user's intended local date and time.
  *
  * Example (AEST UTC+10):
- *   toLocalISOString(new Date(2025, 1, 5, 10, 0)) => "2025-02-05T10:00:00+10:00"
+ *   toLocalISOString(new Date(2025, 1, 5, 2, 0)) => "2025-02-05T02:00:00+10:00"
  *
- * Compare with .toISOString() which would produce "2025-02-04T24:00:00.000Z"
+ * Compare with .toISOString() which would produce "2025-02-04T16:00:00.000Z"
  * (shifting the date to Feb 4 in UTC).
  */
 export function toLocalISOString(date: Date): string {
@@ -52,6 +52,7 @@ export function getLocalDateKey(date: Date): string {
 export function formatTime(dateStr: string | null): string {
   if (!dateStr) return '--:--';
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '--:--';
   const hours = date.getHours() % 12 || 12;
   const minutes = date.getMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
@@ -63,6 +64,7 @@ export function formatTime(dateStr: string | null): string {
 export function formatAmPm(dateStr: string | null): string {
   if (!dateStr) return '';
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
   return date.getHours() >= 12 ? 'PM' : 'AM';
 }
 
@@ -72,6 +74,7 @@ export function formatAmPm(dateStr: string | null): string {
  */
 export function formatDateTime(iso: string): string {
   const date = new Date(iso);
+  if (isNaN(date.getTime())) return '';
   return (
     date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
     ' ' +
@@ -84,7 +87,9 @@ export function formatDateTime(iso: string): string {
  * Example: "10:00 AM"
  */
 export function formatLocaleTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 
 /**
@@ -92,5 +97,6 @@ export function formatLocaleTime(iso: string): string {
  * Example: "Feb 5"
  */
 export function formatShortDate(date: Date): string {
+  if (isNaN(date.getTime())) return '';
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
