@@ -22,7 +22,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Task Tags** - Organize tasks with reusable tags, displayed inline with expandable overflow
 - ✅ **Note Tags** - Add tags to notes for organization and filtering
 - ✅ **Google OAuth** - Secure authentication with user accounts
-- ✅ **Notes** - Google Keep-style card grid with TipTap rich text editor
+- ✅ **Notes** - Google Keep-style card grid with TipTap rich text editor and collapsible toggle sections
 - ✅ **Checkbox-Task Sync** - Promote checkboxes to tasks with bidirectional sync (complete a task, checkbox is checked; check a checkbox, task is done)
 - ✅ **Meetings** - Daily grouped meeting list with fire-and-forget capture workflow
 - ✅ **AI Analysis** - Claude-powered meeting transcript analysis for summaries, key points, and decisions
@@ -31,7 +31,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Google Calendar Sync** - Connect Google Calendar via OAuth and manually sync upcoming events as meetings
 - ✅ **Self-Reflection Prompts** - Post-meeting reflection with contextual prompts generated from behavioral analysis, blind spot insights comparing self-assessment to AI analysis
 - ✅ **Speaker Identification** - Multichannel audio separation and voice diarization to label who said what in transcripts
-- ✅ **Screenshot Import** - Paste or drop a calendar screenshot to extract and import meetings via Claude Vision
+- ✅ **Screenshot Import** - Paste or drop a calendar screenshot to extract and import meetings via Claude Vision with automatic timezone detection
 - ✅ **Behavioral Insights Dashboard** - Compact 2-column sparkline grid with trend indicators for meeting behavioral metrics
 
 ✅ = Implemented | 🚧 = Planned

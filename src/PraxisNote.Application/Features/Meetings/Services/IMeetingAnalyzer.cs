@@ -3,7 +3,7 @@ namespace PraxisNote.Application.Features.Meetings.Services;
 public interface IMeetingAnalyzer
 {
     Task<MeetingAnalysisResult> AnalyzeAsync(string transcript, CancellationToken cancellationToken = default);
-    Task<ScreenshotExtractionResult> ExtractFromScreenshotAsync(string base64Image, string mediaType, CancellationToken cancellationToken = default);
+    Task<ScreenshotExtractionResult> ExtractFromScreenshotAsync(string base64Image, string mediaType, string? timeZone = null, CancellationToken cancellationToken = default);
 }
 
 public record ScreenshotExtractionResult(List<ExtractedCalendarEvent> Events);
