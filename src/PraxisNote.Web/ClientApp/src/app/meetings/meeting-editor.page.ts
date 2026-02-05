@@ -17,8 +17,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { DatePickerModule } from 'primeng/datepicker';
-import { SelectModule } from 'primeng/select';
-import { MenuModule } from 'primeng/menu';
+import { Select, SelectModule } from 'primeng/select';
+import { Menu, MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { Meeting, MeetingTag, ActionItemStatus, parseJsonArray } from './meeting.model';
 import { MeetingService } from './meeting.service';
@@ -124,37 +124,60 @@ interface DateOption {
               <div class="section-header details-header">
                 <span><i class="pi pi-info-circle"></i> Details</span>
               </div>
-              <div class="details-grid">
+              <div class="details-stack">
+                <!-- Row 1: Date chips + Time picker -->
                 <div>
                   <label class="field-label">Date & Time</label>
-                  <!-- Date chips -->
-                  <div class="date-chips">
-                    @for (option of dateOptions; track option.label) {
+                  <div class="date-time-row">
+                    <div class="date-chips">
+                      @for (option of dateOptions; track option.label) {
+                        <button
+                          type="button"
+                          class="date-chip"
+                          [class.active]="selectedDateChip() === option.label"
+                          [attr.aria-pressed]="selectedDateChip() === option.label"
+                          (click)="selectDateOption(option)"
+                        >
+                          {{ option.label }}
+                        </button>
+                      }
+                      @if (selectedDateChip() === 'custom' && customDateLabel()) {
+                        <button type="button" class="date-chip active" [attr.aria-label]="'Selected date: ' + customDateLabel()">
+                          {{ customDateLabel() }}
+                        </button>
+                      }
                       <button
                         type="button"
                         class="date-chip"
-                        [class.active]="selectedDateChip() === option.label"
-                        [attr.aria-pressed]="selectedDateChip() === option.label"
-                        (click)="selectDateOption(option)"
+                        [attr.aria-expanded]="showDatePicker()"
+                        aria-label="Pick a date"
+                        (click)="toggleDatePicker()"
                       >
-                        {{ option.label }}
+                        <i class="pi pi-calendar text-[10px]"></i>
+                        {{ isNewMeeting() ? 'Pick' : 'Change' }}
                       </button>
-                    }
-                    @if (selectedDateChip() === 'custom' && customDateLabel()) {
-                      <button type="button" class="date-chip active" [attr.aria-label]="'Selected date: ' + customDateLabel()">
-                        {{ customDateLabel() }}
-                      </button>
-                    }
-                    <button
-                      type="button"
-                      class="date-chip"
-                      [attr.aria-expanded]="showDatePicker()"
-                      aria-label="Pick a date"
-                      (click)="showDatePicker.set(!showDatePicker())"
-                    >
-                      <i class="pi pi-calendar text-[10px]"></i>
-                      {{ isNewMeeting() ? 'Pick' : 'Change' }}
-                    </button>
+                    </div>
+                    <!-- Time picker (editable combobox) -->
+                    <div class="time-picker-wrapper">
+                      <p-select
+                        #timeSelect
+                        [options]="allTimeOptions"
+                        [ngModel]="selectedTimeLabel()"
+                        (ngModelChange)="onTimeChange($event)"
+                        (onShow)="showDatePicker.set(false)"
+                        [editable]="true"
+                        [filter]="true"
+                        filterPlaceholder="Type time..."
+                        placeholder="Type or pick time..."
+                        [style]="{ width: '170px' }"
+                        [class.time-invalid]="timeInputInvalid()"
+                        appendTo="body"
+                        ariaLabel="Meeting time"
+                      />
+                      @if (timeInputInvalid()) {
+                        <small class="text-danger text-[10px] mt-0.5 block">Invalid time format</small>
+                      }
+                    </div>
                   </div>
                   @if (showDatePicker()) {
                     <div class="mt-2">
@@ -166,26 +189,8 @@ interface DateOption {
                       />
                     </div>
                   }
-                  <!-- Time picker (editable combobox) -->
-                  <div>
-                    <p-select
-                      [options]="allTimeOptions"
-                      [ngModel]="selectedTimeLabel()"
-                      (ngModelChange)="onTimeChange($event)"
-                      [editable]="true"
-                      [filter]="true"
-                      filterPlaceholder="Type time..."
-                      placeholder="Type or pick time..."
-                      [style]="{ width: '170px' }"
-                      [class.time-invalid]="timeInputInvalid()"
-                      appendTo="body"
-                      ariaLabel="Meeting time"
-                    />
-                    @if (timeInputInvalid()) {
-                      <small class="text-danger text-[10px] mt-0.5 block">Invalid time format</small>
-                    }
-                  </div>
                 </div>
+                <!-- Row 2: Attendees (full width) -->
                 <div>
                   <label class="field-label">Attendees</label>
                   <input
@@ -358,12 +363,13 @@ interface DateOption {
 
                 <!-- Transcript textarea -->
                 <textarea
+                  #transcriptArea
                   class="transcript-textarea"
                   placeholder="Paste transcript here..."
                   [value]="transcript()"
-                  (input)="onTranscriptChange(asTextarea($event).value)"
+                  (input)="onTranscriptInput($event)"
                   aria-label="Meeting transcript"
-                  rows="6"
+                  rows="3"
                 ></textarea>
                 <div class="flex justify-end mt-1">
                   <span class="text-xs text-foreground-muted">{{ transcript().length }} characters</span>
@@ -522,7 +528,8 @@ interface DateOption {
                 (click)="openTagInput()"
                 aria-label="Add tag"
               >
-                <i class="pi pi-plus text-[9px]"></i>
+                <i class="pi pi-tag text-[9px]"></i>
+                <span>Add tag</span>
               </button>
             }
             @if (inlineTagsExpanded() && meetingTags().length > 3 && !showTagPicker()) {
@@ -554,131 +561,53 @@ interface DateOption {
       height: 100%;
     }
 
-    /* Header */
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1.5rem;
-      border-bottom: 1px solid var(--color-border-default);
-      background: var(--color-bg-subtle);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--color-border-default); background: var(--color-bg-subtle);
     }
-
-    .breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8125rem;
-    }
+    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; }
 
     .back-link {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      color: var(--color-primary-solid);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.8125rem;
-      padding: 0.25rem 0.5rem;
-      margin: -0.25rem -0.5rem;
-      border-radius: 0.25rem;
-      transition: background 0.15s;
+      display: flex; align-items: center; gap: 0.375rem; color: var(--color-primary-solid);
+      background: none; border: none; cursor: pointer; font-size: 0.8125rem;
+      padding: 0.25rem 0.5rem; margin: -0.25rem -0.5rem; border-radius: 0.25rem;
     }
-
     .back-link:hover { background: var(--color-bg-subtle); }
     .separator { color: var(--color-text-muted); }
-
     .current-meeting {
-      font-weight: 600;
-      color: var(--color-text-secondary);
-      max-width: 300px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      font-weight: 600; color: var(--color-text-secondary); max-width: 300px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-
     .actions { display: flex; align-items: center; gap: 0.5rem; }
-
     .save-status {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      font-size: 0.75rem;
-      color: var(--color-done-text);
-      padding-right: 0.75rem;
+      display: flex; align-items: center; gap: 0.375rem;
+      font-size: 0.75rem; color: var(--color-done-text); padding-right: 0.75rem;
     }
-
     .save-status.saving { color: var(--color-primary-solid); }
-
     .action-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      height: 2rem;
-      border: 1px solid var(--color-border-default);
-      background: var(--color-bg-subtle);
-      border-radius: 0.375rem;
-      cursor: pointer;
-      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem;
+      border: 1px solid var(--color-border-default); background: var(--color-bg-subtle);
+      border-radius: 0.375rem; cursor: pointer;
     }
-
     .delete-btn { color: var(--color-danger-base); }
-    .action-btn:hover { background: var(--color-bg-subtle); }
     .editor-container { flex: 1; overflow: auto; }
-
     .loading, .not-found {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;
     }
+    .editor-wrapper { max-width: 800px; margin: 0 auto; width: 100%; padding: 1.5rem; box-sizing: border-box; }
+    @media (max-width: 768px) { .editor-wrapper { padding: 1rem; } }
 
-    .editor-wrapper {
-      max-width: 800px;
-      margin: 0 auto;
-      width: 100%;
-      padding: 1.5rem;
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 768px) {
-      .editor-wrapper {
-        padding: 1rem;
-      }
-    }
-
-    /* Title */
-    .title-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
+    .title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
     .title-input {
-      font-size: 22px;
-      font-weight: 700;
-      border: none;
-      background: transparent;
-      padding: 0;
-      flex: 1;
-      outline: none;
-      color: var(--color-text-primary);
+      font-size: 22px; font-weight: 700; border: none; background: transparent;
+      padding: 0; flex: 1; outline: none; color: var(--color-text-primary);
     }
-
     .title-input::placeholder { color: var(--color-text-muted); }
     .title-sparkle { color: var(--color-primary-solid); font-size: 14px; flex-shrink: 0; }
 
-    /* Section cards */
     .section-card {
-      background: var(--color-bg-subtle);
-      border: 1px solid var(--color-border-default);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
+      background: var(--color-bg-subtle); border: 1px solid var(--color-border-default);
+      border-radius: 8px; padding: 16px; margin-bottom: 12px;
     }
 
     .details-card { border-left: 3px solid var(--color-meeting-details-border); }
@@ -686,15 +615,9 @@ interface DateOption {
     .analysis-card { border-left: 3px solid var(--color-meeting-analysis-border); }
     .reflection-card { border-left: 3px solid var(--color-meeting-reflection-border); }
 
-    /* Section headers */
     .section-header {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
     }
 
     .details-header { color: var(--color-todo-text); }
@@ -703,299 +626,133 @@ interface DateOption {
     .reflection-header { color: var(--color-meeting-reflection-border); }
     .section-actions { display: flex; gap: 6px; }
 
-    /* Record & Upload buttons */
     .record-btn {
-      background: var(--color-todo-bg);
-      color: var(--color-todo-text);
-      border: 1px solid var(--color-todo-border);
-      border-radius: 5px;
-      padding: 4px 10px;
-      font-size: 11px;
-      cursor: pointer;
-      transition: all 0.15s;
+      background: var(--color-todo-bg); color: var(--color-todo-text);
+      border: 1px solid var(--color-todo-border); border-radius: 5px;
+      padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all 0.15s;
     }
-
     .record-btn:hover { background: var(--color-todo-bg-hover); }
 
-    /* Details grid */
-    .details-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+    .details-stack { display: flex; flex-direction: column; gap: 12px; }
+    .date-time-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .time-picker-wrapper { flex-shrink: 0; }
 
-    @media (max-width: 640px) {
-      .details-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .field-label {
-      font-size: 11px;
-      color: var(--color-text-muted);
-      display: block;
-      margin-bottom: 4px;
-    }
-
+    .field-label { font-size: 11px; color: var(--color-text-muted); display: block; margin-bottom: 4px; }
     .field-input {
-      width: 100%;
-      background: var(--color-bg-muted);
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 13px;
-      color: var(--color-text-primary);
-      outline: none;
-      box-sizing: border-box;
+      width: 100%; background: var(--color-bg-muted); border: none; border-radius: 6px;
+      padding: 8px 10px; font-size: 13px; color: var(--color-text-primary); outline: none; box-sizing: border-box;
     }
-
     .field-input::placeholder { color: var(--color-text-muted); }
 
-    /* Date chips */
-    .date-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
+    .date-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
 
     .date-chip {
-      padding: 4px 10px;
-      font-size: 11px;
-      border-radius: 9999px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s;
-      background: var(--color-bg-muted);
-      color: var(--color-text-secondary);
+      padding: 4px 10px; font-size: 11px; border-radius: 9999px; border: none;
+      cursor: pointer; transition: all 0.15s; background: var(--color-bg-muted); color: var(--color-text-secondary);
     }
+    .date-chip:hover, .date-chip.active { background: var(--color-primary-bg); color: var(--color-primary-text); }
 
-    .date-chip:hover,
-    .date-chip.active {
-      background: var(--color-primary-bg);
-      color: var(--color-primary-text);
-    }
+    :host ::ng-deep .p-select.p-select-editable .p-select-label { font-size: 13px; }
+    :host ::ng-deep .time-invalid .p-select-label { color: var(--color-danger-base); }
 
-    /* Time picker combobox */
-    :host ::ng-deep .p-select.p-select-editable .p-select-label {
-      font-size: 13px;
-    }
-
-    :host ::ng-deep .time-invalid .p-select-label {
-      color: var(--color-danger-base);
-    }
-
-    /* Transcript textarea */
     .transcript-textarea {
-      width: 100%;
-      background: var(--color-bg-muted);
-      border: none;
-      border-radius: 6px;
-      padding: 12px;
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--color-text-primary);
-      resize: vertical;
-      outline: none;
-      box-sizing: border-box;
-      min-height: 80px;
+      width: 100%; background: var(--color-bg-muted); border: none; border-radius: 6px;
+      padding: 12px; font-size: 13px; line-height: 1.7; color: var(--color-text-primary);
+      resize: none; overflow: hidden; outline: none; box-sizing: border-box; min-height: 80px;
     }
-
     .transcript-textarea::placeholder { color: var(--color-text-muted); }
 
-    /* Recording area */
-    .recording-area {
-      background: var(--color-bg-muted);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-
+    .recording-area { background: var(--color-bg-muted); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
     @keyframes pulse-recording { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .recording-pulse { animation: pulse-recording 1.5s ease-in-out infinite; }
     .audio-bar { transition: height 0.1s ease-out; }
 
     .live-transcript {
-      background: var(--color-bg-muted);
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 12px;
-      max-height: 200px;
-      overflow-y: auto;
+      background: var(--color-bg-muted); border-radius: 6px; padding: 12px;
+      margin-bottom: 12px; max-height: 200px; overflow-y: auto;
     }
-
     .empty-analysis {
-      background: var(--color-bg-muted);
-      border-radius: 6px;
-      padding: 12px;
-      font-size: 13px;
-      color: var(--color-text-muted);
-      text-align: center;
+      background: var(--color-bg-muted); border-radius: 6px; padding: 12px;
+      font-size: 13px; color: var(--color-text-muted); text-align: center;
     }
 
-    /* Suggested tags banner */
     .suggested-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--color-tag-bg);
-      color: var(--color-tag-text);
-      font-size: 12px;
-      font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      border: 1px dashed var(--color-border-default);
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--color-tag-bg); color: var(--color-tag-text);
+      font-size: 12px; font-weight: 500; padding: 4px 10px;
+      border-radius: 9999px; border: 1px dashed var(--color-border-default);
     }
 
     .suggested-tag-accept, .suggested-tag-dismiss {
-      all: unset;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 10px;
-      padding: 1px;
-      border-radius: 50%;
+      all: unset; display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 10px; padding: 1px; border-radius: 50%;
     }
-
     .suggested-tag-accept { color: var(--color-done-text); }
     .suggested-tag-accept:hover { background: var(--color-done-bg); }
     .suggested-tag-dismiss { color: var(--color-text-muted); }
     .suggested-tag-dismiss:hover { color: var(--color-danger-base); }
 
-    /* Date picker override */
-    :host ::ng-deep .p-datepicker {
-      border: none;
-      background: transparent;
-    }
+    :host ::ng-deep .p-datepicker { border: none; background: transparent; }
 
-    /* Footer */
     .footer {
-      display: flex;
-      align-items: center;
-      padding: 0.5rem 1.5rem;
-      border-top: 1px solid var(--color-border-default);
-      background: var(--color-bg-base);
+      display: flex; align-items: center; padding: 0.5rem 1.5rem;
+      border-top: 1px solid var(--color-border-default); background: var(--color-bg-base);
     }
-
-    .tags-section {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.25rem;
-    }
+    .tags-section { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; }
 
     .tag-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      background: var(--color-tag-bg);
-      color: var(--color-tag-text);
-      font-size: 10px;
-      font-weight: 500;
-      padding: 2px 8px;
-      border-radius: 9999px;
-      height: 18px;
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      background: var(--color-tag-bg); color: var(--color-tag-text);
+      font-size: 10px; font-weight: 500; padding: 2px 8px;
+      border-radius: 9999px; height: 18px;
     }
 
     .tag-badge-remove {
-      all: unset;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--color-tag-text);
-      opacity: 0.6;
-      transition: opacity 0.15s;
+      all: unset; display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--color-tag-text); opacity: 0.6; transition: opacity 0.15s;
     }
-
-    .tag-badge-remove:hover {
-      opacity: 1;
-    }
+    .tag-badge-remove:hover { opacity: 1; }
 
     .overflow-btn {
-      padding: 2px 6px;
-      border-radius: 9999px;
-      font-size: 10px;
-      background: var(--color-tags-section-bg);
-      color: var(--color-text-muted);
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s;
+      padding: 2px 6px; border-radius: 9999px; font-size: 10px;
+      background: var(--color-tags-section-bg); color: var(--color-text-muted);
+      border: none; cursor: pointer; transition: all 0.15s;
     }
+    .overflow-btn:hover { background: var(--color-tags-badge-bg); color: var(--color-tag-text); }
 
-    .overflow-btn:hover {
-      background: var(--color-tags-badge-bg);
-      color: var(--color-tag-text);
-    }
-
-    .tag-input-wrapper {
-      position: relative;
-      flex: 1;
-      min-width: 100px;
-    }
-
+    .tag-input-wrapper { position: relative; flex: 1; min-width: 100px; }
     .tag-input {
-      width: 100%;
-      height: 24px;
-      padding: 0 8px;
-      font-size: 12px;
-      background: var(--color-bg-muted);
-      border-radius: 9999px;
-      border: none;
-      outline: none;
-      color: var(--color-text-primary);
+      width: 100%; height: 24px; padding: 0 8px; font-size: 12px;
+      background: var(--color-bg-muted); border-radius: 9999px; border: none; outline: none; color: var(--color-text-primary);
     }
-
     .tag-dropdown {
-      position: absolute;
-      left: 0;
-      bottom: calc(100% + 4px);
-      width: 192px;
-      background: var(--color-bg-base);
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      border: 1px solid var(--color-border-default);
-      padding: 4px 0;
-      z-index: 50;
+      position: absolute; left: 0; bottom: calc(100% + 4px); width: 192px;
+      background: var(--color-bg-base); border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15); border: 1px solid var(--color-border-default);
+      padding: 4px 0; z-index: 50;
     }
 
     .tag-dropdown-item {
-      all: unset;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 6px 12px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background 0.15s;
-      box-sizing: border-box;
+      all: unset; display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 6px 12px; font-size: 12px;
+      cursor: pointer; transition: background 0.15s; box-sizing: border-box;
     }
-
-    .tag-dropdown-item:hover {
-      background: var(--color-bg-subtle);
-    }
-
-    .tag-dropdown-item.create {
-      color: var(--color-primary-solid);
-    }
-
-    .tag-dropdown-divider {
-      border-top: 1px solid var(--color-border-default);
-      margin: 4px 0;
-    }
+    .tag-dropdown-item:hover { background: var(--color-bg-subtle); }
+    .tag-dropdown-item.create { color: var(--color-primary-solid); }
+    .tag-dropdown-divider { border-top: 1px solid var(--color-border-default); margin: 4px 0; }
 
     .add-tag-btn {
       all: unset;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
+      gap: 4px;
+      height: 18px;
+      padding: 2px 8px;
       border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 500;
       color: var(--color-text-muted);
-      opacity: 0.3;
+      background: var(--color-bg-muted);
       cursor: pointer;
       transition: all 0.15s;
     }
@@ -1003,27 +760,14 @@ interface DateOption {
     .add-tag-btn:hover {
       color: var(--color-tag-text);
       background: var(--color-tags-badge-bg);
-      opacity: 1;
     }
 
     .collapse-btn {
-      all: unset;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      margin-left: auto;
-      padding: 2px 6px;
-      border-radius: 9999px;
-      font-size: 10px;
-      background: var(--color-tags-section-bg);
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition: all 0.15s;
+      all: unset; display: flex; align-items: center; gap: 2px; margin-left: auto;
+      padding: 2px 6px; border-radius: 9999px; font-size: 10px;
+      background: var(--color-tags-section-bg); color: var(--color-text-muted); cursor: pointer; transition: all 0.15s;
     }
-
-    .collapse-btn:hover {
-      background: var(--color-tags-collapsed-bg);
-    }
+    .collapse-btn:hover { background: var(--color-tags-collapsed-bg); }
   `],
 })
 export class MeetingEditorPage implements OnInit, OnDestroy {
@@ -1111,6 +855,9 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   readonly inlineTagsExpanded = signal(false);
   readonly tagSearch = signal('');
   readonly tagInput = viewChild<ElementRef<HTMLInputElement>>('tagInput');
+  readonly timeSelect = viewChild<Select>('timeSelect');
+  readonly recordMenuRef = viewChild<Menu>('recordMenu');
+  readonly transcriptArea = viewChild<ElementRef<HTMLTextAreaElement>>('transcriptArea');
 
   private isDestroyed = false;
   private pollingTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -1245,6 +992,10 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.isDestroyed = true;
     this.cancelPolling();
+    // Close any open overlays to prevent orphaned popups
+    this.timeSelect()?.hide();
+    this.recordMenuRef()?.hide();
+    this.showDatePicker.set(false);
     // Only stop recording/transcription if no active recording in progress
     // (allow recording to persist when navigating away)
     if (!this.recorder.isActive()) {
@@ -1273,20 +1024,53 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       this.saveTranscript();
     }
 
-    // Go back with Escape when not typing
-    if (event.key === 'Escape' && !this.isInEditableElement(event)) {
+    // Escape: 3-step cascade
+    if (event.key === 'Escape') {
+      // Step 1: Close any open overlay
+      if (this.closeAnyOpenOverlay()) {
+        event.preventDefault();
+        return;
+      }
+      // Step 2: Blur any focused editable element
+      const target = event.target as HTMLElement | null;
+      if (target && this.isEditableElement(target)) {
+        target.blur();
+        event.preventDefault();
+        return;
+      }
+      // Step 3: Navigate back
       this.navigateBack();
     }
   }
 
-  private isInEditableElement(event: KeyboardEvent): boolean {
-    const target = event.target as HTMLElement | null;
-    if (!target) return false;
-    const editableElement = target.closest(
+  private isEditableElement(el: HTMLElement): boolean {
+    const editable = el.closest(
       'input, textarea, [contenteditable=""], [contenteditable="true"]'
     ) as HTMLElement | null;
-    if (editableElement) return true;
-    return target.isContentEditable;
+    if (editable) return true;
+    return el.isContentEditable;
+  }
+
+  private closeAnyOpenOverlay(): boolean {
+    const menu = this.recordMenuRef();
+    if (menu && (menu as any).visible) {
+      menu.hide();
+      return true;
+    }
+    const select = this.timeSelect();
+    if (select && select.overlayVisible) {
+      select.hide();
+      return true;
+    }
+    if (this.showDatePicker()) {
+      this.showDatePicker.set(false);
+      return true;
+    }
+    if (this.showTagPicker()) {
+      this.showTagPicker.set(false);
+      return true;
+    }
+    return false;
   }
 
   private initNewMeeting(): void {
@@ -1371,6 +1155,12 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.meetingDate.set(meetingDate);
     this.extractTimeFromDate(meetingDate);
     this.determineInitialDateChip(meetingDate);
+
+    // Auto-resize transcript textarea after render
+    afterNextRender(() => {
+      const ta = this.transcriptArea()?.nativeElement;
+      if (ta) this.autoResizeTextarea(ta);
+    }, { injector: this.injector });
   }
 
   // --- Form change handlers with debounced save ---
@@ -1422,6 +1212,17 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.transcript.set(value);
     this.lastSaved.set(false);
     this.transcriptChange$.next();
+  }
+
+  onTranscriptInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    this.onTranscriptChange(textarea.value);
+    this.autoResizeTextarea(textarea);
+  }
+
+  toggleDatePicker(): void {
+    this.timeSelect()?.hide();
+    this.showDatePicker.set(!this.showDatePicker());
   }
 
   private saveMetadata(): void {
@@ -1838,6 +1639,11 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
     return date.toLocaleDateString();
+  }
+
+  private autoResizeTextarea(textarea: HTMLTextAreaElement): void {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
   /** Type-safe helper for input events */

@@ -8,7 +8,7 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="meeting-row group cursor-pointer flex items-center gap-4 p-3 bg-surface-subtle border border-border rounded-lg hover:shadow-md transition-shadow"
+      class="meeting-row group cursor-pointer flex items-center gap-4 p-3 bg-surface-subtle border border-border rounded-lg hover:shadow-md active:scale-[0.995] active:bg-surface-muted/50 transition-all"
       [class.recording]="meeting().status === 'Processing' && !meeting().transcriptContent"
       [class.analyzing]="meeting().status === 'Processing' && meeting().transcriptContent"
       (click)="onOpen.emit()"
@@ -46,9 +46,19 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
             </div>
           }
         </div>
-        <p class="text-xs text-foreground-muted truncate">
-          {{ formatAttendees(meeting().attendees) }}
-        </p>
+        @if (!meeting().title) {
+          <p class="text-xs text-foreground-muted truncate">
+            @if (meeting().transcriptContent) {
+              <em>{{ getTranscriptPreview(meeting().transcriptContent!) }}</em>
+            } @else {
+              {{ getRelativeCreationTime(meeting().createdAt) }}
+            }
+          </p>
+        } @else {
+          <p class="text-xs text-foreground-muted truncate">
+            {{ formatAttendees(meeting().attendees) }}
+          </p>
+        }
       </div>
 
       <!-- Status & Actions -->
@@ -56,9 +66,10 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
         <span class="status-badge {{ getStatusClass(meeting().status) }}">
           @if (meeting().status === 'Processing' && !meeting().transcriptContent) {
             <span class="w-2 h-2 bg-current rounded-full animate-pulse mr-1"></span>
-          }
-          @if (meeting().status === 'Processing' && meeting().transcriptContent) {
+          } @else if (meeting().status === 'Processing' && meeting().transcriptContent) {
             <i class="pi pi-spin pi-spinner text-xs mr-1"></i>
+          } @else {
+            <i class="{{ getStatusIcon(meeting().status) }} text-xs mr-1"></i>
           }
           {{ getStatusLabel() }}
         </span>
@@ -96,8 +107,8 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
     }
 
     .status-draft {
-      background: var(--color-bg-muted);
-      color: var(--color-text-muted);
+      background: var(--color-todo-bg);
+      color: var(--color-todo-text);
     }
 
     .status-processing {
@@ -156,13 +167,45 @@ export class MeetingRowComponent {
       return meeting.transcriptContent ? 'Analyzing' : 'Recording';
     }
     const labels: Record<MeetingStatus, string> = {
-      Draft: 'Draft',
+      Draft: 'Needs Transcript',
       Processing: 'Processing',
-      Ready: 'Ready',
+      Ready: 'Analyzed',
       Reviewed: 'Reviewed',
       Failed: 'Failed',
     };
     return labels[meeting.status];
+  }
+
+  getStatusIcon(status: MeetingStatus): string {
+    const icons: Record<MeetingStatus, string> = {
+      Draft: 'pi pi-pencil',
+      Processing: 'pi pi-spinner',
+      Ready: 'pi pi-sparkles',
+      Reviewed: 'pi pi-check-circle',
+      Failed: 'pi pi-exclamation-triangle',
+    };
+    return icons[status];
+  }
+
+  getTranscriptPreview(transcript: string): string {
+    const cleaned = transcript.trim().replace(/\s+/g, ' ');
+    if (cleaned.length <= 60) return cleaned;
+    return cleaned.slice(0, 60) + '...';
+  }
+
+  getRelativeCreationTime(createdAt: string): string {
+    const date = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Created just now';
+    if (diffMins < 60) return `Created ${diffMins} min ago`;
+    if (diffHours < 24) return `Created ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `Created ${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return `Created ${date.toLocaleDateString()}`;
   }
 
   handleDelete(event: Event): void {
