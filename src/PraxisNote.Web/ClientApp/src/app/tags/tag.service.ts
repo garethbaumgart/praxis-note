@@ -10,19 +10,23 @@ export class TagService {
 
   private readonly _tags = signal<Tag[]>([]);
   private readonly _loading = signal(false);
+  private readonly _error = signal<string | null>(null);
 
   readonly tags = this._tags.asReadonly();
   readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
 
   loadTags(): void {
     this._loading.set(true);
+    this._error.set(null);
     this.http.get<Tag[]>('/api/tags').subscribe({
       next: (tags) => {
-        this._tags.set(tags);
+        this._tags.set([...tags].sort((a, b) => a.name.localeCompare(b.name)));
         this._loading.set(false);
       },
       error: () => {
         this._loading.set(false);
+        this._error.set('Failed to load tags');
       },
     });
   }

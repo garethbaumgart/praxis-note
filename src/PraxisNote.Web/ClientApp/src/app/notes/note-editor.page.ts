@@ -19,8 +19,8 @@ import { NoteService } from './note.service';
 import { PdfExportService } from './pdf-export.service';
 import { TiptapEditorComponent } from './tiptap-editor.component';
 import { ToastService } from '../shared/services/toast.service';
-import { TagService } from '../tasks/tag.service';
-import { Tag } from '../tasks/tag.model';
+import { TagService } from '../tags/tag.service';
+import { Tag } from '../tags/tag.model';
 
 @Component({
   selector: 'app-note-editor-page',

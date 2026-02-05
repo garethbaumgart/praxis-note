@@ -5,7 +5,7 @@ import { Note, NoteTag } from './note.model';
 import { NoteCardComponent } from './note-card.component';
 import { NoteCardSkeletonComponent } from './note-card-skeleton.component';
 import { ToastService } from '../shared/services/toast.service';
-import { TagService } from '../tasks/tag.service';
+import { TagService } from '../tags/tag.service';
 
 @Component({
   selector: 'app-notes-page',

@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input, output, computed, signal, in
 import { generateHTML } from '@tiptap/core';
 import { Note, NoteTag } from './note.model';
 import { tiptapExtensions } from './tiptap-extensions';
-import { Tag } from '../tasks/tag.model';
+import { Tag } from '../tags/tag.model';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 

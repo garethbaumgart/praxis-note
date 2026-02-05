@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { Subject, debounceTime } from 'rxjs';
 import { Task } from './task.model';
-import { TaskTag } from './tag.model';
+import { TaskTag } from '../tags/tag.model';
 import { ToastService } from '../shared/services/toast.service';
 
 interface PendingDeletion {

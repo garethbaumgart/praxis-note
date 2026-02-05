@@ -1,4 +1,4 @@
-import { TaskTag } from './tag.model';
+import { TaskTag } from '../tags/tag.model';
 
 export type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 

@@ -34,6 +34,10 @@ export const routes: Routes = [
     loadComponent: () => import('./insights/insights.page').then(m => m.InsightsPage),
   },
   {
+    path: 'tags',
+    loadComponent: () => import('./tags/tags.page').then(m => m.TagsPage),
+  },
+  {
     path: 'settings',
     loadComponent: () => import('./settings/settings.page').then(m => m.SettingsPage),
   },
