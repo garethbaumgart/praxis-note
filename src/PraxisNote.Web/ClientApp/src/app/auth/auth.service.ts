@@ -29,12 +29,19 @@ export class AuthService {
       next: () => {
         this._user.set(null);
         this._loading.set(false);
+        this._initialized.set(false);
       },
       error: () => {
         this._user.set(null);
         this._loading.set(false);
+        this._initialized.set(false);
       },
     });
+  }
+
+  recheckAuth(): void {
+    this._initialized.set(false);
+    this.checkAuth();
   }
 
   private checkAuth(): void {
