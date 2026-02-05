@@ -10,64 +10,36 @@ import { AudioRecorderService } from '../meetings/audio-recorder.service';
     @if (recorder.isActive()) {
       <button
         type="button"
-        class="recording-pill"
+        class="recording-pill fixed bottom-6 right-6 z-60 flex items-center gap-2 py-2 px-4 rounded-full text-sm font-medium cursor-pointer shadow-lg transition-all duration-200 hover:scale-[1.02]"
         (click)="returnToMeeting()"
         aria-label="Return to active recording"
       >
-        <span class="pulse-dot"></span>
-        <span class="label">Recording</span>
-        <span class="timer">{{ recorder.formattedTime() }}</span>
-        <span class="return-hint">Return <i class="pi pi-arrow-right text-xs"></i></span>
+        <span class="pulse-dot w-2 h-2 rounded-full"></span>
+        <span>Recording</span>
+        <span>{{ recorder.formattedTime() }}</span>
+        <span class="return-hint flex items-center gap-1 opacity-70 border-l border-current pl-2 ml-1">Return <i class="pi pi-arrow-right text-xs"></i></span>
       </button>
     }
   `,
   styles: [`
     .recording-pill {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      z-index: 60;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: var(--color-danger-bg, rgba(191, 97, 106, 0.15));
+      background: var(--color-danger-bg);
       border: 1px solid var(--color-danger-base);
-      border-radius: 9999px;
       color: var(--color-danger-base);
-      font-size: 0.8125rem;
-      font-weight: 500;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transition: background 0.2s, transform 0.2s;
     }
 
     .recording-pill:hover {
       background: var(--color-danger-base);
-      color: white;
-      transform: scale(1.02);
+      color: var(--color-surface);
     }
 
     .recording-pill:hover .pulse-dot {
-      background: white;
+      background: var(--color-surface);
     }
 
     .pulse-dot {
-      width: 0.5rem;
-      height: 0.5rem;
-      border-radius: 50%;
       background: var(--color-danger-base);
       animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    .return-hint {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      opacity: 0.7;
-      border-left: 1px solid currentColor;
-      padding-left: 0.5rem;
-      margin-left: 0.25rem;
     }
 
     @keyframes pulse {

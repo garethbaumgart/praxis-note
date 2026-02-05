@@ -1654,31 +1654,20 @@ public class MeetingTests
 
     #region ExcludeFromInsights Tests
 
-    [Fact]
-    public void SetExcludeFromInsights_WithTrue_SetsExcluded()
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public void SetExcludeFromInsights_SetsExcludedFlag(bool initial, bool target)
     {
         // Arrange
         var meeting = Meeting.Create(_validUserId);
+        meeting.SetExcludeFromInsights(initial);
 
         // Act
-        meeting.SetExcludeFromInsights(true);
+        meeting.SetExcludeFromInsights(target);
 
         // Assert
-        Assert.True(meeting.ExcludeFromInsights);
-    }
-
-    [Fact]
-    public void SetExcludeFromInsights_WithFalse_SetsIncluded()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId);
-        meeting.SetExcludeFromInsights(true);
-
-        // Act
-        meeting.SetExcludeFromInsights(false);
-
-        // Assert
-        Assert.False(meeting.ExcludeFromInsights);
+        Assert.Equal(target, meeting.ExcludeFromInsights);
     }
 
     [Fact]
