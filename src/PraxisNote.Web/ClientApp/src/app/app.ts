@@ -33,6 +33,7 @@ export class App {
   onBeforeUnload(event: BeforeUnloadEvent): void {
     if (this.recorder.isActive()) {
       event.preventDefault();
+      event.returnValue = '';
     }
   }
 

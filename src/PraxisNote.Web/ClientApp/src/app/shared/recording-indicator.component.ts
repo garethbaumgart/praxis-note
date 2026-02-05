@@ -26,7 +26,7 @@ import { AudioRecorderService } from '../meetings/audio-recorder.service';
       position: fixed;
       bottom: 1.5rem;
       right: 1.5rem;
-      z-index: 50;
+      z-index: 60;
       display: flex;
       align-items: center;
       gap: 0.5rem;
