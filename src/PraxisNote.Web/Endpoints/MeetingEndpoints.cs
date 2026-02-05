@@ -27,6 +27,7 @@ public static class MeetingEndpoints
         group.MapGet("/{id:guid}/reflection", (Delegate)HandleGetReflection);
         group.MapPost("/{id:guid}/reflection", (Delegate)HandleSubmitReflection);
         group.MapPost("/extract-from-screenshot", (Delegate)HandleExtractFromScreenshot);
+        group.MapPatch("/{id:guid}/exclude-from-insights", (Delegate)HandleUpdateExcludeFromInsights);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -370,6 +371,25 @@ public static class MeetingEndpoints
 
         return Results.Ok(result);
     }
+
+    private static async Task<IResult> HandleUpdateExcludeFromInsights(
+        Guid id,
+        ClaimsPrincipal user,
+        ExcludeFromInsightsRequest request,
+        [FromServices] UpdateMeetingExcludeFromInsights updateExclude,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var command = new UpdateMeetingExcludeFromInsights.Command(id, userId.Value, request.Exclude);
+        var success = await updateExclude.ExecuteAsync(command, cancellationToken);
+
+        return success ? Results.NoContent() : Results.NotFound();
+    }
 }
 
 public record CreateMeetingRequest(string? Title, DateTimeOffset? MeetingDate, string? Attendees);
@@ -386,4 +406,5 @@ public record SubmitReflectionRequest(
 
 public record PromptResponseRequest(string PromptId, string PromptText, string Response);
 
+public record ExcludeFromInsightsRequest(bool Exclude);
 public record ExtractFromScreenshotRequest(string Base64Image, string? MediaType, string? TimeZone);

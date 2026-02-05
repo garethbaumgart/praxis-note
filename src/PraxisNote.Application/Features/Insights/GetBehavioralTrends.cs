@@ -27,6 +27,7 @@ public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
         var meetings = allMeetings
             .Where(m => (m.Status == MeetingStatus.Ready || m.Status == MeetingStatus.Reviewed)
                         && m.BehavioralAnalysis is not null
+                        && !m.ExcludeFromInsights
                         && (m.MeetingDate ?? m.CreatedAt) >= cutoff)
             .OrderBy(m => m.MeetingDate ?? m.CreatedAt)
             .ToList();

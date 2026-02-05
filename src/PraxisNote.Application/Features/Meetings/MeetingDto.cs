@@ -17,6 +17,7 @@ public record MeetingDto(
     string? SuggestedTags,
     string? ReflectionData,
     DateTimeOffset? ReflectionSubmittedAt,
+    bool ExcludeFromInsights,
     IReadOnlyList<MeetingTagDto> Tags,
     IReadOnlyList<ActionItemDto> ActionItems,
     DateTimeOffset CreatedAt,
