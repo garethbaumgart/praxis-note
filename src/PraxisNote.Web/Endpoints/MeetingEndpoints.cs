@@ -358,8 +358,14 @@ public static class MeetingEndpoints
             return Results.BadRequest("Image is too large. Maximum size is 10MB.");
         }
 
+        var timeZone = string.IsNullOrWhiteSpace(request.TimeZone) ? null : request.TimeZone.Trim();
+        if (timeZone is not null && (timeZone.Length > 64 || timeZone.Any(char.IsControl)))
+        {
+            return Results.BadRequest("Invalid time zone.");
+        }
+
         var command = new ExtractMeetingsFromScreenshot.Command(
-            userId.Value, request.Base64Image, mediaType, request.TimeZone);
+            userId.Value, request.Base64Image, mediaType, timeZone);
         var result = await extractMeetings.ExecuteAsync(command, cancellationToken);
 
         return Results.Ok(result);

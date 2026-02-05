@@ -185,7 +185,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         var tz = GetTimeZoneInfo(timeZone);
         var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        var tzName = timeZone ?? tz.Id;
+        var tzName = tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = ScreenshotExtractionPromptTemplate
@@ -346,6 +346,10 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
             return TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
         }
         catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Local;
+        }
+        catch (InvalidTimeZoneException)
         {
             return TimeZoneInfo.Local;
         }
