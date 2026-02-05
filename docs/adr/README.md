@@ -10,8 +10,9 @@ This directory contains Architecture Decision Records (ADRs) for the PraxisNote 
 | [0002](0002-cqrs-pattern.md) | CQRS Pattern (without MediatR) | Accepted |
 | [0003](0003-angular-signals.md) | Angular Signals over RxJS | Accepted |
 | [0004](0004-primeng-tailwind-no-custom-css.md) | PrimeNG + Tailwind, No Custom CSS | Accepted |
-| [0005](0005-sqlite-dev-postgresql-prod.md) | SQLite for Dev, PostgreSQL for Prod | Accepted |
+| [0005](0005-sqlite-dev-postgresql-prod.md) | SQLite for Dev, PostgreSQL for Prod | Superseded by [0007](0007-postgresql-all-environments.md) |
 | [0006](0006-domain-layer-purity.md) | Domain Layer Purity | Accepted |
+| [0007](0007-postgresql-all-environments.md) | PostgreSQL for All Environments | Accepted |
 
 ## Template
 

@@ -7,7 +7,7 @@
 - **DDD Principles**: Repository interfaces live in Domain layer
 - **Clean Architecture Layers**: Domain → Application → Infrastructure → Web
 - **Style**: Primary constructors, Minimal APIs
-- **Database**: Entity Framework Core with SQLite (dev) / PostgreSQL (prod)
+- **Database**: Entity Framework Core with PostgreSQL (all environments)
 
 ## Frontend (Angular v21)
 

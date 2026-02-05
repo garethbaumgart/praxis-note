@@ -18,7 +18,7 @@ public class TagTests
         // Assert
         Assert.NotEqual(Guid.Empty, tag.Id);
         Assert.Equal(_validUserId, tag.UserId);
-        Assert.Equal(name, tag.Name);
+        Assert.Equal("work", tag.Name);
         Assert.True(tag.CreatedAt <= DateTimeOffset.UtcNow);
     }
 
@@ -55,7 +55,7 @@ public class TagTests
         tag.Rename("New Name");
 
         // Assert
-        Assert.Equal("New Name", tag.Name);
+        Assert.Equal("new name", tag.Name);
     }
 
     [Fact]
@@ -78,5 +78,38 @@ public class TagTests
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => tag.Rename(invalidName));
+    }
+
+    [Fact]
+    public void Create_WithMixedCaseName_StoresAsLowercase()
+    {
+        // Arrange & Act
+        var tag = Tag.Create(_validUserId, "Work");
+
+        // Assert
+        Assert.Equal("work", tag.Name);
+    }
+
+    [Fact]
+    public void Create_WithUpperCaseName_StoresAsLowercase()
+    {
+        // Arrange & Act
+        var tag = Tag.Create(_validUserId, "URGENT");
+
+        // Assert
+        Assert.Equal("urgent", tag.Name);
+    }
+
+    [Fact]
+    public void Rename_WithMixedCaseName_StoresAsLowercase()
+    {
+        // Arrange
+        var tag = Tag.Create(_validUserId, "old name");
+
+        // Act
+        tag.Rename("New-Name");
+
+        // Assert
+        Assert.Equal("new-name", tag.Name);
     }
 }

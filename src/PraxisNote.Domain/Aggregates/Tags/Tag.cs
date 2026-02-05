@@ -34,7 +34,7 @@ public sealed class Tag : AggregateRoot
         ValidateName(name);
 
         UserId = userId;
-        Name = name;
+        Name = name.ToLowerInvariant();
         CreatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -56,7 +56,7 @@ public sealed class Tag : AggregateRoot
     public void Rename(string newName)
     {
         ValidateName(newName);
-        Name = newName;
+        Name = newName.ToLowerInvariant();
     }
 
     private static void ValidateName(string name)
