@@ -3,7 +3,8 @@
   "index": "/index.html",
   "navigationUrls": [
     "/**",
-    "!/signin-google"
+    "!/signin-google",
+    "!/signin-google/**"
   ],
   "assetGroups": [
     {
