@@ -12,6 +12,7 @@ public static class TagEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", (Delegate)HandleGetTags);
+        group.MapGet("/{id:guid}/items", (Delegate)HandleGetItemsByTag);
         group.MapPost("/", (Delegate)HandleCreateTag);
         group.MapPut("/{id:guid}", (Delegate)HandleUpdateTag);
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteTag);
@@ -32,6 +33,31 @@ public static class TagEndpoints
         var tags = await getUserTags.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(tags);
+    }
+
+    private static async Task<IResult> HandleGetItemsByTag(
+        Guid id,
+        ClaimsPrincipal user,
+        GetItemsByTag getItemsByTag,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var query = new GetItemsByTag.Query(userId.Value, id);
+            var result = await getItemsByTag.ExecuteAsync(query, cancellationToken);
+
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == GetItemsByTag.NotFoundError)
+        {
+            return Results.NotFound();
+        }
     }
 
     private static async Task<IResult> HandleCreateTag(

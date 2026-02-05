@@ -18,6 +18,13 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Meeting>> GetByTagIdAsync(Guid userId, Guid tagId, CancellationToken cancellationToken = default)
+    {
+        return await context.Meetings
+            .Where(m => m.UserId == userId && m.TagIds.Contains(tagId))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task AddAsync(Meeting meeting, CancellationToken cancellationToken = default)
     {
         await context.Meetings.AddAsync(meeting, cancellationToken);

@@ -18,6 +18,13 @@ public sealed class NoteRepository(PraxisNoteDbContext context) : INoteRepositor
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Note>> GetByTagIdAsync(Guid userId, Guid tagId, CancellationToken cancellationToken = default)
+    {
+        return await context.Notes
+            .Where(n => n.UserId == userId && n.TagIds.Contains(tagId))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task AddAsync(Note note, CancellationToken cancellationToken = default)
     {
         await context.Notes.AddAsync(note, cancellationToken);

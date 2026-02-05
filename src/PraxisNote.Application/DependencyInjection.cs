@@ -41,6 +41,7 @@ public static class DependencyInjection
 
         // Tag use cases
         services.AddScoped<GetUserTags>();
+        services.AddScoped<GetItemsByTag>();
         services.AddScoped<CreateTag>();
         services.AddScoped<UpdateTag>();
         services.AddScoped<DeleteTag>();
