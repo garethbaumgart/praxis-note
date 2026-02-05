@@ -83,6 +83,20 @@ public class MeetingTests
     }
 
     [Fact]
+    public void Create_WithNonUtcMeetingDate_ConvertsToUtc()
+    {
+        // Arrange - simulate a browser sending AEST (+10:00)
+        var aestDate = new DateTimeOffset(2026, 2, 6, 10, 0, 0, TimeSpan.FromHours(10));
+
+        // Act
+        var meeting = Meeting.Create(_validUserId, _validTitle, aestDate);
+
+        // Assert - should be stored as UTC (offset 0)
+        Assert.Equal(TimeSpan.Zero, meeting.MeetingDate!.Value.Offset);
+        Assert.Equal(aestDate.UtcDateTime, meeting.MeetingDate.Value.UtcDateTime);
+    }
+
+    [Fact]
     public void Create_SetsCreatedAtAndUpdatedAtToSameValue()
     {
         // Act
@@ -220,6 +234,21 @@ public class MeetingTests
 
         // Assert
         Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void UpdateMeetingDate_WithNonUtcDate_ConvertsToUtc()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId);
+        var aestDate = new DateTimeOffset(2026, 3, 15, 14, 30, 0, TimeSpan.FromHours(10));
+
+        // Act
+        meeting.UpdateMeetingDate(aestDate);
+
+        // Assert - should be stored as UTC (offset 0)
+        Assert.Equal(TimeSpan.Zero, meeting.MeetingDate!.Value.Offset);
+        Assert.Equal(aestDate.UtcDateTime, meeting.MeetingDate.Value.UtcDateTime);
     }
 
     [Fact]
