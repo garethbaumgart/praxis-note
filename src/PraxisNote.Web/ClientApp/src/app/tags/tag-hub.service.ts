@@ -12,6 +12,7 @@ export class TagHubService {
   private readonly _meetingCount = signal(0);
   private readonly _noteCount = signal(0);
   private readonly _taskCount = signal(0);
+  private currentTagId: string | null = null;
 
   readonly items = this._items.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -23,10 +24,12 @@ export class TagHubService {
   readonly totalCount = computed(() => this._meetingCount() + this._noteCount() + this._taskCount());
 
   loadItems(tagId: string): void {
+    this.currentTagId = tagId;
     this._loading.set(true);
     this._error.set(null);
     this.http.get<TagItemsResponse>(`/api/tags/${tagId}/items`).subscribe({
       next: (response) => {
+        if (this.currentTagId !== tagId) return;
         this._items.set(response.items);
         this._meetingCount.set(response.meetingCount);
         this._noteCount.set(response.noteCount);
@@ -34,6 +37,7 @@ export class TagHubService {
         this._loading.set(false);
       },
       error: () => {
+        if (this.currentTagId !== tagId) return;
         this._loading.set(false);
         this._error.set('Failed to load items');
         this._items.set([]);
@@ -45,7 +49,9 @@ export class TagHubService {
   }
 
   clear(): void {
+    this.currentTagId = null;
     this._items.set([]);
+    this._loading.set(false);
     this._error.set(null);
     this._meetingCount.set(0);
     this._noteCount.set(0);

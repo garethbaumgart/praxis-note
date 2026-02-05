@@ -6,6 +6,7 @@ import { TagService } from './tag.service';
 import { TagHubService } from './tag-hub.service';
 import { Tag } from './tag.model';
 import { TagItemDto } from './tag-hub.model';
+import { formatShortDate } from '../shared/date-utils';
 
 interface DateGroup {
   label: string;
@@ -163,7 +164,7 @@ interface DateGroup {
                     <a
                       [href]="itemUrl(item)"
                       target="_blank"
-                      rel="noopener"
+                      rel="noopener noreferrer"
                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg group hover:bg-surface-muted transition-colors"
                       [attr.aria-label]="item.type + ': ' + item.title"
                     >
@@ -359,12 +360,14 @@ export class TagsPage implements OnInit {
   }
 
   formatDueDate(dueDate: string): string {
-    const d = new Date(dueDate + 'T00:00:00');
+    const [year, month, day] = dueDate.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
     return formatShortDate(d);
   }
 
   relativeDate(isoDate: string): string {
     const d = new Date(isoDate);
+    if (isNaN(d.getTime())) return '';
     const now = new Date();
     const diffMs = now.getTime() - d.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -387,12 +390,7 @@ export class TagsPage implements OnInit {
 function getMonday(d: Date): Date {
   const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const day = date.getDay();
-  const diff = day === 0 ? 6 : day - 1; // Monday = 0
+  const diff = day === 0 ? 6 : day - 1; // Sunday wraps to 6, others offset by 1
   date.setDate(date.getDate() - diff);
   return date;
-}
-
-function formatShortDate(d: Date): string {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[d.getMonth()]} ${d.getDate()}`;
 }
