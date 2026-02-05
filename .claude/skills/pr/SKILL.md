@@ -126,23 +126,29 @@ After the PR is created, **actively monitor** and address feedback:
      - **If addressing**: Add a thumbs up reaction using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
      - **If not addressing**: Reply to the comment explaining why (must be a strong justification - see below)
    - **For high-level feedback in PR comments**: Reply to the comment addressing each suggestion
-   
+
    **IMPORTANT - No Deferring Valid Comments**:
    Valid review comments must be addressed in the current PR. Do NOT:
    - Create follow-up issues for feedback that can be fixed now
    - Say "will address in a future PR" for straightforward fixes
    - Defer refactoring suggestions that are clearly improvements
-   
+
    The only acceptable reasons to not address a comment:
    - The suggestion is factually incorrect or based on a misunderstanding
    - The change would require significant architectural work outside PR scope
    - The suggestion conflicts with an established project pattern (cite the pattern)
    - The reviewer explicitly marked it as "nit" or "optional"
-   
+
    If you find yourself wanting to defer, ask: "Can I fix this in under 30 minutes?" If yes, fix it now.
 6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
+7. **Wait for re-reviews after pushing fixes**: Every time you push new commits (from self-review fixes, addressing reviewer comments, or any other changes), you MUST restart the review monitoring loop:
+   - Note the SHA of the latest commit you pushed
+   - **Wait for Copilot to re-review the new commit**: Poll using `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select(.user.login | contains("copilot")) | {state, commit_id: .commit_id}'` and verify a review exists for the latest commit SHA. Copilot reviews against older commits do NOT count.
+   - **Wait for CodeRabbit**: Check `gh pr checks` until CodeRabbit shows "Review completed"
+   - **Address any new comments** from the re-review (repeat steps 5-7 as needed)
+   - This loop continues until: the latest pushed commit has been reviewed by ALL reviewers, all comments are addressed, and CI is green
 
-**Do not stop monitoring until**: All AI reviews are complete (both CodeRabbit AND Copilot have submitted reviews), all comments are addressed, and CI is green.
+**Do not stop monitoring until**: The latest commit has been reviewed by ALL AI reviewers (both CodeRabbit AND Copilot must have reviews against the most recent commit SHA), all comments are addressed, and CI is green. It is NOT sufficient that reviewers reviewed an earlier commit — they must review the final state of the code.
 
 ## Step 7: User Approval and Merge
 
