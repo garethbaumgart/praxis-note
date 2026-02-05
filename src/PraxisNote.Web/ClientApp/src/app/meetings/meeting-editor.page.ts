@@ -30,6 +30,7 @@ import { ToastService } from '../shared/services/toast.service';
 import { TagService } from '../tasks/tag.service';
 import { Tag } from '../tasks/tag.model';
 import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
+import { toLocalISOString, formatShortDate } from '../shared/date-utils';
 import { AuthService } from '../auth/auth.service';
 
 interface DateOption {
@@ -1396,10 +1397,11 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     if (!id) return;
 
     this.isSaving.set(true);
+    const date = this.meetingDate();
     this.meetingService.updateMeeting(
       id,
       this.title() || undefined,
-      this.meetingDate()?.toISOString(),
+      date ? toLocalISOString(date) : undefined,
       this.attendees() || undefined,
     );
 
@@ -1431,9 +1433,10 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     this.isNewMeeting.set(false);
     this.isSaving.set(true);
 
+    const date = this.meetingDate();
     this.meetingService.createMeeting(
       this.title() || undefined,
-      this.meetingDate()?.toISOString(),
+      date ? toLocalISOString(date) : undefined,
       this.attendees() || undefined,
       (realId) => {
         this.isCreating = false;
@@ -1500,7 +1503,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   }
 
   private formatDateLabel(date: Date): string {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return formatShortDate(date);
   }
 
   private extractTimeFromDate(date: Date): void {

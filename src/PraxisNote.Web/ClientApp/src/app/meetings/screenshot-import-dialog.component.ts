@@ -4,6 +4,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { FormsModule } from '@angular/forms';
 import { ScreenshotImportService } from './screenshot-import.service';
+import { formatDateTime as sharedFormatDateTime, formatLocaleTime } from '../shared/date-utils';
 
 @Component({
   selector: 'app-screenshot-import-dialog',
@@ -258,12 +259,10 @@ export class ScreenshotImportDialogComponent {
   }
 
   formatDateTime(iso: string): string {
-    const date = new Date(iso);
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
-      ' ' + date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return sharedFormatDateTime(iso);
   }
 
   formatTime(iso: string): string {
-    return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return formatLocaleTime(iso);
   }
 }

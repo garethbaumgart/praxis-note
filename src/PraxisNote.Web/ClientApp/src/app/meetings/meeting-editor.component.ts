@@ -17,6 +17,7 @@ import { AudioRecorderService } from './audio-recorder.service';
 import { DeepgramTranscriptionService } from './deepgram-transcription.service';
 import { ToastService } from '../shared/services/toast.service';
 import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
+import { toLocalISOString, formatShortDate } from '../shared/date-utils';
 
 interface DateOption {
   label: string;
@@ -505,7 +506,7 @@ export class MeetingEditorComponent {
   }
 
   private formatDateLabel(date: Date): string {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return formatShortDate(date);
   }
 
   private extractTimeFromDate(date: Date): void {
@@ -708,9 +709,10 @@ export class MeetingEditorComponent {
   }
 
   save(): void {
+    const date = this.meetingDate();
     this.onSave.emit({
       title: this.title() || undefined,
-      meetingDate: this.meetingDate()?.toISOString(),
+      meetingDate: date ? toLocalISOString(date) : undefined,
       attendees: this.attendees() || undefined,
       transcript: this.transcript(),
     });
