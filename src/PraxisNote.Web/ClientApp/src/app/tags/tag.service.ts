@@ -21,7 +21,7 @@ export class TagService {
     this._error.set(null);
     this.http.get<Tag[]>('/api/tags').subscribe({
       next: (tags) => {
-        this._tags.set(tags);
+        this._tags.set([...tags].sort((a, b) => a.name.localeCompare(b.name)));
         this._loading.set(false);
       },
       error: () => {
