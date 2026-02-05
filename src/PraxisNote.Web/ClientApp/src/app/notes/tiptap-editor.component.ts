@@ -756,12 +756,22 @@ interface BlockType {
       cursor: pointer;
       font-weight: 600;
       user-select: none;
-      list-style: disclosure-closed;
+      list-style: none;
       padding: 0.25em 0;
     }
 
+    :host ::ng-deep .ProseMirror details summary::before {
+      content: "▶ ";
+      font-size: 0.75em;
+      transition: transform 0.15s;
+      display: inline-block;
+    }
+
+    :host ::ng-deep .ProseMirror details.is-open summary::before {
+      content: "▼ ";
+    }
+
     :host ::ng-deep .ProseMirror details.is-open summary {
-      list-style: disclosure-open;
       margin-bottom: 0.5em;
     }
 

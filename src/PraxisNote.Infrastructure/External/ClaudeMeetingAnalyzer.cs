@@ -185,7 +185,8 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         var tz = GetTimeZoneInfo(timeZone);
         var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        var tzName = tz.Id;
+        // Use the original IANA ID for the prompt (better AI recognition) but fall back to resolved ID
+        var tzName = !string.IsNullOrWhiteSpace(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = ScreenshotExtractionPromptTemplate

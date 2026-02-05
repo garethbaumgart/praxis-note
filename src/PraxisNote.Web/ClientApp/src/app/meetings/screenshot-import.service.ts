@@ -25,7 +25,12 @@ export class ScreenshotImportService {
     this.state.set('extracting');
     this.error.set(null);
 
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let timeZone: string | undefined;
+    try {
+      timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch {
+      timeZone = undefined;
+    }
     this.http.post<ScreenshotExtractionResult>('/api/meetings/extract-from-screenshot', {
       base64Image,
       mediaType,
