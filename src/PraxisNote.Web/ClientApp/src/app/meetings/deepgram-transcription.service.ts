@@ -55,6 +55,10 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.reconnectAttempts = 0;
     this.isReconnecting.set(false);
     this.pendingAudioChunks = [];
+    if (this.reconnectTimeoutId !== null) {
+      clearTimeout(this.reconnectTimeoutId);
+      this.reconnectTimeoutId = null;
+    }
 
     this.connectWebSocket();
   }
@@ -106,6 +110,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.ws.onopen = () => {
       this.isListening.set(true);
       this.error.set(null);
+      this.reconnectTimeoutId = null;
 
       // If reconnecting, flush buffered audio and reset state
       if (this.isReconnecting()) {
@@ -159,6 +164,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
     );
 
     this.reconnectTimeoutId = setTimeout(() => {
+      this.reconnectTimeoutId = null;
       if (!this.intentionallyStopped) {
         this.connectWebSocket();
       }
