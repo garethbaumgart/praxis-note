@@ -143,12 +143,17 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
     private const string ScreenshotExtractionPromptTemplate = """
         Extract all calendar events/meetings visible in this screenshot. The image is from a calendar application (Google Calendar, Outlook, Apple Calendar, or similar).
 
+        Current date in the user's timezone: <<BASE_DATE>>
+        User's timezone: <<TIMEZONE>>
+
         For each event you can identify, extract:
         - "title": The event/meeting title
-        - "startTime": Start date and time in ISO 8601 format (e.g., "2025-01-15T10:00:00")
-        - "endTime": End date and time in ISO 8601 format
+        - "startTime": Start date and time in ISO 8601 format WITH the UTC offset for the user's timezone (e.g., "2025-01-15T09:00:00<<OFFSET_EXAMPLE>>")
+        - "endTime": End date and time in ISO 8601 format WITH the UTC offset (same format as startTime)
         - "attendees": Comma-separated list of attendee names if visible (or null)
         - "location": Meeting location or video link if visible (or null)
+
+        IMPORTANT: All times MUST include the UTC offset for the <<TIMEZONE>> timezone. The times shown in the calendar screenshot are local times in this timezone.
 
         If you cannot determine exact times, make reasonable estimates based on the calendar grid.
         If you can see the date from the calendar header, use it. Otherwise, use <<BASE_DATE>> as the base date.
@@ -159,8 +164,8 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
           "events": [
             {
               "title": "Team Standup",
-              "startTime": "2025-01-15T09:00:00",
-              "endTime": "2025-01-15T09:30:00",
+              "startTime": "2025-01-15T09:00:00<<OFFSET_EXAMPLE>>",
+              "endTime": "2025-01-15T09:30:00<<OFFSET_EXAMPLE>>",
               "attendees": "Alice, Bob",
               "location": null
             }
@@ -169,13 +174,24 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         """;
 
     public async Task<ScreenshotExtractionResult> ExtractFromScreenshotAsync(
-        string base64Image, string mediaType, CancellationToken cancellationToken = default)
+        string base64Image, string mediaType, string? timeZone = null, CancellationToken cancellationToken = default)
     {
         if (_client is null)
         {
             throw new InvalidOperationException(
                 "Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
         }
+
+        var tz = GetTimeZoneInfo(timeZone);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var baseDate = userNow.ToString("yyyy-MM-dd");
+        var tzName = timeZone ?? tz.Id;
+        var offsetExample = userNow.ToString("zzz");
+
+        var promptText = ScreenshotExtractionPromptTemplate
+            .Replace("<<BASE_DATE>>", baseDate)
+            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
         var imageContent = new ImageContent
         {
@@ -198,7 +214,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
                     Content =
                     [
                         imageContent,
-                        new TextContent { Text = ScreenshotExtractionPromptTemplate.Replace("<<BASE_DATE>>", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd")) },
+                        new TextContent { Text = promptText },
                     ],
                 },
             ],
@@ -318,6 +334,21 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
                 .Select(r => new RedFlag(r.Type!, r.Participant ?? "Unknown", r.Description ?? "", r.Context ?? "", r.Severity!))
                 .ToList() ?? []
         );
+    }
+
+    private static TimeZoneInfo GetTimeZoneInfo(string? ianaTimeZone)
+    {
+        if (string.IsNullOrWhiteSpace(ianaTimeZone))
+            return TimeZoneInfo.Local;
+
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Local;
+        }
     }
 
     #region JSON Response Classes

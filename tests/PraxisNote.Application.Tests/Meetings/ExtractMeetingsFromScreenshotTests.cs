@@ -25,7 +25,7 @@ public sealed class ExtractMeetingsFromScreenshotTests
             new("Team Standup", DateTimeOffset.Parse("2025-01-15T09:00:00Z"), DateTimeOffset.Parse("2025-01-15T09:30:00Z"), "Alice, Bob", null),
             new("Sprint Review", DateTimeOffset.Parse("2025-01-15T14:00:00Z"), DateTimeOffset.Parse("2025-01-15T15:00:00Z"), "Team", "Room 3B"),
         };
-        _analyzer.ExtractFromScreenshotAsync("base64data", "image/png", Arg.Any<CancellationToken>())
+        _analyzer.ExtractFromScreenshotAsync("base64data", "image/png", null, Arg.Any<CancellationToken>())
             .Returns(new ScreenshotExtractionResult(events));
 
         var command = new ExtractMeetingsFromScreenshot.Command(Guid.NewGuid(), "base64data", "image/png");
@@ -43,7 +43,7 @@ public sealed class ExtractMeetingsFromScreenshotTests
     public async Task ExecuteAsync_WithNoEventsFound_ReturnsEmptyList()
     {
         // Arrange
-        _analyzer.ExtractFromScreenshotAsync("base64data", "image/jpeg", Arg.Any<CancellationToken>())
+        _analyzer.ExtractFromScreenshotAsync("base64data", "image/jpeg", null, Arg.Any<CancellationToken>())
             .Returns(new ScreenshotExtractionResult([]));
 
         var command = new ExtractMeetingsFromScreenshot.Command(Guid.NewGuid(), "base64data", "image/jpeg");
@@ -60,7 +60,7 @@ public sealed class ExtractMeetingsFromScreenshotTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ScreenshotExtractionResult([]));
 
         var command = new ExtractMeetingsFromScreenshot.Command(userId, "imagedata", "image/webp");
@@ -69,7 +69,24 @@ public sealed class ExtractMeetingsFromScreenshotTests
         await _sut.ExecuteAsync(command);
 
         // Assert
-        await _analyzer.Received(1).ExtractFromScreenshotAsync("imagedata", "image/webp", Arg.Any<CancellationToken>());
+        await _analyzer.Received(1).ExtractFromScreenshotAsync("imagedata", "image/webp", null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PassesTimeZoneToAnalyzer()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new ScreenshotExtractionResult([]));
+
+        var command = new ExtractMeetingsFromScreenshot.Command(userId, "imagedata", "image/png", "America/New_York");
+
+        // Act
+        await _sut.ExecuteAsync(command);
+
+        // Assert
+        await _analyzer.Received(1).ExtractFromScreenshotAsync("imagedata", "image/png", "America/New_York", Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -77,10 +94,10 @@ public sealed class ExtractMeetingsFromScreenshotTests
     {
         // Arrange
         using var cts = new CancellationTokenSource();
-        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
-                var token = callInfo.ArgAt<CancellationToken>(2);
+                var token = callInfo.ArgAt<CancellationToken>(3);
                 token.ThrowIfCancellationRequested();
                 return new ScreenshotExtractionResult([]);
             });
@@ -103,7 +120,7 @@ public sealed class ExtractMeetingsFromScreenshotTests
         {
             new("1:1 with Manager", start, end, "Jane Doe", "Conference Room A"),
         };
-        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ScreenshotExtractionResult(events));
 
         var command = new ExtractMeetingsFromScreenshot.Command(Guid.NewGuid(), "data", "image/png");
@@ -128,7 +145,7 @@ public sealed class ExtractMeetingsFromScreenshotTests
         {
             new("Quick Sync", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(15), null, null),
         };
-        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _analyzer.ExtractFromScreenshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new ScreenshotExtractionResult(events));
 
         var command = new ExtractMeetingsFromScreenshot.Command(Guid.NewGuid(), "data", "image/png");

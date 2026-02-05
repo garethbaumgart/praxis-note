@@ -742,6 +742,33 @@ interface BlockType {
       color: var(--color-accent-emphasis);
     }
 
+    /* Toggle Section (Details) */
+    :host ::ng-deep .ProseMirror details {
+      border: 1px solid var(--color-border);
+      border-left: 2px solid var(--color-accent-solid);
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin: 0.5em 0;
+      background: var(--color-surface-subtle);
+    }
+
+    :host ::ng-deep .ProseMirror details summary {
+      cursor: pointer;
+      font-weight: 600;
+      user-select: none;
+      list-style: disclosure-closed;
+      padding: 0.25em 0;
+    }
+
+    :host ::ng-deep .ProseMirror details.is-open summary {
+      list-style: disclosure-open;
+      margin-bottom: 0.5em;
+    }
+
+    :host ::ng-deep .ProseMirror details > div[data-type="detailsContent"] {
+      padding-left: 0.25em;
+    }
+
     /* Block type dropdown styling */
     :host ::ng-deep .block-type-dropdown {
       font-size: 13px;
@@ -811,6 +838,11 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     {
       label: 'Insert',
       items: [
+        {
+          label: 'Toggle Section',
+          icon: 'pi pi-chevron-down',
+          command: () => this.insertToggleSection(),
+        },
         {
           label: 'Horizontal Rule',
           icon: 'pi pi-minus',
@@ -1234,6 +1266,10 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.editor.chain().focus().setImage({ src: url }).run();
+  }
+
+  insertToggleSection(): void {
+    this.editor.chain().focus().setDetails().run();
   }
 
   insertTable(): void {

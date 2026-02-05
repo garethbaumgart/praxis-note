@@ -359,7 +359,7 @@ public static class MeetingEndpoints
         }
 
         var command = new ExtractMeetingsFromScreenshot.Command(
-            userId.Value, request.Base64Image, mediaType);
+            userId.Value, request.Base64Image, mediaType, request.TimeZone);
         var result = await extractMeetings.ExecuteAsync(command, cancellationToken);
 
         return Results.Ok(result);
@@ -380,4 +380,4 @@ public record SubmitReflectionRequest(
 
 public record PromptResponseRequest(string PromptId, string PromptText, string Response);
 
-public record ExtractFromScreenshotRequest(string Base64Image, string? MediaType);
+public record ExtractFromScreenshotRequest(string Base64Image, string? MediaType, string? TimeZone);
