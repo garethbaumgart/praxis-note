@@ -2,10 +2,10 @@ import { Component, HostListener, inject, OnInit, AfterViewInit, OnDestroy, view
 import { isPlatformBrowser } from '@angular/common';
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
-import { TagService } from './tag.service';
+import { TagService } from '../tags/tag.service';
 import { ColumnComponent } from './column.component';
 import { Task, TaskStatus } from './task.model';
-import { TaskTag } from './tag.model';
+import { TaskTag } from '../tags/tag.model';
 import { ToastService } from '../shared/services/toast.service';
 
 type SortMode = 'manual' | 'dueDate' | 'priority';

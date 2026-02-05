@@ -1,5 +1,5 @@
 import { Component, computed, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, HostListener } from '@angular/core';
-import { Tag, TaskTag } from './tag.model';
+import { Tag, TaskTag } from '../tags/tag.model';
 
 @Component({
   selector: 'app-tag-picker-popover',

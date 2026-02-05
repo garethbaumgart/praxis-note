@@ -3,7 +3,7 @@ import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/
 import { TaskCardComponent } from './task-card.component';
 import { TaskCardSkeletonComponent } from './task-card-skeleton.component';
 import { Task, TaskStatus } from './task.model';
-import { Tag, TaskTag } from './tag.model';
+import { Tag, TaskTag } from '../tags/tag.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 
 type SortMode = 'manual' | 'dueDate' | 'priority';
