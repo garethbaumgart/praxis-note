@@ -281,6 +281,11 @@ export class DeepgramTranscriptionService implements OnDestroy {
     } else if (this.isReconnecting()) {
       // Buffer audio during reconnect so it can be flushed when the connection is restored
       blob.arrayBuffer().then(buffer => {
+        // Re-check: connection may have been restored while arrayBuffer() resolved
+        if (!this.isReconnecting() && this.ws?.readyState === WebSocket.OPEN) {
+          this.ws.send(buffer);
+          return;
+        }
         if (this.pendingAudioChunks.length < DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
           this.pendingAudioChunks.push(buffer);
         }
