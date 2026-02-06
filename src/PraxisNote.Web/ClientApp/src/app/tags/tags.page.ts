@@ -41,6 +41,7 @@ interface DateGroup {
     }
     @media (hover: none) {
       .group\\/tag button { opacity: 1 !important; }
+      .group button { opacity: 1 !important; }
     }
   `],
   template: `
@@ -219,12 +220,13 @@ interface DateGroup {
                 <!-- Items in this group -->
                 <div class="space-y-0.5">
                   @for (item of group.items; track item.id) {
-                    <a
-                      [href]="itemUrl(item)"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="flex items-center gap-3 px-3 py-2.5 rounded-lg group hover:bg-surface-muted transition-colors"
+                    <div
+                      class="flex items-center gap-3 px-3 py-2.5 rounded-lg group hover:bg-surface-muted transition-colors cursor-pointer"
                       [attr.aria-label]="item.type + ': ' + item.title"
+                      role="link"
+                      tabindex="0"
+                      (click)="navigateToItem(item)"
+                      (keydown.enter)="navigateToItem(item)"
                     >
                       <!-- Type icon -->
                       @switch (item.type) {
@@ -277,12 +279,19 @@ interface DateGroup {
                         </p>
                       </div>
 
-                      <!-- Relative date + external link icon -->
+                      <!-- Relative date + open-in-new-tab button -->
                       <div class="flex items-center gap-2 shrink-0">
                         <span class="text-xs text-foreground-muted">{{ relativeDate(item.date) }}</span>
-                        <i class="pi pi-external-link text-xs text-foreground-muted opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true"></i>
+                        <button
+                          type="button"
+                          class="p-1 rounded hover:bg-surface text-foreground-muted opacity-0 group-hover:opacity-100 transition-opacity"
+                          (click)="openInNewTab(item, $event)"
+                          aria-label="Open in new tab"
+                        >
+                          <i class="pi pi-external-link text-xs" aria-hidden="true"></i>
+                        </button>
                       </div>
-                    </a>
+                    </div>
                   }
                 </div>
               </div>
@@ -577,6 +586,15 @@ export class TagsPage implements OnInit {
       case 'Note': return `/notes/${item.id}`;
       case 'Task': return '/tasks';
     }
+  }
+
+  navigateToItem(item: TagItemDto): void {
+    this.router.navigate([this.itemUrl(item)]);
+  }
+
+  openInNewTab(item: TagItemDto, event: Event): void {
+    event.stopPropagation();
+    window.open(this.itemUrl(item), '_blank', 'noopener,noreferrer');
   }
 
   formatMeetingMeta(item: TagItemDto): string {
