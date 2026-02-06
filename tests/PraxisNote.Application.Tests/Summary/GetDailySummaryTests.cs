@@ -141,6 +141,47 @@ public sealed class GetDailySummaryTests
         Assert.Equal(0, result.Meetings[0].CompletedActionItemCount);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_MeetingWithNullDate_UsesCreatedAtFallback()
+    {
+        // Meeting created today with null MeetingDate should still appear in today's summary
+        var meeting = Meeting.Create(UserId, "Quick Chat", meetingDate: null);
+
+        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(new[] { meeting });
+        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<TaskItem>());
+        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<Note>());
+
+        var result = await _sut.ExecuteAsync(
+            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+
+        Assert.Equal(1, result.Stats.MeetingCount);
+        Assert.Single(result.Meetings);
+        Assert.Equal("Quick Chat", result.Meetings[0].Title);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_MeetingWithNullDecisions_ReturnsZeroDecisionCount()
+    {
+        var targetDate = new DateOnly(2026, 2, 7);
+        var meeting = Meeting.Create(UserId, "Planning",
+            new DateTimeOffset(2026, 2, 7, 10, 0, 0, TimeSpan.Zero));
+        // Meeting in Draft status has null Decisions
+
+        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(new[] { meeting });
+        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<TaskItem>());
+        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<Note>());
+
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+
+        Assert.Equal(0, result.Meetings[0].DecisionCount);
+    }
+
     #endregion
 
     #region Tasks
@@ -148,7 +189,7 @@ public sealed class GetDailySummaryTests
     [Fact]
     public async Task ExecuteAsync_CompletedTasksOnTargetDate_Included()
     {
-        var targetDate = new DateOnly(2026, 2, 7);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var task = TaskItem.CreateStandalone(UserId, "Fix login bug");
         task.Complete(); // Sets CompletedAt to now
 
@@ -157,7 +198,7 @@ public sealed class GetDailySummaryTests
             .Returns(new[] { task });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, today));
 
         Assert.Equal(1, result.Stats.TasksCompleted);
         Assert.Single(result.CompletedTasks);
@@ -242,7 +283,7 @@ public sealed class GetDailySummaryTests
     [Fact]
     public async Task ExecuteAsync_NoteTitle_ExtractedFromPlainText()
     {
-        var note = Note.Create(UserId, "# API Design Thoughts\nSome notes about API");
+        var note = Note.Create(UserId, "API Design Thoughts\nSome notes about API");
 
         SetupEmptyMeetingsAndTasks();
         _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
@@ -267,6 +308,44 @@ public sealed class GetDailySummaryTests
             new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal("Untitled Note", result.NotesUpdated[0].Title);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoteTitle_ExtractedFromTipTapJson()
+    {
+        var tipTapJson = """{"type":"doc","content":[{"type":"heading","attrs":{"level":1},"content":[{"type":"text","text":"Sprint Retrospective"}]},{"type":"paragraph","content":[{"type":"text","text":"What went well..."}]}]}""";
+        var note = Note.Create(UserId, tipTapJson);
+
+        SetupEmptyMeetingsAndTasks();
+        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(new[] { note });
+
+        var result = await _sut.ExecuteAsync(
+            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+
+        Assert.Equal("Sprint Retrospective", result.NotesUpdated[0].Title);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_EditedNote_IsNewFalse()
+    {
+        var targetDate = new DateOnly(2026, 2, 7);
+        // Create a note that was created yesterday but updated today
+        var yesterday = new DateTimeOffset(2026, 2, 6, 10, 0, 0, TimeSpan.Zero);
+        var today = new DateTimeOffset(2026, 2, 7, 14, 0, 0, TimeSpan.Zero);
+        var note = Note.Create(UserId, "Existing note");
+        // Use reflection to set CreatedAt and UpdatedAt for test control
+        typeof(Note).GetProperty("CreatedAt")!.SetValue(note, yesterday);
+        typeof(Note).GetProperty("UpdatedAt")!.SetValue(note, today);
+
+        SetupEmptyMeetingsAndTasks();
+        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(new[] { note });
+
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+
+        Assert.Single(result.NotesUpdated);
+        Assert.False(result.NotesUpdated[0].IsNew); // Created yesterday, not new
     }
 
     #endregion

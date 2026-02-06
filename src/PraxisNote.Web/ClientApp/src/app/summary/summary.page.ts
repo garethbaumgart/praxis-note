@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Skeleton } from 'primeng/skeleton';
 import { Tooltip } from 'primeng/tooltip';
 import { SummaryService } from './summary.service';
-import { MeetingSummaryItem, OutstandingActionItem } from './summary.model';
+import { MeetingSummaryItem } from './summary.model';
 
 @Component({
   selector: 'app-summary-page',
@@ -40,9 +40,8 @@ import { MeetingSummaryItem, OutstandingActionItem } from './summary.model';
           </button>
 
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-surface-subtle text-foreground-muted hover:bg-surface-muted hover:text-foreground-secondary transition cursor-pointer"
-            [class.opacity-30]="summaryService.isToday()"
-            [class.pointer-events-none]="summaryService.isToday()"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-surface-subtle text-foreground-muted hover:bg-surface-muted hover:text-foreground-secondary transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+            [disabled]="summaryService.isToday()"
             (click)="summaryService.navigateDate(1)"
             aria-label="Next day">
             <i class="pi pi-chevron-right text-xs"></i>
@@ -127,6 +126,7 @@ import { MeetingSummaryItem, OutstandingActionItem } from './summary.model';
                   class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-surface-muted cursor-pointer transition"
                   (click)="navigateToMeeting(meeting.id)"
                   (keydown.enter)="navigateToMeeting(meeting.id)"
+                  (keydown.space)="$event.preventDefault(); navigateToMeeting(meeting.id)"
                   tabindex="0"
                   role="button"
                   [attr.aria-label]="'Open meeting: ' + (meeting.title ?? 'Untitled Meeting')">
@@ -164,6 +164,7 @@ import { MeetingSummaryItem, OutstandingActionItem } from './summary.model';
                   class="flex items-start gap-2 px-2 py-2 rounded-lg hover:bg-surface-muted cursor-pointer transition"
                   (click)="navigateToMeeting(item.meetingId)"
                   (keydown.enter)="navigateToMeeting(item.meetingId)"
+                  (keydown.space)="$event.preventDefault(); navigateToMeeting(item.meetingId)"
                   tabindex="0"
                   role="button"
                   [attr.aria-label]="'Action item: ' + item.description">
@@ -205,6 +206,7 @@ import { MeetingSummaryItem, OutstandingActionItem } from './summary.model';
                   class="text-xs px-2.5 py-1 bg-done text-done-foreground rounded cursor-pointer hover:opacity-80 transition inline-flex items-center gap-1"
                   (click)="navigateToTasks()"
                   (keydown.enter)="navigateToTasks()"
+                  (keydown.space)="$event.preventDefault(); navigateToTasks()"
                   tabindex="0"
                   role="button"
                   [attr.aria-label]="'Completed task: ' + task.title">
@@ -231,6 +233,7 @@ import { MeetingSummaryItem, OutstandingActionItem } from './summary.model';
                   class="text-xs px-2.5 py-1 bg-inprogress text-inprogress-foreground rounded cursor-pointer hover:opacity-80 transition inline-flex items-center gap-1"
                   (click)="navigateToTasks()"
                   (keydown.enter)="navigateToTasks()"
+                  (keydown.space)="$event.preventDefault(); navigateToTasks()"
                   tabindex="0"
                   role="button"
                   [attr.aria-label]="'In progress task: ' + task.title">
@@ -256,6 +259,7 @@ import { MeetingSummaryItem, OutstandingActionItem } from './summary.model';
                 class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-surface-muted cursor-pointer transition"
                 (click)="navigateToNote(note.id)"
                 (keydown.enter)="navigateToNote(note.id)"
+                (keydown.space)="$event.preventDefault(); navigateToNote(note.id)"
                 tabindex="0"
                 role="button"
                 [attr.aria-label]="'Open note: ' + note.title">
@@ -286,7 +290,7 @@ export class SummaryPage implements OnInit {
   protected readonly formattedDate = computed(() => {
     const dateStr = this.summaryService.selectedDate();
     const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-GB', {
+    return date.toLocaleDateString(undefined, {
       weekday: 'long',
       day: 'numeric',
       month: 'long',

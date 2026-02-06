@@ -1,3 +1,4 @@
+using PraxisNote.Application.Common;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Tasks;
@@ -55,7 +56,12 @@ public sealed class GetDailySummary(
         var actionItemCutoff = dayEnd.AddDays(-30);
         var linkedTaskIds = allTasks
             .Where(t => t.ActionItemRef is not null && t.ActionItemRef.IsLinked)
-            .ToDictionary(t => t.ActionItemRef!.ActionItemId, t => (t.Id, Status: t.Status.ToString()));
+            .GroupBy(t => t.ActionItemRef!.ActionItemId)
+            .ToDictionary(g => g.Key, g =>
+            {
+                var t = g.First();
+                return (t.Id, Status: t.Status.ToString());
+            });
 
         var outstandingActionItems = allMeetings
             .Where(m => (m.MeetingDate ?? m.CreatedAt) >= actionItemCutoff
@@ -90,7 +96,7 @@ public sealed class GetDailySummary(
             new InProgressTaskItem(t.Id, t.Title, t.IsPriority, t.StartedAt)).ToList();
 
         var noteItems = notesUpdated.Select(n =>
-            new NoteActivityItem(n.Id, ExtractNoteTitle(n.Content), n.UpdatedAt,
+            new NoteActivityItem(n.Id, NoteTitleExtractor.Extract(n.Content), n.UpdatedAt,
                 n.CreatedAt >= dayStart && n.CreatedAt < dayEnd)).ToList();
 
         var stats = new DailySummaryStats(
@@ -112,44 +118,4 @@ public sealed class GetDailySummary(
         catch { return 0; }
     }
 
-    private static string ExtractNoteTitle(string content)
-    {
-        if (string.IsNullOrWhiteSpace(content)) return "Untitled Note";
-        try
-        {
-            using var doc = System.Text.Json.JsonDocument.Parse(content);
-            if (doc.RootElement.TryGetProperty("content", out var contentArr)
-                && contentArr.GetArrayLength() > 0)
-            {
-                var text = ExtractTextFromJsonNode(contentArr[0]);
-                if (!string.IsNullOrWhiteSpace(text))
-                    return text.Length > 60 ? text[..60] + "..." : text;
-            }
-        }
-        catch
-        {
-            // Plain text fallback
-            var firstLine = content.Split('\n')[0].Trim();
-            if (!string.IsNullOrWhiteSpace(firstLine))
-            {
-                var stripped = System.Text.RegularExpressions.Regex.Replace(firstLine, @"^#+\s*", "");
-                return stripped.Length > 60 ? stripped[..60] + "..." : stripped;
-            }
-        }
-        return "Untitled Note";
-    }
-
-    private static string ExtractTextFromJsonNode(System.Text.Json.JsonElement node)
-    {
-        if (node.TryGetProperty("text", out var text))
-            return text.GetString() ?? "";
-        if (node.TryGetProperty("content", out var children))
-        {
-            var sb = new System.Text.StringBuilder();
-            foreach (var child in children.EnumerateArray())
-                sb.Append(ExtractTextFromJsonNode(child));
-            return sb.ToString();
-        }
-        return "";
-    }
 }

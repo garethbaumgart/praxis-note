@@ -25,9 +25,15 @@ public static class SummaryEndpoints
         if (userId is null)
             return Results.Unauthorized();
 
-        var targetDate = string.IsNullOrWhiteSpace(date)
-            ? DateOnly.FromDateTime(DateTime.UtcNow)
-            : DateOnly.TryParse(date, out var parsed) ? parsed : DateOnly.FromDateTime(DateTime.UtcNow);
+        DateOnly targetDate;
+        if (string.IsNullOrWhiteSpace(date))
+        {
+            targetDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        }
+        else if (!DateOnly.TryParse(date, out targetDate))
+        {
+            return Results.BadRequest(new { error = "Invalid date format. Use YYYY-MM-DD." });
+        }
 
         var query = new GetDailySummary.Query(userId.Value, targetDate);
         var result = await getDailySummary.ExecuteAsync(query, cancellationToken);
