@@ -283,9 +283,9 @@ interface DateGroup {
                       <div class="flex items-center gap-2 shrink-0">
                         <span class="text-xs text-foreground-muted">{{ relativeDate(item.date) }}</span>
                         <button
+                          type="button"
                           class="p-1 rounded hover:bg-surface text-foreground-muted opacity-0 group-hover:opacity-100 transition-opacity"
                           (click)="openInNewTab(item, $event)"
-                          (keydown.enter)="openInNewTab(item, $event)"
                           aria-label="Open in new tab"
                         >
                           <i class="pi pi-external-link text-xs" aria-hidden="true"></i>
@@ -594,7 +594,7 @@ export class TagsPage implements OnInit {
 
   openInNewTab(item: TagItemDto, event: Event): void {
     event.stopPropagation();
-    window.open(this.itemUrl(item), '_blank');
+    window.open(this.itemUrl(item), '_blank', 'noopener,noreferrer');
   }
 
   formatMeetingMeta(item: TagItemDto): string {
