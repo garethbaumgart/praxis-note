@@ -10,7 +10,7 @@ import { AudioRecorderService } from '../meetings/audio-recorder.service';
     @if (recorder.isActive()) {
       <button
         type="button"
-        class="recording-pill fixed bottom-6 right-6 z-60 flex items-center gap-2 py-2 px-4 rounded-full text-sm font-medium cursor-pointer shadow-lg transition-all duration-200 hover:scale-[1.02]"
+        class="recording-pill fixed bottom-6 right-6 z-60 flex items-center gap-2 py-2 px-4 rounded-full text-sm font-medium cursor-pointer shadow-lg transition-all duration-200 hover:scale-[1.02] lg:hidden"
         (click)="returnToMeeting()"
         aria-label="Return to active recording"
       >
