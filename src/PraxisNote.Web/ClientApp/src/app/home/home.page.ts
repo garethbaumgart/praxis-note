@@ -1,112 +1,392 @@
-import { Component, inject, computed } from '@angular/core';
-import { Router } from '@angular/router';
-import { Button } from 'primeng/button';
+import { Component, inject, computed, OnInit } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth';
+import { NoteService } from '../notes/note.service';
+import { HomeDashboardService } from './home-dashboard.service';
 import { InsightsWidgetComponent } from './insights-widget.component';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [Button, InsightsWidgetComponent],
+  imports: [RouterLink, InsightsWidgetComponent],
   template: `
-    <div class="max-w-4xl mx-auto px-6 py-10 lg:py-16">
-      <!-- Welcome section -->
-      <div class="mb-10">
-        <h1 class="text-3xl lg:text-4xl font-bold text-foreground mb-3">
-          Welcome back, {{ firstName() }}
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 lg:py-10">
+
+      <!-- 1. Greeting -->
+      <section class="mb-6 animate-fade-in">
+        <h1 class="text-2xl lg:text-3xl font-bold text-foreground">
+          {{ greeting() }}, {{ firstName() }}
         </h1>
-        <p class="text-foreground-secondary text-lg">Ready to capture your thoughts and turn them into action.</p>
-      </div>
+        <p class="text-foreground-muted text-sm mt-1">{{ todayDate() }}</p>
+      </section>
 
-      <!-- Insights widget -->
-      <div class="mb-6">
-        <app-insights-widget />
-      </div>
-
-      <!-- Quick actions -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <!-- Notes - Live -->
-        <button
-          class="group relative p-4 bg-surface border border-border rounded-xl hover:border-done-foreground hover:shadow-md transition-all duration-200 text-left"
-          aria-label="View notes"
-          (click)="goToNotes()"
-        >
-          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-done text-done-foreground">
-            <i class="pi pi-check-circle text-[10px]" aria-hidden="true"></i>
-            Live
-          </span>
-          <div class="w-10 h-10 rounded-lg bg-done flex items-center justify-center mb-3 group-hover:bg-done-hover transition-colors">
-            <i class="pi pi-file-edit text-done-foreground" aria-hidden="true"></i>
+      <!-- 2. Priority / Overdue Banner -->
+      @if (dashboard.hasPriorityBanner()) {
+        <section
+          class="mb-5 animate-fade-in-delay-1 priority-banner"
+          role="alert"
+          aria-live="polite">
+          <div class="flex items-center gap-3">
+            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-overdue flex items-center justify-center">
+              <i class="pi pi-exclamation-triangle text-overdue-foreground text-sm" aria-hidden="true"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-foreground">{{ dashboard.prioritySummary() }}</p>
+              <p class="text-xs text-foreground-secondary truncate">{{ dashboard.priorityDetail() }}</p>
+            </div>
+            <a
+              routerLink="/tasks"
+              class="text-sm font-medium text-overdue-foreground hover:underline flex-shrink-0"
+              aria-label="View overdue tasks">
+              View <i class="pi pi-arrow-right text-xs ml-0.5" aria-hidden="true"></i>
+            </a>
           </div>
-          <p class="font-medium text-foreground mb-1">Notes</p>
-          <p class="text-sm text-foreground-secondary">Capture your thoughts</p>
-        </button>
+        </section>
+      }
 
-        <!-- Tasks - Live -->
-        <button
-          class="group relative p-4 bg-surface border border-border rounded-xl hover:border-done-foreground hover:shadow-md transition-all duration-200 text-left"
-          aria-label="View tasks"
-          (click)="goToTasks()"
-        >
-          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-done text-done-foreground">
-            <i class="pi pi-check-circle text-[10px]" aria-hidden="true"></i>
-            Live
-          </span>
-          <div class="w-10 h-10 rounded-lg bg-done flex items-center justify-center mb-3 group-hover:bg-done-hover transition-colors">
-            <i class="pi pi-check-square text-done-foreground" aria-hidden="true"></i>
-          </div>
-          <p class="font-medium text-foreground mb-1">Tasks</p>
-          <p class="text-sm text-foreground-secondary">View your board</p>
-        </button>
-
-        <!-- Search - Coming Soon -->
+      <!-- 3. Quick Action Buttons -->
+      <section class="grid grid-cols-3 gap-3 mb-5 animate-fade-in-delay-2">
         <button
           type="button"
-          class="group relative p-4 bg-surface border border-border rounded-xl transition-all duration-200 text-left opacity-70 cursor-not-allowed"
-          aria-label="Search - Coming soon"
-          disabled
-          aria-disabled="true"
-        >
-          <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-due-today text-due-today-foreground">
-            <i class="pi pi-clock text-[10px]" aria-hidden="true"></i>
-            Soon
-          </span>
-          <div class="w-10 h-10 rounded-lg bg-due-today flex items-center justify-center mb-3">
-            <i class="pi pi-search text-due-today-foreground" aria-hidden="true"></i>
+          class="quick-action group"
+          aria-label="Create new note"
+          (click)="newNote()">
+          <div class="w-9 h-9 rounded-lg bg-archive flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+            <i class="pi pi-file-edit text-archive-foreground text-sm" aria-hidden="true"></i>
           </div>
-          <p class="font-medium text-foreground mb-1">Search</p>
-          <p class="text-sm text-foreground-secondary">Find anything</p>
+          <span class="text-sm font-medium text-foreground">New Note</span>
         </button>
-      </div>
 
-      <!-- Empty state card -->
-      <div class="bg-surface border border-border rounded-2xl p-8 lg:p-12 text-center">
-        <div class="w-16 h-16 rounded-2xl bg-done flex items-center justify-center mx-auto mb-5">
-          <i class="pi pi-check-square text-3xl text-done-foreground" aria-hidden="true"></i>
+        <button
+          type="button"
+          class="quick-action group"
+          aria-label="Go to tasks board"
+          (click)="newTask()">
+          <div class="w-9 h-9 rounded-lg bg-todo flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+            <i class="pi pi-check-square text-todo-foreground text-sm" aria-hidden="true"></i>
+          </div>
+          <span class="text-sm font-medium text-foreground">New Task</span>
+        </button>
+
+        <button
+          type="button"
+          class="quick-action group"
+          aria-label="Start new meeting"
+          (click)="startRecording()">
+          <div class="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+            <i class="pi pi-microphone text-accent-foreground text-sm" aria-hidden="true"></i>
+          </div>
+          <span class="text-sm font-medium text-foreground">Record</span>
+        </button>
+      </section>
+
+      <!-- 4. Upcoming Meetings Banner -->
+      @if (dashboard.hasUpcomingMeetings()) {
+        <section class="mb-5 animate-fade-in-delay-3 meetings-banner">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="pi pi-calendar text-archive-foreground text-sm" aria-hidden="true"></i>
+            <h2 class="text-sm font-semibold text-foreground">Upcoming Meetings</h2>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            @for (meeting of dashboard.upcomingMeetings(); track meeting.id) {
+              <button
+                type="button"
+                class="meeting-chip"
+                [attr.aria-label]="'View meeting: ' + meeting.title"
+                (click)="goToMeeting(meeting.id)">
+                <span class="meeting-chip-time">{{ meeting.time }}</span>
+                <span class="meeting-chip-divider" aria-hidden="true"></span>
+                <span class="meeting-chip-info">
+                  <span class="meeting-chip-title">{{ meeting.title }}</span>
+                  <span class="meeting-chip-day">{{ meeting.dayLabel }}</span>
+                </span>
+              </button>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- 5. Two-Column Widgets -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5 animate-fade-in-delay-4">
+
+        <!-- Left: My Tasks -->
+        <div class="widget-card">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-foreground">My Tasks</h2>
+            <a
+              routerLink="/tasks"
+              class="text-xs font-medium text-accent-foreground hover:underline"
+              aria-label="View all tasks">
+              View all <i class="pi pi-arrow-right text-[10px] ml-0.5" aria-hidden="true"></i>
+            </a>
+          </div>
+
+          @if (dashboard.inProgressTasks().length === 0 && dashboard.upNextTasks().length === 0) {
+            <div class="py-6 text-center">
+              <p class="text-sm text-foreground-muted">No tasks yet</p>
+              <button
+                type="button"
+                class="text-xs text-accent-foreground font-medium mt-2 hover:underline"
+                aria-label="Go to tasks board"
+                (click)="newTask()">
+                Create a task <i class="pi pi-arrow-right text-[10px] ml-0.5" aria-hidden="true"></i>
+              </button>
+            </div>
+          } @else {
+            @if (dashboard.inProgressTasks().length > 0) {
+              <div class="mb-3">
+                <p class="text-xs font-medium text-inprogress-foreground uppercase tracking-wide mb-1.5">In Progress</p>
+                @for (task of dashboard.inProgressTasks(); track task.id) {
+                  <div class="task-row">
+                    <span class="task-status-dot bg-inprogress-foreground" aria-hidden="true"></span>
+                    <span class="flex-1 text-sm text-foreground truncate">{{ task.title }}</span>
+                    @if (task.isPriority) {
+                      <i class="pi pi-bolt text-inprogress-foreground text-xs flex-shrink-0" aria-label="Priority task"></i>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            @if (dashboard.upNextTasks().length > 0) {
+              <div>
+                <p class="text-xs font-medium text-todo-foreground uppercase tracking-wide mb-1.5">Up Next</p>
+                @for (task of dashboard.upNextTasks(); track task.id) {
+                  <div class="task-row">
+                    <span class="task-status-dot bg-todo-foreground" aria-hidden="true"></span>
+                    <span class="flex-1 text-sm text-foreground truncate">{{ task.title }}</span>
+                    @if (task.isPriority) {
+                      <i class="pi pi-bolt text-todo-foreground text-xs flex-shrink-0" aria-label="Priority task"></i>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          }
         </div>
-        <h2 class="text-xl font-semibold text-foreground mb-2">Your workspace is ready</h2>
-        <p class="text-foreground-secondary mb-8 max-w-md mx-auto">
-          Start organizing your work with tasks on a kanban board.
-        </p>
-        <p-button label="Create your first task" icon="pi pi-plus" (onClick)="goToTasks()" />
-      </div>
+
+        <!-- Right: Pick Up Where You Left Off -->
+        <div class="widget-card">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-foreground">Pick Up Where You Left Off</h2>
+          </div>
+
+          @if (dashboard.recentItems().length === 0) {
+            <div class="py-6 text-center">
+              <p class="text-sm text-foreground-muted">No recent activity</p>
+            </div>
+          } @else {
+            @for (item of dashboard.recentItems(); track (item.type + ':' + item.id)) {
+              <button
+                type="button"
+                class="recent-row"
+                [attr.aria-label]="'Open ' + item.type + ': ' + item.title"
+                (click)="goToRecentItem(item)">
+                <div class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center"
+                     [class.bg-archive]="item.type === 'note'"
+                     [class.bg-accent]="item.type === 'meeting'">
+                  <i [class]="item.icon"
+                     [class.text-archive-foreground]="item.type === 'note'"
+                     [class.text-accent-foreground]="item.type === 'meeting'"
+                     class="text-xs" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-foreground truncate">{{ item.title }}</p>
+                  @if (item.subtitle) {
+                    <p class="text-xs text-foreground-muted truncate">{{ item.subtitle }}</p>
+                  }
+                </div>
+                <span class="text-xs text-foreground-muted flex-shrink-0">{{ item.timeAgo }}</span>
+              </button>
+            }
+          }
+        </div>
+      </section>
+
+      <!-- 6. Insights Widget -->
+      <section class="animate-fade-in-delay-5">
+        <app-insights-widget />
+      </section>
     </div>
   `,
+  styles: [`
+    .priority-banner {
+      padding: 0.875rem 1rem;
+      background: var(--color-overdue-bg);
+      border: 1px solid var(--color-danger-base);
+      border-radius: 0.75rem;
+    }
+
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem 0.5rem;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .quick-action:hover {
+      border-color: var(--color-primary-text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .meetings-banner {
+      padding: 0.875rem 1rem;
+      background: var(--color-archive-bg);
+      border: 1px solid var(--color-archive-border);
+      border-radius: 0.75rem;
+    }
+
+    .meeting-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-archive-border);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      flex: 1;
+      min-width: 0;
+    }
+    .meeting-chip:hover {
+      border-color: var(--color-archive-text);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+    .meeting-chip-time {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-archive-text);
+      white-space: nowrap;
+    }
+    .meeting-chip-divider {
+      width: 1px;
+      height: 1.25rem;
+      background: var(--color-border-default);
+      flex-shrink: 0;
+    }
+    .meeting-chip-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .meeting-chip-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .meeting-chip-day {
+      font-size: 0.6875rem;
+      color: var(--color-text-muted);
+    }
+
+    .widget-card {
+      padding: 1rem;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 0.75rem;
+    }
+
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.25rem;
+      border-radius: 0.375rem;
+      transition: background 0.1s;
+    }
+    .task-row:hover {
+      background: var(--color-bg-muted);
+    }
+
+    .task-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .recent-row {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.375rem 0.25rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: none;
+      transition: background 0.1s;
+    }
+    .recent-row:hover {
+      background: var(--color-bg-muted);
+    }
+  `],
 })
-export class HomePage {
+export class HomePage implements OnInit {
+  protected readonly dashboard = inject(HomeDashboardService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly noteService = inject(NoteService);
 
   readonly firstName = computed(() => {
     const name = this.auth.user()?.name;
     return name?.split(' ')[0] ?? '';
   });
 
-  goToNotes(): void {
-    this.router.navigate(['/notes']);
+  readonly greeting = computed(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  });
+
+  readonly todayDate = computed(() => {
+    const now = new Date();
+    return now.toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  });
+
+  ngOnInit(): void {
+    this.dashboard.loadAllData();
   }
 
-  goToTasks(): void {
+  newNote(): void {
+    this.noteService.createNote(undefined, (id) => {
+      this.router.navigate(['/notes', id]);
+    });
+  }
+
+  newTask(): void {
     this.router.navigate(['/tasks']);
+  }
+
+  startRecording(): void {
+    this.router.navigate(['/meetings', 'new']);
+  }
+
+  goToMeeting(id: string): void {
+    this.router.navigate(['/meetings', id]);
+  }
+
+  goToRecentItem(item: { id: string; type: 'note' | 'meeting' }): void {
+    if (item.type === 'note') {
+      this.router.navigate(['/notes', item.id]);
+    } else {
+      this.router.navigate(['/meetings', item.id]);
+    }
   }
 }
