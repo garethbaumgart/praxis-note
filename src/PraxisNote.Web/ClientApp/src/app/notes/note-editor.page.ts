@@ -323,6 +323,8 @@ import { Tag } from '../tags/tag.model';
       left: 0;
       bottom: calc(100% + 4px);
       width: 192px;
+      max-height: 240px;
+      overflow-y: auto;
       background: var(--color-bg-base);
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -341,6 +343,7 @@ import { Tag } from '../tags/tag.model';
       font-size: 12px;
       cursor: pointer;
       transition: background 0.15s;
+      box-sizing: border-box;
     }
 
     .tag-dropdown-item:hover {

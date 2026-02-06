@@ -554,6 +554,8 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       left: 0;
       top: calc(100% + 4px);
       width: 192px;
+      max-height: 240px;
+      overflow-y: auto;
       background: var(--color-surface);
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
