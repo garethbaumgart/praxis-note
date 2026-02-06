@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, computed, effect } from '@angular/core';
 import { Skeleton } from 'primeng/skeleton';
+import { Tooltip } from 'primeng/tooltip';
 import { CommunicationProfileService } from './communication-profile.service';
 import { InsightsService } from './insights.service';
 import { ArchetypeScore } from './insights.model';
@@ -8,10 +9,17 @@ import { ArchetypeScore } from './insights.model';
   selector: 'app-communication-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Skeleton],
+  imports: [Skeleton, Tooltip],
   template: `
     <section class="mb-6">
-      <h2 class="text-lg font-semibold text-foreground mb-3">Communication Style</h2>
+      <div class="flex items-center gap-2 mb-3">
+        <h2 class="text-lg font-semibold text-foreground">Communication Style</h2>
+        <i class="pi pi-info-circle text-foreground-muted text-sm cursor-help"
+           pTooltip="Your dominant communication patterns based on meeting transcripts. Shows how you balance assertiveness, empathy, and analytical thinking."
+           tooltipPosition="top"
+           role="img"
+           aria-label="Communication style info"></i>
+      </div>
 
       @if (profileService.loading()) {
         <!-- Skeleton loading -->

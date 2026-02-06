@@ -45,7 +45,8 @@ public static class InsightEndpoints
             return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
         }
 
-        var query = new GetBehavioralTrends.Query(userId.Value, effectiveRange, participant);
+        var effectiveParticipant = participant ?? user.GetUserName();
+        var query = new GetBehavioralTrends.Query(userId.Value, effectiveRange, effectiveParticipant);
         var result = await getBehavioralTrends.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
