@@ -203,6 +203,128 @@ interface DateOption {
                     aria-label="Attendees"
                   >
                 </div>
+                <!-- Row 3: Tags -->
+                @if (!isNewMeeting()) {
+                  <div>
+                    <label class="field-label">Tags</label>
+                    <div class="tags-section">
+                      @for (tag of visibleTags(); track tag.id) {
+                        <span class="tag-badge">
+                          {{ tag.name }}
+                          <button
+                            type="button"
+                            class="tag-badge-remove"
+                            (click)="removeTag(tag.id)"
+                            [attr.aria-label]="'Remove tag ' + tag.name"
+                          >
+                            <i class="pi pi-times"></i>
+                          </button>
+                        </span>
+                      }
+                      @if (overflowCount() > 0 && !showTagPicker()) {
+                        <button
+                          type="button"
+                          class="overflow-btn"
+                          (click)="inlineTagsExpanded.set(true)"
+                          [attr.aria-label]="'Show ' + overflowCount() + ' more tags'"
+                        >
+                          +{{ overflowCount() }}
+                        </button>
+                      }
+                      <!-- Suggested tags inline (sparkle icon + dashed border) -->
+                      @for (tagName of pendingSuggestedTags(); track tagName) {
+                        <span class="suggested-tag">
+                          <i class="pi pi-sparkles" style="font-size: 9px;"></i>
+                          {{ tagName }}
+                          <button
+                            type="button"
+                            class="suggested-tag-accept"
+                            (click)="acceptSuggestedTag(tagName)"
+                            [attr.aria-label]="'Accept tag ' + tagName"
+                          >
+                            <i class="pi pi-check"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="suggested-tag-dismiss"
+                            (click)="dismissSuggestedTag(tagName)"
+                            [attr.aria-label]="'Dismiss tag ' + tagName"
+                          >
+                            <i class="pi pi-times"></i>
+                          </button>
+                        </span>
+                      }
+                      <!-- Divider if tags exist -->
+                      @if (meetingTags().length > 0 || pendingSuggestedTags().length > 0) {
+                        <span class="w-px h-3.5 bg-border shrink-0 mx-0.5"></span>
+                      }
+                      <!-- Add tag input/button -->
+                      @if (showTagPicker()) {
+                        <div class="tag-input-wrapper">
+                          <input
+                            #tagInput
+                            type="text"
+                            [placeholder]="meetingTags().length > 0 ? 'Add tag...' : 'Add first tag...'"
+                            [value]="tagSearch()"
+                            (input)="tagSearch.set(asInput($event).value)"
+                            (keydown.enter)="onTagEnter(); $event.preventDefault()"
+                            (keydown.escape)="showTagPicker.set(false)"
+                            class="tag-input"
+                            aria-label="Search or create tag"
+                          >
+                          @if (tagSuggestions().length > 0 || canCreateTag()) {
+                            <div class="tag-dropdown">
+                              @for (tag of tagSuggestions(); track tag.id) {
+                                <button
+                                  type="button"
+                                  class="tag-dropdown-item"
+                                  (click)="addTag({ id: tag.id, name: tag.name })"
+                                >
+                                  <span [innerHTML]="highlightMatch(tag.name)"></span>
+                                  <span class="text-foreground-muted">{{ tag.usageCount }}</span>
+                                </button>
+                              }
+                              @if (canCreateTag()) {
+                                @if (tagSuggestions().length > 0) {
+                                  <div class="tag-dropdown-divider"></div>
+                                }
+                                <button
+                                  type="button"
+                                  class="tag-dropdown-item create"
+                                  (click)="createAndAddTag(tagSearch().trim())"
+                                >
+                                  <i class="pi pi-plus text-[10px] mr-1"></i>
+                                  Create "{{ tagSearch().trim() }}"
+                                </button>
+                              }
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <button
+                          type="button"
+                          class="add-tag-btn"
+                          (click)="openTagInput()"
+                          aria-label="Add tag"
+                        >
+                          <i class="pi pi-tag text-[9px]"></i>
+                          <span>Add tag</span>
+                        </button>
+                      }
+                      @if (inlineTagsExpanded() && meetingTags().length > 3 && !showTagPicker()) {
+                        <button
+                          type="button"
+                          class="collapse-btn"
+                          (click)="inlineTagsExpanded.set(false)"
+                          aria-label="Show fewer tags"
+                        >
+                          <i class="pi pi-chevron-up text-[8px]"></i>
+                          <span>Less</span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
               @if (!isNewMeeting()) {
                 <div class="flex items-center gap-2 mt-3 pt-3 border-t border-border">
@@ -227,8 +349,42 @@ interface DateOption {
               }
             </div>
 
-            <!-- Transcript Section - Blue border -->
             @if (!isNewMeeting()) {
+              <!-- AI Analysis Section - Green border -->
+              <div class="section-card analysis-card">
+                <div class="section-header analysis-header">
+                  <span><i class="pi pi-sparkles"></i> AI Analysis</span>
+                </div>
+                @if (currentMeeting()) {
+                  <app-meeting-analysis
+                    [meeting]="currentMeeting()!"
+                    [actionItemStatuses]="actionItemStatuses()"
+                    [promotingIds]="promotingIds()"
+                    (onAnalyze)="analyze()"
+                    (onToggleActionItem)="toggleActionItem($event)"
+                    (onPromoteActionItem)="promoteActionItem($event)"
+                    (onNavigateToTask)="navigateToTask($event)"
+                  />
+                } @else {
+                  <div class="empty-analysis">
+                    Click "Generate" to create an AI summary of this meeting
+                  </div>
+                }
+              </div>
+
+              <!-- Reflection Section - Purple border -->
+              @if (currentMeeting()?.behavioralAnalysis) {
+                <div class="section-card reflection-card">
+                  <div class="section-header reflection-header">
+                    <span><i class="pi pi-comments"></i> Self-Reflection</span>
+                  </div>
+                  <app-meeting-reflection
+                    [meeting]="currentMeeting()!"
+                  />
+                </div>
+              }
+
+              <!-- Transcript Section - Blue border -->
               <div class="section-card transcript-card">
                 <div class="section-header transcript-header">
                   <span><i class="pi pi-file-edit"></i> Transcript</span>
@@ -376,175 +532,17 @@ interface DateOption {
                   <span class="text-xs text-foreground-muted">{{ transcript().length }} characters</span>
                 </div>
               </div>
-
-              <!-- AI Analysis Section - Green border -->
-              <div class="section-card analysis-card">
-                <div class="section-header analysis-header">
-                  <span><i class="pi pi-sparkles"></i> AI Analysis</span>
-                </div>
-                @if (currentMeeting()) {
-                  <app-meeting-analysis
-                    [meeting]="currentMeeting()!"
-                    [actionItemStatuses]="actionItemStatuses()"
-                    [promotingIds]="promotingIds()"
-                    (onAnalyze)="analyze()"
-                    (onToggleActionItem)="toggleActionItem($event)"
-                    (onPromoteActionItem)="promoteActionItem($event)"
-                    (onNavigateToTask)="navigateToTask($event)"
-                  />
-                } @else {
-                  <div class="empty-analysis">
-                    Click "Generate" to create an AI summary of this meeting
-                  </div>
-                }
-              </div>
-
-              <!-- Suggested Tags Banner -->
-              @if (pendingSuggestedTags().length > 0) {
-                <div class="bg-surface-subtle border border-dashed border-border rounded-lg px-4 py-3 mb-3">
-                  <div class="flex items-center gap-1.5 text-xs font-semibold text-primary mb-2">
-                    <i class="pi pi-sparkles text-xs"></i>
-                    <span>Suggested tags</span>
-                  </div>
-                  <div class="flex flex-wrap gap-2">
-                    @for (tagName of pendingSuggestedTags(); track tagName) {
-                      <span class="suggested-tag">
-                        {{ tagName }}
-                        <button
-                          type="button"
-                          class="suggested-tag-accept"
-                          (click)="acceptSuggestedTag(tagName)"
-                          [attr.aria-label]="'Accept tag ' + tagName"
-                        >
-                          <i class="pi pi-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="suggested-tag-dismiss"
-                          (click)="dismissSuggestedTag(tagName)"
-                          [attr.aria-label]="'Dismiss tag ' + tagName"
-                        >
-                          <i class="pi pi-times"></i>
-                        </button>
-                      </span>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Reflection Section - Purple border -->
-              @if (currentMeeting()?.behavioralAnalysis) {
-                <div class="section-card reflection-card">
-                  <div class="section-header reflection-header">
-                    <span><i class="pi pi-comments"></i> Self-Reflection</span>
-                  </div>
-                  <app-meeting-reflection
-                    [meeting]="currentMeeting()!"
-                  />
-                </div>
-              }
             }
           </div>
         }
       </main>
 
-      <!-- Footer with tags -->
+      <!-- Footer -->
       <footer class="footer">
         @if (currentMeeting()) {
           <span class="text-xs text-foreground-muted">
             Last edited {{ formatDate(currentMeeting()!.updatedAt) }}
           </span>
-        }
-        <span class="flex-1"></span>
-        @if (currentMeeting()) {
-          <div class="tags-section">
-            @for (tag of visibleTags(); track tag.id) {
-              <span class="tag-badge">
-                {{ tag.name }}
-                <button
-                  type="button"
-                  class="tag-badge-remove"
-                  (click)="removeTag(tag.id)"
-                  [attr.aria-label]="'Remove tag ' + tag.name"
-                >
-                  <i class="pi pi-times"></i>
-                </button>
-              </span>
-            }
-            @if (overflowCount() > 0 && !showTagPicker()) {
-              <button
-                type="button"
-                class="overflow-btn"
-                (click)="inlineTagsExpanded.set(true)"
-                [attr.aria-label]="'Show ' + overflowCount() + ' more tags'"
-              >
-                +{{ overflowCount() }}
-              </button>
-            }
-            @if (showTagPicker()) {
-              <div class="tag-input-wrapper">
-                <input
-                  #tagInput
-                  type="text"
-                  [placeholder]="meetingTags().length > 0 ? 'Add tag...' : 'Add first tag...'"
-                  [value]="tagSearch()"
-                  (input)="tagSearch.set(asInput($event).value)"
-                  (keydown.enter)="onTagEnter(); $event.preventDefault()"
-                  (keydown.escape)="showTagPicker.set(false)"
-                  class="tag-input"
-                  aria-label="Search or create tag"
-                >
-                @if (tagSuggestions().length > 0 || canCreateTag()) {
-                  <div class="tag-dropdown">
-                    @for (tag of tagSuggestions(); track tag.id) {
-                      <button
-                        type="button"
-                        class="tag-dropdown-item"
-                        (click)="addTag({ id: tag.id, name: tag.name })"
-                      >
-                        <span [innerHTML]="highlightMatch(tag.name)"></span>
-                        <span class="text-foreground-muted">{{ tag.usageCount }}</span>
-                      </button>
-                    }
-                    @if (canCreateTag()) {
-                      @if (tagSuggestions().length > 0) {
-                        <div class="tag-dropdown-divider"></div>
-                      }
-                      <button
-                        type="button"
-                        class="tag-dropdown-item create"
-                        (click)="createAndAddTag(tagSearch().trim())"
-                      >
-                        <i class="pi pi-plus text-[10px] mr-1"></i>
-                        Create "{{ tagSearch().trim() }}"
-                      </button>
-                    }
-                  </div>
-                }
-              </div>
-            } @else {
-              <button
-                type="button"
-                class="add-tag-btn"
-                (click)="openTagInput()"
-                aria-label="Add tag"
-              >
-                <i class="pi pi-tag text-[9px]"></i>
-                <span>Add tag</span>
-              </button>
-            }
-            @if (inlineTagsExpanded() && meetingTags().length > 3 && !showTagPicker()) {
-              <button
-                type="button"
-                class="collapse-btn"
-                (click)="inlineTagsExpanded.set(false)"
-                aria-label="Show fewer tags"
-              >
-                <i class="pi pi-chevron-up text-[8px]"></i>
-                <span>Less</span>
-              </button>
-            }
-          </div>
         }
       </footer>
     </div>
@@ -569,32 +567,23 @@ interface DateOption {
     .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; }
 
     .back-link {
-      display: flex; align-items: center; gap: 0.375rem; color: var(--color-primary-solid);
-      background: none; border: none; cursor: pointer; font-size: 0.8125rem;
-      padding: 0.25rem 0.5rem; margin: -0.25rem -0.5rem; border-radius: 0.25rem;
+      display: flex; align-items: center; gap: 6px; color: var(--color-primary-solid);
+      background: none; border: none; cursor: pointer; font-size: 13px;
+      padding: 4px 8px; margin: -4px -8px; border-radius: 4px;
     }
     .back-link:hover { background: var(--color-bg-subtle); }
     .separator { color: var(--color-text-muted); }
-    .current-meeting {
-      font-weight: 600; color: var(--color-text-secondary); max-width: 300px;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .actions { display: flex; align-items: center; gap: 0.5rem; }
-    .save-status {
-      display: flex; align-items: center; gap: 0.375rem;
-      font-size: 0.75rem; color: var(--color-done-text); padding-right: 0.75rem;
-    }
+    .current-meeting { font-weight: 600; color: var(--color-text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .actions { display: flex; align-items: center; gap: 8px; }
+    .save-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-done-text); padding-right: 12px; }
     .save-status.saving { color: var(--color-primary-solid); }
     .action-btn {
-      display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem;
-      border: 1px solid var(--color-border-default); background: var(--color-bg-subtle);
-      border-radius: 0.375rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+      border: 1px solid var(--color-border-default); background: var(--color-bg-subtle); border-radius: 6px; cursor: pointer;
     }
     .delete-btn { color: var(--color-danger-base); }
     .editor-container { flex: 1; overflow: auto; }
-    .loading, .not-found {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;
-    }
+    .loading, .not-found { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
     .editor-wrapper { max-width: 800px; margin: 0 auto; width: 100%; padding: 1.5rem; box-sizing: border-box; }
     @media (max-width: 768px) { .editor-wrapper { padding: 1rem; } }
 
@@ -627,11 +616,7 @@ interface DateOption {
     .reflection-header { color: var(--color-meeting-reflection-border); }
     .section-actions { display: flex; gap: 6px; }
 
-    .record-btn {
-      background: var(--color-todo-bg); color: var(--color-todo-text);
-      border: 1px solid var(--color-todo-border); border-radius: 5px;
-      padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all 0.15s;
-    }
+    .record-btn { background: var(--color-todo-bg); color: var(--color-todo-text); border: 1px solid var(--color-todo-border); border-radius: 5px; padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all .15s; }
     .record-btn:hover { background: var(--color-todo-bg-hover); }
 
     .details-stack { display: flex; flex-direction: column; gap: 12px; }
@@ -649,7 +634,7 @@ interface DateOption {
 
     .date-chip {
       padding: 4px 10px; font-size: 11px; border-radius: 9999px; border: none;
-      cursor: pointer; transition: all 0.15s; background: var(--color-bg-muted); color: var(--color-text-secondary);
+      cursor: pointer; transition: all .15s; background: var(--color-bg-muted); color: var(--color-text-secondary);
     }
     .date-chip:hover, .date-chip.active { background: var(--color-primary-bg); color: var(--color-primary-text); }
 
@@ -666,7 +651,7 @@ interface DateOption {
     .recording-area { background: var(--color-bg-muted); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
     @keyframes pulse-recording { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .recording-pulse { animation: pulse-recording 1.5s ease-in-out infinite; }
-    .audio-bar { transition: height 0.1s ease-out; }
+    .audio-bar { transition: height .1s ease-out; }
 
     .live-transcript {
       background: var(--color-bg-muted); border-radius: 6px; padding: 12px;
@@ -678,56 +663,34 @@ interface DateOption {
     }
 
     .suggested-tag {
-      display: inline-flex; align-items: center; gap: 6px;
+      display: inline-flex; align-items: center; gap: 4px;
       background: var(--color-tag-bg); color: var(--color-tag-text);
-      font-size: 12px; font-weight: 500; padding: 4px 10px;
-      border-radius: 9999px; border: 1px dashed var(--color-border-default);
+      font-size: 11px; font-weight: 500; padding: 2px 8px;
+      border-radius: 9999px; border: 1px dashed var(--color-border-default); height: 18px;
     }
-
     .suggested-tag-accept, .suggested-tag-dismiss {
       all: unset; display: inline-flex; align-items: center; justify-content: center;
       cursor: pointer; font-size: 10px; padding: 1px; border-radius: 50%;
     }
     .suggested-tag-accept { color: var(--color-done-text); }
-    .suggested-tag-accept:hover { background: var(--color-done-bg); }
     .suggested-tag-dismiss { color: var(--color-text-muted); }
+    .suggested-tag-accept:hover { background: var(--color-done-bg); }
     .suggested-tag-dismiss:hover { color: var(--color-danger-base); }
 
     :host ::ng-deep .p-datepicker { border: none; background: transparent; }
 
-    .footer {
-      display: flex; align-items: center; padding: 0.5rem 1.5rem;
-      border-top: 1px solid var(--color-border-default); background: var(--color-bg-base);
-    }
-    .tags-section { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; }
+    .footer { display: flex; align-items: center; padding: 8px 24px; border-top: 1px solid var(--color-border-default); background: var(--color-bg-base); }
+    .tags-section { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
-    .tag-badge {
-      display: inline-flex; align-items: center; gap: 0.25rem;
-      background: var(--color-tag-bg); color: var(--color-tag-text);
-      font-size: 10px; font-weight: 500; padding: 2px 8px;
-      border-radius: 9999px; height: 18px;
-    }
-
-    .tag-badge-remove {
-      all: unset; display: inline-flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--color-tag-text); opacity: 0.6; transition: opacity 0.15s;
-    }
+    .tag-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 9999px; height: 18px; }
+    .tag-badge-remove { all: unset; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--color-tag-text); opacity: .6; transition: opacity .1s; }
     .tag-badge-remove:hover { opacity: 1; }
-
-    .overflow-btn {
-      padding: 2px 6px; border-radius: 9999px; font-size: 10px;
-      background: var(--color-tags-section-bg); color: var(--color-text-muted);
-      border: none; cursor: pointer; transition: all 0.15s;
-    }
+    .overflow-btn { padding: 2px 6px; border-radius: 9999px; font-size: 10px; background: var(--color-tags-section-bg); color: var(--color-text-muted); border: none; cursor: pointer; transition: all .15s; }
     .overflow-btn:hover { background: var(--color-tags-badge-bg); color: var(--color-tag-text); }
-
     .tag-input-wrapper { position: relative; flex: 1; min-width: 100px; }
-    .tag-input {
-      width: 100%; height: 24px; padding: 0 8px; font-size: 12px;
-      background: var(--color-bg-muted); border-radius: 9999px; border: none; outline: none; color: var(--color-text-primary);
-    }
+    .tag-input { width: 100%; height: 24px; padding: 0 8px; font-size: 12px; background: var(--color-bg-muted); border-radius: 9999px; border: none; outline: none; color: var(--color-text-primary); }
     .tag-dropdown {
-      position: absolute; left: 0; bottom: calc(100% + 4px); width: 192px;
+      position: absolute; left: 0; top: calc(100% + 4px); width: 192px;
       background: var(--color-bg-base); border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,.15); border: 1px solid var(--color-border-default);
       padding: 4px 0; z-index: 50;
@@ -736,38 +699,20 @@ interface DateOption {
     .tag-dropdown-item {
       all: unset; display: flex; align-items: center; justify-content: space-between;
       width: 100%; padding: 6px 12px; font-size: 12px;
-      cursor: pointer; transition: background 0.15s; box-sizing: border-box;
+      cursor: pointer; transition: background .15s; box-sizing: border-box;
     }
     .tag-dropdown-item:hover { background: var(--color-bg-subtle); }
     .tag-dropdown-item.create { color: var(--color-primary-solid); }
     .tag-dropdown-divider { border-top: 1px solid var(--color-border-default); margin: 4px 0; }
 
     .add-tag-btn {
-      all: unset;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      height: 18px;
-      padding: 2px 8px;
-      border-radius: 9999px;
-      font-size: 10px;
-      font-weight: 500;
-      color: var(--color-text-muted);
-      background: var(--color-bg-muted);
-      cursor: pointer;
-      transition: all 0.15s;
+      all: unset; display: inline-flex; align-items: center; gap: 4px; height: 18px;
+      padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 500;
+      color: var(--color-text-muted); background: var(--color-bg-muted); cursor: pointer; transition: all .15s;
     }
+    .add-tag-btn:hover { color: var(--color-tag-text); background: var(--color-tags-badge-bg); }
 
-    .add-tag-btn:hover {
-      color: var(--color-tag-text);
-      background: var(--color-tags-badge-bg);
-    }
-
-    .collapse-btn {
-      all: unset; display: flex; align-items: center; gap: 2px; margin-left: auto;
-      padding: 2px 6px; border-radius: 9999px; font-size: 10px;
-      background: var(--color-tags-section-bg); color: var(--color-text-muted); cursor: pointer; transition: all 0.15s;
-    }
+    .collapse-btn { all: unset; display: flex; align-items: center; gap: 2px; margin-left: auto; padding: 2px 6px; border-radius: 9999px; font-size: 10px; background: var(--color-tags-section-bg); color: var(--color-text-muted); cursor: pointer; transition: all .15s; }
     .collapse-btn:hover { background: var(--color-tags-collapsed-bg); }
   `],
 })
