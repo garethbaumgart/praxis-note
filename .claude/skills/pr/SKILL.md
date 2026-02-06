@@ -180,12 +180,12 @@ After the PR is created, **actively monitor** and address feedback:
    - Note the SHA of the latest commit you pushed
    - **Wait for Copilot to re-review the new commit**: Poll using `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select(.user.login | contains("copilot")) | {state, commit_id: .commit_id}'` and verify a review exists for the latest commit SHA. Copilot reviews against older commits do NOT count.
    - **Wait for CodeRabbit**: Check `gh pr checks` until CodeRabbit shows "Review completed"
-   - **NEVER give up polling**: If a reviewer has not reviewed the latest commit yet, keep polling every 5 minutes. Do NOT declare the PR ready or move to the next step while any reviewer's re-review is still pending. If a reviewer has not responded after 1 hour of polling, inform the user and ask whether to continue waiting — but do NOT skip the review or assume no new comments will appear. Abandoning the polling loop early risks missing new review comments.
+   - **Polling timeout**: Poll every 2 minutes for up to 10 minutes. If a reviewer has not re-reviewed the latest commit after 10 minutes AND their previous review had no unaddressed comments, proceed to the next step — the reviewer likely has nothing new to add. Only continue waiting past 10 minutes if the reviewer's previous review contained comments that required code changes (i.e., there is a reasonable expectation of a follow-up review).
    - **Re-fetch ALL line-level comments**: After reviewers have reviewed the latest commit, fetch the full comment list using `gh api repos/{owner}/{repo}/pulls/{number}/comments` and check for any comments posted since your last comment check. Reviewers may post new comments on intermediate commits while you are working on fixes — checking only the review status is NOT sufficient. You must compare timestamps to find comments you haven't addressed yet.
    - **Address any new comments** from the re-review (repeat steps 4-6 as needed)
    - This loop continues until: the latest pushed commit has been reviewed by ALL reviewers, all comments are addressed, and CI is green
 
-**Do not stop monitoring until**: The latest commit has been reviewed by ALL AI reviewers (both CodeRabbit AND Copilot must have reviews against the most recent commit SHA), all line-level comments have been fetched and addressed (not just review status checked), and CI is green. It is NOT sufficient that reviewers reviewed an earlier commit — they must review the final state of the code.
+**Do not stop monitoring until**: CI is green, all line-level comments have been fetched and addressed, and either (a) all AI reviewers have reviewed the latest commit SHA, or (b) the 10-minute polling timeout has elapsed for reviewers whose previous round had no unaddressed comments.
 
 ## Step 9: User Approval and Merge
 
