@@ -8,6 +8,7 @@ using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Application.Features.Goals;
 using PraxisNote.Application.Features.Insights;
+using PraxisNote.Application.Features.Summary;
 using PraxisNote.Application.Features.Users;
 
 namespace PraxisNote.Application;
@@ -99,6 +100,9 @@ public static class DependencyInjection
         services.AddScoped<GetInsightsSummary>();
         services.AddScoped<GetCommunicationProfile>();
         services.AddScoped<GetJohariWindow>();
+
+        // Summary use cases
+        services.AddScoped<GetDailySummary>();
 
         // Goal use cases
         services.AddScoped<CreateBehavioralGoal>();
