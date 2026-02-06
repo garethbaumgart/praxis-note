@@ -35,12 +35,13 @@ export class HomeDashboardService {
   readonly overdueTasks = computed<Task[]>(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    return this.taskService.tasks().filter(t => {
-      if (!t.dueDate || t.status === 'Done') return false;
-      const due = new Date(t.dueDate);
-      due.setHours(0, 0, 0, 0);
-      return due < now;
-    });
+    return this.taskService.tasks()
+      .filter(t => {
+        if (!t.dueDate || t.status === 'Done') return false;
+        const due = new Date(t.dueDate + 'T00:00:00');
+        return due < now;
+      })
+      .sort((a, b) => new Date(a.dueDate! + 'T00:00:00').getTime() - new Date(b.dueDate! + 'T00:00:00').getTime());
   });
 
   readonly dueSoonTasks = computed<Task[]>(() => {
@@ -48,12 +49,13 @@ export class HomeDashboardService {
     now.setHours(0, 0, 0, 0);
     const twoDaysFromNow = new Date(now);
     twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-    return this.taskService.tasks().filter(t => {
-      if (!t.dueDate || t.status === 'Done') return false;
-      const due = new Date(t.dueDate);
-      due.setHours(0, 0, 0, 0);
-      return due >= now && due <= twoDaysFromNow;
-    });
+    return this.taskService.tasks()
+      .filter(t => {
+        if (!t.dueDate || t.status === 'Done') return false;
+        const due = new Date(t.dueDate + 'T00:00:00');
+        return due >= now && due <= twoDaysFromNow;
+      })
+      .sort((a, b) => new Date(a.dueDate! + 'T00:00:00').getTime() - new Date(b.dueDate! + 'T00:00:00').getTime());
   });
 
   readonly hasPriorityBanner = computed(() =>
@@ -160,9 +162,6 @@ export class HomeDashboardService {
 
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const dayAfterTomorrow = new Date(today);
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
 
     const meetingDay = new Date(date);
     meetingDay.setHours(0, 0, 0, 0);

@@ -58,7 +58,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
 
         <button
           class="quick-action group"
-          aria-label="Create new task"
+          aria-label="Go to tasks board"
           (click)="newTask()">
           <div class="w-9 h-9 rounded-lg bg-todo flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <i class="pi pi-check-square text-todo-foreground text-sm" aria-hidden="true"></i>
@@ -68,7 +68,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
 
         <button
           class="quick-action group"
-          aria-label="Record a meeting"
+          aria-label="Start new meeting"
           (click)="startRecording()">
           <div class="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <i class="pi pi-microphone text-accent-foreground text-sm" aria-hidden="true"></i>
@@ -171,7 +171,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
               <p class="text-sm text-foreground-muted">No recent activity</p>
             </div>
           } @else {
-            @for (item of dashboard.recentItems(); track item.id) {
+            @for (item of dashboard.recentItems(); track (item.type + ':' + item.id)) {
               <button
                 class="recent-row"
                 [attr.aria-label]="'Open ' + item.type + ': ' + item.title"
@@ -369,7 +369,7 @@ export class HomePage implements OnInit {
   }
 
   startRecording(): void {
-    this.router.navigate(['/meetings']);
+    this.router.navigate(['/meetings', 'new']);
   }
 
   goToMeeting(id: string): void {
