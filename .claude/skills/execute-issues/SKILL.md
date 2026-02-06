@@ -33,70 +33,66 @@ Before implementing anything, scan ALL listed issues upfront to assess readiness
 
 If no issues need refinement, tell the user all issues are ready and ask for confirmation to begin execution.
 
-## Phase 2: Sequential Execution
+## Phase 2: Sequential Execution via Sub-Agents
 
-For EACH issue in the provided order, follow this exact workflow:
+Each issue is executed in its own **sub-agent** (using the `Task` tool with `subagent_type: "general-purpose"`). This gives each issue a fresh context window, preventing context exhaustion when executing many issues.
 
-### Step 1: Read the Issue
+**IMPORTANT**: Issues must still run **sequentially** — wait for the sub-agent to complete and return its result before launching the next one.
 
-Run `gh issue view <number>` to understand the requirements. Extract the goal, acceptance criteria, and implementation plan.
+For EACH issue in the provided order:
 
-### Step 2: Refine If Needed
+### Step 1: Read the Issue (in main agent)
 
-If the issue was flagged in Phase 1 as needing refinement, run `/refine <number>` to create an implementation plan before proceeding.
+Run `gh issue view <number>` to understand the requirements at a high level. Note:
+- The issue title
+- Whether it was flagged for refinement in Phase 1
+- Whether it warrants a broadcast notification (new feature / significant improvement / user-facing bug fix → yes; minor bug fix / dependency update / test-only / CI/config / docs / internal refactoring → no)
 
-### Step 3: Create a Feature Branch
+### Step 2: Launch Sub-Agent
 
-```bash
-git checkout main && git pull && git checkout -b feat/issue-<number>-<short-description>
+Use the `Task` tool to launch a sub-agent with the following configuration:
+
+```
+subagent_type: "general-purpose"
+description: "Execute issue #<number>"
 ```
 
-Use the issue title to derive the short description (lowercase, hyphens, max 5 words).
+The prompt to the sub-agent MUST include ALL of the following context so it can work autonomously. Use this as a template (replace placeholders with actual values):
 
-### Step 4: Implement
+> You are implementing GitHub issue #NUMBER end-to-end. Work autonomously — do not ask the user any questions.
+>
+> **Issue Details:**
+> PASTE_FULL_GH_ISSUE_VIEW_OUTPUT_HERE
+>
+> **Instructions:**
+>
+> 1. **Refine If Needed**: EITHER "Run the /refine NUMBER skill first to create an implementation plan. If /refine asks clarifying questions, use context from the issue body and codebase to answer with your best judgment." OR "Skip — this issue already has an implementation plan."
+>
+> 2. **Create a Feature Branch**: Run `git checkout main && git pull && git checkout -b feat/issue-NUMBER-SHORT_DESCRIPTION`
+>
+> 3. **Implement**: Follow the implementation plan step by step. Write the code, create tests as specified, and ensure everything compiles.
+>
+> 4. **Create PR and Merge**: Run the /pr skill to create a PR, run tests, monitor CI, address review comments, and merge. Override these /pr steps:
+>    - /pr Step 3 (Broadcast): EITHER "Run /broadcast automatically (no user prompt) — this is a user-facing change." OR "Skip broadcast — this is a minor/internal change."
+>    - /pr Step 9 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user.
+>
+> 5. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then run `git checkout main && git pull`.
+>
+> 6. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed). If you created a broadcast notification, mention that too.
+>
+> **Critical Rules:**
+> - Do NOT ask the user any questions. Work fully autonomously.
+> - If tests or CI fail, fix and retry. Only report failure if you are truly stuck after multiple attempts.
+> - Broadcast decisions and merge approvals are autonomous — no user prompts.
 
-Follow the implementation plan step by step. Write the code, create tests as specified, and ensure everything compiles.
+### Step 3: Process Sub-Agent Result
 
-### Step 5: Run /pr
-
-Execute the `/pr` skill to create a PR, run tests, monitor CI, address review comments, and get it merged.
-
-**Override these /pr steps:**
-
-#### /pr Step 3 Override (Broadcast)
-
-Determine if the issue warrants a feature notification:
-
-- **Run `/broadcast` automatically (no user prompt)** for: new features, significant improvements, user-facing bug fixes
-- **Skip broadcast silently** for: minor bug fixes, dependency updates, test-only changes, CI/config changes, documentation-only changes, internal refactoring
-
-Do NOT ask the user whether to broadcast. Make the decision based on the criteria above.
-
-#### /pr Step 9 Override (Merge Approval)
-
-- **All PRs**: Merge immediately without waiting for user approval
-
-### Step 6: Verify Merge
-
-Confirm the PR was merged:
-
-```bash
-gh pr view --json state
-```
-
-### Step 7: Return to Main
-
-```bash
-git checkout main && git pull
-```
-
-### Step 8: Report Progress
-
-State one of:
-- `"Issue #<number> complete. Moving to issue #<next>."` (if more issues remain)
-- `"Issue #<number> complete. All issues finished."` (if this was the last one)
-
-Then proceed to the next issue or move to Phase 3.
+When the sub-agent returns:
+1. Parse its result to extract: PR number, PR URL, status, broadcast (yes/no)
+2. Record the result for the final summary table
+3. If the sub-agent reported failure, inform the user and ask whether to continue with the remaining issues or stop
+4. State: `"Issue #<number> complete. Moving to issue #<next>."` or `"Issue #<number> complete. All issues finished."`
+5. Proceed to the next issue or move to Phase 3
 
 ## Phase 3: Final Summary
 
@@ -114,8 +110,10 @@ Include links to each merged PR.
 
 ## Critical Rules
 
-- **SEQUENTIAL only** — never start issue N+1 until issue N is fully merged
+- **Sub-agent per issue** — each issue runs in its own sub-agent via the `Task` tool, giving it a fresh context window. The main agent orchestrates and tracks results.
+- **SEQUENTIAL only** — never start issue N+1 until issue N's sub-agent has completed and returned its result
 - **Fresh branch each time** — every issue branches off the latest `main` after pulling
-- **Self-healing** — if tests or CI fail, fix and retry. Do not stop and ask unless you are truly stuck after multiple attempts.
-- **Refine autonomously** — if `/refine` asks a clarifying question, use context from the issue body and codebase to answer it with your best judgment. Only escalate to the user if you genuinely cannot decide.
-- **No blocking prompts in the loop** — broadcast decisions, refine answers, and merge approvals should all be made autonomously. Do not ask the user for permission to merge.
+- **Self-contained prompts** — the sub-agent prompt must include the full issue body and all instructions. The sub-agent cannot see the main conversation history.
+- **Self-healing** — if tests or CI fail, the sub-agent should fix and retry. It should only report failure if truly stuck after multiple attempts.
+- **Refine autonomously** — if `/refine` asks a clarifying question, answer with best judgment from the issue body and codebase. Only escalate to the user if genuinely undecidable.
+- **No blocking prompts** — broadcast decisions, refine answers, and merge approvals should all be made autonomously. Neither the main agent nor sub-agents should ask the user for permission to merge.
