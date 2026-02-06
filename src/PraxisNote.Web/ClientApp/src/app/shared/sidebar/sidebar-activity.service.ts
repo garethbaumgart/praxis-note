@@ -64,7 +64,21 @@ export class SidebarActivityService {
   );
 
   readonly upNextTasks = computed(() =>
-    this.taskService.todoTasks().slice(0, 2)
+    this.taskService.todoTasks()
+      .slice()
+      .sort((a, b) => {
+        // Priority tasks first
+        if (a.isPriority !== b.isPriority) return a.isPriority ? -1 : 1;
+        // Then by due date (earliest first, no-date last)
+        if (a.dueDate !== b.dueDate) {
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return a.dueDate.localeCompare(b.dueDate);
+        }
+        // Then by position
+        return a.position - b.position;
+      })
+      .slice(0, 2)
   );
 
   readonly recentNotes = computed<ActivityItem[]>(() => {
@@ -130,6 +144,16 @@ export class SidebarActivityService {
         type: 'note' as const, route: ['/notes', n.id],
         meta: this.timeAgo(n.updatedAt), _ts: new Date(n.updatedAt).getTime(),
       }));
+    const tasks: (ActivityItem & { _ts: number })[] = this.taskService.tasks()
+      .filter(t => t.status !== 'Done')
+      .slice()
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3)
+      .map(t => ({
+        id: t.id, title: t.title, icon: 'pi-check-square',
+        type: 'task' as const, route: ['/tasks'],
+        meta: this.timeAgo(t.createdAt), _ts: new Date(t.createdAt).getTime(),
+      }));
     const meetings: (ActivityItem & { _ts: number })[] = this.meetingService.meetings()
       .slice()
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -139,7 +163,7 @@ export class SidebarActivityService {
         type: 'meeting' as const, route: ['/meetings', m.id],
         meta: this.timeAgo(m.updatedAt), _ts: new Date(m.updatedAt).getTime(),
       }));
-    return [...notes, ...meetings]
+    return [...notes, ...tasks, ...meetings]
       .sort((a, b) => b._ts - a._ts)
       .slice(0, 3)
       .map(({ _ts, ...item }) => item);
@@ -174,7 +198,9 @@ export class SidebarActivityService {
   }
 
   private timeAgo(isoDate: string): string {
-    const diff = Date.now() - new Date(isoDate).getTime();
+    const ts = new Date(isoDate).getTime();
+    if (isNaN(ts)) return '';
+    const diff = Date.now() - ts;
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return 'now';
     if (mins < 60) return `${mins}m`;
