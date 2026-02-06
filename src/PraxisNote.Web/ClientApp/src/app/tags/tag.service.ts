@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Tag } from './tag.model';
+import { Observable } from 'rxjs';
+import { Tag, MergePreview, MergeResult } from './tag.model';
 import { ToastService } from '../shared/services/toast.service';
 
 @Injectable({ providedIn: 'root' })
@@ -139,5 +140,32 @@ export class TagService {
         };
       })
     );
+  }
+
+  /** Fetch merge preview (non-destructive). Returns observable for dialog to subscribe to. */
+  getMergePreview(sourceId: string, targetId: string): Observable<MergePreview> {
+    return this.http.get<MergePreview>(`/api/tags/${sourceId}/merge-preview/${targetId}`);
+  }
+
+  /** Execute merge. Removes source tag from local state on success. */
+  mergeTags(sourceId: string, targetId: string): void {
+    this.http.post<MergeResult>(`/api/tags/${sourceId}/merge-into/${targetId}`, {}).subscribe({
+      next: () => {
+        // Remove source tag from local list
+        this._tags.update(tags => tags.filter(t => t.id !== sourceId));
+        // Reload tags to get accurate usage counts for target
+        this.loadTags();
+        this.toast.success({ summary: 'Tags merged successfully' });
+      },
+      error: (err) => {
+        if (err.status === 404) {
+          this.toast.error('One or both tags not found');
+        } else if (err.status === 400) {
+          this.toast.error('Cannot merge a tag into itself');
+        } else {
+          this.toast.error('Failed to merge tags');
+        }
+      },
+    });
   }
 }

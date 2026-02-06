@@ -16,6 +16,8 @@ public static class TagEndpoints
         group.MapPost("/", (Delegate)HandleCreateTag);
         group.MapPut("/{id:guid}", (Delegate)HandleUpdateTag);
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteTag);
+        group.MapGet("/{sourceId:guid}/merge-preview/{targetId:guid}", (Delegate)HandlePreviewMerge);
+        group.MapPost("/{sourceId:guid}/merge-into/{targetId:guid}", (Delegate)HandleMergeTags);
     }
 
     private static async Task<IResult> HandleGetTags(
@@ -147,6 +149,65 @@ public static class TagEndpoints
         catch (InvalidOperationException ex) when (ex.Message == DeleteTag.NotFoundError)
         {
             return Results.NotFound();
+        }
+    }
+    private static async Task<IResult> HandlePreviewMerge(
+        Guid sourceId,
+        Guid targetId,
+        ClaimsPrincipal user,
+        PreviewTagMerge previewTagMerge,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        try
+        {
+            var query = new PreviewTagMerge.Query(userId.Value, sourceId, targetId);
+            var result = await previewTagMerge.ExecuteAsync(query, cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == PreviewTagMerge.SourceNotFoundError)
+        {
+            return Results.NotFound(new { error = "Source tag not found" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == PreviewTagMerge.TargetNotFoundError)
+        {
+            return Results.NotFound(new { error = "Target tag not found" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == PreviewTagMerge.SameTagError)
+        {
+            return Results.BadRequest(new { error = "Source and target tags must be different" });
+        }
+    }
+
+    private static async Task<IResult> HandleMergeTags(
+        Guid sourceId,
+        Guid targetId,
+        ClaimsPrincipal user,
+        MergeTags mergeTags,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        try
+        {
+            var command = new MergeTags.Command(userId.Value, sourceId, targetId);
+            var result = await mergeTags.ExecuteAsync(command, cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == MergeTags.SourceNotFoundError)
+        {
+            return Results.NotFound(new { error = "Source tag not found" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == MergeTags.TargetNotFoundError)
+        {
+            return Results.NotFound(new { error = "Target tag not found" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == MergeTags.SameTagError)
+        {
+            return Results.BadRequest(new { error = "Source and target tags must be different" });
         }
     }
 }
