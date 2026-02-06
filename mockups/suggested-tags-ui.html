@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suggested Tags UI Options - Meeting Auto-Title</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .surface { background: #f8fafc; border: 1px solid #e2e8f0; }
+        .tag { background: #e0e7ff; color: #3730a3; }
+        .tag-suggested { background: #fef3c7; color: #92400e; border: 1px dashed #f59e0b; }
+        .tag-accept { background: #d1fae5; color: #065f46; }
+        .recommended { border: 2px solid #10b981; }
+        .sparkle { color: #a78bfa; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-2xl font-bold mb-2">Suggested Tags & Auto-Title UI Options</h1>
+    <p class="text-gray-600 mb-8">Different approaches for displaying AI-suggested tags after meeting analysis</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- Option 1: Inline Banner Below Tags -->
+        <div class="bg-white rounded-lg p-6 recommended">
+            <h2 class="text-lg font-semibold mb-1">Option 1: Inline Suggestion Banner</h2>
+            <p class="text-sm text-green-600 font-medium mb-2">Recommended</p>
+            <p class="text-sm text-gray-500 mb-4">Suggested tags appear as a soft banner below the existing tags section with accept/dismiss per tag.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <!-- Title with sparkle -->
+                <div class="flex items-center gap-2 mb-3">
+                    <input type="text" value="Q3 Budget Review with Sarah & Mike" class="text-lg font-bold border-none bg-transparent outline-none flex-1" />
+                    <i class="pi pi-sparkles text-sm sparkle" title="AI-generated title"></i>
+                </div>
+
+                <!-- Existing tags -->
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="pi pi-tag text-gray-400 text-sm"></i>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">finance</span>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">quarterly</span>
+                </div>
+
+                <!-- Suggested tags banner -->
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="pi pi-sparkles text-xs text-amber-600"></i>
+                        <span class="text-xs font-medium text-amber-700">Suggested tags</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="tag-suggested px-2.5 py-1 rounded-full text-xs flex items-center gap-1.5">
+                            budget
+                            <button class="text-green-600 hover:text-green-800"><i class="pi pi-check text-[10px]"></i></button>
+                            <button class="text-gray-400 hover:text-gray-600"><i class="pi pi-times text-[10px]"></i></button>
+                        </span>
+                        <span class="tag-suggested px-2.5 py-1 rounded-full text-xs flex items-center gap-1.5">
+                            planning
+                            <button class="text-green-600 hover:text-green-800"><i class="pi pi-check text-[10px]"></i></button>
+                            <button class="text-gray-400 hover:text-gray-600"><i class="pi pi-times text-[10px]"></i></button>
+                        </span>
+                        <span class="tag-suggested px-2.5 py-1 rounded-full text-xs flex items-center gap-1.5">
+                            review
+                            <button class="text-green-600 hover:text-green-800"><i class="pi pi-check text-[10px]"></i></button>
+                            <button class="text-gray-400 hover:text-gray-600"><i class="pi pi-times text-[10px]"></i></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-600">
+                <p class="font-medium text-green-700 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Clear visual separation between existing and suggested tags</li>
+                    <li>Each tag has individual accept/dismiss controls</li>
+                    <li>Banner disappears naturally when all suggestions are handled</li>
+                    <li>Non-intrusive - doesn't clutter the main tag area</li>
+                </ul>
+                <p class="font-medium text-red-600 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Takes more vertical space</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option 2: Inline Mixed Tags -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 2: Inline Mixed with Dashed Border</h2>
+            <p class="text-sm text-gray-500 mb-4">Suggested tags appear inline with existing tags but with a distinct dashed style.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <!-- Title with sparkle -->
+                <div class="flex items-center gap-2 mb-3">
+                    <input type="text" value="Q3 Budget Review with Sarah & Mike" class="text-lg font-bold border-none bg-transparent outline-none flex-1" />
+                    <i class="pi pi-sparkles text-sm sparkle" title="AI-generated title"></i>
+                </div>
+
+                <!-- Tags mixed -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <i class="pi pi-tag text-gray-400 text-sm"></i>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">finance</span>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">quarterly</span>
+                    <span class="border-l border-gray-300 h-4 mx-1"></span>
+                    <span class="tag-suggested px-2 py-0.5 rounded-full text-xs flex items-center gap-1">
+                        <i class="pi pi-sparkles text-[8px]"></i> budget
+                        <button class="text-green-600"><i class="pi pi-check text-[10px]"></i></button>
+                        <button class="text-gray-400"><i class="pi pi-times text-[10px]"></i></button>
+                    </span>
+                    <span class="tag-suggested px-2 py-0.5 rounded-full text-xs flex items-center gap-1">
+                        <i class="pi pi-sparkles text-[8px]"></i> planning
+                        <button class="text-green-600"><i class="pi pi-check text-[10px]"></i></button>
+                        <button class="text-gray-400"><i class="pi pi-times text-[10px]"></i></button>
+                    </span>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-600">
+                <p class="font-medium text-green-700 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Compact - tags are in one row</li>
+                    <li>Visual separator makes distinction clear</li>
+                </ul>
+                <p class="font-medium text-red-600 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Can feel cluttered with many tags</li>
+                    <li>Harder to distinguish at a glance</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option 3: Accept All / Dismiss All -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 3: Batch Accept/Dismiss</h2>
+            <p class="text-sm text-gray-500 mb-4">Show suggestions with bulk accept/dismiss buttons for faster handling.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <!-- Title with sparkle -->
+                <div class="flex items-center gap-2 mb-3">
+                    <input type="text" value="Q3 Budget Review with Sarah & Mike" class="text-lg font-bold border-none bg-transparent outline-none flex-1" />
+                    <i class="pi pi-sparkles text-sm sparkle" title="AI-generated title"></i>
+                </div>
+
+                <!-- Existing tags -->
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="pi pi-tag text-gray-400 text-sm"></i>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">finance</span>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">quarterly</span>
+                </div>
+
+                <!-- Suggestion with batch actions -->
+                <div class="flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-2">
+                    <i class="pi pi-sparkles text-xs text-amber-600"></i>
+                    <span class="text-xs text-amber-700">Add:</span>
+                    <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">budget</span>
+                    <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">planning</span>
+                    <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">review</span>
+                    <div class="ml-auto flex items-center gap-1">
+                        <button class="text-xs text-green-600 hover:text-green-800 font-medium px-2 py-0.5 rounded hover:bg-green-50">Add all</button>
+                        <button class="text-xs text-gray-400 hover:text-gray-600 px-2 py-0.5 rounded hover:bg-gray-100">Dismiss</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-600">
+                <p class="font-medium text-green-700 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Fastest for users who want to accept all</li>
+                    <li>Compact single-line design</li>
+                </ul>
+                <p class="font-medium text-red-600 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>No per-tag control (all or nothing)</li>
+                    <li>Users may want to accept some but not all</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option 4: Floating Pill Notification -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 4: Floating Suggestion Pill</h2>
+            <p class="text-sm text-gray-500 mb-4">A small floating pill that expands when clicked to show tag suggestions.</p>
+
+            <div class="surface rounded-lg p-4 mb-4 relative">
+                <!-- Title with sparkle -->
+                <div class="flex items-center gap-2 mb-3">
+                    <input type="text" value="Q3 Budget Review with Sarah & Mike" class="text-lg font-bold border-none bg-transparent outline-none flex-1" />
+                    <i class="pi pi-sparkles text-sm sparkle" title="AI-generated title"></i>
+                </div>
+
+                <!-- Existing tags -->
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="pi pi-tag text-gray-400 text-sm"></i>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">finance</span>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">quarterly</span>
+                    <!-- Small sparkle badge -->
+                    <button class="flex items-center gap-1 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs hover:bg-amber-200 transition-colors">
+                        <i class="pi pi-sparkles text-[10px]"></i>
+                        3 suggestions
+                    </button>
+                </div>
+
+                <!-- Expanded popover (shown on click) -->
+                <div class="absolute left-4 top-20 bg-white shadow-lg border rounded-lg p-3 z-10 w-64">
+                    <div class="text-xs font-medium text-gray-700 mb-2">AI-Suggested Tags</div>
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">budget</span>
+                            <div class="flex gap-1">
+                                <button class="text-green-600 hover:bg-green-50 rounded p-0.5"><i class="pi pi-check text-xs"></i></button>
+                                <button class="text-gray-400 hover:bg-gray-100 rounded p-0.5"><i class="pi pi-times text-xs"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">planning</span>
+                            <div class="flex gap-1">
+                                <button class="text-green-600 hover:bg-green-50 rounded p-0.5"><i class="pi pi-check text-xs"></i></button>
+                                <button class="text-gray-400 hover:bg-gray-100 rounded p-0.5"><i class="pi pi-times text-xs"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">review</span>
+                            <div class="flex gap-1">
+                                <button class="text-green-600 hover:bg-green-50 rounded p-0.5"><i class="pi pi-check text-xs"></i></button>
+                                <button class="text-gray-400 hover:bg-gray-100 rounded p-0.5"><i class="pi pi-times text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-600">
+                <p class="font-medium text-green-700 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Very compact when collapsed</li>
+                    <li>Per-tag control when expanded</li>
+                </ul>
+                <p class="font-medium text-red-600 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Extra click to see suggestions</li>
+                    <li>Popover management complexity</li>
+                    <li>Easy to miss the suggestion badge</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option 5: Toast-style Notification -->
+        <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 5: Toast Notification</h2>
+            <p class="text-sm text-gray-500 mb-4">Tags appear as a temporary toast/notification after analysis completes.</p>
+
+            <div class="surface rounded-lg p-4 mb-4 relative">
+                <!-- Title with sparkle -->
+                <div class="flex items-center gap-2 mb-3">
+                    <input type="text" value="Q3 Budget Review with Sarah & Mike" class="text-lg font-bold border-none bg-transparent outline-none flex-1" />
+                    <i class="pi pi-sparkles text-sm sparkle" title="AI-generated title"></i>
+                </div>
+
+                <!-- Existing tags -->
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="pi pi-tag text-gray-400 text-sm"></i>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">finance</span>
+                    <span class="tag px-2 py-0.5 rounded-full text-xs">quarterly</span>
+                </div>
+
+                <!-- Toast -->
+                <div class="absolute right-4 top-4 bg-white shadow-xl border border-amber-200 rounded-lg p-3 w-56">
+                    <div class="flex items-center gap-1.5 mb-2">
+                        <i class="pi pi-sparkles text-xs text-amber-600"></i>
+                        <span class="text-xs font-medium text-gray-700">Suggested tags</span>
+                        <button class="ml-auto text-gray-400 hover:text-gray-600"><i class="pi pi-times text-xs"></i></button>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mb-2">
+                        <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">budget</span>
+                        <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">planning</span>
+                        <span class="tag-suggested px-2 py-0.5 rounded-full text-xs">review</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="text-xs text-green-600 font-medium">Add all</button>
+                        <button class="text-xs text-gray-400">Dismiss</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-600">
+                <p class="font-medium text-green-700 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Eye-catching, draws attention</li>
+                    <li>Doesn't take space in the main layout</li>
+                </ul>
+                <p class="font-medium text-red-600 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Can be dismissed accidentally</li>
+                    <li>No way to see suggestions again after dismissal</li>
+                    <li>Overlaps content on mobile</li>
+                    <li>No per-tag control</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

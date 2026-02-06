@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Creation/Editing UX Options</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
+    <style>
+        :root {
+            --color-surface: #fafaf8;
+            --color-surface-subtle: #f5f5f3;
+            --color-surface-hover: #eaeae8;
+            --color-border: #e5e5e3;
+            --color-foreground: #2e3440;
+            --color-foreground-secondary: #6b7280;
+            --color-foreground-muted: #9ca3af;
+            --color-accent: #7c3aed;
+            --color-accent-subtle: rgba(124, 58, 237, 0.1);
+        }
+
+        body {
+            background: #e5e5e5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .mockup-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+        }
+
+        .note-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+
+        .note-card:hover {
+            border-color: var(--color-accent);
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-surface-subtle);
+        }
+
+        .toolbar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 6px;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            color: var(--color-foreground-secondary);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--color-surface-hover);
+            color: var(--color-foreground);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-recommended {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-alternative {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .editor-area {
+            min-height: 200px;
+            padding: 16px;
+            outline: none;
+        }
+
+        .editor-area:focus {
+            background: #fafafa;
+        }
+
+        .dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            max-width: 600px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-6xl mx-auto space-y-12">
+        <header class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Note Creation & Editing UX Options</h1>
+            <p class="text-gray-600 mt-2">5 approaches to create and view notes</p>
+        </header>
+
+        <!-- Option 1: Google Keep Style - Inline Expand (RECOMMENDED) -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 1: Google Keep Style - Inline Expand</h2>
+                <span class="badge badge-recommended">Recommended</span>
+            </div>
+            <p class="text-gray-600">Click "Take a note" to expand inline. No dialog. Cards show preview, click to edit in place.</p>
+
+            <div class="mockup-container">
+                <div class="flex">
+                    <!-- Sidebar -->
+                    <div class="sidebar w-48 p-4 hidden md:block">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-purple-50 text-purple-700">
+                                <i class="pi pi-file"></i>
+                                <span class="font-medium">Notes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Main content -->
+                    <div class="flex-1 p-6">
+                        <h3 class="text-lg font-semibold mb-4">Notes</h3>
+
+                        <!-- Collapsed state -->
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 mb-4 cursor-pointer hover:border-purple-400 transition-colors">
+                            <span class="text-gray-400">Take a note...</span>
+                        </div>
+
+                        <!-- Expanded state (when clicked) -->
+                        <div class="border-2 border-purple-400 rounded-lg mb-4 shadow-lg">
+                            <div class="toolbar">
+                                <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded">
+                                    <option>Paragraph</option>
+                                </select>
+                                <button class="toolbar-btn font-bold">B</button>
+                                <button class="toolbar-btn italic">I</button>
+                                <button class="toolbar-btn underline">U</button>
+                                <span class="mx-2 h-4 border-l border-gray-300"></span>
+                                <button class="toolbar-btn"><i class="pi pi-list"></i></button>
+                                <button class="toolbar-btn"><i class="pi pi-check-square"></i></button>
+                            </div>
+                            <div class="editor-area" contenteditable="true">
+                                <h2 class="text-lg font-semibold text-gray-400">Title</h2>
+                            </div>
+                            <div class="flex justify-end gap-2 p-3 border-t border-gray-100">
+                                <button class="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                                <button class="px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700">Save</button>
+                            </div>
+                        </div>
+
+                        <!-- Existing note cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="note-card p-4">
+                                <h4 class="font-medium mb-2">Meeting Notes</h4>
+                                <p class="text-sm text-gray-500 line-clamp-3">Discussed project timeline and deliverables...</p>
+                            </div>
+                            <div class="note-card p-4">
+                                <h4 class="font-medium mb-2">Shopping List</h4>
+                                <p class="text-sm text-gray-500 line-clamp-3">Milk, eggs, bread, coffee...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h4 class="font-medium text-green-800">Pros:</h4>
+                <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                    <li>Familiar Google Keep pattern users know</li>
+                    <li>No modal interruption - stays in flow</li>
+                    <li>Quick entry and exit</li>
+                    <li>See notes while editing</li>
+                </ul>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg">
+                <h4 class="font-medium text-red-800">Cons:</h4>
+                <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                    <li>Limited editor space when many notes visible</li>
+                    <li>May need to scroll to see full editor</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Option 2: Full Page Editor (Notion Style) -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 2: Full Page Editor (Notion Style)</h2>
+                <span class="badge badge-alternative">Alternative</span>
+            </div>
+            <p class="text-gray-600">Click a note or "New" to navigate to a dedicated full-page editor. No cards - list view in sidebar.</p>
+
+            <div class="mockup-container">
+                <div class="flex">
+                    <!-- Sidebar with note list -->
+                    <div class="sidebar w-64 p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-gray-700">Notes</h3>
+                            <button class="p-1.5 hover:bg-gray-200 rounded">
+                                <i class="pi pi-plus text-gray-500"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="p-2 rounded bg-purple-50 border-l-2 border-purple-500">
+                                <div class="font-medium text-sm">Meeting Notes</div>
+                                <div class="text-xs text-gray-500">2 hours ago</div>
+                            </div>
+                            <div class="p-2 rounded hover:bg-gray-100">
+                                <div class="font-medium text-sm">Shopping List</div>
+                                <div class="text-xs text-gray-500">Yesterday</div>
+                            </div>
+                            <div class="p-2 rounded hover:bg-gray-100">
+                                <div class="font-medium text-sm">Project Ideas</div>
+                                <div class="text-xs text-gray-500">3 days ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Full page editor -->
+                    <div class="flex-1">
+                        <div class="toolbar justify-between">
+                            <div class="flex items-center gap-2">
+                                <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded">
+                                    <option>Heading 2</option>
+                                </select>
+                                <button class="toolbar-btn font-bold">B</button>
+                                <button class="toolbar-btn italic">I</button>
+                                <button class="toolbar-btn underline">U</button>
+                                <span class="mx-2 h-4 border-l border-gray-300"></span>
+                                <button class="toolbar-btn"><i class="pi pi-list"></i></button>
+                                <button class="toolbar-btn"><i class="pi pi-check-square"></i></button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="toolbar-btn"><i class="pi pi-ellipsis-h"></i></button>
+                            </div>
+                        </div>
+                        <div class="p-8 max-w-3xl mx-auto">
+                            <h1 class="text-3xl font-bold mb-4 outline-none" contenteditable="true">Meeting Notes</h1>
+                            <div class="text-gray-700 outline-none min-h-[400px]" contenteditable="true">
+                                <p class="mb-4">Discussed project timeline and deliverables for Q1 2026.</p>
+                                <h2 class="text-xl font-semibold mb-2">Action Items</h2>
+                                <ul class="list-disc ml-5 space-y-1">
+                                    <li>Review design specs by Friday</li>
+                                    <li>Set up development environment</li>
+                                    <li>Schedule follow-up meeting</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h4 class="font-medium text-green-800">Pros:</h4>
+                <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                    <li>Maximum editing space - great for long notes</li>
+                    <li>Distraction-free writing experience</li>
+                    <li>Familiar Notion/Obsidian pattern</li>
+                    <li>Auto-saves feel natural</li>
+                </ul>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg">
+                <h4 class="font-medium text-red-800">Cons:</h4>
+                <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                    <li>Navigation required to switch between notes</li>
+                    <li>Can't see note previews at a glance</li>
+                    <li>Major architectural change from current card grid</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Option 3: Slide-over Panel -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 3: Slide-over Panel</h2>
+                <span class="badge badge-alternative">Alternative</span>
+            </div>
+            <p class="text-gray-600">Click a note to open a slide-over panel from the right. Notes grid remains visible underneath.</p>
+
+            <div class="mockup-container relative overflow-hidden">
+                <div class="flex">
+                    <!-- Sidebar -->
+                    <div class="sidebar w-48 p-4 hidden md:block">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-purple-50 text-purple-700">
+                                <i class="pi pi-file"></i>
+                                <span class="font-medium">Notes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Main content (dimmed) -->
+                    <div class="flex-1 p-6 opacity-50">
+                        <h3 class="text-lg font-semibold mb-4">Notes</h3>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 mb-4">
+                            <span class="text-gray-400">Take a note...</span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="note-card p-4 ring-2 ring-purple-500">
+                                <h4 class="font-medium mb-2">Meeting Notes</h4>
+                                <p class="text-sm text-gray-500 line-clamp-3">Discussed project timeline...</p>
+                            </div>
+                            <div class="note-card p-4">
+                                <h4 class="font-medium mb-2">Shopping List</h4>
+                                <p class="text-sm text-gray-500 line-clamp-3">Milk, eggs, bread...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slide-over panel -->
+                <div class="absolute top-0 right-0 h-full w-[480px] bg-white shadow-2xl border-l border-gray-200">
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                        <h3 class="font-semibold">Edit Note</h3>
+                        <button class="p-1.5 hover:bg-gray-100 rounded">
+                            <i class="pi pi-times text-gray-500"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar">
+                        <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded">
+                            <option>Heading 2</option>
+                        </select>
+                        <button class="toolbar-btn font-bold">B</button>
+                        <button class="toolbar-btn italic">I</button>
+                        <button class="toolbar-btn underline">U</button>
+                    </div>
+                    <div class="p-4">
+                        <h2 class="text-xl font-bold mb-3 outline-none" contenteditable="true">Meeting Notes</h2>
+                        <div class="text-gray-700 outline-none min-h-[300px]" contenteditable="true">
+                            <p>Discussed project timeline and deliverables for Q1 2026.</p>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
+                        <div class="flex justify-end gap-2">
+                            <button class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h4 class="font-medium text-green-800">Pros:</h4>
+                <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                    <li>Can see notes grid while editing</li>
+                    <li>More space than dialog, less commitment than full page</li>
+                    <li>Easy to close and return to grid</li>
+                </ul>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg">
+                <h4 class="font-medium text-red-800">Cons:</h4>
+                <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                    <li>Panel width may feel cramped on smaller screens</li>
+                    <li>Background dimming can be distracting</li>
+                    <li>Fixed panel width - can't resize</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Option 4: Expandable Card in Place -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 4: Expandable Card In-Place</h2>
+                <span class="badge badge-alternative">Alternative</span>
+            </div>
+            <p class="text-gray-600">Click a note card and it expands in the grid, pushing other cards down. Edit right there.</p>
+
+            <div class="mockup-container">
+                <div class="flex">
+                    <!-- Sidebar -->
+                    <div class="sidebar w-48 p-4 hidden md:block">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-purple-50 text-purple-700">
+                                <i class="pi pi-file"></i>
+                                <span class="font-medium">Notes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Main content -->
+                    <div class="flex-1 p-6">
+                        <h3 class="text-lg font-semibold mb-4">Notes</h3>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 mb-4">
+                            <span class="text-gray-400">Take a note...</span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Expanded card - spans full width -->
+                            <div class="col-span-2 md:col-span-3 border-2 border-purple-400 rounded-lg shadow-lg">
+                                <div class="toolbar">
+                                    <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded">
+                                        <option>Heading 2</option>
+                                    </select>
+                                    <button class="toolbar-btn font-bold">B</button>
+                                    <button class="toolbar-btn italic">I</button>
+                                    <span class="flex-1"></span>
+                                    <button class="toolbar-btn text-gray-400 hover:text-gray-600">
+                                        <i class="pi pi-compress"></i> Collapse
+                                    </button>
+                                </div>
+                                <div class="p-4">
+                                    <h2 class="text-xl font-bold mb-3 outline-none" contenteditable="true">Meeting Notes</h2>
+                                    <div class="text-gray-700 outline-none min-h-[200px]" contenteditable="true">
+                                        <p class="mb-4">Discussed project timeline and deliverables for Q1 2026.</p>
+                                        <h3 class="text-lg font-semibold mb-2">Action Items</h3>
+                                        <ul class="list-disc ml-5">
+                                            <li>Review design specs</li>
+                                            <li>Set up environment</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end gap-2 p-3 border-t border-gray-100">
+                                    <button class="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                                    <button class="px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700">Save</button>
+                                </div>
+                            </div>
+                            <!-- Other cards -->
+                            <div class="note-card p-4">
+                                <h4 class="font-medium mb-2">Shopping List</h4>
+                                <p class="text-sm text-gray-500 line-clamp-3">Milk, eggs, bread...</p>
+                            </div>
+                            <div class="note-card p-4">
+                                <h4 class="font-medium mb-2">Project Ideas</h4>
+                                <p class="text-sm text-gray-500 line-clamp-3">New feature concepts...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h4 class="font-medium text-green-800">Pros:</h4>
+                <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                    <li>Stays in context - card expands where it is</li>
+                    <li>Other notes remain visible</li>
+                    <li>Smooth animation possible</li>
+                </ul>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg">
+                <h4 class="font-medium text-red-800">Cons:</h4>
+                <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                    <li>Grid reflow can be jarring</li>
+                    <li>Complex animation/layout logic</li>
+                    <li>May cause scroll position to jump</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Option 5: Bottom Sheet (Mobile-First) -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 5: Bottom Sheet (Mobile-First)</h2>
+                <span class="badge badge-alternative">Alternative</span>
+            </div>
+            <p class="text-gray-600">Editor slides up from the bottom. Great for mobile, works on desktop too. Can drag to resize.</p>
+
+            <div class="mockup-container relative overflow-hidden" style="height: 500px;">
+                <div class="flex h-full">
+                    <!-- Sidebar -->
+                    <div class="sidebar w-48 p-4 hidden md:block">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-purple-50 text-purple-700">
+                                <i class="pi pi-file"></i>
+                                <span class="font-medium">Notes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Main content -->
+                    <div class="flex-1 p-6">
+                        <h3 class="text-lg font-semibold mb-4">Notes</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="note-card p-4">
+                                <h4 class="font-medium mb-2">Meeting Notes</h4>
+                                <p class="text-sm text-gray-500 line-clamp-3">Discussed project timeline...</p>
+                            </div>
+                            <div class="note-card p-4">
+                                <h4 class="font-medium mb-2">Shopping List</h4>
+                                <p class="text-sm text-gray-500 line-clamp-3">Milk, eggs, bread...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Bottom sheet -->
+                <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl border-t border-gray-200" style="height: 350px;">
+                    <!-- Drag handle -->
+                    <div class="flex justify-center py-2">
+                        <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+                    </div>
+                    <div class="toolbar">
+                        <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded">
+                            <option>Paragraph</option>
+                        </select>
+                        <button class="toolbar-btn font-bold">B</button>
+                        <button class="toolbar-btn italic">I</button>
+                        <button class="toolbar-btn underline">U</button>
+                        <span class="mx-2 h-4 border-l border-gray-300"></span>
+                        <button class="toolbar-btn"><i class="pi pi-list"></i></button>
+                        <span class="flex-1"></span>
+                        <button class="toolbar-btn"><i class="pi pi-times"></i></button>
+                    </div>
+                    <div class="p-4 overflow-auto" style="height: calc(100% - 100px);">
+                        <h2 class="text-xl font-bold mb-3 outline-none" contenteditable="true">New Note</h2>
+                        <div class="text-gray-700 outline-none min-h-[150px]" contenteditable="true" placeholder="Start typing...">
+                            <p class="text-gray-400">Start typing...</p>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
+                        <button class="w-full py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Save Note</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h4 class="font-medium text-green-800">Pros:</h4>
+                <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                    <li>Excellent mobile experience - thumb-friendly</li>
+                    <li>Resizable by dragging</li>
+                    <li>Notes remain visible above</li>
+                    <li>Feels native on iOS/Android</li>
+                </ul>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg">
+                <h4 class="font-medium text-red-800">Cons:</h4>
+                <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                    <li>Less familiar on desktop</li>
+                    <li>Limited vertical space even when expanded</li>
+                    <li>May feel awkward for long-form writing</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Summary -->
+        <section class="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-xl">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Recommendation Summary</h2>
+            <div class="space-y-3">
+                <p><strong>Option 1 (Google Keep Style)</strong> is recommended because:</p>
+                <ul class="list-disc ml-5 text-gray-700 space-y-1">
+                    <li>Users already know this pattern from Google Keep</li>
+                    <li>Minimal change from current architecture - just remove the dialog</li>
+                    <li>Quick and fluid note creation without modal interruption</li>
+                    <li>Works well on both mobile and desktop</li>
+                </ul>
+                <p class="text-gray-600 mt-4">
+                    <strong>Option 2 (Notion Style)</strong> would be ideal if you plan to support very long notes with complex formatting,
+                    but requires significant architectural changes.
+                </p>
+                <p class="text-gray-600">
+                    <strong>Option 3 (Slide-over)</strong> is a good middle ground if users want more editing space than inline but less commitment than full page.
+                </p>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

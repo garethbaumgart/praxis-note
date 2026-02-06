@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Source Origin - UX Mockups (Light & Dark Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
+    <style>
+        /* Nord Color Palette */
+        :root {
+            --aurora-green: #a3be8c;
+            --aurora-orange: #d08770;
+            --aurora-purple: #b48ead;
+            --aurora-red: #bf616a;
+            --aurora-yellow: #ebcb8b;
+            --frost-blue: #5e81ac;
+            --frost-cyan: #88c0d0;
+            --frost-light-blue: #81a1c1;
+            --polar-night-1: #2e3440;
+            --polar-night-2: #3b4252;
+            --polar-night-3: #434c5e;
+            --polar-night-4: #4c566a;
+            --snow-storm-1: #d8dee9;
+            --snow-storm-2: #e5e9f0;
+            --snow-storm-3: #eceff4;
+        }
+
+        .light-mode { background: #fafaf8; }
+        .dark-mode { background: #2e3440; }
+
+        .task-card-light {
+            background: white;
+            border: 1px solid #e5e9f0;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .task-card-dark {
+            background: #3b4252;
+            border: 1px solid #4c566a;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        /* Source badge variants - Light */
+        .source-meeting-light {
+            background: rgba(94, 129, 172, 0.15);
+            color: #3d5a80;
+        }
+        .source-note-light {
+            background: rgba(180, 142, 173, 0.15);
+            color: #8b5c85;
+        }
+
+        /* Source badge variants - Dark */
+        .source-meeting-dark {
+            background: rgba(94, 129, 172, 0.25);
+            color: #81a1c1;
+        }
+        .source-note-dark {
+            background: rgba(180, 142, 173, 0.25);
+            color: #b48ead;
+        }
+
+        /* Tag badge styling */
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        .tag-green-light { background: rgba(163, 190, 140, 0.25); color: #5a7a4a; }
+        .tag-green-dark { background: rgba(163, 190, 140, 0.3); color: #a3be8c; }
+
+        /* Due date pill */
+        .due-light { background: rgba(235, 203, 139, 0.3); color: #9a7a1a; }
+        .due-dark { background: rgba(235, 203, 139, 0.25); color: #ebcb8b; }
+
+        /* Comments badge */
+        .comments-light { background: rgba(94, 129, 172, 0.15); color: #5e81ac; }
+        .comments-dark { background: rgba(94, 129, 172, 0.25); color: #81a1c1; }
+
+        /* Source link hover effect */
+        .source-link:hover { text-decoration: underline; cursor: pointer; }
+
+        /* Subtle left border accent */
+        .border-accent-meeting-light { border-left: 3px solid rgba(94, 129, 172, 0.5); }
+        .border-accent-meeting-dark { border-left: 3px solid rgba(129, 161, 193, 0.5); }
+        .border-accent-note-light { border-left: 3px solid rgba(180, 142, 173, 0.5); }
+        .border-accent-note-dark { border-left: 3px solid rgba(180, 142, 173, 0.5); }
+
+        /* Top stripe */
+        .stripe-meeting-light { border-top: 2px solid rgba(94, 129, 172, 0.6); }
+        .stripe-meeting-dark { border-top: 2px solid rgba(129, 161, 193, 0.5); }
+        .stripe-note-light { border-top: 2px solid rgba(180, 142, 173, 0.6); }
+        .stripe-note-dark { border-top: 2px solid rgba(180, 142, 173, 0.5); }
+
+        /* Corner ribbon */
+        .ribbon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            overflow: hidden;
+        }
+        .ribbon-inner {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+        }
+        .ribbon-bg-meeting-light { color: #5e81ac; }
+        .ribbon-bg-meeting-dark { color: #81a1c1; }
+        .ribbon-bg-note-light { color: #b48ead; }
+        .ribbon-bg-note-dark { color: #b48ead; }
+
+        /* Expandable source section */
+        .source-section-meeting-light {
+            background: rgba(94, 129, 172, 0.08);
+            border: 1px solid rgba(94, 129, 172, 0.2);
+        }
+        .source-section-meeting-dark {
+            background: rgba(94, 129, 172, 0.12);
+            border: 1px solid rgba(94, 129, 172, 0.25);
+        }
+        .source-section-note-light {
+            background: rgba(180, 142, 173, 0.08);
+            border: 1px solid rgba(180, 142, 173, 0.2);
+        }
+        .source-section-note-dark {
+            background: rgba(180, 142, 173, 0.12);
+            border: 1px solid rgba(180, 142, 173, 0.25);
+        }
+    </style>
+</head>
+<body class="p-8 bg-gray-200">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl font-bold mb-2">Task Source Origin - UX Mockups</h1>
+        <p class="text-gray-600 mb-2">Showing the source (Meeting or Note) on task cards with navigation back to the origin.</p>
+        <p class="text-gray-500 text-sm mb-8">Each option shows a Meeting-sourced task and a Note-sourced task, in both light and dark modes.</p>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 1: Inline Source Pill in Tab Bar (Recommended) -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold text-green-700 inline-flex items-center gap-2">
+                    Option 1: Source Pill in Tab Bar
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Recommended</span>
+                </h2>
+                <p class="text-sm text-gray-600 mt-1">Adds a clickable source pill alongside existing tabs (Due Date, Comments, Tags). Consistent with the existing tab bar pattern.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Light -->
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <!-- Meeting task -->
+                    <div class="task-card-light mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-400">2h</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="tag-pill tag-green-light">Finance</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs comments-light relative">
+                                <i class="pi pi-comment"></i>
+                                <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full text-[9px] font-medium" style="background: rgba(94,129,172,0.3); color: #3d5a80;">2</span>
+                            </span>
+                            <!-- Source pill (new) -->
+                            <span class="source-link inline-flex items-center h-7 px-3 rounded-full text-xs source-meeting-light gap-1.5">
+                                <i class="pi pi-video"></i> Sprint Planning
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Note task -->
+                    <div class="task-card-light">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-comment"></i></span>
+                            <!-- Source pill (new) -->
+                            <span class="source-link inline-flex items-center h-7 px-3 rounded-full text-xs source-note-light gap-1.5">
+                                <i class="pi pi-file-edit"></i> Strategy Brainstorm
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Dark -->
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-300">2h</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="tag-pill tag-green-dark">Finance</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs source-meeting-dark relative">
+                                <i class="pi pi-comment"></i>
+                                <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full text-[9px] font-medium" style="background: rgba(94,129,172,0.4); color: #81a1c1;">2</span>
+                            </span>
+                            <span class="source-link inline-flex items-center h-7 px-3 rounded-full text-xs source-meeting-dark gap-1.5">
+                                <i class="pi pi-video"></i> Sprint Planning
+                            </span>
+                        </div>
+                    </div>
+                    <div class="task-card-dark">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-comment"></i></span>
+                            <span class="source-link inline-flex items-center h-7 px-3 rounded-full text-xs source-note-dark gap-1.5">
+                                <i class="pi pi-file-edit"></i> Strategy Brainstorm
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Consistent with existing tab bar UI pattern</li>
+                        <li>Always visible without expanding anything</li>
+                        <li>Clickable for direct navigation to source</li>
+                        <li>Differentiates meeting vs note with icon + color</li>
+                        <li>Minimal UI footprint - pill collapses to icon on narrow cards</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Tab bar can get crowded with many pills</li>
+                        <li>Long meeting/note titles need truncation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 2: Subtle Subtitle Line Below Title -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 2: Subtitle Line Below Title</h2>
+                <p class="text-sm text-gray-600 mt-1">A small linked text line directly under the task title, showing the source with an icon.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <div class="task-card-light mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-800">Prepare Q1 budget proposal</p>
+                                <p class="source-link text-[11px] mt-0.5 flex items-center gap-1" style="color: #5e81ac;">
+                                    <i class="pi pi-video text-[10px]"></i> from Sprint Planning <i class="pi pi-arrow-up-right text-[8px]"></i>
+                                </p>
+                            </div>
+                            <span class="text-xs text-orange-400">2h</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs comments-light"><i class="pi pi-comment"></i></span>
+                        </div>
+                    </div>
+                    <div class="task-card-light">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-800">Research competitor pricing models</p>
+                                <p class="source-link text-[11px] mt-0.5 flex items-center gap-1" style="color: #b48ead;">
+                                    <i class="pi pi-file-edit text-[10px]"></i> from Strategy Brainstorm <i class="pi pi-arrow-up-right text-[8px]"></i>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-comment"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-200">Prepare Q1 budget proposal</p>
+                                <p class="source-link text-[11px] mt-0.5 flex items-center gap-1" style="color: #81a1c1;">
+                                    <i class="pi pi-video text-[10px]"></i> from Sprint Planning <i class="pi pi-arrow-up-right text-[8px]"></i>
+                                </p>
+                            </div>
+                            <span class="text-xs text-orange-300">2h</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-dark">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-200">Research competitor pricing models</p>
+                                <p class="source-link text-[11px] mt-0.5 flex items-center gap-1" style="color: #b48ead;">
+                                    <i class="pi pi-file-edit text-[10px]"></i> from Strategy Brainstorm <i class="pi pi-arrow-up-right text-[8px]"></i>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Very clear visual hierarchy - source is contextually near the title</li>
+                        <li>Always visible, no interaction needed</li>
+                        <li>External link icon makes it obvious it's navigable</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Increases card height for every sourced task</li>
+                        <li>May feel redundant alongside tags that already show origin</li>
+                        <li>Subtitle line breaks the compact card aesthetic</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 3: Left Border Accent with Hover Tooltip -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 3: Left Border Accent + Hover Tooltip</h2>
+                <p class="text-sm text-gray-600 mt-1">A colored left border indicates the source type. Hovering reveals a tooltip with source name and a link.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <div class="task-card-light border-accent-meeting-light mb-3 relative group/source">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-400">2h</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                        <!-- Tooltip on hover -->
+                        <div class="hidden group-hover/source:block absolute -top-8 left-4 px-2 py-1 rounded text-[11px] shadow-md z-10 source-meeting-light whitespace-nowrap">
+                            <i class="pi pi-video text-[10px]"></i> Sprint Planning <i class="pi pi-arrow-up-right text-[8px] ml-1"></i>
+                        </div>
+                    </div>
+                    <div class="task-card-light border-accent-note-light relative group/source">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                        </div>
+                        <div class="hidden group-hover/source:block absolute -top-8 left-4 px-2 py-1 rounded text-[11px] shadow-md z-10 source-note-light whitespace-nowrap">
+                            <i class="pi pi-file-edit text-[10px]"></i> Strategy Brainstorm <i class="pi pi-arrow-up-right text-[8px] ml-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark border-accent-meeting-dark mb-3 relative group/source">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-300">2h</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                        <div class="hidden group-hover/source:block absolute -top-8 left-4 px-2 py-1 rounded text-[11px] shadow-md z-10 source-meeting-dark whitespace-nowrap">
+                            <i class="pi pi-video text-[10px]"></i> Sprint Planning <i class="pi pi-arrow-up-right text-[8px] ml-1"></i>
+                        </div>
+                    </div>
+                    <div class="task-card-dark border-accent-note-dark relative group/source">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                        </div>
+                        <div class="hidden group-hover/source:block absolute -top-8 left-4 px-2 py-1 rounded text-[11px] shadow-md z-10 source-note-dark whitespace-nowrap">
+                            <i class="pi pi-file-edit text-[10px]"></i> Strategy Brainstorm <i class="pi pi-arrow-up-right text-[8px] ml-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Minimal footprint - no extra height on the card</li>
+                        <li>Colored border is a subtle but scannable visual cue</li>
+                        <li>Details available on demand via hover</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Tooltip is not accessible on mobile (no hover)</li>
+                        <li>Left border overrides existing status-colored borders</li>
+                        <li>Source info is hidden - not discoverable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 4: Corner Icon Badge -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 4: Corner Icon Badge</h2>
+                <p class="text-sm text-gray-600 mt-1">A small icon in the top-right corner indicates the source type. Clicking navigates to the source.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <div class="task-card-light mb-3 relative">
+                        <div class="ribbon">
+                            <span class="ribbon-inner ribbon-bg-meeting-light source-link" title="From: Sprint Planning"><i class="pi pi-video"></i></span>
+                        </div>
+                        <div class="flex items-start gap-2 pr-6">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-light relative">
+                        <div class="ribbon">
+                            <span class="ribbon-inner ribbon-bg-note-light source-link" title="From: Strategy Brainstorm"><i class="pi pi-file-edit"></i></span>
+                        </div>
+                        <div class="flex items-start gap-2 pr-6">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark mb-3 relative">
+                        <div class="ribbon">
+                            <span class="ribbon-inner ribbon-bg-meeting-dark source-link" title="From: Sprint Planning"><i class="pi pi-video"></i></span>
+                        </div>
+                        <div class="flex items-start gap-2 pr-6">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-dark relative">
+                        <div class="ribbon">
+                            <span class="ribbon-inner ribbon-bg-note-dark source-link" title="From: Strategy Brainstorm"><i class="pi pi-file-edit"></i></span>
+                        </div>
+                        <div class="flex items-start gap-2 pr-6">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Zero extra height - fits into existing card layout</li>
+                        <li>Icon-only is very compact</li>
+                        <li>Instantly recognizable (video = meeting, file = note)</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Doesn't show the source name without hovering</li>
+                        <li>Competes with delete button in top-right area</li>
+                        <li>Small click target on mobile</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 5: Top Color Stripe -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 5: Top Color Stripe</h2>
+                <p class="text-sm text-gray-600 mt-1">A thin colored stripe at the top of the card indicates the source type. Source name shown in a small line below the stripe.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <div class="task-card-light stripe-meeting-light mb-3 !pt-1">
+                        <p class="source-link text-[10px] flex items-center gap-1 mb-1.5" style="color: #5e81ac;">
+                            <i class="pi pi-video text-[9px]"></i> Sprint Planning <i class="pi pi-arrow-up-right text-[7px]"></i>
+                        </p>
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-400">2h</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-light stripe-note-light !pt-1">
+                        <p class="source-link text-[10px] flex items-center gap-1 mb-1.5" style="color: #b48ead;">
+                            <i class="pi pi-file-edit text-[9px]"></i> Strategy Brainstorm <i class="pi pi-arrow-up-right text-[7px]"></i>
+                        </p>
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark stripe-meeting-dark mb-3 !pt-1">
+                        <p class="source-link text-[10px] flex items-center gap-1 mb-1.5" style="color: #81a1c1;">
+                            <i class="pi pi-video text-[9px]"></i> Sprint Planning <i class="pi pi-arrow-up-right text-[7px]"></i>
+                        </p>
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-300">2h</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-dark stripe-note-dark !pt-1">
+                        <p class="source-link text-[10px] flex items-center gap-1 mb-1.5" style="color: #b48ead;">
+                            <i class="pi pi-file-edit text-[9px]"></i> Strategy Brainstorm <i class="pi pi-arrow-up-right text-[7px]"></i>
+                        </p>
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Strong visual distinction - instantly scannable in a column</li>
+                        <li>Source name is visible with link icon</li>
+                        <li>Stripe provides a clear hierarchy marker</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Adds height to every sourced card</li>
+                        <li>Conflicts with existing status-colored card borders</li>
+                        <li>Visually heavier - may dominate the card appearance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 6: Expandable Source Tab (like Due Date / Comments) -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 6: Expandable Source Tab</h2>
+                <p class="text-sm text-gray-600 mt-1">A new tab in the existing tab bar that expands to show source details, similar to the Due Date and Comments tabs.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <!-- Collapsed state -->
+                    <p class="text-[10px] text-gray-400 mb-1 ml-1">Collapsed (icon only):</p>
+                    <div class="task-card-light mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-comment"></i></span>
+                            <!-- Source tab (collapsed) -->
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs source-meeting-light"><i class="pi pi-video"></i></span>
+                        </div>
+                    </div>
+                    <!-- Expanded state -->
+                    <p class="text-[10px] text-gray-400 mb-1 ml-1">Expanded (clicked):</p>
+                    <div class="task-card-light">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-comment"></i></span>
+                            <!-- Source tab (expanded) -->
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs source-meeting-light gap-1.5 font-medium"><i class="pi pi-video"></i> Source</span>
+                        </div>
+                        <!-- Expanded source section -->
+                        <div class="mt-2 p-2 source-section-meeting-light rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-xs" style="color: #3d5a80;">
+                                    <i class="pi pi-video text-sm"></i>
+                                    <div>
+                                        <p class="font-medium">Sprint Planning</p>
+                                        <p class="text-[10px] opacity-70">Jan 28, 2026 &middot; Meeting</p>
+                                    </div>
+                                </div>
+                                <button class="source-link px-2 py-1 text-[11px] rounded transition-colors source-meeting-light font-medium flex items-center gap-1">
+                                    Open <i class="pi pi-arrow-up-right text-[9px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <p class="text-[10px] text-gray-500 mb-1 ml-1">Collapsed:</p>
+                    <div class="task-card-dark mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-comment"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs source-meeting-dark"><i class="pi pi-video"></i></span>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mb-1 ml-1">Expanded:</p>
+                    <div class="task-card-dark">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-comment"></i></span>
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs source-meeting-dark gap-1.5 font-medium"><i class="pi pi-video"></i> Source</span>
+                        </div>
+                        <div class="mt-2 p-2 source-section-meeting-dark rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-xs" style="color: #81a1c1;">
+                                    <i class="pi pi-video text-sm"></i>
+                                    <div>
+                                        <p class="font-medium">Sprint Planning</p>
+                                        <p class="text-[10px] opacity-70">Jan 28, 2026 &middot; Meeting</p>
+                                    </div>
+                                </div>
+                                <button class="source-link px-2 py-1 text-[11px] rounded transition-colors source-meeting-dark font-medium flex items-center gap-1">
+                                    Open <i class="pi pi-arrow-up-right text-[9px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Fully consistent with existing tab bar pattern (Due Date, Comments)</li>
+                        <li>Expandable section shows rich details without cluttering</li>
+                        <li>Works on mobile - no hover dependency</li>
+                        <li>Collapsed state adds minimal visual weight</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Requires a click to see source name (not immediately visible)</li>
+                        <li>Tab bar may become crowded (4 tabs + mobile arrows)</li>
+                        <li>More complex interaction for something that may be view-only</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 7: Inline Breadcrumb Below Tags -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 7: Inline Breadcrumb Below Tags</h2>
+                <p class="text-sm text-gray-600 mt-1">A small breadcrumb-style link row beneath the tags, showing source type and name with a navigation arrow.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <div class="task-card-light mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-400">2h</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="tag-pill tag-green-light">Finance</span>
+                            <span class="tag-pill tag-green-light">Q1</span>
+                        </div>
+                        <!-- Breadcrumb source row -->
+                        <div class="mt-1.5 flex items-center gap-1 text-[10px]" style="color: #5e81ac;">
+                            <i class="pi pi-link text-[9px]"></i>
+                            <span class="opacity-60">Meeting</span>
+                            <i class="pi pi-angle-right text-[8px] opacity-40"></i>
+                            <span class="source-link font-medium">Sprint Planning</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs comments-light"><i class="pi pi-comment"></i></span>
+                        </div>
+                    </div>
+                    <div class="task-card-light">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-1.5 flex items-center gap-1 text-[10px]" style="color: #b48ead;">
+                            <i class="pi pi-link text-[9px]"></i>
+                            <span class="opacity-60">Note</span>
+                            <i class="pi pi-angle-right text-[8px] opacity-40"></i>
+                            <span class="source-link font-medium">Strategy Brainstorm</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-comment"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-300">2h</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="tag-pill tag-green-dark">Finance</span>
+                            <span class="tag-pill tag-green-dark">Q1</span>
+                        </div>
+                        <div class="mt-1.5 flex items-center gap-1 text-[10px]" style="color: #81a1c1;">
+                            <i class="pi pi-link text-[9px]"></i>
+                            <span class="opacity-60">Meeting</span>
+                            <i class="pi pi-angle-right text-[8px] opacity-40"></i>
+                            <span class="source-link font-medium">Sprint Planning</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-dark">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-1.5 flex items-center gap-1 text-[10px]" style="color: #b48ead;">
+                            <i class="pi pi-link text-[9px]"></i>
+                            <span class="opacity-60">Note</span>
+                            <i class="pi pi-angle-right text-[8px] opacity-40"></i>
+                            <span class="source-link font-medium">Strategy Brainstorm</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Shows both source type and name always visible</li>
+                        <li>Breadcrumb pattern is familiar and intuitive</li>
+                        <li>Very small text keeps it unobtrusive</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Adds another row to the card - increases height</li>
+                        <li>May look cluttered when combined with tags row</li>
+                        <li>Link icon may not be visible enough at 10px</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 8: Source Icon Prefix on Title -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 8: Source Icon Prefix on Title</h2>
+                <p class="text-sm text-gray-600 mt-1">A small colored icon before the task title indicates its source. Clicking the icon navigates to the source.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <div class="task-card-light mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <!-- Source icon before title -->
+                            <button class="source-link shrink-0 w-4 h-5 flex items-center justify-center" style="color: #5e81ac;" title="From: Sprint Planning">
+                                <i class="pi pi-video text-[11px]"></i>
+                            </button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-400">2h</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-light">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <button class="source-link shrink-0 w-4 h-5 flex items-center justify-center" style="color: #b48ead;" title="From: Strategy Brainstorm">
+                                <i class="pi pi-file-edit text-[11px]"></i>
+                            </button>
+                            <p class="text-sm text-gray-800 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <button class="source-link shrink-0 w-4 h-5 flex items-center justify-center" style="color: #81a1c1;" title="From: Sprint Planning">
+                                <i class="pi pi-video text-[11px]"></i>
+                            </button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-300">2h</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-dark">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <button class="source-link shrink-0 w-4 h-5 flex items-center justify-center" style="color: #b48ead;" title="From: Strategy Brainstorm">
+                                <i class="pi pi-file-edit text-[11px]"></i>
+                            </button>
+                            <p class="text-sm text-gray-200 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Zero extra card height - fits inline with title</li>
+                        <li>Always visible - no click or hover needed</li>
+                        <li>Color-coded icon is quick to scan</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Very small click target for navigation</li>
+                        <li>Source name only shown in tooltip (hover-dependent)</li>
+                        <li>Two icons before title (flag + source) may confuse</li>
+                        <li>Interferes with inline title editing flow</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 9: Source Badge in Tags Row -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 9: Source Badge in Tags Row</h2>
+                <p class="text-sm text-gray-600 mt-1">The source appears as a special badge alongside tags, differentiated by icon and color from regular tags.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <div class="task-card-light mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-400">2h</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="tag-pill tag-green-light">Finance</span>
+                            <span class="tag-pill tag-green-light">Q1</span>
+                            <!-- Source badge (styled differently from tags) -->
+                            <span class="source-link tag-pill source-meeting-light" style="border: 1px dashed rgba(94,129,172,0.4);">
+                                <i class="pi pi-video text-[9px]"></i> Sprint Planning
+                            </span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-light">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="source-link tag-pill source-note-light" style="border: 1px dashed rgba(180,142,173,0.4);">
+                                <i class="pi pi-file-edit text-[9px]"></i> Strategy Brainstorm
+                            </span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-300">2h</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="tag-pill tag-green-dark">Finance</span>
+                            <span class="tag-pill tag-green-dark">Q1</span>
+                            <span class="source-link tag-pill source-meeting-dark" style="border: 1px dashed rgba(129,161,193,0.4);">
+                                <i class="pi pi-video text-[9px]"></i> Sprint Planning
+                            </span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-card-dark">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="source-link tag-pill source-note-dark" style="border: 1px dashed rgba(180,142,173,0.4);">
+                                <i class="pi pi-file-edit text-[9px]"></i> Strategy Brainstorm
+                            </span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Reuses existing tags row - no new UI section needed</li>
+                        <li>Dashed border visually distinguishes source from regular tags</li>
+                        <li>Source name is always visible alongside tags</li>
+                        <li>Clickable for navigation</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Mixing sources with tags may confuse users (different concepts)</li>
+                        <li>Source badge is not removable like tags - inconsistent behavior</li>
+                        <li>Tags row gets longer, may wrap more often</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- OPTION 10: Footer Row with Timestamp -->
+        <!-- ============================================================ -->
+        <div class="mb-12">
+            <div class="mb-3">
+                <h2 class="text-lg font-bold">Option 10: Footer Source Row</h2>
+                <p class="text-sm text-gray-600 mt-1">A dedicated footer row at the bottom of the card showing the source origin with a link, separated by a subtle divider.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="light-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="pi pi-sun"></i> Light Mode</h3>
+                    <div class="task-card-light mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-400">2h</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="tag-pill tag-green-light">Finance</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-light gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs comments-light relative">
+                                <i class="pi pi-comment"></i>
+                                <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full text-[9px] font-medium" style="background: rgba(94,129,172,0.3); color: #3d5a80;">2</span>
+                            </span>
+                        </div>
+                        <!-- Footer divider + source row -->
+                        <div class="mt-2 pt-1.5 border-t flex items-center gap-1.5 text-[10px]" style="border-color: rgba(94,129,172,0.15); color: #5e81ac;">
+                            <i class="pi pi-video text-[9px]"></i>
+                            <span class="opacity-60">Created from</span>
+                            <span class="source-link font-medium">Sprint Planning</span>
+                            <span class="opacity-40">&middot; Jan 28</span>
+                            <i class="pi pi-arrow-up-right text-[8px] ml-auto source-link"></i>
+                        </div>
+                    </div>
+                    <div class="task-card-light">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-800 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-calendar"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs bg-gray-100 text-gray-400"><i class="pi pi-comment"></i></span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t flex items-center gap-1.5 text-[10px]" style="border-color: rgba(180,142,173,0.15); color: #b48ead;">
+                            <i class="pi pi-file-edit text-[9px]"></i>
+                            <span class="opacity-60">Created from</span>
+                            <span class="source-link font-medium">Strategy Brainstorm</span>
+                            <span class="opacity-40">&middot; Jan 25</span>
+                            <i class="pi pi-arrow-up-right text-[8px] ml-auto source-link"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="dark-mode rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2"><i class="pi pi-moon"></i> Dark Mode</h3>
+                    <div class="task-card-dark mb-3">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center text-red-400"><i class="pi pi-flag-fill text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Prepare Q1 budget proposal</p>
+                            <span class="text-xs text-orange-300">2h</span>
+                        </div>
+                        <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                            <span class="tag-pill tag-green-dark">Finance</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center h-7 px-3 rounded-full text-xs due-dark gap-1.5"><i class="pi pi-calendar"></i> Tomorrow</span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs source-meeting-dark relative">
+                                <i class="pi pi-comment"></i>
+                                <span class="absolute -top-0.5 -right-0.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full text-[9px] font-medium" style="background: rgba(94,129,172,0.4); color: #81a1c1;">2</span>
+                            </span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t flex items-center gap-1.5 text-[10px]" style="border-color: rgba(129,161,193,0.15); color: #81a1c1;">
+                            <i class="pi pi-video text-[9px]"></i>
+                            <span class="opacity-60">Created from</span>
+                            <span class="source-link font-medium">Sprint Planning</span>
+                            <span class="opacity-40">&middot; Jan 28</span>
+                            <i class="pi pi-arrow-up-right text-[8px] ml-auto source-link"></i>
+                        </div>
+                    </div>
+                    <div class="task-card-dark">
+                        <div class="flex items-start gap-2">
+                            <button class="shrink-0 w-5 h-5 flex items-center justify-center" style="color: #4c566a;"><i class="pi pi-flag text-sm"></i></button>
+                            <p class="text-sm text-gray-200 flex-1">Research competitor pricing models</p>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-calendar"></i></span>
+                            <span class="inline-flex items-center justify-center h-7 w-7 rounded-full text-xs" style="background: rgba(76,86,106,0.4); color: #4c566a;"><i class="pi pi-comment"></i></span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t flex items-center gap-1.5 text-[10px]" style="border-color: rgba(180,142,173,0.15); color: #b48ead;">
+                            <i class="pi pi-file-edit text-[9px]"></i>
+                            <span class="opacity-60">Created from</span>
+                            <span class="source-link font-medium">Strategy Brainstorm</span>
+                            <span class="opacity-40">&middot; Jan 25</span>
+                            <i class="pi pi-arrow-up-right text-[8px] ml-auto source-link"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-green-600 font-medium">Pros:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Full context: source type, name, date, and navigation</li>
+                        <li>Clearly separated from task content by divider</li>
+                        <li>Navigation arrow is an obvious click target</li>
+                        <li>Feels like metadata - doesn't interfere with task content</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-red-500 font-medium">Cons:</p>
+                    <ul class="list-disc ml-4 space-y-0.5">
+                        <li>Adds the most height of all options</li>
+                        <li>Only relevant for sourced tasks - empty space otherwise</li>
+                        <li>May make cards feel "heavy" in a dense kanban board</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SUMMARY / RECOMMENDATION -->
+        <!-- ============================================================ -->
+        <div class="p-6 bg-white rounded-xl mt-8">
+            <h2 class="text-lg font-bold mb-4">Summary & Recommendation</h2>
+
+            <table class="w-full text-xs mb-6">
+                <thead>
+                    <tr class="text-left border-b">
+                        <th class="py-2 pr-3">Option</th>
+                        <th class="py-2 pr-3">Always Visible</th>
+                        <th class="py-2 pr-3">Shows Name</th>
+                        <th class="py-2 pr-3">Extra Height</th>
+                        <th class="py-2 pr-3">Mobile Friendly</th>
+                        <th class="py-2 pr-3">Consistent w/ UI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b bg-green-50">
+                        <td class="py-1.5 pr-3 font-medium">1. Source Pill in Tab Bar *</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">None</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">High</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">2. Subtitle Below Title</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-red-500">+16px</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Medium</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">3. Left Border + Tooltip</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Partial</td>
+                        <td class="py-1.5 pr-3 text-red-500">Hover only</td>
+                        <td class="py-1.5 pr-3 text-green-600">None</td>
+                        <td class="py-1.5 pr-3 text-red-500">No</td>
+                        <td class="py-1.5 pr-3 text-red-500">Low</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">4. Corner Icon Badge</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-red-500">Hover only</td>
+                        <td class="py-1.5 pr-3 text-green-600">None</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Small target</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Medium</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">5. Top Color Stripe</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-red-500">+18px</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-red-500">Low (conflicts borders)</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">6. Expandable Source Tab</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Icon only</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">On expand</td>
+                        <td class="py-1.5 pr-3 text-green-600">None (collapsed)</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">High</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">7. Breadcrumb Below Tags</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-red-500">+14px</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Medium</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">8. Icon Prefix on Title</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-red-500">Hover only</td>
+                        <td class="py-1.5 pr-3 text-green-600">None</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Small target</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Medium</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">9. Source Badge in Tags Row</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Reuses tag row</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Medium</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-1.5 pr-3">10. Footer Source Row</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes + date</td>
+                        <td class="py-1.5 pr-3 text-red-500">+20px</td>
+                        <td class="py-1.5 pr-3 text-green-600">Yes</td>
+                        <td class="py-1.5 pr-3 text-yellow-600">Medium</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                <p class="font-bold text-green-800 mb-2">Recommended: Option 1 - Source Pill in Tab Bar</p>
+                <p class="text-sm text-green-700 mb-2">This option fits naturally into the existing task card UI pattern. The source pill sits alongside the Due Date and Comments tabs, maintaining visual consistency. It shows the source name and icon at all times without adding extra card height, and clicking navigates directly to the originating meeting or note.</p>
+                <p class="text-sm text-green-700"><strong>Runner-up: Option 6 (Expandable Source Tab)</strong> if the tab bar becomes too crowded. This option trades immediate name visibility for a cleaner collapsed state, while offering a richer expanded view with source details.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

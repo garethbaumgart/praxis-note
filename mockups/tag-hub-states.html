@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Hub States — Issue #335 — 5 Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-solid': 'var(--color-primary-solid)',
+            'accent-foreground': 'var(--color-primary-text)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            danger: 'var(--color-danger-base)',
+            'tag-bg': 'var(--color-tag-bg)',
+            'tag-text': 'var(--color-tag-text)',
+            'inprogress-bg': 'var(--color-inprogress-bg)',
+            'inprogress-text': 'var(--color-inprogress-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8; --color-bg-subtle: #ffffff; --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440; --color-text-secondary: #4c566a; --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0; --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15); --color-primary-text: #5e81ac; --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.15); --color-tag-text: #b48ead;
+      --color-todo-bg: rgba(136, 192, 208, 0.12); --color-todo-text: #0b7285;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1); --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.1); --color-done-text: #a3be8c; --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933; --color-bg-subtle: #2e3440; --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4; --color-text-secondary: #d8dee9; --color-text-muted: #4c566a;
+      --color-border-default: #3b4252; --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2); --color-primary-text: #88c0d0; --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.2); --color-tag-text: #b48ead;
+      --color-todo-bg: rgba(136, 192, 208, 0.15); --color-todo-text: #88c0d0;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.15); --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.15); --color-done-text: #a3be8c; --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-card { background: var(--color-bg-subtle); border-radius: 12px; overflow: hidden; border: 1px solid var(--color-border-default); }
+    .option-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border-muted); display: flex; align-items: center; justify-content: space-between; }
+    .option-body { padding: 1.25rem; }
+    .option-number { background: var(--color-primary-solid); color: white; font-size: 11px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .recommended { border: 2px solid #a3be8c !important; }
+    .recommended-badge { background: #a3be8c; color: #2e3440; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+    .option-divider { border-top: 3px dashed var(--color-border-default); margin: 3rem 0; padding-top: 2rem; }
+    .pros-cons { margin-top: 12px; font-size: 11px; line-height: 1.8; }
+    .pros-cons .pro { color: #a3be8c; }
+    .pros-cons .con { color: #bf616a; }
+    .pi { font-size: inherit !important; }
+    .tag-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 9999px; }
+    .tag-chip.selected { background: var(--color-primary-solid); color: white; }
+
+    /* Skeleton animation */
+    @keyframes shimmer {
+      0% { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--color-bg-muted) 25%, var(--color-border-muted) 50%, var(--color-bg-muted) 75%);
+      background-size: 800px 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+
+    /* Pulse animation for spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 24px; height: 24px; border: 2.5px solid var(--color-border-default); border-top-color: var(--color-primary-solid); border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+    /* Fade-in for content */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fadeUp 0.3s ease-out; }
+  </style>
+</head>
+<body class="p-6 lg:p-8">
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="toggleTheme()" class="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-foreground-secondary text-sm hover:bg-surface-muted transition">
+      <i class="pi pi-moon mr-1"></i> Toggle Theme
+    </button>
+  </div>
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Tag Hub — Empty / Loading / Error States — 5 Options</h1>
+    <p class="text-foreground-secondary mb-1 text-sm">Issue <a href="https://github.com/garethbaumgart/praxis-note/issues/335" class="text-accent-foreground underline">#335</a> — How the Tag Hub looks before a tag is selected, while loading, when empty, and on error.</p>
+    <p class="text-foreground-muted mb-8 text-xs">Each option shows all four states side by side. The tag selector dropdown stays consistent across options — the variation is in the content area below it.</p>
+
+    <!-- ======================= OPTION 1 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">1</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Centered Icon + Text</div>
+            <div class="text-foreground-muted text-xs">Large centered icon with a short message — clean and simple</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- No tag selected -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">No Tag Selected</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 200px">
+              <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle mb-6" style="width: fit-content">
+                <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                <span class="text-foreground-muted text-xs">Select a tag...</span>
+                <i class="pi pi-chevron-down text-foreground-muted ml-4" style="font-size:10px"></i>
+              </div>
+              <div class="flex flex-col items-center justify-center py-10">
+                <i class="pi pi-tags text-foreground-muted" style="font-size: 32px; opacity: 0.4"></i>
+                <p class="text-foreground-muted text-sm mt-3">Select a tag to view its items</p>
+              </div>
+            </div>
+          </div>
+          <!-- Loading -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Loading</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 200px">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+              </div>
+              <div class="flex flex-col items-center justify-center py-10">
+                <div class="spinner"></div>
+                <p class="text-foreground-muted text-xs mt-3">Loading items...</p>
+              </div>
+            </div>
+          </div>
+          <!-- Empty -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Empty (No Items)</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 200px">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">old-project</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+                <span class="text-foreground-muted text-xs">0 items</span>
+              </div>
+              <div class="flex flex-col items-center justify-center py-10">
+                <i class="pi pi-inbox text-foreground-muted" style="font-size: 32px; opacity: 0.4"></i>
+                <p class="text-foreground-muted text-sm mt-3">No items found for this tag</p>
+              </div>
+            </div>
+          </div>
+          <!-- Error -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Error</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 200px">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+              </div>
+              <div class="flex flex-col items-center justify-center py-10">
+                <i class="pi pi-exclamation-circle" style="font-size: 32px; color: var(--color-danger-base); opacity: 0.7"></i>
+                <p class="text-foreground-muted text-sm mt-3">Failed to load items</p>
+                <button class="mt-3 px-4 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground-secondary hover:bg-surface-muted transition">
+                  <i class="pi pi-refresh mr-1" style="font-size:10px"></i> Retry
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Simple and universally understood pattern</div>
+          <div class="pro">+ Large icon draws the eye to the empty area</div>
+          <div class="con">- Can feel generic/template-y</div>
+          <div class="con">- Spinner alone gives no progress indication</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 2 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">2</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Skeleton Rows + Inline Messages</div>
+            <div class="text-foreground-muted text-xs">Loading shows skeleton item rows; empty/error use inline banners instead of centered blocks</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- No tag selected -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">No Tag Selected</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 200px">
+              <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle mb-6" style="width: fit-content">
+                <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                <span class="text-foreground-muted text-xs">Select a tag...</span>
+                <i class="pi pi-chevron-down text-foreground-muted ml-4" style="font-size:10px"></i>
+              </div>
+              <div class="rounded-lg bg-surface-muted px-4 py-3 flex items-center gap-3">
+                <i class="pi pi-info-circle text-accent-foreground" style="font-size: 14px"></i>
+                <p class="text-foreground-secondary text-xs">Choose a tag from the dropdown above to see all related meetings, notes, and tasks.</p>
+              </div>
+            </div>
+          </div>
+          <!-- Loading (skeleton rows) -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Loading</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 200px">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+                <div class="skeleton" style="width: 120px; height: 14px"></div>
+              </div>
+              <!-- Skeleton date chip -->
+              <div class="flex items-center gap-2 mb-2">
+                <div class="skeleton" style="width: 80px; height: 22px; border-radius: 9999px"></div>
+                <div class="flex-1 h-px bg-border-muted"></div>
+              </div>
+              <!-- Skeleton rows -->
+              <div class="flex items-center gap-3 px-3 py-2">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 60%; height: 12px"></div>
+                  <div class="skeleton" style="width: 35%; height: 10px"></div>
+                </div>
+                <div class="skeleton" style="width: 30px; height: 10px"></div>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 45%; height: 12px"></div>
+                  <div class="skeleton" style="width: 25%; height: 10px"></div>
+                </div>
+                <div class="skeleton" style="width: 30px; height: 10px"></div>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 55%; height: 12px"></div>
+                  <div class="skeleton" style="width: 30%; height: 10px"></div>
+                </div>
+                <div class="skeleton" style="width: 30px; height: 10px"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Empty -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Empty (No Items)</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 200px">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">old-project</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+                <span class="text-foreground-muted text-xs">0 items</span>
+              </div>
+              <div class="rounded-lg border border-border-muted bg-surface px-4 py-3 flex items-center gap-3">
+                <i class="pi pi-inbox text-foreground-muted" style="font-size: 14px"></i>
+                <p class="text-foreground-muted text-xs">No meetings, notes, or tasks are tagged with "old-project".</p>
+              </div>
+            </div>
+          </div>
+          <!-- Error -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Error</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 200px">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+              </div>
+              <div class="rounded-lg px-4 py-3 flex items-center justify-between" style="background: rgba(191, 97, 106, 0.08); border: 1px solid rgba(191, 97, 106, 0.2)">
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-exclamation-triangle" style="font-size: 14px; color: var(--color-danger-base)"></i>
+                  <p class="text-foreground-secondary text-xs">Unable to load items. Please try again.</p>
+                </div>
+                <button class="px-3 py-1 rounded-md text-[11px] font-medium text-foreground-secondary hover:bg-surface-muted transition border border-border">Retry</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Skeleton rows preview the real layout — reduces perceived load time</div>
+          <div class="pro">+ Inline banners feel native and non-intrusive</div>
+          <div class="pro">+ Error banner with inline retry is quick to act on</div>
+          <div class="con">- Empty state inline banner may be too subtle for some users</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 3 (RECOMMENDED) ======================= -->
+    <div class="option-card recommended mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">3</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Skeleton Loading + Centered Empty/Error</div>
+            <div class="text-foreground-muted text-xs">Best of both: skeletons for loading, centered treatment for empty/error/no-selection</div>
+          </div>
+        </div>
+        <div class="recommended-badge">Recommended</div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- No tag selected -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">No Tag Selected</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle mb-6" style="width: fit-content">
+                <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                <span class="text-foreground-muted text-xs">Select a tag...</span>
+                <i class="pi pi-chevron-down text-foreground-muted ml-4" style="font-size:10px"></i>
+              </div>
+              <div class="flex flex-col items-center justify-center py-8">
+                <div class="w-12 h-12 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size: 20px"></i>
+                </div>
+                <p class="text-foreground-secondary text-sm font-medium">Choose a tag</p>
+                <p class="text-foreground-muted text-xs mt-1">Select a tag above to see related items</p>
+              </div>
+            </div>
+          </div>
+          <!-- Loading (skeleton rows) -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Loading</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+                <div class="skeleton" style="width: 140px; height: 14px"></div>
+              </div>
+              <!-- Skeleton date chip -->
+              <div class="flex items-center gap-2 mb-2">
+                <div class="skeleton" style="width: 80px; height: 22px; border-radius: 9999px"></div>
+                <div class="flex-1 h-px bg-border-muted"></div>
+              </div>
+              <!-- Skeleton rows -->
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 55%; height: 13px"></div>
+                  <div class="skeleton" style="width: 30%; height: 10px"></div>
+                </div>
+                <div class="skeleton" style="width: 32px; height: 10px"></div>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 70%; height: 13px"></div>
+                  <div class="skeleton" style="width: 22%; height: 10px"></div>
+                </div>
+                <div class="skeleton" style="width: 32px; height: 10px"></div>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 40%; height: 13px"></div>
+                  <div class="skeleton" style="width: 35%; height: 10px"></div>
+                </div>
+                <div class="skeleton" style="width: 32px; height: 10px"></div>
+              </div>
+              <!-- Skeleton date chip 2 -->
+              <div class="flex items-center gap-2 mt-3 mb-2">
+                <div class="skeleton" style="width: 72px; height: 22px; border-radius: 9999px"></div>
+                <div class="flex-1 h-px bg-border-muted"></div>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 50%; height: 13px"></div>
+                  <div class="skeleton" style="width: 28%; height: 10px"></div>
+                </div>
+                <div class="skeleton" style="width: 32px; height: 10px"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Empty -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Empty (No Items)</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">old-project</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+                <span class="text-foreground-muted text-xs">0 items</span>
+              </div>
+              <div class="flex flex-col items-center justify-center py-8">
+                <div class="w-12 h-12 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
+                  <i class="pi pi-inbox text-foreground-muted" style="font-size: 20px"></i>
+                </div>
+                <p class="text-foreground-secondary text-sm font-medium">No items yet</p>
+                <p class="text-foreground-muted text-xs mt-1">Nothing is tagged with "old-project"</p>
+              </div>
+            </div>
+          </div>
+          <!-- Error -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Error</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+              </div>
+              <div class="flex flex-col items-center justify-center py-8">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style="background: rgba(191, 97, 106, 0.1)">
+                  <i class="pi pi-exclamation-triangle" style="font-size: 20px; color: var(--color-danger-base)"></i>
+                </div>
+                <p class="text-foreground-secondary text-sm font-medium">Something went wrong</p>
+                <p class="text-foreground-muted text-xs mt-1">We couldn't load the items for this tag</p>
+                <button class="mt-3 px-4 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground-secondary hover:bg-surface-muted transition">
+                  <i class="pi pi-refresh mr-1" style="font-size:10px"></i> Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Skeleton rows match the real layout — smoothest loading transition</div>
+          <div class="pro">+ Icon-in-rounded-box gives empty/error visual weight without being heavy</div>
+          <div class="pro">+ Two-line text (title + subtitle) gives context without being wordy</div>
+          <div class="pro">+ Consistent centered treatment for all non-data states</div>
+          <div class="con">- Slightly more implementation effort than pure spinner</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 4 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">4</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Ghost Item Rows</div>
+            <div class="text-foreground-muted text-xs">Empty state uses faded "ghost" items to hint at what content looks like</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- No tag selected -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">No Tag Selected</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle mb-6" style="width: fit-content">
+                <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                <span class="text-foreground-muted text-xs">Select a tag...</span>
+                <i class="pi pi-chevron-down text-foreground-muted ml-4" style="font-size:10px"></i>
+              </div>
+              <!-- Ghost items showing what it would look like -->
+              <div style="opacity: 0.2; pointer-events: none">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-muted text-foreground-muted text-[10px] font-semibold uppercase tracking-wider">
+                    <i class="pi pi-calendar" style="font-size:9px"></i> This Week
+                  </span>
+                  <div class="flex-1 h-px bg-border-muted"></div>
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2">
+                  <div style="width:28px;height:28px;border-radius:6px;background:var(--color-primary-bg)" class="flex items-center justify-center"><i class="pi pi-comments" style="font-size:12px;color:var(--color-primary-text)"></i></div>
+                  <div><div class="text-sm text-foreground">Meeting title</div><div class="text-[11px] text-foreground-muted">Date · Attendees</div></div>
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2">
+                  <div style="width:28px;height:28px;border-radius:6px;background:var(--color-done-bg)" class="flex items-center justify-center"><i class="pi pi-file-edit" style="font-size:12px;color:var(--color-done-text)"></i></div>
+                  <div><div class="text-sm text-foreground">Note title</div><div class="text-[11px] text-foreground-muted">Updated recently</div></div>
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2">
+                  <div style="width:28px;height:28px;border-radius:6px;background:var(--color-inprogress-bg)" class="flex items-center justify-center"><i class="pi pi-check-square" style="font-size:12px;color:var(--color-inprogress-text)"></i></div>
+                  <div><div class="text-sm text-foreground">Task title</div><div class="text-[11px] text-foreground-muted">Status · Due date</div></div>
+                </div>
+              </div>
+              <p class="text-foreground-muted text-xs text-center mt-3">Select a tag to see items like these</p>
+            </div>
+          </div>
+          <!-- Loading -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Loading</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+              </div>
+              <!-- Skeleton date chip -->
+              <div class="flex items-center gap-2 mb-2">
+                <div class="skeleton" style="width: 80px; height: 22px; border-radius: 9999px"></div>
+                <div class="flex-1 h-px bg-border-muted"></div>
+              </div>
+              <!-- Skeleton rows -->
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 55%; height: 13px"></div>
+                  <div class="skeleton" style="width: 30%; height: 10px"></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 65%; height: 13px"></div>
+                  <div class="skeleton" style="width: 25%; height: 10px"></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0"></div>
+                <div class="flex-1">
+                  <div class="skeleton mb-1.5" style="width: 45%; height: 13px"></div>
+                  <div class="skeleton" style="width: 35%; height: 10px"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Empty -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Empty (No Items)</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">old-project</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+                <span class="text-foreground-muted text-xs">0 items</span>
+              </div>
+              <!-- Ghost items faded out with overlay message -->
+              <div class="relative">
+                <div style="opacity: 0.08; pointer-events: none">
+                  <div class="flex items-center gap-2.5 px-3 py-2">
+                    <div style="width:28px;height:28px;border-radius:6px;background:var(--color-primary-bg)"></div>
+                    <div><div class="text-sm" style="width: 140px; height: 12px; background: var(--color-bg-muted); border-radius: 4px"></div></div>
+                  </div>
+                  <div class="flex items-center gap-2.5 px-3 py-2">
+                    <div style="width:28px;height:28px;border-radius:6px;background:var(--color-done-bg)"></div>
+                    <div><div class="text-sm" style="width: 100px; height: 12px; background: var(--color-bg-muted); border-radius: 4px"></div></div>
+                  </div>
+                </div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="text-center">
+                    <p class="text-foreground-muted text-sm">No items tagged with "old-project"</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Error -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Error</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+              </div>
+              <div class="flex flex-col items-center justify-center py-8">
+                <i class="pi pi-exclamation-circle" style="font-size: 28px; color: var(--color-danger-base); opacity: 0.6"></i>
+                <p class="text-foreground-muted text-sm mt-3">Failed to load items</p>
+                <button class="mt-2 text-accent-foreground text-xs font-medium hover:underline">
+                  <i class="pi pi-refresh mr-1" style="font-size:10px"></i> Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Ghost items teach the user what content will look like</div>
+          <div class="pro">+ Visually differentiates "no selection" from "empty" effectively</div>
+          <div class="con">- Ghost items add complexity — must maintain placeholder content</div>
+          <div class="con">- Faded ghost rows can look like a rendering bug to some users</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 5 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">5</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Illustration-Style Empty States</div>
+            <div class="text-foreground-muted text-xs">CSS-only mini-illustrations for each state — playful but clean</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- No tag selected -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">No Tag Selected</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle mb-6" style="width: fit-content">
+                <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                <span class="text-foreground-muted text-xs">Select a tag...</span>
+                <i class="pi pi-chevron-down text-foreground-muted ml-4" style="font-size:10px"></i>
+              </div>
+              <div class="flex flex-col items-center justify-center py-6">
+                <!-- CSS mini-illustration: three tag-like shapes -->
+                <div class="flex items-end gap-1.5 mb-4">
+                  <div class="rounded-md" style="width: 32px; height: 20px; background: var(--color-tag-bg); opacity: 0.4"></div>
+                  <div class="rounded-md" style="width: 44px; height: 20px; background: var(--color-tag-bg); opacity: 0.6"></div>
+                  <div class="rounded-md" style="width: 36px; height: 20px; background: var(--color-tag-bg); opacity: 0.4"></div>
+                </div>
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="w-1 h-1 rounded-full bg-accent-foreground" style="opacity: 0.5"></div>
+                  <div class="w-1 h-1 rounded-full bg-accent-foreground" style="opacity: 0.5"></div>
+                  <div class="w-1 h-1 rounded-full bg-accent-foreground" style="opacity: 0.5"></div>
+                </div>
+                <p class="text-foreground-secondary text-sm font-medium mt-2">Pick a tag to explore</p>
+                <p class="text-foreground-muted text-xs mt-0.5">Your meetings, notes, and tasks — all in one place</p>
+              </div>
+            </div>
+          </div>
+          <!-- Loading -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Loading</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+              </div>
+              <!-- Pulsing dots loader -->
+              <div class="flex flex-col items-center justify-center py-10">
+                <div class="flex gap-1.5">
+                  <div class="w-2 h-2 rounded-full bg-accent-foreground" style="animation: pulse 1s ease-in-out infinite"></div>
+                  <div class="w-2 h-2 rounded-full bg-accent-foreground" style="animation: pulse 1s ease-in-out 0.2s infinite"></div>
+                  <div class="w-2 h-2 rounded-full bg-accent-foreground" style="animation: pulse 1s ease-in-out 0.4s infinite"></div>
+                </div>
+                <p class="text-foreground-muted text-xs mt-4">Gathering items...</p>
+              </div>
+            </div>
+          </div>
+          <!-- Empty -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Empty (No Items)</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">old-project</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+                <span class="text-foreground-muted text-xs">0 items</span>
+              </div>
+              <div class="flex flex-col items-center justify-center py-6">
+                <!-- CSS mini-illustration: empty box -->
+                <div class="relative mb-4">
+                  <div class="rounded-lg border-2 border-dashed" style="width: 48px; height: 36px; border-color: var(--color-border-default); opacity: 0.5"></div>
+                  <div class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-surface-muted flex items-center justify-center">
+                    <i class="pi pi-times text-foreground-muted" style="font-size: 7px"></i>
+                  </div>
+                </div>
+                <p class="text-foreground-secondary text-sm font-medium">Nothing here</p>
+                <p class="text-foreground-muted text-xs mt-0.5">No items are tagged with "old-project"</p>
+              </div>
+            </div>
+          </div>
+          <!-- Error -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Error</div>
+            <div class="rounded-lg border border-border-muted p-4" style="min-height: 220px">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+                  <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+                  <span class="tag-chip selected" style="font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+                  <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+                </div>
+              </div>
+              <div class="flex flex-col items-center justify-center py-6">
+                <!-- CSS mini-illustration: broken connection -->
+                <div class="relative mb-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded" style="background: var(--color-primary-bg)"></div>
+                    <div style="width: 20px; height: 2px; background: var(--color-danger-base); opacity: 0.4; transform: rotate(-20deg)"></div>
+                    <div class="w-5 h-5 rounded" style="background: var(--color-done-bg)"></div>
+                  </div>
+                </div>
+                <p class="text-foreground-secondary text-sm font-medium">Connection issue</p>
+                <p class="text-foreground-muted text-xs mt-0.5">We couldn't reach the server</p>
+                <button class="mt-3 px-4 py-1.5 rounded-lg text-xs font-medium bg-accent-solid text-white hover:opacity-90 transition">
+                  <i class="pi pi-refresh mr-1" style="font-size:10px"></i> Retry
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ More personality — feels crafted rather than generic</div>
+          <div class="pro">+ CSS-only illustrations are lightweight (no image assets)</div>
+          <div class="con">- More effort to implement and maintain</div>
+          <div class="con">- Illustration style may not match if the rest of the app is utilitarian</div>
+          <div class="con">- Pulsing dots loader doesn't hint at the final layout</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <style>
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+  </style>
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.getAttribute('data-theme') === 'dark' ? html.removeAttribute('data-theme') : html.setAttribute('data-theme', 'dark');
+    }
+  </script>
+</body>
+</html>

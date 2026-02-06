@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Johari Window Sizing Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            'accent-solid': 'var(--color-primary-solid)',
+            'accent-foreground': 'var(--color-primary-text)',
+            accent: 'var(--color-primary-bg)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            inprogress: 'var(--color-inprogress-bg)',
+            'inprogress-foreground': 'var(--color-inprogress-text)',
+            'inprogress-border': 'var(--color-inprogress-border)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.2);
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.15);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.15);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.25);
+    }
+    body { background: var(--color-bg-base); color: var(--color-text-primary); }
+    .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 50; }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+  <button class="theme-toggle px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-sm text-foreground-secondary" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">
+    Toggle Dark Mode
+  </button>
+
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-foreground mb-2">Johari Window — Compact Sizing Options</h1>
+    <p class="text-foreground-muted mb-2">Exploring smaller, more compact Johari Window grid layouts</p>
+    <p class="text-sm text-foreground-muted mb-8">
+      <strong>Test data:</strong> Open 79% · Blind Spot 5% · Hidden 16% · Unknown 0%<br>
+      Current issue: With proportional sizing, the small quadrants (5%, 0%) become unreadably tiny.
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- Current (Broken) State -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold rounded">Current (Broken)</span>
+        <h2 class="text-lg font-bold text-foreground">Proportional with min 5fr — Too Extreme</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-3">Grid: 95fr 5fr / 84fr 16fr. The right column is ~5% width, text is unreadable.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 480px;">
+        <div class="grid gap-2" style="grid-template-columns: 95fr 5fr; grid-template-rows: 84fr 16fr; height: 220px;">
+          <div class="rounded-lg p-3 flex flex-col items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+            <span class="text-2xl font-bold" style="color: var(--color-done-text);">79%</span>
+            <span class="text-xs font-medium mt-1" style="color: var(--color-done-text);">Open</span>
+            <span class="text-[10px] mt-0.5 text-foreground-muted">Known to self & others</span>
+          </div>
+          <div class="rounded-lg p-1 flex flex-col items-center justify-center text-center overflow-hidden" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+            <span class="text-[8px] font-bold" style="color: var(--color-inprogress-text);">5%</span>
+          </div>
+          <div class="rounded-lg p-1 flex flex-col items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+            <span class="text-sm font-bold" style="color: var(--color-primary-text);">16%</span>
+            <span class="text-[10px] font-medium" style="color: var(--color-primary-text);">Hidden</span>
+          </div>
+          <div class="rounded-lg p-1 flex flex-col items-center justify-center text-center overflow-hidden bg-surface-muted border border-border">
+            <span class="text-[6px] font-bold text-foreground-muted">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 1: Fixed Equal Grid (No Proportional) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 1</span>
+        <h2 class="text-lg font-bold text-foreground">Fixed Equal Grid — 160px height</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> All labels always readable, simple, consistent. <strong>Cons:</strong> Loses proportional data communication.</p>
+      <p class="text-xs text-foreground-muted mb-3">Grid: 1fr 1fr / 1fr 1fr, fixed 160px total height.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 420px;">
+        <div class="grid grid-cols-2 grid-rows-2 gap-1.5" style="height: 160px;">
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+            <span class="text-xl font-bold" style="color: var(--color-done-text);">79%</span>
+            <span class="text-[10px] font-medium" style="color: var(--color-done-text);">Open</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+            <span class="text-xl font-bold" style="color: var(--color-inprogress-text);">5%</span>
+            <span class="text-[10px] font-medium" style="color: var(--color-inprogress-text);">Blind Spot</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+            <span class="text-xl font-bold" style="color: var(--color-primary-text);">16%</span>
+            <span class="text-[10px] font-medium" style="color: var(--color-primary-text);">Hidden</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center bg-surface-muted border border-border">
+            <span class="text-xl font-bold text-foreground-muted">0%</span>
+            <span class="text-[10px] font-medium text-foreground-muted">Unknown</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 2: Proportional with min 20fr — 180px height -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 2</span>
+        <h2 class="text-lg font-bold text-foreground">Proportional min 20fr — 180px height</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Still proportional, small quadrants readable. <strong>Cons:</strong> Moderate distortion of proportions.</p>
+      <p class="text-xs text-foreground-muted mb-3">Grid: 95fr 20fr / 84fr 20fr. Min 20fr ensures ~17% minimum.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 420px;">
+        <div class="grid gap-1.5" style="grid-template-columns: 95fr 20fr; grid-template-rows: 84fr 20fr; height: 180px;">
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+            <span class="text-xl font-bold" style="color: var(--color-done-text);">79%</span>
+            <span class="text-[10px] font-medium" style="color: var(--color-done-text);">Open</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+            <span class="text-base font-bold" style="color: var(--color-inprogress-text);">5%</span>
+            <span class="text-[9px] font-medium" style="color: var(--color-inprogress-text);">Blind</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+            <span class="text-base font-bold" style="color: var(--color-primary-text);">16%</span>
+            <span class="text-[9px] font-medium" style="color: var(--color-primary-text);">Hidden</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center bg-surface-muted border border-border">
+            <span class="text-base font-bold text-foreground-muted">0%</span>
+            <span class="text-[9px] font-medium text-foreground-muted">Unknown</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 3: Proportional min 25fr — 160px height -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-done text-done-foreground text-xs font-semibold rounded">Recommended</span>
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 3</span>
+        <h2 class="text-lg font-bold text-foreground">Proportional min 25fr — 160px height</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Still proportional, all quadrants comfortably readable, compact. <strong>Cons:</strong> Some distortion at extreme values.</p>
+      <p class="text-xs text-foreground-muted mb-3">Grid: 95fr 25fr / 84fr 25fr. Min 25fr ensures ~21% minimum. Compact at 160px.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 420px;">
+        <div class="grid gap-1.5" style="grid-template-columns: 95fr 25fr; grid-template-rows: 84fr 25fr; height: 160px;">
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+            <span class="text-xl font-bold" style="color: var(--color-done-text);">79%</span>
+            <span class="text-[10px] font-medium" style="color: var(--color-done-text);">Open</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+            <span class="text-base font-bold" style="color: var(--color-inprogress-text);">5%</span>
+            <span class="text-[9px] font-medium" style="color: var(--color-inprogress-text);">Blind</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+            <span class="text-base font-bold" style="color: var(--color-primary-text);">16%</span>
+            <span class="text-[9px] font-medium" style="color: var(--color-primary-text);">Hidden</span>
+          </div>
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center bg-surface-muted border border-border">
+            <span class="text-base font-bold text-foreground-muted">0%</span>
+            <span class="text-[9px] font-medium text-foreground-muted">Unk.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 4: Fixed width inline badges — single row -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 4</span>
+        <h2 class="text-lg font-bold text-foreground">Inline Badge Row — No Grid</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Extremely compact, always readable, mobile-friendly. <strong>Cons:</strong> Loses 2x2 Johari visual metaphor.</p>
+      <p class="text-xs text-foreground-muted mb-3">Four badges in a row with proportional widths. ~48px tall total.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 420px;">
+        <div class="flex gap-1.5 h-12">
+          <div class="rounded-lg flex items-center justify-center gap-1.5 px-3" style="flex: 79; background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+            <span class="text-sm font-bold" style="color: var(--color-done-text);">79%</span>
+            <span class="text-[10px] font-medium" style="color: var(--color-done-text);">Open</span>
+          </div>
+          <div class="rounded-lg flex items-center justify-center gap-1" style="flex: 16; min-width: 50px; background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+            <span class="text-xs font-bold" style="color: var(--color-primary-text);">16%</span>
+          </div>
+          <div class="rounded-lg flex items-center justify-center gap-1" style="flex: 5; min-width: 40px; background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+            <span class="text-xs font-bold" style="color: var(--color-inprogress-text);">5%</span>
+          </div>
+          <div class="rounded-lg flex items-center justify-center" style="flex: 1; min-width: 36px; background: var(--color-bg-muted); border: 1px solid var(--color-border-default);">
+            <span class="text-xs font-bold text-foreground-muted">0%</span>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-2 text-[10px] text-foreground-muted justify-center">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-done-text);"></span> Open</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-primary-text);"></span> Hidden</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-inprogress-text);"></span> Blind Spot</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-surface-muted border border-border"></span> Unknown</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 5: Compact 2x2 with 120px height -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 5</span>
+        <h2 class="text-lg font-bold text-foreground">Ultra-Compact Equal Grid — 120px height</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Very small footprint, numbers only. <strong>Cons:</strong> No labels, loses description text.</p>
+      <p class="text-xs text-foreground-muted mb-3">Grid: 1fr 1fr / 1fr 1fr, 120px height, numbers only.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 320px;">
+        <div class="grid grid-cols-2 grid-rows-2 gap-1" style="height: 120px;">
+          <div class="rounded p-1 flex items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+            <span class="text-lg font-bold" style="color: var(--color-done-text);">79%</span>
+          </div>
+          <div class="rounded p-1 flex items-center justify-center text-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+            <span class="text-lg font-bold" style="color: var(--color-inprogress-text);">5%</span>
+          </div>
+          <div class="rounded p-1 flex items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+            <span class="text-lg font-bold" style="color: var(--color-primary-text);">16%</span>
+          </div>
+          <div class="rounded p-1 flex items-center justify-center text-center bg-surface-muted border border-border">
+            <span class="text-lg font-bold text-foreground-muted">0%</span>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-2 text-[10px] text-foreground-muted justify-center">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-done-text);"></span> Open</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-inprogress-text);"></span> Blind Spot</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-primary-text);"></span> Hidden</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-surface-muted border border-border"></span> Unknown</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 6: Compact proportional with 140px, min 30fr -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 6</span>
+        <h2 class="text-lg font-bold text-foreground">Proportional min 30fr — 140px height</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Still proportional, very compact, all readable. <strong>Cons:</strong> Higher distortion, smallest quadrant ~24% of row.</p>
+      <p class="text-xs text-foreground-muted mb-3">Grid: 95fr 30fr / 84fr 30fr at 140px height.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 400px;">
+        <div class="grid gap-1.5" style="grid-template-columns: 95fr 30fr; grid-template-rows: 84fr 30fr; height: 140px;">
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+            <span class="text-lg font-bold" style="color: var(--color-done-text);">79%</span>
+            <span class="text-[9px] font-medium" style="color: var(--color-done-text);">Open</span>
+          </div>
+          <div class="rounded-lg p-1 flex flex-col items-center justify-center text-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+            <span class="text-sm font-bold" style="color: var(--color-inprogress-text);">5%</span>
+            <span class="text-[8px] font-medium" style="color: var(--color-inprogress-text);">Blind</span>
+          </div>
+          <div class="rounded-lg p-1 flex flex-col items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+            <span class="text-sm font-bold" style="color: var(--color-primary-text);">16%</span>
+            <span class="text-[8px] font-medium" style="color: var(--color-primary-text);">Hidden</span>
+          </div>
+          <div class="rounded-lg p-1 flex flex-col items-center justify-center text-center bg-surface-muted border border-border">
+            <span class="text-sm font-bold text-foreground-muted">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 7: Side-by-side layout (grid left, summary right) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 7</span>
+        <h2 class="text-lg font-bold text-foreground">Small Grid + Side Summary — 140px grid</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Grid stays small, labels moved beside. <strong>Cons:</strong> Takes more horizontal space.</p>
+      <p class="text-xs text-foreground-muted mb-3">Equal 2x2 grid at 140px with labels in a side panel.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 480px;">
+        <div class="flex gap-5 items-center">
+          <!-- Grid -->
+          <div class="grid grid-cols-2 grid-rows-2 gap-1 shrink-0" style="width: 140px; height: 140px;">
+            <div class="rounded flex items-center justify-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+              <span class="text-base font-bold" style="color: var(--color-done-text);">79%</span>
+            </div>
+            <div class="rounded flex items-center justify-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+              <span class="text-base font-bold" style="color: var(--color-inprogress-text);">5%</span>
+            </div>
+            <div class="rounded flex items-center justify-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+              <span class="text-base font-bold" style="color: var(--color-primary-text);">16%</span>
+            </div>
+            <div class="rounded flex items-center justify-center bg-surface-muted border border-border">
+              <span class="text-base font-bold text-foreground-muted">0%</span>
+            </div>
+          </div>
+          <!-- Labels -->
+          <div class="flex flex-col gap-2 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);"></span>
+              <span><strong class="text-foreground">Open 79%</strong> <span class="text-foreground-muted">— Known to self & others</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);"></span>
+              <span><strong class="text-foreground">Blind Spot 5%</strong> <span class="text-foreground-muted">— Others see, you don't</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);"></span>
+              <span><strong class="text-foreground">Hidden 16%</strong> <span class="text-foreground-muted">— Known to self only</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm shrink-0 bg-surface-muted border border-border"></span>
+              <span><strong class="text-foreground">Unknown 0%</strong> <span class="text-foreground-muted">— Undiscovered</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 8: Stacked bars (horizontal) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 8</span>
+        <h2 class="text-lg font-bold text-foreground">Stacked Bar — Single Row</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Extremely compact, proportions clear at a glance. <strong>Cons:</strong> Completely abandons 2x2 grid metaphor.</p>
+      <p class="text-xs text-foreground-muted mb-3">Single stacked bar with all four segments, labels below. ~64px total height.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 420px;">
+        <div class="flex rounded-lg overflow-hidden h-10">
+          <div class="flex items-center justify-center px-2" style="flex: 79; background: var(--color-done-bg);">
+            <span class="text-xs font-bold" style="color: var(--color-done-text);">79% Open</span>
+          </div>
+          <div class="flex items-center justify-center px-1" style="flex: 16; background: var(--color-primary-bg);">
+            <span class="text-[10px] font-bold" style="color: var(--color-primary-text);">16%</span>
+          </div>
+          <div class="flex items-center justify-center px-1" style="flex: 5; min-width: 28px; background: var(--color-inprogress-bg);">
+            <span class="text-[10px] font-bold" style="color: var(--color-inprogress-text);">5%</span>
+          </div>
+        </div>
+        <div class="flex gap-4 mt-2.5 text-[10px] text-foreground-muted">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-done-text);"></span> Open</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-primary-text);"></span> Hidden</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-inprogress-text);"></span> Blind Spot</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-surface-muted border border-border"></span> Unknown (0%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 9: Compact proportional with clamp — 150px -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 9</span>
+        <h2 class="text-lg font-bold text-foreground">Proportional with Clamp (min 15, max 85) — 150px</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Proportional feel preserved, prevents any quadrant from dominating. <strong>Cons:</strong> Slight distortion at both extremes.</p>
+      <p class="text-xs text-foreground-muted mb-3">Clamp both min and max: columns clamped to 15-85fr range. Grid: 85fr 15fr / 84fr 16fr at 150px.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 400px;">
+        <div class="grid gap-1.5" style="grid-template-columns: 85fr 15fr; grid-template-rows: 84fr 16fr; height: 150px;">
+          <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+            <span class="text-xl font-bold" style="color: var(--color-done-text);">79%</span>
+            <span class="text-[9px] font-medium" style="color: var(--color-done-text);">Open</span>
+          </div>
+          <div class="rounded-lg p-1 flex flex-col items-center justify-center text-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+            <span class="text-xs font-bold" style="color: var(--color-inprogress-text);">5%</span>
+            <span class="text-[8px]" style="color: var(--color-inprogress-text);">Blind</span>
+          </div>
+          <div class="rounded-lg p-1 flex flex-col items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+            <span class="text-xs font-bold" style="color: var(--color-primary-text);">16%</span>
+            <span class="text-[8px]" style="color: var(--color-primary-text);">Hidden</span>
+          </div>
+          <div class="rounded-lg p-1 flex items-center justify-center text-center bg-surface-muted border border-border">
+            <span class="text-[10px] font-bold text-foreground-muted">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 10: Mini donut chart -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs font-semibold rounded">Option 10</span>
+        <h2 class="text-lg font-bold text-foreground">Donut Chart — 120px diameter</h2>
+      </div>
+      <p class="text-xs text-foreground-muted mb-1"><strong>Pros:</strong> Very compact, proportional, familiar chart type. <strong>Cons:</strong> Doesn't look like a Johari Window at all.</p>
+      <p class="text-xs text-foreground-muted mb-3">SVG donut with proportional segments. Labels to the right.</p>
+      <div class="bg-surface-subtle rounded-xl border border-border p-5" style="max-width: 420px;">
+        <div class="flex gap-5 items-center">
+          <!-- Donut -->
+          <svg width="120" height="120" viewBox="0 0 120 120" class="shrink-0">
+            <!-- Open: 79% = 284.4° -->
+            <circle cx="60" cy="60" r="45" fill="none" stroke-width="20"
+                    style="stroke: var(--color-done-text);"
+                    stroke-dasharray="223.05 59.69"
+                    stroke-dashoffset="70.69"
+                    transform="rotate(-90 60 60)" />
+            <!-- Hidden: 16% = 57.6° -->
+            <circle cx="60" cy="60" r="45" fill="none" stroke-width="20"
+                    style="stroke: var(--color-primary-text);"
+                    stroke-dasharray="45.24 237.5"
+                    stroke-dashoffset="-152.36"
+                    transform="rotate(-90 60 60)" />
+            <!-- Blind Spot: 5% = 18° -->
+            <circle cx="60" cy="60" r="45" fill="none" stroke-width="20"
+                    style="stroke: var(--color-inprogress-text);"
+                    stroke-dasharray="14.14 268.6"
+                    stroke-dashoffset="-197.6"
+                    transform="rotate(-90 60 60)" />
+            <!-- Center text -->
+            <text x="60" y="56" text-anchor="middle" font-size="18" font-weight="700" fill="var(--color-text-primary)">79%</text>
+            <text x="60" y="72" text-anchor="middle" font-size="9" fill="var(--color-text-muted)">Open</text>
+          </svg>
+          <!-- Labels -->
+          <div class="flex flex-col gap-1.5 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-done-text);"></span>
+              <span class="text-foreground font-medium">Open <span class="text-foreground-muted">79%</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-primary-text);"></span>
+              <span class="text-foreground font-medium">Hidden <span class="text-foreground-muted">16%</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-inprogress-text);"></span>
+              <span class="text-foreground font-medium">Blind Spot <span class="text-foreground-muted">5%</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm shrink-0 bg-surface-muted border border-border"></span>
+              <span class="text-foreground font-medium">Unknown <span class="text-foreground-muted">0%</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- Balanced Data Comparison -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-12 pt-8 border-t-2 border-border">
+      <h2 class="text-xl font-bold text-foreground mb-2">Comparison: Balanced Data (40/25/20/15)</h2>
+      <p class="text-sm text-foreground-muted mb-6">How Options 1, 3, 5, and 7 look with more balanced percentages.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Option 1 balanced -->
+        <div>
+          <p class="text-xs font-medium text-foreground-muted mb-2">Option 1 — Fixed Equal 160px</p>
+          <div class="bg-surface-subtle rounded-xl border border-border p-4" style="max-width: 320px;">
+            <div class="grid grid-cols-2 grid-rows-2 gap-1.5" style="height: 160px;">
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+                <span class="text-xl font-bold" style="color: var(--color-done-text);">40%</span>
+                <span class="text-[10px] font-medium" style="color: var(--color-done-text);">Open</span>
+              </div>
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+                <span class="text-xl font-bold" style="color: var(--color-inprogress-text);">25%</span>
+                <span class="text-[10px] font-medium" style="color: var(--color-inprogress-text);">Blind Spot</span>
+              </div>
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+                <span class="text-xl font-bold" style="color: var(--color-primary-text);">20%</span>
+                <span class="text-[10px] font-medium" style="color: var(--color-primary-text);">Hidden</span>
+              </div>
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center bg-surface-muted border border-border">
+                <span class="text-xl font-bold text-foreground-muted">15%</span>
+                <span class="text-[10px] font-medium text-foreground-muted">Unknown</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 3 balanced -->
+        <div>
+          <p class="text-xs font-medium text-foreground-muted mb-2">Option 3 — Proportional min 25fr, 160px</p>
+          <div class="bg-surface-subtle rounded-xl border border-border p-4" style="max-width: 320px;">
+            <div class="grid gap-1.5" style="grid-template-columns: 60fr 40fr; grid-template-rows: 65fr 35fr; height: 160px;">
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+                <span class="text-xl font-bold" style="color: var(--color-done-text);">40%</span>
+                <span class="text-[10px] font-medium" style="color: var(--color-done-text);">Open</span>
+              </div>
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+                <span class="text-xl font-bold" style="color: var(--color-inprogress-text);">25%</span>
+                <span class="text-[10px] font-medium" style="color: var(--color-inprogress-text);">Blind Spot</span>
+              </div>
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+                <span class="text-xl font-bold" style="color: var(--color-primary-text);">20%</span>
+                <span class="text-[10px] font-medium" style="color: var(--color-primary-text);">Hidden</span>
+              </div>
+              <div class="rounded-lg p-2 flex flex-col items-center justify-center text-center bg-surface-muted border border-border">
+                <span class="text-xl font-bold text-foreground-muted">15%</span>
+                <span class="text-[10px] font-medium text-foreground-muted">Unknown</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 5 balanced -->
+        <div>
+          <p class="text-xs font-medium text-foreground-muted mb-2">Option 5 — Ultra-Compact 120px</p>
+          <div class="bg-surface-subtle rounded-xl border border-border p-4" style="max-width: 240px;">
+            <div class="grid grid-cols-2 grid-rows-2 gap-1" style="height: 120px;">
+              <div class="rounded flex items-center justify-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+                <span class="text-lg font-bold" style="color: var(--color-done-text);">40%</span>
+              </div>
+              <div class="rounded flex items-center justify-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+                <span class="text-lg font-bold" style="color: var(--color-inprogress-text);">25%</span>
+              </div>
+              <div class="rounded flex items-center justify-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+                <span class="text-lg font-bold" style="color: var(--color-primary-text);">20%</span>
+              </div>
+              <div class="rounded flex items-center justify-center bg-surface-muted border border-border">
+                <span class="text-lg font-bold text-foreground-muted">15%</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2 text-[10px] text-foreground-muted justify-center">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-done-text);"></span> Open</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-inprogress-text);"></span> Blind</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background: var(--color-primary-text);"></span> Hidden</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-surface-muted border border-border"></span> Unk.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 7 balanced -->
+        <div>
+          <p class="text-xs font-medium text-foreground-muted mb-2">Option 7 — Small Grid + Side Summary, 140px</p>
+          <div class="bg-surface-subtle rounded-xl border border-border p-4" style="max-width: 400px;">
+            <div class="flex gap-4 items-center">
+              <div class="grid grid-cols-2 grid-rows-2 gap-1 shrink-0" style="width: 140px; height: 140px;">
+                <div class="rounded flex items-center justify-center" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+                  <span class="text-base font-bold" style="color: var(--color-done-text);">40%</span>
+                </div>
+                <div class="rounded flex items-center justify-center" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+                  <span class="text-base font-bold" style="color: var(--color-inprogress-text);">25%</span>
+                </div>
+                <div class="rounded flex items-center justify-center" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);">
+                  <span class="text-base font-bold" style="color: var(--color-primary-text);">20%</span>
+                </div>
+                <div class="rounded flex items-center justify-center bg-surface-muted border border-border">
+                  <span class="text-base font-bold text-foreground-muted">15%</span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5 text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);"></span>
+                  <span><strong>Open 40%</strong></span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);"></span>
+                  <span><strong>Blind 25%</strong></span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm shrink-0" style="background: var(--color-primary-bg); border: 1px solid var(--color-primary-text);"></span>
+                  <span><strong>Hidden 20%</strong></span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm shrink-0 bg-surface-muted border border-border"></span>
+                  <span><strong>Unknown 15%</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

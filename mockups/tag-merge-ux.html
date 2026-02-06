@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Merge UX — Issue #338 — 5 Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)', 'surface-subtle': 'var(--color-bg-subtle)', 'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)', 'foreground-secondary': 'var(--color-text-secondary)', 'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)', 'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)', 'accent-solid': 'var(--color-primary-solid)', 'accent-foreground': 'var(--color-primary-text)',
+            done: 'var(--color-done-bg)', 'done-foreground': 'var(--color-done-text)', 'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            'tag-bg': 'var(--color-tag-bg)', 'tag-text': 'var(--color-tag-text)',
+            warning: 'var(--color-warning-bg)', 'warning-text': 'var(--color-warning-text)', 'warning-border': 'var(--color-warning-border)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8; --color-bg-subtle: #ffffff; --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440; --color-text-secondary: #4c566a; --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0; --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15); --color-primary-text: #5e81ac; --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.15); --color-tag-text: #b48ead;
+      --color-done-bg: rgba(163, 190, 140, 0.1); --color-done-text: #a3be8c; --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+      --color-warning-bg: rgba(235, 203, 139, 0.12); --color-warning-text: #d08770; --color-warning-border: rgba(235, 203, 139, 0.3);
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933; --color-bg-subtle: #2e3440; --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4; --color-text-secondary: #d8dee9; --color-text-muted: #4c566a;
+      --color-border-default: #3b4252; --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2); --color-primary-text: #88c0d0; --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.2); --color-tag-text: #b48ead;
+      --color-done-bg: rgba(163, 190, 140, 0.15); --color-done-text: #a3be8c; --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+      --color-warning-bg: rgba(235, 203, 139, 0.15); --color-warning-text: #ebcb8b; --color-warning-border: rgba(235, 203, 139, 0.25);
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-card { background: var(--color-bg-subtle); border-radius: 12px; overflow: hidden; border: 1px solid var(--color-border-default); }
+    .option-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border-muted); display: flex; align-items: center; justify-content: space-between; }
+    .option-body { padding: 1.25rem; }
+    .option-number { background: var(--color-primary-solid); color: white; font-size: 11px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .recommended { border: 2px solid #a3be8c !important; }
+    .recommended-badge { background: #a3be8c; color: #2e3440; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+    .option-divider { border-top: 3px dashed var(--color-border-default); margin: 3rem 0; padding-top: 2rem; }
+    .pros-cons { margin-top: 12px; font-size: 11px; line-height: 1.8; }
+    .pros-cons .pro { color: #a3be8c; }
+    .pros-cons .con { color: #bf616a; }
+    .pi { font-size: inherit !important; }
+    .tag-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 9999px; cursor: pointer; transition: all 0.15s; }
+    .tag-chip:hover { opacity: 0.8; }
+    .tag-chip.selected { background: var(--color-primary-solid); color: white; box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.3); }
+    .mock-select { height: 34px; border-radius: 8px; border: 1px solid var(--color-border-default); background: var(--color-bg-muted); padding: 0 30px 0 10px; font-size: 12px; color: var(--color-text-primary); outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237b88a1' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; }
+    .mock-select:focus { border-color: var(--color-primary-solid); box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.15); }
+    .mock-search { width: 100%; height: 34px; border-radius: 8px; border: 1px solid var(--color-border-default); background: var(--color-bg-muted); padding: 0 10px 0 32px; font-size: 12px; color: var(--color-text-primary); outline: none; }
+    .mock-search::placeholder { color: var(--color-text-muted); }
+    .mock-search:focus { border-color: var(--color-primary-solid); box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.15); }
+    .merge-arrow { color: var(--color-primary-text); font-size: 18px; }
+    .preview-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--color-text-secondary); padding: 4px 0; }
+    .preview-row i { font-size: 10px; width: 14px; text-align: center; }
+    .stat-pill { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 9999px; }
+    .stat-pill-muted { background: var(--color-bg-muted); color: var(--color-text-secondary); }
+    .stat-pill-accent { background: var(--color-primary-bg); color: var(--color-primary-text); }
+    .stat-pill-warning { background: var(--color-warning-bg); color: var(--color-warning-text); }
+    .warning-box { background: var(--color-warning-bg); border: 1px solid var(--color-warning-border); border-radius: 8px; padding: 8px 12px; font-size: 11px; color: var(--color-warning-text); display: flex; align-items: flex-start; gap: 8px; }
+    .warning-box i { margin-top: 1px; }
+    .dialog-mock { border-radius: 12px; border: 1px solid var(--color-border-default); background: var(--color-bg-subtle); box-shadow: 0 8px 30px rgba(0,0,0,0.12); overflow: hidden; }
+    [data-theme="dark"] .dialog-mock { box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+    .dialog-header { padding: 16px 20px; border-bottom: 1px solid var(--color-border-muted); display: flex; align-items: center; justify-content: space-between; }
+    .dialog-body { padding: 20px; }
+    .dialog-footer { padding: 12px 20px; border-top: 1px solid var(--color-border-muted); display: flex; justify-content: flex-end; gap: 8px; }
+    .btn-primary { padding: 7px 16px; font-size: 12px; font-weight: 600; border-radius: 8px; background: var(--color-primary-solid); color: white; border: none; cursor: pointer; transition: opacity 0.15s; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { padding: 7px 16px; font-size: 12px; font-weight: 500; border-radius: 8px; background: transparent; color: var(--color-text-primary); border: 1px solid var(--color-border-default); cursor: pointer; transition: background 0.15s; }
+    .btn-secondary:hover { background: var(--color-bg-muted); }
+    .flow-step { display: flex; align-items: center; gap: 6px; }
+    .flow-step-number { width: 20px; height: 20px; border-radius: 50%; background: var(--color-primary-bg); color: var(--color-primary-text); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .flow-step-active .flow-step-number { background: var(--color-primary-solid); color: white; }
+    .flow-connector { width: 24px; height: 1px; background: var(--color-border-default); flex-shrink: 0; }
+  </style>
+</head>
+<body class="p-6 lg:p-8">
+
+  <!-- Theme Toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="toggleTheme()"
+      class="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-foreground-secondary text-sm hover:bg-surface-muted transition">
+      <i class="pi pi-moon mr-1"></i> Toggle Theme
+    </button>
+  </div>
+
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Tag Merge UX — 5 Design Options</h1>
+    <p class="text-foreground-secondary mb-1 text-sm">Issue <a href="https://github.com/garethbaumgart/praxis-note/issues/338" class="text-accent-foreground underline">#338</a> — How users merge two tags into one, including target selection, merge preview, and confirmation.</p>
+    <p class="text-foreground-muted mb-2 text-xs">Flow: User selects "Merge into..." from a tag's context menu &rarr; selects a target tag &rarr; sees preview with counts &rarr; confirms merge.</p>
+    <p class="text-foreground-muted mb-8 text-xs">Sample data: Source tag "frontend" (3 tasks, 4 notes, 2 meetings = 9 items). Target tag "architecture" (2 tasks, 4 notes, 2 meetings = 8 items). 3 items have both tags (overlap).</p>
+
+    <!-- ======================= OPTION 1 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">1</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Single-Step Dialog with Inline Preview</div>
+            <div class="text-foreground-muted text-xs">One compact dialog: dropdown to pick target, live preview below, confirm</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- A: Initial state (no target selected) -->
+          <div>
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">A. Initial — Select Target</div>
+            <div class="dialog-mock" style="max-width: 400px">
+              <div class="dialog-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clone text-accent-foreground" style="font-size:14px"></i>
+                  <span class="text-sm font-semibold text-foreground">Merge tag</span>
+                </div>
+                <button class="text-foreground-muted hover:text-foreground transition"><i class="pi pi-times" style="font-size:12px"></i></button>
+              </div>
+              <div class="dialog-body">
+                <div class="mb-4">
+                  <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-2">Source</div>
+                  <div class="flex items-center gap-2">
+                    <span class="tag-chip">frontend <span class="text-[9px] opacity-60">9</span></span>
+                    <span class="text-[10px] text-foreground-muted">3 tasks, 4 notes, 2 meetings</span>
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-2">Merge into</div>
+                  <select class="mock-select w-full">
+                    <option>Choose a target tag...</option>
+                  </select>
+                </div>
+                <p class="text-[10px] text-foreground-muted mt-2">All items from "frontend" will be moved to the selected tag.</p>
+              </div>
+              <div class="dialog-footer">
+                <button class="btn-secondary">Cancel</button>
+                <button class="btn-primary" style="opacity:0.5; cursor: not-allowed">Merge</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- B: With target selected + preview -->
+          <div>
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">B. Target Selected — Preview Shown</div>
+            <div class="dialog-mock" style="max-width: 400px">
+              <div class="dialog-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clone text-accent-foreground" style="font-size:14px"></i>
+                  <span class="text-sm font-semibold text-foreground">Merge tag</span>
+                </div>
+                <button class="text-foreground-muted hover:text-foreground transition"><i class="pi pi-times" style="font-size:12px"></i></button>
+              </div>
+              <div class="dialog-body">
+                <div class="mb-4">
+                  <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-2">Source</div>
+                  <div class="flex items-center gap-2">
+                    <span class="tag-chip">frontend <span class="text-[9px] opacity-60">9</span></span>
+                    <span class="text-[10px] text-foreground-muted">3 tasks, 4 notes, 2 meetings</span>
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-2">Merge into</div>
+                  <select class="mock-select w-full">
+                    <option>architecture</option>
+                  </select>
+                </div>
+
+                <!-- Preview panel -->
+                <div class="rounded-lg border border-border p-3 mb-3" style="background: var(--color-bg-base)">
+                  <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-2">Preview</div>
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-xs text-foreground-secondary">
+                      <span class="tag-chip" style="font-size:10px; padding: 2px 8px">architecture</span>
+                      will have:
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    <span class="stat-pill stat-pill-accent"><i class="pi pi-check-square" style="font-size:9px"></i> 4 tasks</span>
+                    <span class="stat-pill stat-pill-accent"><i class="pi pi-file-edit" style="font-size:9px"></i> 7 notes</span>
+                    <span class="stat-pill stat-pill-accent"><i class="pi pi-comments" style="font-size:9px"></i> 3 meetings</span>
+                  </div>
+                  <div class="text-[10px] text-foreground-muted">
+                    <span class="stat-pill stat-pill-warning"><i class="pi pi-link" style="font-size:9px"></i> 3 overlapping items</span>
+                    — already had both tags, duplicates removed
+                  </div>
+                </div>
+
+                <div class="warning-box">
+                  <i class="pi pi-exclamation-triangle" style="font-size:11px"></i>
+                  <span>The tag <strong>"frontend"</strong> will be permanently deleted. This cannot be undone.</span>
+                </div>
+              </div>
+              <div class="dialog-footer">
+                <button class="btn-secondary">Cancel</button>
+                <button class="btn-primary">Merge tags</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Simple single dialog — no multi-step flow to learn</div>
+          <div class="pro">+ Preview appears automatically when target is selected</div>
+          <div class="pro">+ Overlap count helps users understand what will happen</div>
+          <div class="con">- Dialog can feel tall on small screens with preview + warning</div>
+          <div class="con">- Dropdown can be hard to scan with many tags</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 2 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">2</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Visual Merge Flow with Arrow</div>
+            <div class="text-foreground-muted text-xs">Side-by-side source/target cards with a directional arrow showing the merge</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Complete Dialog — Target Selected</div>
+        <div class="dialog-mock" style="max-width: 520px">
+          <div class="dialog-header">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-clone text-accent-foreground" style="font-size:14px"></i>
+              <span class="text-sm font-semibold text-foreground">Merge tags</span>
+            </div>
+            <button class="text-foreground-muted hover:text-foreground transition"><i class="pi pi-times" style="font-size:12px"></i></button>
+          </div>
+          <div class="dialog-body">
+            <!-- Side-by-side merge visualization -->
+            <div class="flex items-start gap-3">
+              <!-- Source card -->
+              <div class="flex-1 rounded-lg border border-border p-3">
+                <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-2">Source (will be deleted)</div>
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="tag-chip">frontend</span>
+                </div>
+                <div class="space-y-1">
+                  <div class="preview-row"><i class="pi pi-check-square"></i> 3 tasks</div>
+                  <div class="preview-row"><i class="pi pi-file-edit"></i> 4 notes</div>
+                  <div class="preview-row"><i class="pi pi-comments"></i> 2 meetings</div>
+                </div>
+                <div class="border-t border-border-muted mt-2 pt-2">
+                  <div class="text-[10px] font-semibold text-foreground-secondary">9 items total</div>
+                </div>
+              </div>
+
+              <!-- Arrow -->
+              <div class="flex flex-col items-center justify-center pt-10 flex-shrink-0">
+                <i class="pi pi-arrow-right merge-arrow"></i>
+              </div>
+
+              <!-- Target card -->
+              <div class="flex-1 rounded-lg border border-border p-3" style="border-color: var(--color-primary-solid)">
+                <div class="text-[10px] font-semibold text-accent-foreground uppercase tracking-wider mb-2">Target (will keep)</div>
+                <div class="mb-3">
+                  <select class="mock-select w-full">
+                    <option>architecture</option>
+                  </select>
+                </div>
+                <div class="space-y-1">
+                  <div class="preview-row"><i class="pi pi-check-square"></i> 2 tasks</div>
+                  <div class="preview-row"><i class="pi pi-file-edit"></i> 4 notes</div>
+                  <div class="preview-row"><i class="pi pi-comments"></i> 2 meetings</div>
+                </div>
+                <div class="border-t border-border-muted mt-2 pt-2">
+                  <div class="text-[10px] font-semibold text-foreground-secondary">8 items total</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Result summary -->
+            <div class="rounded-lg mt-4 p-3" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border)">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-check-circle text-done-foreground" style="font-size:12px"></i>
+                <span class="text-xs font-semibold text-done-foreground">After merge</span>
+              </div>
+              <p class="text-[11px] text-foreground-secondary">
+                <strong class="text-tag-text">"architecture"</strong> will have <strong>14 items</strong> (3 duplicates removed).
+                <strong class="text-tag-text">"frontend"</strong> will be permanently deleted.
+              </p>
+            </div>
+          </div>
+          <div class="dialog-footer">
+            <button class="btn-secondary">Cancel</button>
+            <button class="btn-primary">Merge tags</button>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Visual arrow makes direction of merge immediately clear</div>
+          <div class="pro">+ Side-by-side comparison shows both tags' full stats</div>
+          <div class="pro">+ Green result box draws attention to the outcome</div>
+          <div class="pro">+ Easy to understand even for first-time users</div>
+          <div class="con">- Wider dialog — may not fit narrow mobile screens</div>
+          <div class="con">- More visual elements could feel heavyweight for a simple merge</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 3 (RECOMMENDED) ======================= -->
+    <div class="option-card recommended mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">3</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Two-Step Stepper Dialog</div>
+            <div class="text-foreground-muted text-xs">Step 1: Select target tag. Step 2: Review preview and confirm.</div>
+          </div>
+        </div>
+        <div class="recommended-badge">Recommended</div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Step 1 -->
+          <div>
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Step 1 — Choose Target</div>
+            <div class="dialog-mock" style="max-width: 400px">
+              <div class="dialog-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clone text-accent-foreground" style="font-size:14px"></i>
+                  <span class="text-sm font-semibold text-foreground">Merge tag</span>
+                </div>
+                <button class="text-foreground-muted hover:text-foreground transition"><i class="pi pi-times" style="font-size:12px"></i></button>
+              </div>
+              <div class="dialog-body">
+                <!-- Stepper -->
+                <div class="flex items-center gap-0 mb-5">
+                  <div class="flow-step flow-step-active">
+                    <div class="flow-step-number">1</div>
+                    <span class="text-[10px] font-semibold text-accent-foreground">Select target</span>
+                  </div>
+                  <div class="flow-connector"></div>
+                  <div class="flow-step">
+                    <div class="flow-step-number">2</div>
+                    <span class="text-[10px] font-semibold text-foreground-muted">Review &amp; confirm</span>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-1">Merging</div>
+                  <div class="flex items-center gap-2">
+                    <span class="tag-chip">frontend <span class="text-[9px] opacity-60">9</span></span>
+                    <span class="text-[10px] text-foreground-muted italic">into...</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-2">Target tag</div>
+                  <div class="relative mb-2">
+                    <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:11px"></i>
+                    <input type="text" placeholder="Search tags..." class="mock-search">
+                  </div>
+                  <!-- Tag list -->
+                  <div class="rounded-lg border border-border overflow-hidden" style="max-height: 180px">
+                    <div class="flex items-center justify-between px-3 py-2 hover:bg-surface-muted cursor-pointer transition">
+                      <span class="text-xs text-foreground">architecture</span>
+                      <span class="text-[10px] text-foreground-muted">8 items</span>
+                    </div>
+                    <div class="flex items-center justify-between px-3 py-2 hover:bg-surface-muted cursor-pointer transition" style="background: var(--color-primary-bg)">
+                      <span class="text-xs text-foreground font-medium">backend</span>
+                      <span class="text-[10px] text-foreground-muted">5 items</span>
+                    </div>
+                    <div class="flex items-center justify-between px-3 py-2 hover:bg-surface-muted cursor-pointer transition">
+                      <span class="text-xs text-foreground">project-alpha</span>
+                      <span class="text-[10px] text-foreground-muted">10 items</span>
+                    </div>
+                    <div class="flex items-center justify-between px-3 py-2 hover:bg-surface-muted cursor-pointer transition">
+                      <span class="text-xs text-foreground">q1-planning</span>
+                      <span class="text-[10px] text-foreground-muted">4 items</span>
+                    </div>
+                    <div class="flex items-center justify-between px-3 py-2 hover:bg-surface-muted cursor-pointer transition">
+                      <span class="text-xs text-foreground">ux-research</span>
+                      <span class="text-[10px] text-foreground-muted">6 items</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="dialog-footer">
+                <button class="btn-secondary">Cancel</button>
+                <button class="btn-primary">Next <i class="pi pi-arrow-right" style="font-size:10px; margin-left:4px"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div>
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Step 2 — Review &amp; Confirm</div>
+            <div class="dialog-mock" style="max-width: 400px">
+              <div class="dialog-header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clone text-accent-foreground" style="font-size:14px"></i>
+                  <span class="text-sm font-semibold text-foreground">Merge tag</span>
+                </div>
+                <button class="text-foreground-muted hover:text-foreground transition"><i class="pi pi-times" style="font-size:12px"></i></button>
+              </div>
+              <div class="dialog-body">
+                <!-- Stepper -->
+                <div class="flex items-center gap-0 mb-5">
+                  <div class="flow-step">
+                    <div class="flow-step-number" style="background: var(--color-done-bg); color: var(--color-done-text)"><i class="pi pi-check" style="font-size:8px"></i></div>
+                    <span class="text-[10px] font-semibold text-done-foreground">Select target</span>
+                  </div>
+                  <div class="flow-connector"></div>
+                  <div class="flow-step flow-step-active">
+                    <div class="flow-step-number">2</div>
+                    <span class="text-[10px] font-semibold text-accent-foreground">Review &amp; confirm</span>
+                  </div>
+                </div>
+
+                <!-- Merge summary -->
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="text-center">
+                    <span class="tag-chip">frontend</span>
+                    <div class="text-[9px] text-foreground-muted mt-1">9 items</div>
+                  </div>
+                  <i class="pi pi-arrow-right text-accent-foreground" style="font-size:14px"></i>
+                  <div class="text-center">
+                    <span class="tag-chip" style="background: var(--color-primary-bg); color: var(--color-primary-text); border: 1px solid var(--color-primary-solid)">architecture</span>
+                    <div class="text-[9px] text-foreground-muted mt-1">8 items</div>
+                  </div>
+                </div>
+
+                <!-- Detailed preview -->
+                <div class="rounded-lg border border-border p-3 mb-3" style="background: var(--color-bg-base)">
+                  <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-2">Result after merge</div>
+                  <table class="w-full text-[11px]">
+                    <thead>
+                      <tr class="text-foreground-muted">
+                        <th class="text-left font-medium pb-1"></th>
+                        <th class="text-right font-medium pb-1" style="color: var(--color-tag-text)">frontend</th>
+                        <th class="text-right font-medium pb-1" style="color: var(--color-primary-text)">architecture</th>
+                        <th class="text-right font-medium pb-1 text-done-foreground">Result</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-foreground-secondary">
+                      <tr>
+                        <td class="py-0.5"><i class="pi pi-check-square mr-1" style="font-size:9px"></i>Tasks</td>
+                        <td class="text-right py-0.5">3</td>
+                        <td class="text-right py-0.5">2</td>
+                        <td class="text-right py-0.5 font-semibold text-done-foreground">4</td>
+                      </tr>
+                      <tr>
+                        <td class="py-0.5"><i class="pi pi-file-edit mr-1" style="font-size:9px"></i>Notes</td>
+                        <td class="text-right py-0.5">4</td>
+                        <td class="text-right py-0.5">4</td>
+                        <td class="text-right py-0.5 font-semibold text-done-foreground">7</td>
+                      </tr>
+                      <tr>
+                        <td class="py-0.5"><i class="pi pi-comments mr-1" style="font-size:9px"></i>Meetings</td>
+                        <td class="text-right py-0.5">2</td>
+                        <td class="text-right py-0.5">2</td>
+                        <td class="text-right py-0.5 font-semibold text-done-foreground">3</td>
+                      </tr>
+                      <tr class="border-t border-border-muted">
+                        <td class="py-1 font-semibold text-foreground">Total</td>
+                        <td class="text-right py-1">9</td>
+                        <td class="text-right py-1">8</td>
+                        <td class="text-right py-1 font-bold text-done-foreground">14</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="text-[10px] text-foreground-muted mt-1">
+                    <i class="pi pi-info-circle mr-1" style="font-size:9px"></i>3 items already had both tags (duplicates removed)
+                  </div>
+                </div>
+
+                <div class="warning-box">
+                  <i class="pi pi-exclamation-triangle" style="font-size:11px"></i>
+                  <span><strong>"frontend"</strong> will be permanently deleted. This cannot be undone.</span>
+                </div>
+              </div>
+              <div class="dialog-footer">
+                <button class="btn-secondary"><i class="pi pi-arrow-left" style="font-size:10px; margin-right:4px"></i> Back</button>
+                <button class="btn-primary"><i class="pi pi-clone" style="font-size:10px; margin-right:4px"></i> Merge tags</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-foreground-muted mt-4 italic">Why recommended: The two-step flow keeps each screen focused — step 1 is purely about selection with search, step 2 is purely about review. The table view makes the math transparent (where did 3 items go? Duplicates). The searchable tag list handles large tag counts better than a dropdown. Back button lets users change their mind without starting over.</p>
+        <div class="pros-cons">
+          <div class="pro">+ Focused screens — selection and review are separate concerns</div>
+          <div class="pro">+ Searchable tag list scales to hundreds of tags</div>
+          <div class="pro">+ Table breakdown makes merge math transparent and trustworthy</div>
+          <div class="pro">+ Back button lets users change target without restarting</div>
+          <div class="pro">+ Stepper indicator shows progress clearly</div>
+          <div class="con">- Two clicks to complete vs. one in single-dialog options</div>
+          <div class="con">- Slightly more complex to implement (stepper state)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 4 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">4</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Chip-to-Chip Drag &amp; Drop</div>
+            <div class="text-foreground-muted text-xs">Drag one tag chip onto another to merge, with a confirmation popover</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- A: Normal state -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">A. Hint — Tooltip on hover</div>
+            <div class="flex flex-wrap gap-2 mb-2">
+              <span class="tag-chip">architecture <span class="text-[9px] opacity-60">8</span></span>
+              <span class="tag-chip">backend <span class="text-[9px] opacity-60">5</span></span>
+              <span class="tag-chip" style="position:relative">
+                frontend <span class="text-[9px] opacity-60">9</span>
+                <!-- Tooltip -->
+                <span class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] px-2 py-1 rounded bg-foreground text-surface" style="background: var(--color-text-primary); color: var(--color-bg-subtle)">
+                  Drag onto another tag to merge
+                </span>
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60">10</span></span>
+              <span class="tag-chip">ux-research <span class="text-[9px] opacity-60">6</span></span>
+            </div>
+          </div>
+          <!-- B: Dragging state -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">B. Dragging — Drop zones highlight</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="tag-chip" style="outline: 2px dashed var(--color-primary-solid); outline-offset: 2px">
+                architecture <span class="text-[9px] opacity-60">8</span>
+              </span>
+              <span class="tag-chip" style="outline: 2px dashed var(--color-primary-solid); outline-offset: 2px">
+                backend <span class="text-[9px] opacity-60">5</span>
+              </span>
+              <span class="tag-chip" style="opacity: 0.4; transform: rotate(-2deg); box-shadow: 0 4px 12px rgba(0,0,0,0.15)">
+                frontend <span class="text-[9px] opacity-60">9</span>
+              </span>
+            </div>
+            <p class="text-[10px] text-accent-foreground mt-3"><i class="pi pi-info-circle mr-1" style="font-size:9px"></i>Drop on a tag to merge</p>
+          </div>
+          <!-- C: Confirm popover -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">C. Confirm — Popover after drop</div>
+            <div class="rounded-lg border border-border bg-surface-subtle shadow-xl p-4" style="max-width: 260px">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="tag-chip" style="font-size:10px; padding: 2px 8px">frontend</span>
+                <i class="pi pi-arrow-right text-accent-foreground" style="font-size:10px"></i>
+                <span class="tag-chip" style="font-size:10px; padding: 2px 8px">architecture</span>
+              </div>
+              <p class="text-[10px] text-foreground-secondary mb-1">Merge <strong>9 items</strong> into "architecture"?</p>
+              <p class="text-[10px] text-foreground-muted mb-3">3 duplicates will be removed. "frontend" will be deleted.</p>
+              <div class="flex justify-end gap-2">
+                <button class="px-2 py-1 text-[10px] rounded border border-border text-foreground hover:bg-surface-muted transition">Cancel</button>
+                <button class="px-2 py-1 text-[10px] rounded text-white transition" style="background: var(--color-primary-solid)">Merge</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Intuitive gesture — "drag this into that" matches mental model</div>
+          <div class="pro">+ Fun and satisfying interaction</div>
+          <div class="pro">+ No dialog needed — lightweight confirmation popover</div>
+          <div class="con">- Drag &amp; drop is not discoverable without onboarding</div>
+          <div class="con">- Not accessible — keyboard users and screen readers need fallback</div>
+          <div class="con">- Fiddly on mobile — touch drag targets are too small</div>
+          <div class="con">- Requires still opening a menu/dialog as fallback for accessibility</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 5 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">5</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Inline Merge Panel (No Dialog)</div>
+            <div class="text-foreground-muted text-xs">Merge UI expands inline below the tag cloud, no modal overlay</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Merge Panel — Expanded Below Tags</div>
+        <div class="rounded-lg border border-border p-5" style="max-width: 600px">
+          <!-- Tag cloud with source highlighted -->
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-tags text-tag-text" style="font-size:14px"></i>
+              <span class="text-sm font-semibold text-foreground">Tags</span>
+              <span class="text-[10px] text-foreground-muted bg-surface-muted px-2 py-0.5 rounded-full">8</span>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="tag-chip">1-on-1 <span class="text-[9px] opacity-60">5</span></span>
+            <span class="tag-chip">architecture <span class="text-[9px] opacity-60">8</span></span>
+            <span class="tag-chip">backend <span class="text-[9px] opacity-60">5</span></span>
+            <span class="tag-chip" style="outline: 2px solid var(--color-primary-solid); outline-offset: 1px; opacity:0.6">frontend <span class="text-[9px] opacity-60">9</span></span>
+            <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60">10</span></span>
+            <span class="tag-chip">q1-planning <span class="text-[9px] opacity-60">4</span></span>
+            <span class="tag-chip">retrospective <span class="text-[9px] opacity-60">7</span></span>
+            <span class="tag-chip">ux-research <span class="text-[9px] opacity-60">6</span></span>
+          </div>
+
+          <!-- Inline merge panel -->
+          <div class="rounded-lg border-2 p-4" style="border-color: var(--color-primary-solid); background: var(--color-primary-bg)">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="pi pi-clone text-accent-foreground" style="font-size:12px"></i>
+              <span class="text-xs font-semibold text-accent-foreground">Merging "frontend"</span>
+              <button class="ml-auto text-foreground-muted hover:text-foreground transition"><i class="pi pi-times" style="font-size:11px"></i></button>
+            </div>
+
+            <div class="flex items-center gap-3 mb-3 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-foreground-muted">Into:</span>
+                <select class="mock-select" style="min-width: 160px">
+                  <option>architecture</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-1 text-[10px] text-foreground-secondary">
+                <span class="stat-pill stat-pill-accent"><i class="pi pi-check-square" style="font-size:9px"></i> 4 tasks</span>
+                <span class="stat-pill stat-pill-accent"><i class="pi pi-file-edit" style="font-size:9px"></i> 7 notes</span>
+                <span class="stat-pill stat-pill-accent"><i class="pi pi-comments" style="font-size:9px"></i> 3 meetings</span>
+                <span class="stat-pill stat-pill-warning"><i class="pi pi-link" style="font-size:9px"></i> 3 overlap</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-foreground-muted"><i class="pi pi-exclamation-triangle mr-1" style="font-size:9px"></i>"frontend" will be permanently deleted</span>
+              <div class="flex gap-2">
+                <button class="px-3 py-1.5 text-[10px] rounded-lg border border-border text-foreground hover:bg-surface-muted transition bg-surface-subtle">Cancel</button>
+                <button class="px-3 py-1.5 text-[10px] rounded-lg text-white transition" style="background: var(--color-primary-solid)">Merge tags</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ No modal overlay — stays in context of the tag list</div>
+          <div class="pro">+ Source tag visually dimmed in the cloud above</div>
+          <div class="pro">+ Compact — everything in one row for quick merges</div>
+          <div class="pro">+ Easy to cancel — just close the panel</div>
+          <div class="con">- Less room for detailed preview table (no space for per-type breakdown)</div>
+          <div class="con">- Can feel cramped on mobile</div>
+          <div class="con">- Warning message competes with action buttons for attention</div>
+          <div class="con">- Pushes tag content below further down</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.dataset.theme = html.dataset.theme === 'dark' ? '' : 'dark';
+    }
+  </script>
+</body>
+</html>

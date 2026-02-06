@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Editor Dialog UX Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            'surface-hover': 'var(--color-surface-hover)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-hover': 'var(--color-primary-bg-hover)',
+            'accent-foreground': 'var(--color-primary-text)',
+            'accent-solid': 'var(--color-primary-solid)',
+            danger: 'var(--color-danger-base)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-surface-hover: #f8f9fa;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.25);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-danger-base: #bf616a;
+    }
+
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-surface-hover: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.3);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-danger-base: #bf616a;
+    }
+
+    .pi { font-size: inherit !important; }
+
+    .option-section {
+      border: 2px solid var(--color-border-default);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 40px;
+      background: var(--color-bg-subtle);
+    }
+
+    .recommended {
+      border-color: var(--color-primary-solid);
+      background: var(--color-primary-bg);
+    }
+
+    .option-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .option-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--color-primary-solid);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .pros-cons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--color-border-muted);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+    }
+
+    /* Dialog backdrop simulation */
+    .dialog-backdrop {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      padding: 40px;
+    }
+
+    /* Form input styling */
+    .form-input {
+      width: 100%;
+      padding: 0.625rem 0.75rem;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 6px;
+      color: var(--color-text-primary);
+      font-size: 0.875rem;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-solid);
+      box-shadow: 0 0 0 2px var(--color-primary-bg);
+    }
+
+    .form-input::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    /* Calendar mini styling */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .calendar-day {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--color-text-primary);
+    }
+
+    .calendar-day:hover {
+      background: var(--color-bg-muted);
+    }
+
+    .calendar-day.selected {
+      background: var(--color-primary-solid);
+      color: white;
+    }
+
+    .calendar-day.today {
+      border: 1px solid var(--color-primary-solid);
+    }
+
+    .calendar-day.other-month {
+      color: var(--color-text-muted);
+    }
+
+    .calendar-header {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      text-align: center;
+      padding: 4px 0;
+    }
+
+    /* Time picker styling */
+    .time-slot {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+    }
+
+    .time-slot:hover {
+      background: var(--color-bg-muted);
+    }
+
+    .time-slot.selected {
+      background: var(--color-primary-bg);
+      color: var(--color-primary-text);
+    }
+  </style>
+</head>
+<body class="bg-surface min-h-screen transition-colors p-6">
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle w-10 h-10 flex items-center justify-center rounded-full bg-surface-subtle border border-border text-foreground-muted hover:text-foreground shadow-lg" onclick="toggleTheme()">
+    <i class="pi pi-moon text-lg" id="theme-icon"></i>
+  </button>
+
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Meeting Editor Dialog UX Options</h1>
+    <p class="text-foreground-secondary mb-2">Exploring different layouts and date picker styles for the meeting create/edit dialog</p>
+    <p class="text-sm text-foreground-muted mb-8">
+      <strong>Issues with current:</strong> Colors feel off in dark mode, mobile-first layout doesn't work well on desktop, date picker is cramped
+    </p>
+
+    <!-- ============================================ -->
+    <!-- OPTION 1: Side-by-Side Layout with Inline Calendar (RECOMMENDED) -->
+    <!-- ============================================ -->
+    <div class="option-section recommended">
+      <div class="option-header">
+        <span class="option-number">1</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Side-by-Side with Inline Calendar</h2>
+          <p class="text-sm text-foreground-secondary">Calendar always visible, desktop-optimized two-column layout</p>
+        </div>
+        <span class="ml-auto px-3 py-1 bg-accent-solid text-white text-xs font-medium rounded-full">Recommended</span>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface-subtle rounded-lg shadow-2xl overflow-hidden" style="width: 720px; max-width: 100%;">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+            <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted hover:text-foreground">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <!-- Content: Two columns -->
+          <div class="grid grid-cols-2 divide-x divide-border">
+            <!-- Left: Form fields -->
+            <div class="p-6 space-y-5">
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-1.5">Title</label>
+                <input type="text" class="form-input" placeholder="Meeting title (optional)" value="Sprint Planning">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-1.5">Attendees</label>
+                <input type="text" class="form-input" placeholder="John, Sarah, Mike...">
+                <p class="text-xs text-foreground-muted mt-1">Separate names with commas</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-1.5">Time</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="relative">
+                    <input type="text" class="form-input pr-8" value="10:00 AM">
+                    <i class="pi pi-clock absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted text-sm"></i>
+                  </div>
+                  <select class="form-input">
+                    <option>30 minutes</option>
+                    <option selected>1 hour</option>
+                    <option>1.5 hours</option>
+                    <option>2 hours</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Calendar -->
+            <div class="p-6 bg-surface">
+              <label class="block text-sm font-medium text-foreground mb-3">Date</label>
+
+              <!-- Month navigation -->
+              <div class="flex items-center justify-between mb-3">
+                <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                  <i class="pi pi-chevron-left text-xs"></i>
+                </button>
+                <span class="text-sm font-medium text-foreground">January 2026</span>
+                <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                  <i class="pi pi-chevron-right text-xs"></i>
+                </button>
+              </div>
+
+              <!-- Calendar grid -->
+              <div class="calendar-grid mb-2">
+                <div class="calendar-header">Su</div>
+                <div class="calendar-header">Mo</div>
+                <div class="calendar-header">Tu</div>
+                <div class="calendar-header">We</div>
+                <div class="calendar-header">Th</div>
+                <div class="calendar-header">Fr</div>
+                <div class="calendar-header">Sa</div>
+              </div>
+              <div class="calendar-grid">
+                <div class="calendar-day other-month">28</div>
+                <div class="calendar-day other-month">29</div>
+                <div class="calendar-day other-month">30</div>
+                <div class="calendar-day other-month">31</div>
+                <div class="calendar-day">1</div>
+                <div class="calendar-day">2</div>
+                <div class="calendar-day">3</div>
+                <div class="calendar-day">4</div>
+                <div class="calendar-day">5</div>
+                <div class="calendar-day">6</div>
+                <div class="calendar-day">7</div>
+                <div class="calendar-day">8</div>
+                <div class="calendar-day">9</div>
+                <div class="calendar-day">10</div>
+                <div class="calendar-day">11</div>
+                <div class="calendar-day">12</div>
+                <div class="calendar-day">13</div>
+                <div class="calendar-day">14</div>
+                <div class="calendar-day">15</div>
+                <div class="calendar-day">16</div>
+                <div class="calendar-day">17</div>
+                <div class="calendar-day">18</div>
+                <div class="calendar-day">19</div>
+                <div class="calendar-day">20</div>
+                <div class="calendar-day">21</div>
+                <div class="calendar-day">22</div>
+                <div class="calendar-day">23</div>
+                <div class="calendar-day">24</div>
+                <div class="calendar-day">25</div>
+                <div class="calendar-day">26</div>
+                <div class="calendar-day today">27</div>
+                <div class="calendar-day selected">28</div>
+                <div class="calendar-day">29</div>
+                <div class="calendar-day">30</div>
+                <div class="calendar-day">31</div>
+              </div>
+
+              <!-- Quick date buttons -->
+              <div class="flex gap-2 mt-4">
+                <button class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded hover:bg-accent hover:text-accent-foreground">Today</button>
+                <button class="px-3 py-1.5 text-xs bg-accent text-accent-foreground rounded">Tomorrow</button>
+                <button class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded hover:bg-accent hover:text-accent-foreground">Next Week</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-surface">
+            <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+            <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md hover:opacity-90">Create Meeting</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Calendar always visible - no popup needed</li>
+            <li>+ Desktop-optimized layout uses space well</li>
+            <li>+ Quick date shortcuts visible</li>
+            <li>+ Form fields have room to breathe</li>
+            <li>+ Clear visual hierarchy</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Wider dialog takes more screen space</li>
+            <li>- May need responsive handling for tablet</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 2: Compact Single Column with Dropdown Calendar -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">2</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Compact with Dropdown Calendar</h2>
+          <p class="text-sm text-foreground-secondary">Narrower dialog with expandable date picker</p>
+        </div>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface-subtle rounded-lg shadow-2xl overflow-hidden" style="width: 440px; max-width: 100%;">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+            <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <!-- Content -->
+          <div class="p-5 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Title</label>
+              <input type="text" class="form-input" placeholder="Meeting title (optional)">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Date & Time</label>
+              <div class="flex gap-2">
+                <div class="flex-1 relative">
+                  <input type="text" class="form-input pr-8" value="Jan 28, 2026">
+                  <i class="pi pi-calendar absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted text-sm"></i>
+                </div>
+                <div class="relative" style="width: 120px;">
+                  <input type="text" class="form-input pr-8" value="10:00 AM">
+                  <i class="pi pi-clock absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted text-sm"></i>
+                </div>
+              </div>
+
+              <!-- Expanded calendar dropdown -->
+              <div class="mt-2 p-3 bg-surface rounded-lg border border-border">
+                <div class="flex items-center justify-between mb-2">
+                  <button class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                    <i class="pi pi-chevron-left text-xs"></i>
+                  </button>
+                  <span class="text-sm font-medium text-foreground">January 2026</span>
+                  <button class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                    <i class="pi pi-chevron-right text-xs"></i>
+                  </button>
+                </div>
+                <div class="calendar-grid text-xs">
+                  <div class="calendar-header">S</div>
+                  <div class="calendar-header">M</div>
+                  <div class="calendar-header">T</div>
+                  <div class="calendar-header">W</div>
+                  <div class="calendar-header">T</div>
+                  <div class="calendar-header">F</div>
+                  <div class="calendar-header">S</div>
+                </div>
+                <div class="calendar-grid" style="--tw-scale-x: 0.9; --tw-scale-y: 0.9;">
+                  <div class="calendar-day other-month" style="width:28px;height:28px;font-size:11px">28</div>
+                  <div class="calendar-day other-month" style="width:28px;height:28px;font-size:11px">29</div>
+                  <div class="calendar-day other-month" style="width:28px;height:28px;font-size:11px">30</div>
+                  <div class="calendar-day other-month" style="width:28px;height:28px;font-size:11px">31</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">1</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">2</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">3</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">4</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">5</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">6</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">7</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">8</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">9</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">10</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">11</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">12</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">13</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">14</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">15</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">16</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">17</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">18</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">19</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">20</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">21</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">22</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">23</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">24</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">25</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">26</div>
+                  <div class="calendar-day today" style="width:28px;height:28px;font-size:11px">27</div>
+                  <div class="calendar-day selected" style="width:28px;height:28px;font-size:11px">28</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">29</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">30</div>
+                  <div class="calendar-day" style="width:28px;height:28px;font-size:11px">31</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Attendees</label>
+              <input type="text" class="form-input" placeholder="John, Sarah, Mike...">
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-border">
+            <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+            <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">Create</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Compact footprint</li>
+            <li>+ Calendar expands inline (not floating popup)</li>
+            <li>+ Works on smaller screens</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Calendar takes extra vertical space when open</li>
+            <li>- Date input field is cramped</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 3: Card-Based Sections -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">3</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Card-Based Sections</h2>
+          <p class="text-sm text-foreground-secondary">Visual grouping with card containers for each section</p>
+        </div>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface rounded-lg shadow-2xl overflow-hidden" style="width: 520px; max-width: 100%;">
+          <!-- Header -->
+          <div class="px-6 py-4 border-b border-border bg-surface-subtle">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+              <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6 space-y-4">
+            <!-- Details card -->
+            <div class="bg-surface-subtle rounded-lg border border-border p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-file-edit text-accent-foreground"></i>
+                <span class="text-sm font-medium text-foreground">Details</span>
+              </div>
+              <div class="space-y-3">
+                <input type="text" class="form-input" placeholder="Meeting title (optional)">
+                <input type="text" class="form-input" placeholder="Attendees (comma separated)">
+              </div>
+            </div>
+
+            <!-- Date & Time card -->
+            <div class="bg-surface-subtle rounded-lg border border-border p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-calendar text-accent-foreground"></i>
+                <span class="text-sm font-medium text-foreground">Date & Time</span>
+              </div>
+
+              <!-- Date chips -->
+              <div class="flex flex-wrap gap-2 mb-3">
+                <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground">Today</button>
+                <button class="px-3 py-1.5 text-sm bg-accent text-accent-foreground rounded-full border border-transparent">Tomorrow</button>
+                <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground">Next Week</button>
+                <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground">
+                  <i class="pi pi-calendar mr-1"></i>Pick Date
+                </button>
+              </div>
+
+              <!-- Time selector -->
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-foreground-secondary">Time:</span>
+                <div class="flex items-center gap-1">
+                  <select class="form-input py-1.5" style="width: auto;">
+                    <option>9:00</option>
+                    <option selected>10:00</option>
+                    <option>11:00</option>
+                    <option>12:00</option>
+                    <option>1:00</option>
+                    <option>2:00</option>
+                    <option>3:00</option>
+                    <option>4:00</option>
+                  </select>
+                  <select class="form-input py-1.5" style="width: auto;">
+                    <option selected>AM</option>
+                    <option>PM</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-surface-subtle">
+            <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+            <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">Create Meeting</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Clear visual grouping</li>
+            <li>+ Quick date selection with chips</li>
+            <li>+ Good visual hierarchy</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- More visual noise with cards</li>
+            <li>- No full calendar visible</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 4: Horizontal Date/Time Strip -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">4</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Horizontal Date Strip</h2>
+          <p class="text-sm text-foreground-secondary">Week view strip for quick date selection</p>
+        </div>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface-subtle rounded-lg shadow-2xl overflow-hidden" style="width: 560px; max-width: 100%;">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+            <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6 space-y-5">
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Title</label>
+              <input type="text" class="form-input" placeholder="Meeting title (optional)">
+            </div>
+
+            <!-- Horizontal date strip -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-sm font-medium text-foreground">Date</label>
+                <div class="flex items-center gap-1">
+                  <button class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                    <i class="pi pi-chevron-left text-xs"></i>
+                  </button>
+                  <span class="text-xs text-foreground-muted px-2">Jan 2026</span>
+                  <button class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                    <i class="pi pi-chevron-right text-xs"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Week strip -->
+              <div class="flex gap-2 overflow-x-auto pb-2">
+                <div class="flex flex-col items-center p-2 rounded-lg min-w-[56px] cursor-pointer hover:bg-surface-muted">
+                  <span class="text-xs text-foreground-muted">Mon</span>
+                  <span class="text-lg font-medium text-foreground">26</span>
+                </div>
+                <div class="flex flex-col items-center p-2 rounded-lg min-w-[56px] cursor-pointer border border-accent-foreground">
+                  <span class="text-xs text-accent-foreground">Tue</span>
+                  <span class="text-lg font-medium text-accent-foreground">27</span>
+                  <span class="text-xs text-accent-foreground">Today</span>
+                </div>
+                <div class="flex flex-col items-center p-2 rounded-lg min-w-[56px] cursor-pointer bg-accent-solid text-white">
+                  <span class="text-xs opacity-80">Wed</span>
+                  <span class="text-lg font-medium">28</span>
+                </div>
+                <div class="flex flex-col items-center p-2 rounded-lg min-w-[56px] cursor-pointer hover:bg-surface-muted">
+                  <span class="text-xs text-foreground-muted">Thu</span>
+                  <span class="text-lg font-medium text-foreground">29</span>
+                </div>
+                <div class="flex flex-col items-center p-2 rounded-lg min-w-[56px] cursor-pointer hover:bg-surface-muted">
+                  <span class="text-xs text-foreground-muted">Fri</span>
+                  <span class="text-lg font-medium text-foreground">30</span>
+                </div>
+                <div class="flex flex-col items-center p-2 rounded-lg min-w-[56px] cursor-pointer hover:bg-surface-muted">
+                  <span class="text-xs text-foreground-muted">Sat</span>
+                  <span class="text-lg font-medium text-foreground">31</span>
+                </div>
+                <div class="flex flex-col items-center p-2 rounded-lg min-w-[56px] cursor-pointer hover:bg-surface-muted">
+                  <span class="text-xs text-foreground-muted">Sun</span>
+                  <span class="text-lg font-medium text-foreground">1</span>
+                </div>
+                <button class="flex flex-col items-center justify-center p-2 rounded-lg min-w-[56px] border border-dashed border-border hover:border-accent-foreground text-foreground-muted hover:text-accent-foreground">
+                  <i class="pi pi-calendar text-sm"></i>
+                  <span class="text-xs">More</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Time -->
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-2">Time</label>
+              <div class="flex flex-wrap gap-2">
+                <span class="time-slot">9:00 AM</span>
+                <span class="time-slot selected">10:00 AM</span>
+                <span class="time-slot">10:30 AM</span>
+                <span class="time-slot">11:00 AM</span>
+                <span class="time-slot">11:30 AM</span>
+                <span class="time-slot">12:00 PM</span>
+                <span class="time-slot">1:00 PM</span>
+                <span class="time-slot">2:00 PM</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Attendees</label>
+              <input type="text" class="form-input" placeholder="John, Sarah, Mike...">
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+            <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+            <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">Create</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Very visual date selection</li>
+            <li>+ Time slots are quick to scan</li>
+            <li>+ Modern calendar app feel</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Limited to one week view</li>
+            <li>- Needs "More" button for full calendar</li>
+            <li>- Takes more vertical space</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 5: Minimal Floating Panel -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">5</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Minimal Floating Panel</h2>
+          <p class="text-sm text-foreground-secondary">Ultra-compact quick entry form</p>
+        </div>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface-subtle rounded-xl shadow-2xl overflow-hidden" style="width: 380px; max-width: 100%;">
+          <!-- Compact header -->
+          <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
+            <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+              <i class="pi pi-video text-accent-foreground text-sm"></i>
+            </div>
+            <input type="text" class="flex-1 bg-transparent text-foreground font-medium focus:outline-none" placeholder="Meeting name..." value="Sprint Planning">
+            <button class="w-7 h-7 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+              <i class="pi pi-times text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Quick fields -->
+          <div class="p-4 space-y-3">
+            <!-- Date & Time row -->
+            <div class="flex items-center gap-2">
+              <button class="flex items-center gap-2 px-3 py-2 bg-surface rounded-lg border border-border hover:border-accent-foreground flex-1">
+                <i class="pi pi-calendar text-accent-foreground text-sm"></i>
+                <span class="text-sm text-foreground">Jan 28</span>
+              </button>
+              <button class="flex items-center gap-2 px-3 py-2 bg-surface rounded-lg border border-border hover:border-accent-foreground">
+                <i class="pi pi-clock text-accent-foreground text-sm"></i>
+                <span class="text-sm text-foreground">10:00 AM</span>
+              </button>
+            </div>
+
+            <!-- Attendees -->
+            <div class="flex items-center gap-2 px-3 py-2 bg-surface rounded-lg border border-border">
+              <i class="pi pi-users text-foreground-muted text-sm"></i>
+              <input type="text" class="flex-1 bg-transparent text-sm text-foreground focus:outline-none" placeholder="Add attendees...">
+            </div>
+          </div>
+
+          <!-- Action -->
+          <div class="px-4 pb-4">
+            <button class="w-full py-2.5 bg-accent-solid text-white text-sm font-medium rounded-lg hover:opacity-90">
+              Create Meeting
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Very compact and quick</li>
+            <li>+ Minimal cognitive load</li>
+            <li>+ Good for rapid entry</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- No calendar visible</li>
+            <li>- Limited functionality</li>
+            <li>- Relies on popup pickers</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 6: Split View with Time Slots -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">6</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Split View with Time Grid</h2>
+          <p class="text-sm text-foreground-secondary">Calendar left, time slots right - like Google Calendar</p>
+        </div>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface-subtle rounded-lg shadow-2xl overflow-hidden" style="width: 680px; max-width: 100%;">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">Schedule Meeting</h3>
+            <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <!-- Title input -->
+          <div class="px-6 py-4 border-b border-border">
+            <input type="text" class="w-full text-lg text-foreground bg-transparent focus:outline-none" placeholder="Add meeting title" value="Sprint Planning">
+          </div>
+
+          <!-- Content: Three columns -->
+          <div class="grid grid-cols-12 divide-x divide-border">
+            <!-- Calendar -->
+            <div class="col-span-5 p-4">
+              <div class="flex items-center justify-between mb-3">
+                <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                  <i class="pi pi-chevron-left text-xs"></i>
+                </button>
+                <span class="text-sm font-medium text-foreground">January 2026</span>
+                <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                  <i class="pi pi-chevron-right text-xs"></i>
+                </button>
+              </div>
+              <div class="calendar-grid mb-1">
+                <div class="calendar-header">S</div>
+                <div class="calendar-header">M</div>
+                <div class="calendar-header">T</div>
+                <div class="calendar-header">W</div>
+                <div class="calendar-header">T</div>
+                <div class="calendar-header">F</div>
+                <div class="calendar-header">S</div>
+              </div>
+              <div class="calendar-grid">
+                <div class="calendar-day other-month" style="width:28px;height:28px;font-size:11px">28</div>
+                <div class="calendar-day other-month" style="width:28px;height:28px;font-size:11px">29</div>
+                <div class="calendar-day other-month" style="width:28px;height:28px;font-size:11px">30</div>
+                <div class="calendar-day other-month" style="width:28px;height:28px;font-size:11px">31</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">1</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">2</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">3</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">4</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">5</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">6</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">7</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">8</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">9</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">10</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">11</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">12</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">13</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">14</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">15</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">16</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">17</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">18</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">19</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">20</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">21</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">22</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">23</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">24</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">25</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">26</div>
+                <div class="calendar-day today" style="width:28px;height:28px;font-size:11px">27</div>
+                <div class="calendar-day selected" style="width:28px;height:28px;font-size:11px">28</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">29</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">30</div>
+                <div class="calendar-day" style="width:28px;height:28px;font-size:11px">31</div>
+              </div>
+            </div>
+
+            <!-- Time slots -->
+            <div class="col-span-3 p-4 bg-surface">
+              <div class="text-xs font-medium text-foreground-muted mb-2">Wed, Jan 28</div>
+              <div class="space-y-1 max-h-48 overflow-y-auto">
+                <div class="time-slot">8:00 AM</div>
+                <div class="time-slot">8:30 AM</div>
+                <div class="time-slot">9:00 AM</div>
+                <div class="time-slot">9:30 AM</div>
+                <div class="time-slot selected">10:00 AM</div>
+                <div class="time-slot">10:30 AM</div>
+                <div class="time-slot">11:00 AM</div>
+                <div class="time-slot">11:30 AM</div>
+                <div class="time-slot">12:00 PM</div>
+                <div class="time-slot">12:30 PM</div>
+                <div class="time-slot">1:00 PM</div>
+              </div>
+            </div>
+
+            <!-- Details -->
+            <div class="col-span-4 p-4">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-foreground-muted mb-1">Duration</label>
+                  <select class="form-input text-sm">
+                    <option>30 minutes</option>
+                    <option selected>1 hour</option>
+                    <option>1.5 hours</option>
+                    <option>2 hours</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-foreground-muted mb-1">Attendees</label>
+                  <input type="text" class="form-input text-sm" placeholder="Add people...">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+            <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+            <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Calendar and time visible together</li>
+            <li>+ Familiar Google Calendar pattern</li>
+            <li>+ Time slots scrollable</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Three columns may feel busy</li>
+            <li>- Wide dialog</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 7: Tabbed Interface -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">7</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Tabbed Interface</h2>
+          <p class="text-sm text-foreground-secondary">Separate tabs for details and scheduling</p>
+        </div>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface-subtle rounded-lg shadow-2xl overflow-hidden" style="width: 480px; max-width: 100%;">
+          <!-- Header with tabs -->
+          <div class="border-b border-border">
+            <div class="flex items-center justify-between px-6 py-3">
+              <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+              <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+            <div class="flex px-6">
+              <button class="px-4 py-2 text-sm text-accent-foreground border-b-2 border-accent-solid">Details</button>
+              <button class="px-4 py-2 text-sm text-foreground-muted hover:text-foreground">Schedule</button>
+              <button class="px-4 py-2 text-sm text-foreground-muted hover:text-foreground">Attendees</button>
+            </div>
+          </div>
+
+          <!-- Tab content -->
+          <div class="p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Meeting Title</label>
+              <input type="text" class="form-input" placeholder="Enter meeting title">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Description</label>
+              <textarea class="form-input" rows="3" placeholder="Add meeting details (optional)"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Meeting Type</label>
+              <div class="flex gap-2">
+                <button class="flex-1 px-3 py-2 text-sm bg-accent text-accent-foreground rounded-lg border border-transparent">
+                  <i class="pi pi-video mr-2"></i>Video
+                </button>
+                <button class="flex-1 px-3 py-2 text-sm bg-surface text-foreground-secondary rounded-lg border border-border hover:border-accent-foreground">
+                  <i class="pi pi-phone mr-2"></i>Phone
+                </button>
+                <button class="flex-1 px-3 py-2 text-sm bg-surface text-foreground-secondary rounded-lg border border-border hover:border-accent-foreground">
+                  <i class="pi pi-building mr-2"></i>In Person
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between px-6 py-4 border-t border-border">
+            <span class="text-xs text-foreground-muted">Step 1 of 3</span>
+            <div class="flex gap-3">
+              <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+              <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Organized into logical sections</li>
+            <li>+ Each section has room</li>
+            <li>+ Can add more fields without clutter</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Requires multiple steps</li>
+            <li>- Can't see all info at once</li>
+            <li>- More clicks to complete</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 8: Natural Language Input -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">8</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Natural Language Input</h2>
+          <p class="text-sm text-foreground-secondary">Type naturally, parse date/time automatically</p>
+        </div>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface-subtle rounded-lg shadow-2xl overflow-hidden" style="width: 500px; max-width: 100%;">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">Quick Meeting</h3>
+            <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <!-- Natural language input -->
+          <div class="p-6">
+            <div class="mb-4">
+              <input type="text" class="form-input text-base py-3" placeholder="e.g., Sprint planning tomorrow at 10am with John and Sarah" value="Sprint planning Wednesday at 10am with John">
+              <p class="text-xs text-foreground-muted mt-2">
+                <i class="pi pi-info-circle mr-1"></i>
+                Type naturally - we'll parse the date, time, and attendees
+              </p>
+            </div>
+
+            <!-- Parsed preview -->
+            <div class="bg-surface rounded-lg border border-border p-4">
+              <div class="text-xs font-medium text-foreground-muted mb-3">Parsed details:</div>
+              <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-file-edit text-accent-foreground w-4"></i>
+                  <span class="text-sm text-foreground">Sprint planning</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-calendar text-accent-foreground w-4"></i>
+                  <span class="text-sm text-foreground">Wednesday, Jan 28, 2026</span>
+                  <button class="text-xs text-accent-foreground hover:underline">Edit</button>
+                </div>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-clock text-accent-foreground w-4"></i>
+                  <span class="text-sm text-foreground">10:00 AM</span>
+                  <button class="text-xs text-accent-foreground hover:underline">Edit</button>
+                </div>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-users text-accent-foreground w-4"></i>
+                  <span class="text-sm text-foreground">John</span>
+                  <button class="text-xs text-accent-foreground hover:underline">Add more</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+            <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+            <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">Create Meeting</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Very fast input</li>
+            <li>+ Natural, conversational feel</li>
+            <li>+ Minimal UI chrome</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Requires NLP parsing (complex)</li>
+            <li>- Can misparse input</li>
+            <li>- Learning curve for users</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 9: Popover with Mini Calendar -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">9</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Popover Style (Notion-like)</h2>
+          <p class="text-sm text-foreground-secondary">Lightweight popover instead of modal dialog</p>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg p-8">
+        <!-- Simulated page with popover -->
+        <div class="relative">
+          <!-- Trigger button -->
+          <button class="flex items-center gap-2 px-3 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">
+            <i class="pi pi-plus"></i>New Meeting
+          </button>
+
+          <!-- Popover -->
+          <div class="absolute top-full left-0 mt-2 bg-surface-subtle rounded-lg shadow-2xl border border-border overflow-hidden" style="width: 340px;">
+            <div class="p-4 space-y-3">
+              <input type="text" class="form-input" placeholder="Meeting title" autofocus>
+
+              <!-- Inline date picker trigger -->
+              <div class="flex gap-2">
+                <button class="flex-1 flex items-center gap-2 px-3 py-2 bg-surface rounded-lg border border-border hover:border-accent-foreground text-left">
+                  <i class="pi pi-calendar text-foreground-muted text-sm"></i>
+                  <span class="text-sm text-foreground">Jan 28</span>
+                </button>
+                <button class="flex items-center gap-2 px-3 py-2 bg-surface rounded-lg border border-border hover:border-accent-foreground">
+                  <i class="pi pi-clock text-foreground-muted text-sm"></i>
+                  <span class="text-sm text-foreground">10:00</span>
+                </button>
+              </div>
+
+              <input type="text" class="form-input" placeholder="Add attendees...">
+
+              <button class="w-full py-2 bg-accent-solid text-white text-sm font-medium rounded-md">
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Very lightweight</li>
+            <li>+ Doesn't block the page</li>
+            <li>+ Quick entry feel</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Limited space for features</li>
+            <li>- No room for transcript in edit mode</li>
+            <li>- Can feel cramped</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 10: Full-Width Drawer -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">10</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Side Drawer</h2>
+          <p class="text-sm text-foreground-secondary">Full-height drawer from the right side</p>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg overflow-hidden" style="height: 500px;">
+        <div class="flex h-full">
+          <!-- Page content (blurred) -->
+          <div class="flex-1 p-6 opacity-50">
+            <div class="h-4 w-32 bg-surface-muted rounded mb-4"></div>
+            <div class="h-20 bg-surface-muted rounded mb-3"></div>
+            <div class="h-20 bg-surface-muted rounded mb-3"></div>
+            <div class="h-20 bg-surface-muted rounded"></div>
+          </div>
+
+          <!-- Drawer -->
+          <div class="w-[420px] bg-surface-subtle border-l border-border flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+              <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+
+            <!-- Scrollable content -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-5">
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-1.5">Title</label>
+                <input type="text" class="form-input" placeholder="Meeting title">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-2">Date</label>
+                <!-- Mini calendar -->
+                <div class="bg-surface rounded-lg border border-border p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <button class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                      <i class="pi pi-chevron-left text-xs"></i>
+                    </button>
+                    <span class="text-sm font-medium text-foreground">Jan 2026</span>
+                    <button class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+                      <i class="pi pi-chevron-right text-xs"></i>
+                    </button>
+                  </div>
+                  <div class="calendar-grid" style="gap: 1px;">
+                    <div class="calendar-header" style="font-size:9px">S</div>
+                    <div class="calendar-header" style="font-size:9px">M</div>
+                    <div class="calendar-header" style="font-size:9px">T</div>
+                    <div class="calendar-header" style="font-size:9px">W</div>
+                    <div class="calendar-header" style="font-size:9px">T</div>
+                    <div class="calendar-header" style="font-size:9px">F</div>
+                    <div class="calendar-header" style="font-size:9px">S</div>
+                  </div>
+                  <div class="calendar-grid" style="gap: 1px;">
+                    <div class="calendar-day other-month" style="width:24px;height:24px;font-size:10px">28</div>
+                    <div class="calendar-day other-month" style="width:24px;height:24px;font-size:10px">29</div>
+                    <div class="calendar-day other-month" style="width:24px;height:24px;font-size:10px">30</div>
+                    <div class="calendar-day other-month" style="width:24px;height:24px;font-size:10px">31</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">1</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">2</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">3</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">4</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">5</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">6</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">7</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">8</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">9</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">10</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">11</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">12</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">13</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">14</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">15</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">16</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">17</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">18</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">19</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">20</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">21</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">22</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">23</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">24</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">25</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">26</div>
+                    <div class="calendar-day today" style="width:24px;height:24px;font-size:10px">27</div>
+                    <div class="calendar-day selected" style="width:24px;height:24px;font-size:10px">28</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">29</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">30</div>
+                    <div class="calendar-day" style="width:24px;height:24px;font-size:10px">31</div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-1.5">Time</label>
+                <div class="flex gap-2">
+                  <input type="text" class="form-input" value="10:00 AM" style="width: 120px;">
+                  <select class="form-input flex-1">
+                    <option>1 hour</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-foreground mb-1.5">Attendees</label>
+                <input type="text" class="form-input" placeholder="Add attendees...">
+              </div>
+            </div>
+
+            <!-- Footer (sticky) -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+              <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+              <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">Create</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Lots of vertical space</li>
+            <li>+ Can see page content behind</li>
+            <li>+ Room for transcript in edit mode</li>
+            <li>+ Modern app pattern</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Takes significant screen width</li>
+            <li>- More dramatic UI change</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 11: Current Design (Fixed) -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">11</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Current Design (Fixed Colors)</h2>
+          <p class="text-sm text-foreground-secondary">Keep existing layout but fix dark mode colors</p>
+        </div>
+      </div>
+
+      <div class="dialog-backdrop">
+        <div class="bg-surface-subtle rounded-lg shadow-2xl overflow-hidden" style="width: 600px; max-width: 100%;">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+            <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <!-- Content - single column -->
+          <div class="p-6 space-y-5">
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Title</label>
+              <input type="text" class="form-input" placeholder="Meeting title (optional)">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Date & Time</label>
+              <div class="relative">
+                <input type="text" class="form-input pr-8" value="28 Jan 2026, 10:00 AM">
+                <i class="pi pi-calendar absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted"></i>
+              </div>
+              <p class="text-xs text-foreground-muted mt-1">Click to open date picker</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1.5">Attendees</label>
+              <input type="text" class="form-input" placeholder="John, Sarah, Mike...">
+              <p class="text-xs text-foreground-muted mt-1">Separate names with commas</p>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-surface">
+            <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+            <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md">Create</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-sm text-foreground-secondary mt-4">
+        <strong>Color fixes needed:</strong> Replace hardcoded colors with semantic tokens (bg-surface-subtle instead of white,
+        text-foreground instead of gray-900, border-border instead of gray-200). The PrimeNG datepicker also needs theme overrides.
+      </p>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-accent-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Minimal change from current</li>
+            <li>+ Users already familiar with layout</li>
+            <li>+ Quick fix</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Still mobile-first layout on desktop</li>
+            <li>- Date picker still requires popup</li>
+            <li>- Doesn't address UX concerns</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="bg-surface-subtle rounded-lg border border-border p-6 mt-8">
+      <h2 class="text-lg font-semibold text-foreground mb-4">Summary: Meeting Editor Options</h2>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-border">
+              <th class="text-left py-2 text-foreground">#</th>
+              <th class="text-left py-2 text-foreground">Option</th>
+              <th class="text-left py-2 text-foreground">Best For</th>
+              <th class="text-left py-2 text-foreground">Desktop Friendly</th>
+            </tr>
+          </thead>
+          <tbody class="text-foreground-secondary">
+            <tr class="border-b border-border-muted bg-accent">
+              <td class="py-2 font-medium text-foreground">1</td>
+              <td class="py-2 text-foreground">Side-by-Side + Inline Calendar</td>
+              <td class="py-2">Desktop power users</td>
+              <td class="py-2 text-accent-foreground font-medium">Excellent</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">2</td>
+              <td class="py-2">Compact + Dropdown Calendar</td>
+              <td class="py-2">Smaller screens, quick entry</td>
+              <td class="py-2">Good</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">3</td>
+              <td class="py-2">Card-Based Sections</td>
+              <td class="py-2">Visual organization</td>
+              <td class="py-2">Good</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">4</td>
+              <td class="py-2">Horizontal Date Strip</td>
+              <td class="py-2">Week-focused scheduling</td>
+              <td class="py-2">Good</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">5</td>
+              <td class="py-2">Minimal Floating Panel</td>
+              <td class="py-2">Rapid entry</td>
+              <td class="py-2">Limited</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">6</td>
+              <td class="py-2">Split View (Google Calendar style)</td>
+              <td class="py-2">Full scheduling workflow</td>
+              <td class="py-2">Excellent</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">7</td>
+              <td class="py-2">Tabbed Interface</td>
+              <td class="py-2">Complex meeting setup</td>
+              <td class="py-2">Good</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">8</td>
+              <td class="py-2">Natural Language Input</td>
+              <td class="py-2">Power users who type fast</td>
+              <td class="py-2">Good (but complex)</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">9</td>
+              <td class="py-2">Popover (Notion-like)</td>
+              <td class="py-2">Inline quick entry</td>
+              <td class="py-2">Limited</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2">10</td>
+              <td class="py-2">Side Drawer</td>
+              <td class="py-2">Edit mode with transcript</td>
+              <td class="py-2">Excellent</td>
+            </tr>
+            <tr>
+              <td class="py-2">11</td>
+              <td class="py-2">Current Design (Fixed)</td>
+              <td class="py-2">Minimal change approach</td>
+              <td class="py-2">Limited</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-border">
+        <h3 class="font-medium text-foreground mb-2">Recommendation</h3>
+        <p class="text-sm text-foreground-secondary mb-3">
+          <strong>Option 1 (Side-by-Side with Inline Calendar)</strong> is recommended for the "New Meeting" dialog because:
+        </p>
+        <ul class="text-sm text-foreground-secondary space-y-1 list-disc list-inside">
+          <li>Calendar is always visible - no popup confusion</li>
+          <li>Uses desktop screen real estate effectively</li>
+          <li>Quick date shortcuts for common selections</li>
+          <li>Clear visual separation between form and calendar</li>
+        </ul>
+        <p class="text-sm text-foreground-secondary mt-3">
+          For the <strong>Edit Meeting</strong> mode (which includes transcript), consider <strong>Option 10 (Side Drawer)</strong>
+          as it provides the vertical space needed for the transcript textarea and AI analysis section.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        icon.classList.remove('pi-sun');
+        icon.classList.add('pi-moon');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.classList.remove('pi-moon');
+        icon.classList.add('pi-sun');
+      }
+    }
+
+    // Start in dark mode to see the issue
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('theme-icon').classList.remove('pi-moon');
+    document.getElementById('theme-icon').classList.add('pi-sun');
+  </script>
+
+</body>
+</html>

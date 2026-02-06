@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Editor Toolbar - Headings & Overflow Options</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
+    <style>
+        :root {
+            --color-surface: #fafaf8;
+            --color-surface-subtle: #f5f5f3;
+            --color-surface-hover: #eaeae8;
+            --color-border: #e5e5e3;
+            --color-foreground: #2e3440;
+            --color-foreground-secondary: #6b7280;
+            --color-foreground-muted: #9ca3af;
+            --color-accent: #7c3aed;
+            --color-accent-subtle: rgba(124, 58, 237, 0.1);
+        }
+
+        body {
+            background: #e5e5e5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .editor-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-surface-subtle);
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 6px;
+            border-radius: 4px;
+            color: var(--color-foreground-secondary);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 13px;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--color-surface-hover);
+            color: var(--color-foreground);
+        }
+
+        .toolbar-btn.active {
+            background: var(--color-accent-subtle);
+            color: var(--color-accent);
+        }
+
+        .divider {
+            width: 1px;
+            height: 20px;
+            background: var(--color-border);
+            margin: 0 4px;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--color-foreground-secondary);
+            min-width: 90px;
+            justify-content: space-between;
+        }
+
+        .dropdown-btn:hover {
+            background: var(--color-surface-hover);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 150px;
+            z-index: 100;
+            padding: 4px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--color-foreground);
+        }
+
+        .dropdown-item:hover {
+            background: var(--color-surface-subtle);
+        }
+
+        .dropdown-item.active {
+            background: var(--color-accent-subtle);
+            color: var(--color-accent);
+        }
+
+        .editor-content {
+            padding: 12px;
+            min-height: 150px;
+            color: var(--color-foreground-muted);
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-foreground);
+            margin-bottom: 8px;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--color-foreground-secondary);
+            margin-bottom: 16px;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+            font-size: 12px;
+        }
+
+        .pros { color: #22c55e; }
+        .cons { color: #ef4444; }
+
+        .recommended {
+            background: linear-gradient(135deg, #7c3aed10, #7c3aed05);
+            border: 2px solid var(--color-accent);
+        }
+
+        .recommended-badge {
+            background: var(--color-accent);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .overflow-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 100;
+            padding: 4px;
+        }
+
+        .overflow-group-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--color-foreground-muted);
+            text-transform: uppercase;
+            padding: 8px 12px 4px;
+        }
+
+        .mobile-toolbar {
+            max-width: 320px;
+        }
+
+        .tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-surface-subtle);
+        }
+
+        .tab {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--color-foreground-secondary);
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+        }
+
+        .slash-hint {
+            font-size: 11px;
+            color: var(--color-foreground-muted);
+            background: var(--color-surface-subtle);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-3xl font-bold mb-2 text-gray-800">Note Editor Toolbar Options</h1>
+        <p class="text-gray-600 mb-8">Mockups for heading selection and toolbar overflow handling</p>
+
+        <!-- ==================== HEADING SELECTION OPTIONS ==================== -->
+        <h2 class="text-xl font-bold text-gray-700 mb-4 mt-8 border-b pb-2">Part 1: Heading Selection</h2>
+
+        <div class="grid gap-8">
+
+            <!-- Option 1: Dropdown (Notion-style) - RECOMMENDED -->
+            <div class="bg-white rounded-xl p-6 recommended">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="section-title">Option 1: Dropdown Selector (Notion-style)</span>
+                    <span class="recommended-badge">Recommended</span>
+                </div>
+                <p class="section-desc">A dropdown that shows all block types including headings. Clean and familiar to Notion users.</p>
+
+                <div class="editor-container">
+                    <div class="toolbar">
+                        <!-- Block Type Dropdown -->
+                        <div class="dropdown">
+                            <button class="dropdown-btn">
+                                <span>Paragraph</span>
+                                <i class="pi pi-chevron-down text-xs"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-item">
+                                    <span style="font-size: 14px;">Paragraph</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <span style="font-size: 20px; font-weight: 700;">Heading 1</span>
+                                </div>
+                                <div class="dropdown-item active">
+                                    <span style="font-size: 16px; font-weight: 600;">Heading 2</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <span style="font-size: 14px; font-weight: 600;">Heading 3</span>
+                                </div>
+                                <div style="height: 1px; background: var(--color-border); margin: 4px 0;"></div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-list text-sm"></i>
+                                    <span>Bullet List</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-sort-numeric-down text-sm"></i>
+                                    <span>Numbered List</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-check-square text-sm"></i>
+                                    <span>Task List</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-comment text-sm"></i>
+                                    <span>Quote</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-code text-sm"></i>
+                                    <span>Code Block</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <!-- Text formatting -->
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><span class="underline">U</span></button>
+                        <button class="toolbar-btn"><span class="line-through">S</span></button>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+
+                        <div class="divider"></div>
+
+                        <button class="toolbar-btn" title="Highlight"><i class="pi pi-palette text-sm"></i></button>
+                        <button class="toolbar-btn" title="Inline code"><code class="text-xs">{ }</code></button>
+                    </div>
+                    <div class="editor-content">Take a note...</div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Familiar Notion-like UX</li>
+                            <li>Shows all block types in one place</li>
+                            <li>Saves horizontal space</li>
+                            <li>Easy to add more block types later</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Requires extra click to see options</li>
+                            <li>Slightly more complex implementation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 2: Separate H1/H2/H3 Buttons -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="section-title">Option 2: Separate Heading Buttons</div>
+                <p class="section-desc">Individual buttons for each heading level. Direct and quick access.</p>
+
+                <div class="editor-container">
+                    <div class="toolbar">
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><span class="underline">U</span></button>
+                        <button class="toolbar-btn"><span class="line-through">S</span></button>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+
+                        <div class="divider"></div>
+
+                        <button class="toolbar-btn" title="Heading 1"><span class="font-bold text-base">H1</span></button>
+                        <button class="toolbar-btn active" title="Heading 2"><span class="font-semibold text-sm">H2</span></button>
+                        <button class="toolbar-btn" title="Heading 3"><span class="font-medium text-xs">H3</span></button>
+
+                        <div class="divider"></div>
+
+                        <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-sort-numeric-down text-sm"></i></button>
+                        <button class="toolbar-btn active"><i class="pi pi-check-square text-sm"></i></button>
+
+                        <div class="divider"></div>
+
+                        <button class="toolbar-btn"><i class="pi pi-comment text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-code text-sm"></i></button>
+                    </div>
+                    <div class="editor-content">Take a note...</div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>One-click access to any heading</li>
+                            <li>Clear visual feedback on active level</li>
+                            <li>Simple implementation</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Takes more horizontal space</li>
+                            <li>Toolbar gets crowded quickly</li>
+                            <li>Less scalable for adding features</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 3: Heading Dropdown Only -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="section-title">Option 3: Heading-Only Dropdown</div>
+                <p class="section-desc">A compact dropdown just for heading levels, keeping other block types as buttons.</p>
+
+                <div class="editor-container">
+                    <div class="toolbar">
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><span class="underline">U</span></button>
+                        <button class="toolbar-btn"><span class="line-through">S</span></button>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+
+                        <div class="divider"></div>
+
+                        <!-- Heading Dropdown -->
+                        <div class="dropdown">
+                            <button class="dropdown-btn" style="min-width: 70px;">
+                                <span class="font-semibold">H2</span>
+                                <i class="pi pi-chevron-down text-xs"></i>
+                            </button>
+                            <div class="dropdown-menu" style="min-width: 120px;">
+                                <div class="dropdown-item">
+                                    <span style="font-size: 18px; font-weight: 700;">H1</span>
+                                </div>
+                                <div class="dropdown-item active">
+                                    <span style="font-size: 15px; font-weight: 600;">H2</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <span style="font-size: 13px; font-weight: 600;">H3</span>
+                                </div>
+                                <div style="height: 1px; background: var(--color-border); margin: 4px 0;"></div>
+                                <div class="dropdown-item">
+                                    <span style="font-size: 13px;">Normal</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-sort-numeric-down text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-check-square text-sm"></i></button>
+
+                        <div class="divider"></div>
+
+                        <button class="toolbar-btn"><i class="pi pi-comment text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-code text-sm"></i></button>
+                    </div>
+                    <div class="editor-content">Take a note...</div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Compact heading selection</li>
+                            <li>Shows current heading level</li>
+                            <li>Keeps familiar button layout</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Mixed UI patterns (dropdown + buttons)</li>
+                            <li>Still takes space for list buttons</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 4: Slash Commands (Notion-style) -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="section-title">Option 4: Slash Commands + Minimal Toolbar</div>
+                <p class="section-desc">Type "/" to show a command palette for block types. Toolbar only shows inline formatting.</p>
+
+                <div class="editor-container">
+                    <div class="toolbar">
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><span class="underline">U</span></button>
+                        <button class="toolbar-btn"><span class="line-through">S</span></button>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-palette text-sm"></i></button>
+                        <button class="toolbar-btn"><code class="text-xs">{ }</code></button>
+
+                        <span class="slash-hint">Type / for blocks</span>
+                    </div>
+                    <div class="editor-content" style="position: relative;">
+                        Type / for commands...
+
+                        <!-- Slash command popup simulation -->
+                        <div style="position: absolute; top: 30px; left: 0; background: white; border: 1px solid var(--color-border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 220px; padding: 4px;">
+                            <div class="overflow-group-title">Turn into</div>
+                            <div class="dropdown-item">
+                                <span style="font-size: 14px;">Text</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <span style="font-size: 18px; font-weight: 700;">Heading 1</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <span style="font-size: 15px; font-weight: 600;">Heading 2</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <span style="font-size: 13px; font-weight: 600;">Heading 3</span>
+                            </div>
+                            <div style="height: 1px; background: var(--color-border); margin: 4px 0;"></div>
+                            <div class="dropdown-item">
+                                <i class="pi pi-list text-sm"></i>
+                                <span>Bullet list</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <i class="pi pi-check-square text-sm"></i>
+                                <span>Task list</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Very clean, minimal toolbar</li>
+                            <li>Keyboard-friendly workflow</li>
+                            <li>Infinitely extensible</li>
+                            <li>True Notion experience</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Learning curve for new users</li>
+                            <li>Features not discoverable</li>
+                            <li>More complex to implement</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== TOOLBAR OVERFLOW OPTIONS ==================== -->
+        <h2 class="text-xl font-bold text-gray-700 mb-4 mt-12 border-b pb-2">Part 2: Toolbar Overflow (Many Actions)</h2>
+        <p class="text-gray-600 mb-6">When we add all the extensions (underline, highlight, subscript, superscript, tables, images, etc.), the toolbar needs overflow handling.</p>
+
+        <div class="grid gap-8">
+
+            <!-- Option A: Overflow Menu (Recommended) -->
+            <div class="bg-white rounded-xl p-6 recommended">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="section-title">Option A: Overflow "More" Menu</span>
+                    <span class="recommended-badge">Recommended</span>
+                </div>
+                <p class="section-desc">Show primary actions, hide secondary ones in a "more" menu. Responsive and clean.</p>
+
+                <div class="editor-container">
+                    <div class="toolbar">
+                        <!-- Block Type Dropdown -->
+                        <div class="dropdown">
+                            <button class="dropdown-btn">
+                                <span>Paragraph</span>
+                                <i class="pi pi-chevron-down text-xs"></i>
+                            </button>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <!-- Primary actions (always visible) -->
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><span class="underline">U</span></button>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-palette text-sm"></i></button>
+
+                        <div class="divider"></div>
+
+                        <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-check-square text-sm"></i></button>
+
+                        <div class="divider"></div>
+
+                        <!-- More menu -->
+                        <div class="dropdown" style="position: relative;">
+                            <button class="toolbar-btn">
+                                <i class="pi pi-ellipsis-h text-sm"></i>
+                            </button>
+                            <div class="overflow-menu">
+                                <div class="overflow-group-title">Formatting</div>
+                                <div class="dropdown-item">
+                                    <span class="line-through">S</span>
+                                    <span>Strikethrough</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <code class="text-xs mr-1">{ }</code>
+                                    <span>Inline Code</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <span class="text-xs">X<sub>2</sub></span>
+                                    <span>Subscript</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <span class="text-xs">X<sup>2</sup></span>
+                                    <span>Superscript</span>
+                                </div>
+                                <div style="height: 1px; background: var(--color-border); margin: 4px 0;"></div>
+                                <div class="overflow-group-title">Insert</div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-image text-sm"></i>
+                                    <span>Image</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-table text-sm"></i>
+                                    <span>Table</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-minus text-sm"></i>
+                                    <span>Divider</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <i class="pi pi-code text-sm"></i>
+                                    <span>Code Block</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="editor-content">Take a note...</div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Primary actions always visible</li>
+                            <li>Scales to any number of features</li>
+                            <li>Clean, uncluttered look</li>
+                            <li>Common pattern (Google Docs, etc.)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Secondary features less discoverable</li>
+                            <li>Extra click for some actions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option B: Two-Row Toolbar -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="section-title">Option B: Two-Row Toolbar</div>
+                <p class="section-desc">Split actions into two rows - text formatting on top, blocks on bottom.</p>
+
+                <div class="editor-container">
+                    <div style="border-bottom: 1px solid var(--color-border); background: var(--color-surface-subtle);">
+                        <!-- Row 1: Text formatting -->
+                        <div class="toolbar" style="border-bottom: none; padding-bottom: 4px;">
+                            <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                            <button class="toolbar-btn"><span class="italic">I</span></button>
+                            <button class="toolbar-btn"><span class="underline">U</span></button>
+                            <button class="toolbar-btn"><span class="line-through">S</span></button>
+                            <button class="toolbar-btn"><code class="text-xs">{ }</code></button>
+                            <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-palette text-sm"></i></button>
+                            <button class="toolbar-btn"><span class="text-xs">X<sub>2</sub></span></button>
+                            <button class="toolbar-btn"><span class="text-xs">X<sup>2</sup></span></button>
+                        </div>
+                        <!-- Row 2: Block types & insert -->
+                        <div class="toolbar" style="padding-top: 4px;">
+                            <div class="dropdown">
+                                <button class="dropdown-btn">
+                                    <span>Paragraph</span>
+                                    <i class="pi pi-chevron-down text-xs"></i>
+                                </button>
+                            </div>
+                            <div class="divider"></div>
+                            <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-sort-numeric-down text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-check-square text-sm"></i></button>
+                            <div class="divider"></div>
+                            <button class="toolbar-btn"><i class="pi pi-image text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-table text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-code text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-minus text-sm"></i></button>
+                        </div>
+                    </div>
+                    <div class="editor-content">Take a note...</div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>All actions visible at once</li>
+                            <li>Logical grouping by function</li>
+                            <li>No hidden menus</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Takes more vertical space</li>
+                            <li>Can feel overwhelming</li>
+                            <li>Less space for note content</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option C: Tab-Based Toolbar -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="section-title">Option C: Tab-Based Toolbar (Ribbon-style)</div>
+                <p class="section-desc">Tabs to switch between different tool groups. Like Microsoft Office ribbon.</p>
+
+                <div class="editor-container">
+                    <div class="tab-bar">
+                        <div class="tab active">Format</div>
+                        <div class="tab">Insert</div>
+                        <div class="tab">Table</div>
+                    </div>
+                    <div class="toolbar">
+                        <div class="dropdown">
+                            <button class="dropdown-btn">
+                                <span>Paragraph</span>
+                                <i class="pi pi-chevron-down text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="divider"></div>
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><span class="underline">U</span></button>
+                        <button class="toolbar-btn"><span class="line-through">S</span></button>
+                        <button class="toolbar-btn"><code class="text-xs">{ }</code></button>
+                        <div class="divider"></div>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-palette text-sm"></i></button>
+                        <button class="toolbar-btn"><span class="text-xs">X<sub>2</sub></span></button>
+                        <button class="toolbar-btn"><span class="text-xs">X<sup>2</sup></span></button>
+                        <div class="divider"></div>
+                        <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-sort-numeric-down text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-check-square text-sm"></i></button>
+                    </div>
+                    <div class="editor-content">Take a note...</div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Unlimited scalability</li>
+                            <li>Clear organization by category</li>
+                            <li>Familiar to Office users</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Overkill for a note app</li>
+                            <li>More clicks to switch tabs</li>
+                            <li>Complex to implement</li>
+                            <li>Not mobile-friendly</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option D: Collapsible/Expandable -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="section-title">Option D: Expandable Toolbar</div>
+                <p class="section-desc">Minimal by default, expand to show all tools. Toggle with a button.</p>
+
+                <div class="editor-container mb-4">
+                    <div class="toolbar">
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-check-square text-sm"></i></button>
+
+                        <div style="flex: 1;"></div>
+
+                        <button class="toolbar-btn" style="color: var(--color-accent);">
+                            <i class="pi pi-chevron-down text-sm"></i>
+                            <span class="text-xs ml-1">More</span>
+                        </button>
+                    </div>
+                    <div class="editor-content" style="min-height: 80px;">Collapsed state (minimal)</div>
+                </div>
+
+                <div class="editor-container">
+                    <div style="border-bottom: 1px solid var(--color-border); background: var(--color-surface-subtle);">
+                        <div class="toolbar" style="border-bottom: none;">
+                            <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                            <button class="toolbar-btn"><span class="italic">I</span></button>
+                            <button class="toolbar-btn"><span class="underline">U</span></button>
+                            <button class="toolbar-btn"><span class="line-through">S</span></button>
+                            <button class="toolbar-btn"><code class="text-xs">{ }</code></button>
+                            <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-palette text-sm"></i></button>
+                            <button class="toolbar-btn"><span class="text-xs">X<sub>2</sub></span></button>
+                            <button class="toolbar-btn"><span class="text-xs">X<sup>2</sup></span></button>
+                            <div class="divider"></div>
+                            <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-sort-numeric-down text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-check-square text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-comment text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-code text-sm"></i></button>
+                            <div class="divider"></div>
+                            <button class="toolbar-btn"><i class="pi pi-image text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-table text-sm"></i></button>
+                            <button class="toolbar-btn"><i class="pi pi-minus text-sm"></i></button>
+
+                            <div style="flex: 1;"></div>
+
+                            <button class="toolbar-btn" style="color: var(--color-accent);">
+                                <i class="pi pi-chevron-up text-sm"></i>
+                                <span class="text-xs ml-1">Less</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="editor-content" style="min-height: 80px;">Expanded state (all tools)</div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Clean default experience</li>
+                            <li>Power users can expand</li>
+                            <li>User choice</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Features hidden by default</li>
+                            <li>Jarring layout shift</li>
+                            <li>State to manage</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option E: Responsive/Adaptive -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="section-title">Option E: Responsive Toolbar (Auto-collapse)</div>
+                <p class="section-desc">Toolbar adapts to available width. Items move to overflow menu as space shrinks.</p>
+
+                <p class="text-sm text-gray-500 mb-4">Desktop width:</p>
+                <div class="editor-container mb-4">
+                    <div class="toolbar">
+                        <div class="dropdown">
+                            <button class="dropdown-btn">
+                                <span>Paragraph</span>
+                                <i class="pi pi-chevron-down text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="divider"></div>
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><span class="underline">U</span></button>
+                        <button class="toolbar-btn"><span class="line-through">S</span></button>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-palette text-sm"></i></button>
+                        <div class="divider"></div>
+                        <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-sort-numeric-down text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-check-square text-sm"></i></button>
+                        <div class="divider"></div>
+                        <button class="toolbar-btn"><i class="pi pi-image text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-table text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-code text-sm"></i></button>
+                    </div>
+                    <div class="editor-content" style="min-height: 60px;">Full toolbar on wide screens</div>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-4">Mobile width:</p>
+                <div class="editor-container mobile-toolbar">
+                    <div class="toolbar">
+                        <div class="dropdown">
+                            <button class="dropdown-btn" style="min-width: 70px;">
+                                <span>Para</span>
+                                <i class="pi pi-chevron-down text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="divider"></div>
+                        <button class="toolbar-btn"><span class="font-bold">B</span></button>
+                        <button class="toolbar-btn"><span class="italic">I</span></button>
+                        <button class="toolbar-btn"><i class="pi pi-link text-sm"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-list text-sm"></i></button>
+                        <div class="divider"></div>
+                        <button class="toolbar-btn">
+                            <i class="pi pi-ellipsis-h text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="editor-content" style="min-height: 60px;">Collapsed on narrow screens</div>
+                </div>
+
+                <div class="pros-cons">
+                    <div>
+                        <span class="pros font-semibold">+ Pros:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Best of both worlds</li>
+                            <li>Optimal for any screen size</li>
+                            <li>Progressive enhancement</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <span class="cons font-semibold">- Cons:</span>
+                        <ul class="text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Most complex to implement</li>
+                            <li>Needs ResizeObserver</li>
+                            <li>Testing across breakpoints</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-purple-50 rounded-xl p-6 mt-8 border-2 border-purple-200">
+            <h2 class="text-lg font-bold text-purple-800 mb-4">Summary & Recommendations</h2>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold text-purple-700 mb-2">Heading Selection</h3>
+                    <p class="text-sm text-gray-700"><strong>Recommended: Option 1 (Notion-style Dropdown)</strong></p>
+                    <p class="text-sm text-gray-600 mt-1">Combines headings + block types in one dropdown. Clean, familiar, and extensible.</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-purple-700 mb-2">Toolbar Overflow</h3>
+                    <p class="text-sm text-gray-700"><strong>Recommended: Option A (Overflow Menu) + E (Responsive)</strong></p>
+                    <p class="text-sm text-gray-600 mt-1">Show core tools, put extras in "..." menu. Auto-collapse on mobile for best UX.</p>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-purple-200">
+                <h3 class="font-semibold text-purple-700 mb-2">Proposed Full Feature Set</h3>
+                <div class="grid md:grid-cols-3 gap-4 text-sm text-gray-700">
+                    <div>
+                        <p class="font-medium">Always Visible:</p>
+                        <ul class="text-gray-600 ml-4 list-disc">
+                            <li>Block type dropdown</li>
+                            <li>Bold, Italic, Underline</li>
+                            <li>Link</li>
+                            <li>Highlight</li>
+                            <li>Lists (bullet, task)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-medium">In Overflow Menu:</p>
+                        <ul class="text-gray-600 ml-4 list-disc">
+                            <li>Strikethrough</li>
+                            <li>Inline code</li>
+                            <li>Subscript/Superscript</li>
+                            <li>Horizontal rule</li>
+                            <li>Numbered list</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-medium">Future Additions:</p>
+                        <ul class="text-gray-600 ml-4 list-disc">
+                            <li>Image</li>
+                            <li>Table</li>
+                            <li>Code block</li>
+                            <li>Text color</li>
+                            <li>Text align</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

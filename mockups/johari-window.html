@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Johari Window Visualization - Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            'accent-solid': 'var(--color-primary-solid)',
+            'accent-foreground': 'var(--color-primary-text)',
+            accent: 'var(--color-primary-bg)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            inprogress: 'var(--color-inprogress-bg)',
+            'inprogress-foreground': 'var(--color-inprogress-text)',
+            'inprogress-border': 'var(--color-inprogress-border)',
+            todo: 'var(--color-todo-bg)',
+            'todo-foreground': 'var(--color-todo-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.2);
+      --color-todo-bg: rgba(94, 129, 172, 0.15);
+      --color-todo-text: #5e81ac;
+
+      /* Johari-specific quadrant colors */
+      --color-johari-open: rgba(163, 190, 140, 0.15);
+      --color-johari-open-text: #a3be8c;
+      --color-johari-open-solid: #a3be8c;
+      --color-johari-blind: rgba(208, 135, 112, 0.15);
+      --color-johari-blind-text: #d08770;
+      --color-johari-blind-solid: #d08770;
+      --color-johari-hidden: rgba(94, 129, 172, 0.15);
+      --color-johari-hidden-text: #5e81ac;
+      --color-johari-hidden-solid: #5e81ac;
+      --color-johari-unknown: rgba(76, 86, 106, 0.1);
+      --color-johari-unknown-text: #7b88a1;
+      --color-johari-unknown-solid: #7b88a1;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.15);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.15);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.25);
+      --color-todo-bg: rgba(94, 129, 172, 0.15);
+      --color-todo-text: #88c0d0;
+
+      --color-johari-open: rgba(163, 190, 140, 0.2);
+      --color-johari-open-text: #a3be8c;
+      --color-johari-open-solid: #a3be8c;
+      --color-johari-blind: rgba(208, 135, 112, 0.2);
+      --color-johari-blind-text: #d08770;
+      --color-johari-blind-solid: #d08770;
+      --color-johari-hidden: rgba(94, 129, 172, 0.2);
+      --color-johari-hidden-text: #88c0d0;
+      --color-johari-hidden-solid: #88c0d0;
+      --color-johari-unknown: rgba(76, 86, 106, 0.2);
+      --color-johari-unknown-text: #4c566a;
+      --color-johari-unknown-solid: #4c566a;
+    }
+    body { background: var(--color-bg-base); color: var(--color-text-primary); }
+    .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 50; }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+  <button class="theme-toggle px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-sm text-foreground-secondary" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">
+    Toggle Dark Mode
+  </button>
+
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-foreground mb-2">Johari Window Visualization</h1>
+    <p class="text-foreground-muted mb-8">Issue #282 — UX Design Options</p>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 1: Classic 2x2 Grid with Proportional Sizing (Recommended) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="px-2 py-0.5 bg-done text-done-foreground text-xs font-semibold rounded">Recommended</span>
+        <h2 class="text-xl font-bold text-foreground">Option 1: Classic 2x2 Grid with Proportional Sizing</h2>
+      </div>
+      <p class="text-sm text-foreground-muted mb-4">
+        Traditional Johari layout with quadrant sizes proportional to actual data percentages.
+        Hero section with summary stats at top, grid visualization, blind spot list below.
+        <strong>Pros:</strong> Immediately recognizable as Johari Window, proportional sizing communicates data effectively, natural drill-down flow.
+        <strong>Cons:</strong> Can look complex if all quadrants are similar sizes, requires SVG or CSS grid tricks for proportional sizing.
+      </p>
+
+      <div class="bg-surface-subtle rounded-xl border border-border p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+              <i class="pi pi-eye text-accent-foreground"></i>
+              Your Johari Window
+            </h3>
+            <p class="text-sm text-foreground-muted mt-1">Self-awareness mapping across 12 reflected meetings</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-foreground-muted">Last 90 days</span>
+            <span class="flex items-center gap-1 text-sm font-medium" style="color: var(--color-johari-open-text);">
+              <i class="pi pi-arrow-up text-xs"></i>
+              +8% self-awareness
+            </span>
+          </div>
+        </div>
+
+        <!-- 2x2 Grid - proportional sizing via CSS grid with fr units -->
+        <div class="flex justify-center mb-6">
+          <div style="width: 400px; height: 320px; display: grid; grid-template-columns: 62fr 38fr; grid-template-rows: 55fr 45fr; gap: 3px;">
+            <!-- Open (top-left) - largest -->
+            <div class="rounded-tl-xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:brightness-95" style="background: var(--color-johari-open);">
+              <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-check-circle text-sm" style="color: var(--color-johari-open-text);"></i>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-johari-open-text);">Open</span>
+                </div>
+                <p class="text-xs text-foreground-muted">Known to you & visible to AI</p>
+              </div>
+              <span class="text-3xl font-bold" style="color: var(--color-johari-open-text);">62%</span>
+            </div>
+
+            <!-- Blind Spot (top-right) -->
+            <div class="rounded-tr-xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:brightness-95" style="background: var(--color-johari-blind);">
+              <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-eye-slash text-sm" style="color: var(--color-johari-blind-text);"></i>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-johari-blind-text);">Blind Spot</span>
+                </div>
+                <p class="text-xs text-foreground-muted">AI sees it, you don't</p>
+              </div>
+              <span class="text-3xl font-bold" style="color: var(--color-johari-blind-text);">18%</span>
+            </div>
+
+            <!-- Hidden (bottom-left) -->
+            <div class="rounded-bl-xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:brightness-95" style="background: var(--color-johari-hidden);">
+              <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-lock text-sm" style="color: var(--color-johari-hidden-text);"></i>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-johari-hidden-text);">Hidden</span>
+                </div>
+                <p class="text-xs text-foreground-muted">Your private reflections</p>
+              </div>
+              <span class="text-3xl font-bold" style="color: var(--color-johari-hidden-text);">15%</span>
+            </div>
+
+            <!-- Unknown (bottom-right) -->
+            <div class="rounded-br-xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:brightness-95" style="background: var(--color-johari-unknown);">
+              <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-question-circle text-sm" style="color: var(--color-johari-unknown-text);"></i>
+                  <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-johari-unknown-text);">Unknown</span>
+                </div>
+                <p class="text-xs text-foreground-muted">Yet to be discovered</p>
+              </div>
+              <span class="text-3xl font-bold" style="color: var(--color-johari-unknown-text);">5%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Axis Labels -->
+        <div class="flex justify-center mb-6">
+          <div class="text-center">
+            <div class="flex items-center justify-center gap-6 text-xs text-foreground-muted">
+              <span><i class="pi pi-user mr-1"></i> Left: Known to Self | Right: Unknown to Self</span>
+              <span class="text-foreground-muted">|</span>
+              <span><i class="pi pi-users mr-1"></i> Top: Seen by AI | Bottom: Not in data</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Growth Indicator -->
+        <div class="flex items-center gap-3 px-4 py-3 rounded-lg mb-6" style="background: var(--color-johari-open); border: 1px solid var(--color-done-border);">
+          <i class="pi pi-chart-line text-lg" style="color: var(--color-johari-open-text);"></i>
+          <div>
+            <p class="text-sm font-medium text-foreground">Your Open area has grown 8% this month</p>
+            <p class="text-xs text-foreground-muted">Self-awareness improves as you reflect on more meetings</p>
+          </div>
+        </div>
+
+        <!-- Blind Spots List -->
+        <div>
+          <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <i class="pi pi-eye-slash" style="color: var(--color-johari-blind-text);"></i>
+            Top Blind Spots
+          </h4>
+          <div class="space-y-2">
+            <div class="flex items-start gap-3 px-3 py-2.5 rounded-lg" style="background: var(--color-johari-blind);">
+              <i class="pi pi-microphone mt-0.5" style="color: var(--color-johari-blind-text);"></i>
+              <div>
+                <p class="text-sm font-medium text-foreground">Talk time perception</p>
+                <p class="text-xs text-foreground-muted">You rated "about right" in 4 of 6 meetings, but AI measured >50% talk time in all 4</p>
+              </div>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full ml-auto whitespace-nowrap" style="background: var(--color-johari-blind); color: var(--color-johari-blind-text); border: 1px solid var(--color-inprogress-border);">4/6 meetings</span>
+            </div>
+            <div class="flex items-start gap-3 px-3 py-2.5 rounded-lg" style="background: var(--color-johari-blind);">
+              <i class="pi pi-exclamation-triangle mt-0.5" style="color: var(--color-johari-blind-text);"></i>
+              <div>
+                <p class="text-sm font-medium text-foreground">Interruption awareness</p>
+                <p class="text-xs text-foreground-muted">You said "No" to interruptions in 3 meetings where AI detected 2+ interruptions each</p>
+              </div>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full ml-auto whitespace-nowrap" style="background: var(--color-johari-blind); color: var(--color-johari-blind-text); border: 1px solid var(--color-inprogress-border);">3 meetings</span>
+            </div>
+            <div class="flex items-start gap-3 px-3 py-2.5 rounded-lg" style="background: var(--color-johari-blind);">
+              <i class="pi pi-comment mt-0.5" style="color: var(--color-johari-blind-text);"></i>
+              <div>
+                <p class="text-sm font-medium text-foreground">Tone during budget topics</p>
+                <p class="text-xs text-foreground-muted">You reported "collaborative" tone, but AI detected tense sentiment shifts in 2 budget discussions</p>
+              </div>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full ml-auto whitespace-nowrap" style="background: var(--color-johari-blind); color: var(--color-johari-blind-text); border: 1px solid var(--color-inprogress-border);">2 meetings</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 2: Hero Stats + Compact Grid with Expandable Detail -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-xl font-bold text-foreground">Option 2: Hero Stats + Compact Grid with Expandable Detail</h2>
+      </div>
+      <p class="text-sm text-foreground-muted mb-4">
+        Top row of stat cards for each quadrant, a compact 2x2 grid below, and expandable blind spot accordion.
+        <strong>Pros:</strong> Numbers prominent up top, grid still visible, clean separation of concerns.
+        <strong>Cons:</strong> More vertical space, stat cards may feel redundant with grid percentages.
+      </p>
+
+      <div class="bg-surface-subtle rounded-xl border border-border p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+              <i class="pi pi-eye text-accent-foreground"></i>
+              Your Johari Window
+            </h3>
+            <p class="text-sm text-foreground-muted mt-1">Based on 12 reflected meetings</p>
+          </div>
+        </div>
+
+        <!-- Stat Cards Row -->
+        <div class="grid grid-cols-4 gap-3 mb-6">
+          <div class="rounded-lg p-3 text-center" style="background: var(--color-johari-open);">
+            <i class="pi pi-check-circle mb-1" style="color: var(--color-johari-open-text);"></i>
+            <p class="text-2xl font-bold" style="color: var(--color-johari-open-text);">62%</p>
+            <p class="text-xs font-medium" style="color: var(--color-johari-open-text);">Open</p>
+            <p class="text-xs text-foreground-muted mt-0.5">Aligned</p>
+          </div>
+          <div class="rounded-lg p-3 text-center" style="background: var(--color-johari-blind);">
+            <i class="pi pi-eye-slash mb-1" style="color: var(--color-johari-blind-text);"></i>
+            <p class="text-2xl font-bold" style="color: var(--color-johari-blind-text);">18%</p>
+            <p class="text-xs font-medium" style="color: var(--color-johari-blind-text);">Blind Spot</p>
+            <p class="text-xs text-foreground-muted mt-0.5">3 items</p>
+          </div>
+          <div class="rounded-lg p-3 text-center" style="background: var(--color-johari-hidden);">
+            <i class="pi pi-lock mb-1" style="color: var(--color-johari-hidden-text);"></i>
+            <p class="text-2xl font-bold" style="color: var(--color-johari-hidden-text);">15%</p>
+            <p class="text-xs font-medium" style="color: var(--color-johari-hidden-text);">Hidden</p>
+            <p class="text-xs text-foreground-muted mt-0.5">Private</p>
+          </div>
+          <div class="rounded-lg p-3 text-center" style="background: var(--color-johari-unknown);">
+            <i class="pi pi-question-circle mb-1" style="color: var(--color-johari-unknown-text);"></i>
+            <p class="text-2xl font-bold" style="color: var(--color-johari-unknown-text);">5%</p>
+            <p class="text-xs font-medium" style="color: var(--color-johari-unknown-text);">Unknown</p>
+            <p class="text-xs text-foreground-muted mt-0.5">Emerging</p>
+          </div>
+        </div>
+
+        <!-- Compact 2x2 Visual (equal size, color-coded) -->
+        <div class="flex justify-center mb-6">
+          <div style="width: 280px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+            <div class="rounded-tl-lg p-3 text-center aspect-square flex items-center justify-center" style="background: var(--color-johari-open);">
+              <span class="text-sm font-semibold" style="color: var(--color-johari-open-text);">Open</span>
+            </div>
+            <div class="rounded-tr-lg p-3 text-center aspect-square flex items-center justify-center" style="background: var(--color-johari-blind);">
+              <span class="text-sm font-semibold" style="color: var(--color-johari-blind-text);">Blind Spot</span>
+            </div>
+            <div class="rounded-bl-lg p-3 text-center aspect-square flex items-center justify-center" style="background: var(--color-johari-hidden);">
+              <span class="text-sm font-semibold" style="color: var(--color-johari-hidden-text);">Hidden</span>
+            </div>
+            <div class="rounded-br-lg p-3 text-center aspect-square flex items-center justify-center" style="background: var(--color-johari-unknown);">
+              <span class="text-sm font-semibold" style="color: var(--color-johari-unknown-text);">Unknown</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Expandable Blind Spots -->
+        <details class="group">
+          <summary class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-foreground px-3 py-2 rounded-lg hover:bg-surface-muted">
+            <i class="pi pi-chevron-right text-xs transition-transform group-open:rotate-90"></i>
+            <i class="pi pi-eye-slash" style="color: var(--color-johari-blind-text);"></i>
+            3 Blind Spots Detected
+          </summary>
+          <div class="mt-2 space-y-2 pl-6">
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm" style="background: var(--color-johari-blind);">
+              <i class="pi pi-microphone" style="color: var(--color-johari-blind-text);"></i>
+              <span>Talk time perception misaligned in 4/6 meetings</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm" style="background: var(--color-johari-blind);">
+              <i class="pi pi-exclamation-triangle" style="color: var(--color-johari-blind-text);"></i>
+              <span>Unaware of interruptions in 3 meetings</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm" style="background: var(--color-johari-blind);">
+              <i class="pi pi-comment" style="color: var(--color-johari-blind-text);"></i>
+              <span>Tone shifts during budget topics in 2 meetings</span>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 3: Side-by-Side Layout (Grid Left, Details Right) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-xl font-bold text-foreground">Option 3: Side-by-Side Layout (Grid Left, Details Right)</h2>
+      </div>
+      <p class="text-sm text-foreground-muted mb-4">
+        2x2 grid on the left, detailed breakdown on the right. Similar to the Communication Profile hero card pattern.
+        <strong>Pros:</strong> Compact horizontal layout, visualization and detail visible simultaneously, good desktop experience.
+        <strong>Cons:</strong> Stacks on mobile, grid may feel small on narrower screens.
+      </p>
+
+      <div class="bg-surface-subtle rounded-xl border border-border p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+            <i class="pi pi-eye text-accent-foreground"></i>
+            Your Johari Window
+          </h3>
+          <span class="flex items-center gap-1 text-sm font-medium" style="color: var(--color-johari-open-text);">
+            <i class="pi pi-arrow-up text-xs"></i>
+            +8% this month
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Left: 2x2 Grid -->
+          <div>
+            <div style="display: grid; grid-template-columns: 62fr 38fr; grid-template-rows: 55fr 45fr; gap: 3px; height: 260px;">
+              <div class="rounded-tl-lg p-3 flex flex-col" style="background: var(--color-johari-open);">
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-johari-open-text);">Open</span>
+                <span class="text-4xl font-bold mt-auto" style="color: var(--color-johari-open-text);">62%</span>
+              </div>
+              <div class="rounded-tr-lg p-3 flex flex-col" style="background: var(--color-johari-blind);">
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-johari-blind-text);">Blind Spot</span>
+                <span class="text-3xl font-bold mt-auto" style="color: var(--color-johari-blind-text);">18%</span>
+              </div>
+              <div class="rounded-bl-lg p-3 flex flex-col" style="background: var(--color-johari-hidden);">
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-johari-hidden-text);">Hidden</span>
+                <span class="text-2xl font-bold mt-auto" style="color: var(--color-johari-hidden-text);">15%</span>
+              </div>
+              <div class="rounded-br-lg p-3 flex flex-col" style="background: var(--color-johari-unknown);">
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-johari-unknown-text);">Unknown</span>
+                <span class="text-xl font-bold mt-auto" style="color: var(--color-johari-unknown-text);">5%</span>
+              </div>
+            </div>
+            <p class="text-xs text-foreground-muted text-center mt-2">12 reflected meetings</p>
+          </div>
+
+          <!-- Right: Details -->
+          <div class="space-y-4">
+            <!-- Growth Banner -->
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg" style="background: var(--color-johari-open); border: 1px solid var(--color-done-border);">
+              <i class="pi pi-chart-line" style="color: var(--color-johari-open-text);"></i>
+              <p class="text-sm text-foreground">Open area grew <strong>8%</strong> this month</p>
+            </div>
+
+            <!-- Blind Spots -->
+            <div>
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-2">Blind Spots</h4>
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-2 text-sm">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: var(--color-johari-blind-solid);"></div>
+                  <span>Talk time perception <span class="text-foreground-muted">(4/6)</span></span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: var(--color-johari-blind-solid);"></div>
+                  <span>Interruption awareness <span class="text-foreground-muted">(3 meetings)</span></span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: var(--color-johari-blind-solid);"></div>
+                  <span>Budget topic tone <span class="text-foreground-muted">(2 meetings)</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Open Area Items -->
+            <div>
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-2">Strong Self-Awareness</h4>
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-2 text-sm">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: var(--color-johari-open-solid);"></div>
+                  <span>Engagement level <span class="text-foreground-muted">(aligned 10/12)</span></span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: var(--color-johari-open-solid);"></div>
+                  <span>Meeting tone <span class="text-foreground-muted">(aligned 8/12)</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 4: Stacked Cards (Mobile-First) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-xl font-bold text-foreground">Option 4: Stacked Cards (Mobile-First)</h2>
+      </div>
+      <p class="text-sm text-foreground-muted mb-4">
+        Each quadrant as a separate card, stacked vertically. No 2x2 grid; linear scrollable layout with inline details.
+        <strong>Pros:</strong> Excellent mobile experience, each quadrant gets full attention, easy to expand details.
+        <strong>Cons:</strong> Loses the iconic 2x2 Johari layout, takes significant vertical space, harder to compare quadrants at a glance.
+      </p>
+
+      <div class="bg-surface-subtle rounded-xl border border-border p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+            <i class="pi pi-eye text-accent-foreground"></i>
+            Your Johari Window
+          </h3>
+          <span class="text-xs text-foreground-muted">12 reflected meetings</span>
+        </div>
+
+        <!-- Growth Banner -->
+        <div class="flex items-center gap-3 px-4 py-3 rounded-lg mb-4" style="background: var(--color-johari-open); border: 1px solid var(--color-done-border);">
+          <i class="pi pi-chart-line text-lg" style="color: var(--color-johari-open-text);"></i>
+          <div>
+            <p class="text-sm font-medium text-foreground">Self-awareness growing</p>
+            <p class="text-xs text-foreground-muted">Open area +8% over the last 30 days</p>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <!-- Open Card -->
+          <div class="rounded-lg p-4 flex items-center gap-4" style="background: var(--color-johari-open); border-left: 4px solid var(--color-johari-open-solid);">
+            <div class="text-center" style="min-width: 60px;">
+              <p class="text-3xl font-bold" style="color: var(--color-johari-open-text);">62%</p>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-1.5 mb-1">
+                <i class="pi pi-check-circle text-sm" style="color: var(--color-johari-open-text);"></i>
+                <span class="text-sm font-semibold" style="color: var(--color-johari-open-text);">Open Area</span>
+              </div>
+              <p class="text-xs text-foreground-muted">Your self-assessment matches AI analysis. Strong awareness of engagement level and meeting tone.</p>
+            </div>
+          </div>
+
+          <!-- Blind Spot Card -->
+          <div class="rounded-lg p-4" style="background: var(--color-johari-blind); border-left: 4px solid var(--color-johari-blind-solid);">
+            <div class="flex items-center gap-4 mb-3">
+              <div class="text-center" style="min-width: 60px;">
+                <p class="text-3xl font-bold" style="color: var(--color-johari-blind-text);">18%</p>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-eye-slash text-sm" style="color: var(--color-johari-blind-text);"></i>
+                  <span class="text-sm font-semibold" style="color: var(--color-johari-blind-text);">Blind Spots</span>
+                </div>
+                <p class="text-xs text-foreground-muted">AI detects patterns you haven't noticed yet</p>
+              </div>
+            </div>
+            <div class="space-y-2 ml-[76px]">
+              <div class="flex items-center gap-2 text-xs">
+                <i class="pi pi-microphone" style="color: var(--color-johari-blind-text);"></i>
+                <span>Talk time perception misaligned (4/6)</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <i class="pi pi-exclamation-triangle" style="color: var(--color-johari-blind-text);"></i>
+                <span>Unaware of interruptions (3 meetings)</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <i class="pi pi-comment" style="color: var(--color-johari-blind-text);"></i>
+                <span>Budget topic tone shifts (2 meetings)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden Card -->
+          <div class="rounded-lg p-4 flex items-center gap-4" style="background: var(--color-johari-hidden); border-left: 4px solid var(--color-johari-hidden-solid);">
+            <div class="text-center" style="min-width: 60px;">
+              <p class="text-3xl font-bold" style="color: var(--color-johari-hidden-text);">15%</p>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5 mb-1">
+                <i class="pi pi-lock text-sm" style="color: var(--color-johari-hidden-text);"></i>
+                <span class="text-sm font-semibold" style="color: var(--color-johari-hidden-text);">Hidden Area</span>
+              </div>
+              <p class="text-xs text-foreground-muted">5 freeform reflections about internal experiences not visible in transcripts</p>
+            </div>
+          </div>
+
+          <!-- Unknown Card -->
+          <div class="rounded-lg p-4 flex items-center gap-4" style="background: var(--color-johari-unknown); border-left: 4px solid var(--color-johari-unknown-solid);">
+            <div class="text-center" style="min-width: 60px;">
+              <p class="text-3xl font-bold" style="color: var(--color-johari-unknown-text);">5%</p>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5 mb-1">
+                <i class="pi pi-question-circle text-sm" style="color: var(--color-johari-unknown-text);"></i>
+                <span class="text-sm font-semibold" style="color: var(--color-johari-unknown-text);">Unknown Area</span>
+              </div>
+              <p class="text-xs text-foreground-muted">Shrinks as you reflect on more meetings and build awareness</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 5: Donut Chart with Quadrant Legend -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-xl font-bold text-foreground">Option 5: Donut Chart with Quadrant Legend</h2>
+      </div>
+      <p class="text-sm text-foreground-muted mb-4">
+        SVG donut/ring chart showing proportions, with a legend and blind spot list alongside.
+        <strong>Pros:</strong> Clean, modern, proportions immediately visible, familiar chart pattern, compact.
+        <strong>Cons:</strong> Loses the traditional 2x2 Johari identity, doesn't communicate quadrant relationships.
+      </p>
+
+      <div class="bg-surface-subtle rounded-xl border border-border p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+            <i class="pi pi-eye text-accent-foreground"></i>
+            Your Johari Window
+          </h3>
+          <span class="flex items-center gap-1 text-sm font-medium" style="color: var(--color-johari-open-text);">
+            <i class="pi pi-arrow-up text-xs"></i>
+            +8% awareness
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Left: Donut Chart -->
+          <div class="flex justify-center items-center">
+            <div class="relative">
+              <svg width="220" height="220" viewBox="0 0 220 220">
+                <!-- Background circle -->
+                <circle cx="110" cy="110" r="85" fill="none" stroke="var(--color-border-muted)" stroke-width="30"/>
+                <!-- Open: 62% = 223deg -->
+                <circle cx="110" cy="110" r="85" fill="none" stroke="var(--color-johari-open-solid)" stroke-width="30"
+                  stroke-dasharray="340.5 533.8" stroke-dashoffset="0" transform="rotate(-90 110 110)" stroke-linecap="round"/>
+                <!-- Blind Spot: 18% = 64.8deg -->
+                <circle cx="110" cy="110" r="85" fill="none" stroke="var(--color-johari-blind-solid)" stroke-width="30"
+                  stroke-dasharray="96.1 533.8" stroke-dashoffset="-340.5" transform="rotate(-90 110 110)" stroke-linecap="round"/>
+                <!-- Hidden: 15% = 54deg -->
+                <circle cx="110" cy="110" r="85" fill="none" stroke="var(--color-johari-hidden-solid)" stroke-width="30"
+                  stroke-dasharray="80.1 533.8" stroke-dashoffset="-436.6" transform="rotate(-90 110 110)" stroke-linecap="round"/>
+                <!-- Unknown: 5% -->
+                <circle cx="110" cy="110" r="85" fill="none" stroke="var(--color-johari-unknown-solid)" stroke-width="30"
+                  stroke-dasharray="26.7 533.8" stroke-dashoffset="-516.7" transform="rotate(-90 110 110)" stroke-linecap="round"/>
+              </svg>
+              <!-- Center text -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <p class="text-3xl font-bold" style="color: var(--color-johari-open-text);">62%</p>
+                <p class="text-xs text-foreground-muted">Open Area</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Legend + Blind Spots -->
+          <div class="space-y-4">
+            <!-- Legend -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-sm" style="background: var(--color-johari-open-solid);"></div>
+                  <span class="text-sm">Open</span>
+                </div>
+                <span class="text-sm font-semibold" style="color: var(--color-johari-open-text);">62%</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-sm" style="background: var(--color-johari-blind-solid);"></div>
+                  <span class="text-sm">Blind Spot</span>
+                </div>
+                <span class="text-sm font-semibold" style="color: var(--color-johari-blind-text);">18%</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-sm" style="background: var(--color-johari-hidden-solid);"></div>
+                  <span class="text-sm">Hidden</span>
+                </div>
+                <span class="text-sm font-semibold" style="color: var(--color-johari-hidden-text);">15%</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-sm" style="background: var(--color-johari-unknown-solid);"></div>
+                  <span class="text-sm">Unknown</span>
+                </div>
+                <span class="text-sm font-semibold" style="color: var(--color-johari-unknown-text);">5%</span>
+              </div>
+            </div>
+
+            <hr class="border-border">
+
+            <!-- Blind Spots -->
+            <div>
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-2">Top Blind Spots</h4>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2 text-sm">
+                  <i class="pi pi-microphone text-xs" style="color: var(--color-johari-blind-text);"></i>
+                  <span>Talk time perception <span class="text-foreground-muted">(4/6)</span></span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <i class="pi pi-exclamation-triangle text-xs" style="color: var(--color-johari-blind-text);"></i>
+                  <span>Interruption awareness <span class="text-foreground-muted">(3)</span></span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <i class="pi pi-comment text-xs" style="color: var(--color-johari-blind-text);"></i>
+                  <span>Budget topic tone <span class="text-foreground-muted">(2)</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Growth -->
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg" style="background: var(--color-johari-open);">
+              <i class="pi pi-chart-line" style="color: var(--color-johari-open-text);"></i>
+              <p class="text-xs text-foreground">Open area grew <strong>8%</strong> this month</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 6: Treemap Visualization -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-xl font-bold text-foreground">Option 6: Treemap Visualization</h2>
+      </div>
+      <p class="text-sm text-foreground-muted mb-4">
+        Area-proportional treemap where each quadrant's visual size directly represents its percentage.
+        Open area dominates visually. Hover/click for details.
+        <strong>Pros:</strong> Immediately communicates proportions through area, unique/modern look, efficient use of space.
+        <strong>Cons:</strong> Unfamiliar visualization for some users, small quadrants hard to interact with, loses 2x2 grid structure.
+      </p>
+
+      <div class="bg-surface-subtle rounded-xl border border-border p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+            <i class="pi pi-eye text-accent-foreground"></i>
+            Your Johari Window
+          </h3>
+          <span class="text-xs text-foreground-muted">12 reflected meetings &middot; Last 90 days</span>
+        </div>
+
+        <!-- Treemap: Open takes ~62%, Blind ~18%, Hidden ~15%, Unknown ~5% -->
+        <div class="flex justify-center mb-6">
+          <div style="width: 440px; height: 280px; display: grid; grid-template-columns: 62fr 38fr; grid-template-rows: 1fr; gap: 3px;">
+            <!-- Open: Full left column -->
+            <div class="rounded-l-lg p-5 flex flex-col justify-between cursor-pointer transition-all hover:brightness-95" style="background: var(--color-johari-open);">
+              <div>
+                <div class="flex items-center gap-1.5 mb-2">
+                  <i class="pi pi-check-circle" style="color: var(--color-johari-open-text);"></i>
+                  <span class="text-sm font-semibold" style="color: var(--color-johari-open-text);">Open Area</span>
+                </div>
+                <p class="text-xs text-foreground-muted mb-2">Known to you & visible to AI</p>
+                <div class="space-y-1">
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <i class="pi pi-check text-xs" style="color: var(--color-johari-open-text);"></i>
+                    <span>Engagement level aligned (10/12)</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <i class="pi pi-check text-xs" style="color: var(--color-johari-open-text);"></i>
+                    <span>Meeting tone aligned (8/12)</span>
+                  </div>
+                </div>
+              </div>
+              <span class="text-5xl font-bold" style="color: var(--color-johari-open-text);">62%</span>
+            </div>
+
+            <!-- Right column: Blind + Hidden + Unknown stacked -->
+            <div style="display: grid; grid-template-rows: 18fr 15fr 5fr; gap: 3px;">
+              <div class="rounded-tr-lg p-3 flex flex-col justify-between cursor-pointer transition-all hover:brightness-95" style="background: var(--color-johari-blind);">
+                <div class="flex items-center gap-1.5">
+                  <i class="pi pi-eye-slash text-xs" style="color: var(--color-johari-blind-text);"></i>
+                  <span class="text-xs font-semibold" style="color: var(--color-johari-blind-text);">Blind Spot</span>
+                </div>
+                <span class="text-2xl font-bold" style="color: var(--color-johari-blind-text);">18%</span>
+              </div>
+              <div class="p-3 flex flex-col justify-between cursor-pointer transition-all hover:brightness-95" style="background: var(--color-johari-hidden);">
+                <div class="flex items-center gap-1.5">
+                  <i class="pi pi-lock text-xs" style="color: var(--color-johari-hidden-text);"></i>
+                  <span class="text-xs font-semibold" style="color: var(--color-johari-hidden-text);">Hidden</span>
+                </div>
+                <span class="text-xl font-bold" style="color: var(--color-johari-hidden-text);">15%</span>
+              </div>
+              <div class="rounded-br-lg p-2 flex items-center justify-between cursor-pointer transition-all hover:brightness-95" style="background: var(--color-johari-unknown);">
+                <span class="text-xs font-semibold" style="color: var(--color-johari-unknown-text);">Unknown</span>
+                <span class="text-sm font-bold" style="color: var(--color-johari-unknown-text);">5%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Blind Spots Below -->
+        <div>
+          <h4 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <i class="pi pi-eye-slash" style="color: var(--color-johari-blind-text);"></i>
+            Blind Spots to Explore
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm" style="background: var(--color-johari-blind);">
+              <i class="pi pi-microphone" style="color: var(--color-johari-blind-text);"></i>
+              <div>
+                <p class="font-medium text-xs">Talk time</p>
+                <p class="text-xs text-foreground-muted">4/6 misaligned</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm" style="background: var(--color-johari-blind);">
+              <i class="pi pi-exclamation-triangle" style="color: var(--color-johari-blind-text);"></i>
+              <div>
+                <p class="font-medium text-xs">Interruptions</p>
+                <p class="text-xs text-foreground-muted">3 unaware</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm" style="background: var(--color-johari-blind);">
+              <i class="pi pi-comment" style="color: var(--color-johari-blind-text);"></i>
+              <div>
+                <p class="font-medium text-xs">Budget tone</p>
+                <p class="text-xs text-foreground-muted">2 meetings</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- EMPTY STATE -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-xl font-bold text-foreground">Empty State: Insufficient Reflections</h2>
+      </div>
+      <p class="text-sm text-foreground-muted mb-4">
+        Shown when the user has fewer than 3 meetings with both analysis and reflection data.
+      </p>
+
+      <div class="bg-surface-subtle rounded-xl border border-border p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <i class="pi pi-eye text-accent-foreground"></i>
+          <h3 class="text-lg font-semibold text-foreground">Your Johari Window</h3>
+        </div>
+
+        <div class="text-center py-8">
+          <!-- Progress dots -->
+          <div class="flex justify-center gap-2 mb-4">
+            <div class="w-3 h-3 rounded-full" style="background: var(--color-johari-open-solid);"></div>
+            <div class="w-3 h-3 rounded-full bg-surface-muted"></div>
+            <div class="w-3 h-3 rounded-full bg-surface-muted"></div>
+          </div>
+          <p class="text-sm text-foreground-secondary mb-1">1 of 3 reflected meetings</p>
+          <p class="text-xs text-foreground-muted mb-4">Reflect on 2 more meetings to unlock your Johari Window</p>
+
+          <!-- Mini preview (faded) -->
+          <div class="flex justify-center opacity-30">
+            <div style="width: 160px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+              <div class="rounded-tl-lg aspect-square" style="background: var(--color-johari-open);"></div>
+              <div class="rounded-tr-lg aspect-square" style="background: var(--color-johari-blind);"></div>
+              <div class="rounded-bl-lg aspect-square" style="background: var(--color-johari-hidden);"></div>
+              <div class="rounded-br-lg aspect-square" style="background: var(--color-johari-unknown);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- COMPARISON TABLE -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <h2 class="text-xl font-bold text-foreground mb-4">Comparison</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-border rounded-lg overflow-hidden">
+          <thead>
+            <tr class="bg-surface-muted">
+              <th class="px-4 py-2 text-left text-foreground-muted font-medium">Criteria</th>
+              <th class="px-4 py-2 text-center text-foreground-muted font-medium">1: Classic Grid</th>
+              <th class="px-4 py-2 text-center text-foreground-muted font-medium">2: Stats + Grid</th>
+              <th class="px-4 py-2 text-center text-foreground-muted font-medium">3: Side-by-Side</th>
+              <th class="px-4 py-2 text-center text-foreground-muted font-medium">4: Stacked Cards</th>
+              <th class="px-4 py-2 text-center text-foreground-muted font-medium">5: Donut Chart</th>
+              <th class="px-4 py-2 text-center text-foreground-muted font-medium">6: Treemap</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-border">
+              <td class="px-4 py-2 text-foreground-secondary">Recognizable as Johari</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-inprogress-text);">&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-inprogress-text);">&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+            </tr>
+            <tr class="border-t border-border">
+              <td class="px-4 py-2 text-foreground-secondary">Proportion clarity</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+            </tr>
+            <tr class="border-t border-border">
+              <td class="px-4 py-2 text-foreground-secondary">Mobile experience</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+            </tr>
+            <tr class="border-t border-border">
+              <td class="px-4 py-2 text-foreground-secondary">Detail depth</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+            </tr>
+            <tr class="border-t border-border">
+              <td class="px-4 py-2 text-foreground-secondary">Compactness</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-inprogress-text);">&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-inprogress-text);">&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+            </tr>
+            <tr class="border-t border-border">
+              <td class="px-4 py-2 text-foreground-secondary">Implementation ease</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;</td>
+              <td class="px-4 py-2 text-center" style="color: var(--color-done-text);">&#9733;&#9733;&#9733;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-sm text-foreground-muted mt-3">
+        <strong>Recommendation:</strong> <strong>Option 1 (Classic 2x2 Grid)</strong> is recommended because it preserves the iconic Johari Window layout that users may recognize from psychology/business training, while the proportional sizing adds data richness. The blind spot list below provides actionable detail. For a more compact alternative, <strong>Option 3 (Side-by-Side)</strong> is a strong runner-up.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

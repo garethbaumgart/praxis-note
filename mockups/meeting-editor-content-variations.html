@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Editor - Content Area Variations</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            'surface-hover': 'var(--color-surface-hover)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-hover': 'var(--color-primary-bg-hover)',
+            'accent-foreground': 'var(--color-primary-text)',
+            'accent-solid': 'var(--color-primary-solid)',
+            danger: 'var(--color-danger-base)',
+            warning: 'var(--color-warning-base)',
+            todo: 'var(--color-todo-bg)',
+            'todo-foreground': 'var(--color-todo-text)',
+            inprogress: 'var(--color-inprogress-bg)',
+            'inprogress-foreground': 'var(--color-inprogress-text)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-surface-hover: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.3);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-danger-base: #bf616a;
+      --color-warning-base: #d08770;
+      --color-todo-bg: rgba(136, 192, 208, 0.12);
+      --color-todo-text: #88c0d0;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+    }
+
+    .pi { font-size: inherit !important; }
+
+    .form-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      background: var(--color-bg-muted);
+      border: 1px solid var(--color-border-default);
+      border-radius: 6px;
+      color: var(--color-text-primary);
+      font-size: 0.875rem;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-solid);
+      box-shadow: 0 0 0 2px var(--color-primary-bg);
+    }
+
+    .form-input::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    .dialog-backdrop {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .option-label {
+      position: absolute;
+      top: -12px;
+      left: 12px;
+      background: #1f2937;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .recommended-badge {
+      background: #5e81ac;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--color-bg-muted);
+      color: var(--color-text-secondary);
+    }
+
+    .chip:hover {
+      background: var(--color-primary-bg);
+      color: var(--color-primary-text);
+    }
+
+    .chip.selected {
+      background: var(--color-primary-bg);
+      color: var(--color-primary-text);
+    }
+
+    .promote-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 9999px;
+      background: var(--color-bg-subtle);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border-default);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .promote-btn:hover {
+      background: var(--color-primary-bg);
+      color: var(--color-primary-text);
+      border-color: var(--color-primary-solid);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 9999px;
+      cursor: pointer;
+    }
+
+    .status-badge.todo {
+      background: var(--color-todo-bg);
+      color: var(--color-todo-text);
+    }
+
+    .status-badge.inprogress {
+      background: var(--color-inprogress-bg);
+      color: var(--color-inprogress-text);
+    }
+
+    .status-badge.done {
+      background: var(--color-done-bg);
+      color: var(--color-done-text);
+    }
+
+    .checkbox {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--color-border-default);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .checkbox:hover {
+      border-color: var(--color-primary-solid);
+    }
+
+    .checkbox.checked {
+      background: var(--color-done-text);
+      border-color: var(--color-done-text);
+    }
+
+    .assignee-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 9999px;
+      background: var(--color-primary-bg);
+      color: var(--color-primary-text);
+    }
+
+    .red-flag {
+      background: rgba(191, 97, 106, 0.15);
+      border-left: 3px solid var(--color-danger-base);
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 min-h-screen p-6">
+
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-white mb-2">Meeting Editor - Option B (Minimal Inline) - Complete</h1>
+    <p class="text-gray-400 mb-8">Selected design with all current and future features</p>
+
+    <div class="grid grid-cols-2 gap-8">
+
+      <!-- ============================================ -->
+      <!-- CREATE MODE -->
+      <!-- ============================================ -->
+      <div class="relative">
+        <span class="option-label">Create Mode</span>
+        <div class="dialog-backdrop">
+          <div class="bg-surface rounded-lg shadow-2xl overflow-hidden" style="width: 520px;">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 border-b border-border">
+              <h3 class="text-base font-semibold text-foreground">New Meeting</h3>
+              <button class="w-7 h-7 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+                <i class="pi pi-times text-sm"></i>
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="px-5 py-4 space-y-4">
+              <!-- Title -->
+              <div class="flex items-center gap-3">
+                <i class="pi pi-file-edit text-foreground-muted w-5"></i>
+                <input type="text" class="form-input" placeholder="Meeting title (optional)">
+              </div>
+
+              <!-- Attendees -->
+              <div class="flex items-center gap-3">
+                <i class="pi pi-users text-foreground-muted w-5"></i>
+                <input type="text" class="form-input" placeholder="Attendees (comma separated)">
+              </div>
+
+              <!-- Date -->
+              <div class="flex items-center gap-3">
+                <i class="pi pi-calendar text-foreground-muted w-5"></i>
+                <div class="flex flex-wrap gap-2 flex-1">
+                  <button class="chip">Today</button>
+                  <button class="chip selected">Tomorrow</button>
+                  <button class="chip">Next Week</button>
+                  <button class="chip">
+                    <i class="pi pi-calendar mr-1 text-xs"></i>Pick
+                  </button>
+                </div>
+              </div>
+
+              <!-- Time -->
+              <div class="flex items-center gap-3">
+                <i class="pi pi-clock text-foreground-muted w-5"></i>
+                <div class="flex items-center gap-2">
+                  <select class="form-input py-1.5" style="width: 80px;">
+                    <option>9:00</option>
+                    <option selected>10:00</option>
+                    <option>11:00</option>
+                    <option>12:00</option>
+                    <option>1:00</option>
+                    <option>2:00</option>
+                  </select>
+                  <select class="form-input py-1.5" style="width: 70px;">
+                    <option selected>AM</option>
+                    <option>PM</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-end gap-3 px-5 py-3 border-t border-border">
+              <button class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+              <button class="px-4 py-1.5 bg-accent-solid text-white text-sm font-medium rounded-md">Create</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- EDIT MODE - FULL FEATURES -->
+      <!-- ============================================ -->
+      <div class="relative">
+        <span class="option-label">Edit Mode - Full Features <span class="recommended-badge">Selected</span></span>
+        <div class="dialog-backdrop" style="min-height: 900px;">
+          <div class="bg-surface rounded-lg shadow-2xl overflow-hidden" style="width: 580px;">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 border-b border-border">
+              <h3 class="text-base font-semibold text-foreground">Edit Meeting</h3>
+              <button class="w-7 h-7 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+                <i class="pi pi-times text-sm"></i>
+              </button>
+            </div>
+
+            <!-- Content - Scrollable -->
+            <div class="px-5 py-4 space-y-4 max-h-[680px] overflow-y-auto">
+              <!-- Title -->
+              <div class="flex items-center gap-3">
+                <i class="pi pi-file-edit text-foreground-muted w-5"></i>
+                <input type="text" class="form-input" value="Sprint Planning">
+              </div>
+
+              <!-- Attendees -->
+              <div class="flex items-center gap-3">
+                <i class="pi pi-users text-foreground-muted w-5"></i>
+                <input type="text" class="form-input" value="John, Sarah, Mike">
+              </div>
+
+              <!-- Date -->
+              <div class="flex items-center gap-3">
+                <i class="pi pi-calendar text-foreground-muted w-5"></i>
+                <div class="flex gap-2">
+                  <button class="chip selected">Jan 28</button>
+                  <button class="chip">
+                    <i class="pi pi-calendar mr-1 text-xs"></i>Change
+                  </button>
+                </div>
+              </div>
+
+              <!-- Time -->
+              <div class="flex items-center gap-3">
+                <i class="pi pi-clock text-foreground-muted w-5"></i>
+                <div class="flex gap-2">
+                  <select class="form-input py-1.5" style="width: 80px;">
+                    <option selected>10:00</option>
+                  </select>
+                  <select class="form-input py-1.5" style="width: 70px;">
+                    <option selected>AM</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Transcript -->
+              <div class="flex gap-3">
+                <i class="pi pi-align-left text-foreground-muted w-5 mt-2"></i>
+                <div class="flex-1">
+                  <textarea class="form-input resize-none text-sm" rows="5" placeholder="Paste transcript...">John: Let's start with the Q1 roadmap. Sarah, can you walk us through the priorities?
+
+Sarah: Sure. I think we should focus on the authentication system first. It's blocking several other features.
+
+Mike: Agreed. We'll need to do a security review before exposing any external APIs.
+
+John: I can draft the API contract. Let's plan for JWT authentication.</textarea>
+                  <div class="flex justify-end mt-1">
+                    <span class="text-xs text-foreground-muted">847 characters</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI Analysis Section -->
+              <div class="flex gap-3">
+                <i class="pi pi-sparkles text-foreground-muted w-5 mt-1"></i>
+                <div class="flex-1 bg-surface-subtle rounded-lg p-4 space-y-4">
+                  <!-- Header -->
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-foreground">AI Analysis</span>
+                    <button class="px-2.5 py-1 text-xs bg-accent-solid text-white rounded flex items-center gap-1">
+                      <i class="pi pi-sparkles text-xs"></i>
+                      Re-analyze
+                    </button>
+                  </div>
+
+                  <!-- Summary -->
+                  <div>
+                    <h4 class="text-xs font-medium text-foreground-muted uppercase tracking-wide mb-1">Summary</h4>
+                    <p class="text-sm text-foreground">Discussed Q1 roadmap priorities. Team agreed to focus on authentication system first, with JWT as the chosen approach. Security review required before external API exposure.</p>
+                  </div>
+
+                  <!-- Key Points -->
+                  <div>
+                    <h4 class="text-xs font-medium text-foreground-muted uppercase tracking-wide mb-1">Key Points</h4>
+                    <ul class="space-y-1">
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 text-xs flex-shrink-0"></i>
+                        <span>Authentication system is top priority, blocking other features</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 text-xs flex-shrink-0"></i>
+                        <span>Security review required before external API exposure</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 text-xs flex-shrink-0"></i>
+                        <span>Need additional two weeks for security review</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Decisions -->
+                  <div>
+                    <h4 class="text-xs font-medium text-foreground-muted uppercase tracking-wide mb-1">Decisions</h4>
+                    <ul class="space-y-1">
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-bolt text-warning mt-0.5 text-xs flex-shrink-0"></i>
+                        <span>Will use JWT for API authentication</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-bolt text-warning mt-0.5 text-xs flex-shrink-0"></i>
+                        <span>Timeline extended by 2 weeks for security review</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Action Items -->
+                  <div>
+                    <h4 class="text-xs font-medium text-foreground-muted uppercase tracking-wide mb-2">Action Items</h4>
+                    <ul class="space-y-2">
+                      <!-- Action item - not promoted -->
+                      <li class="flex items-start gap-3">
+                        <div class="checkbox"></div>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-sm text-foreground">Draft API contract for new endpoints</span>
+                            <span class="assignee-badge">John</span>
+                            <button class="promote-btn">
+                              <i class="pi pi-arrow-right text-xs"></i>
+                              Task
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                      <!-- Action item - promoted to task (In Progress) -->
+                      <li class="flex items-start gap-3">
+                        <div class="checkbox"></div>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-sm text-foreground">Schedule security review meeting</span>
+                            <span class="assignee-badge">Sarah</span>
+                            <button class="status-badge inprogress">
+                              <i class="pi pi-check-square text-xs"></i>
+                              InProgress
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                      <!-- Action item - completed -->
+                      <li class="flex items-start gap-3">
+                        <div class="checkbox checked">
+                          <i class="pi pi-check text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-sm text-foreground-muted line-through">Update project timeline document</span>
+                            <span class="assignee-badge">Mike</span>
+                            <button class="status-badge done">
+                              <i class="pi pi-check-square text-xs"></i>
+                              Done
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Behavioral Analysis (Collapsible) -->
+                  <div class="border-t border-border pt-4">
+                    <button class="flex items-center justify-between w-full text-left">
+                      <h4 class="text-xs font-medium text-foreground-muted uppercase tracking-wide">Behavioral Analysis</h4>
+                      <i class="pi pi-chevron-down text-foreground-muted text-xs"></i>
+                    </button>
+
+                    <!-- Expanded content -->
+                    <div class="mt-3 space-y-3">
+                      <!-- Speaking Dynamics -->
+                      <div>
+                        <span class="text-xs text-foreground-secondary">Speaking Time</span>
+                        <div class="mt-1 space-y-1">
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs text-foreground w-12">John</span>
+                            <div class="flex-1 h-2 bg-surface-muted rounded-full overflow-hidden">
+                              <div class="h-full bg-accent-solid rounded-full" style="width: 45%"></div>
+                            </div>
+                            <span class="text-xs text-foreground-muted w-8">45%</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs text-foreground w-12">Sarah</span>
+                            <div class="flex-1 h-2 bg-surface-muted rounded-full overflow-hidden">
+                              <div class="h-full bg-accent-solid rounded-full" style="width: 35%"></div>
+                            </div>
+                            <span class="text-xs text-foreground-muted w-8">35%</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs text-foreground w-12">Mike</span>
+                            <div class="flex-1 h-2 bg-surface-muted rounded-full overflow-hidden">
+                              <div class="h-full bg-accent-solid rounded-full" style="width: 20%"></div>
+                            </div>
+                            <span class="text-xs text-foreground-muted w-8">20%</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Red Flags -->
+                      <div>
+                        <span class="text-xs text-foreground-secondary">Red Flags</span>
+                        <div class="mt-1 space-y-2">
+                          <div class="red-flag">
+                            <div class="flex items-center gap-2 mb-1">
+                              <span class="text-xs font-medium text-danger">Hedging</span>
+                              <span class="text-xs text-foreground-muted">- Mike</span>
+                            </div>
+                            <p class="text-xs text-foreground">"I think we need an extra two weeks" - uncertainty about timeline commitment</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-end gap-3 px-5 py-3 border-t border-border">
+              <button class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground">Cancel</button>
+              <button class="px-4 py-1.5 bg-accent-solid text-white text-sm font-medium rounded-md">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FUTURE: AUDIO UPLOAD STATES -->
+    <!-- ============================================ -->
+    <h2 class="text-xl font-bold text-white mt-12 mb-6">Future: Audio Upload States (Issue #233, #234, #235)</h2>
+
+    <div class="grid grid-cols-3 gap-6 mb-12">
+      <!-- No Audio -->
+      <div class="relative">
+        <span class="option-label">No Audio Uploaded</span>
+        <div class="bg-surface rounded-lg p-4">
+          <div class="flex gap-3">
+            <i class="pi pi-microphone text-foreground-muted w-5 mt-2"></i>
+            <div class="flex-1 border-2 border-dashed border-border rounded-lg p-4 text-center">
+              <i class="pi pi-cloud-upload text-2xl text-foreground-muted mb-2"></i>
+              <p class="text-sm text-foreground-muted mb-2">Drag audio file here or</p>
+              <div class="flex justify-center gap-2">
+                <button class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded-md hover:bg-surface-hover">
+                  <i class="pi pi-upload mr-1"></i>Upload
+                </button>
+                <button class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded-md hover:bg-surface-hover">
+                  <i class="pi pi-circle-fill text-danger mr-1 text-[8px]"></i>Record
+                </button>
+              </div>
+              <p class="text-xs text-foreground-muted mt-2">mp3, mp4, wav, webm • Max 100MB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recording In Progress -->
+      <div class="relative">
+        <span class="option-label">Recording In Progress</span>
+        <div class="bg-surface rounded-lg p-4">
+          <div class="flex gap-3">
+            <i class="pi pi-microphone text-danger w-5 mt-2"></i>
+            <div class="flex-1 bg-surface-subtle rounded-lg p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 bg-danger rounded-full animate-pulse"></span>
+                  <span class="text-sm font-medium text-foreground">Recording</span>
+                </div>
+                <span class="text-sm text-foreground-muted font-mono">12:34</span>
+              </div>
+              <!-- Audio level bars -->
+              <div class="flex items-center gap-0.5 h-8 mb-3">
+                <div class="w-1 bg-accent-solid rounded" style="height: 40%"></div>
+                <div class="w-1 bg-accent-solid rounded" style="height: 70%"></div>
+                <div class="w-1 bg-accent-solid rounded" style="height: 30%"></div>
+                <div class="w-1 bg-accent-solid rounded" style="height: 90%"></div>
+                <div class="w-1 bg-accent-solid rounded" style="height: 50%"></div>
+                <div class="w-1 bg-accent-solid rounded" style="height: 60%"></div>
+                <div class="w-1 bg-accent-solid rounded" style="height: 80%"></div>
+                <div class="w-1 bg-accent-solid rounded" style="height: 45%"></div>
+                <div class="w-1 bg-accent-solid rounded" style="height: 55%"></div>
+                <div class="w-1 bg-surface-muted rounded" style="height: 20%"></div>
+                <div class="w-1 bg-surface-muted rounded" style="height: 15%"></div>
+              </div>
+              <div class="flex justify-center gap-2">
+                <button class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded-md">
+                  <i class="pi pi-pause mr-1"></i>Pause
+                </button>
+                <button class="px-3 py-1.5 text-xs bg-danger text-white rounded-md">
+                  <i class="pi pi-stop-circle mr-1"></i>Stop
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transcribing -->
+      <div class="relative">
+        <span class="option-label">Transcribing (Whisper)</span>
+        <div class="bg-surface rounded-lg p-4">
+          <div class="flex gap-3">
+            <i class="pi pi-microphone text-foreground-muted w-5 mt-2"></i>
+            <div class="flex-1 bg-surface-subtle rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-file-edit text-foreground-secondary text-sm"></i>
+                  <span class="text-sm text-foreground">meeting-audio.mp3</span>
+                </div>
+                <span class="text-xs text-foreground-muted">12.4 MB</span>
+              </div>
+              <div class="flex items-center gap-2 mb-2">
+                <i class="pi pi-spin pi-spinner text-accent-foreground text-sm"></i>
+                <span class="text-sm text-accent-foreground">Transcribing with Whisper...</span>
+              </div>
+              <!-- Progress bar -->
+              <div class="h-1.5 bg-surface-muted rounded-full overflow-hidden">
+                <div class="h-full bg-accent-solid rounded-full transition-all" style="width: 65%"></div>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-xs text-foreground-muted">Processing audio...</span>
+                <span class="text-xs text-foreground-muted">65%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- AI ANALYSIS STATES -->
+    <!-- ============================================ -->
+    <h2 class="text-xl font-bold text-white mt-12 mb-6">AI Analysis States</h2>
+
+    <div class="grid grid-cols-3 gap-6 mb-12">
+      <!-- Processing -->
+      <div class="relative">
+        <span class="option-label">Processing</span>
+        <div class="bg-surface rounded-lg p-4">
+          <div class="flex gap-3">
+            <i class="pi pi-sparkles text-foreground-muted w-5 mt-1"></i>
+            <div class="flex-1 bg-surface-subtle rounded-lg p-4">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold text-foreground">AI Analysis</span>
+                <button class="px-2.5 py-1 text-xs bg-surface-muted text-foreground-muted rounded flex items-center gap-1 cursor-not-allowed opacity-60">
+                  <i class="pi pi-spin pi-spinner text-xs"></i>
+                  Analyzing...
+                </button>
+              </div>
+              <div class="flex items-center gap-3 text-foreground-muted">
+                <i class="pi pi-spin pi-spinner"></i>
+                <span class="text-sm">Analyzing transcript...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Transcript -->
+      <div class="relative">
+        <span class="option-label">No Transcript</span>
+        <div class="bg-surface rounded-lg p-4">
+          <div class="flex gap-3">
+            <i class="pi pi-sparkles text-foreground-muted w-5 mt-1"></i>
+            <div class="flex-1 bg-surface-subtle rounded-lg p-4">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold text-foreground">AI Analysis</span>
+                <button class="px-2.5 py-1 text-xs bg-surface-muted text-foreground-muted rounded flex items-center gap-1 cursor-not-allowed opacity-60">
+                  <i class="pi pi-sparkles text-xs"></i>
+                  Analyze
+                </button>
+              </div>
+              <p class="text-sm text-foreground-muted">Add a transcript to enable AI analysis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Failed -->
+      <div class="relative">
+        <span class="option-label">Failed</span>
+        <div class="bg-surface rounded-lg p-4">
+          <div class="flex gap-3">
+            <i class="pi pi-sparkles text-foreground-muted w-5 mt-1"></i>
+            <div class="flex-1 bg-surface-subtle rounded-lg p-4">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold text-foreground">AI Analysis</span>
+                <button class="px-2.5 py-1 text-xs bg-accent-solid text-white rounded flex items-center gap-1">
+                  <i class="pi pi-refresh text-xs"></i>
+                  Retry
+                </button>
+              </div>
+              <div class="flex items-center gap-3 text-danger">
+                <i class="pi pi-exclamation-circle"></i>
+                <span class="text-sm">Analysis failed. Please try again.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LIGHT MODE COMPARISON -->
+    <!-- ============================================ -->
+    <h2 class="text-xl font-bold text-white mt-12 mb-6">Light Mode Preview</h2>
+
+    <style>
+      .light-theme {
+        --color-bg-base: #fafaf8;
+        --color-bg-subtle: #ffffff;
+        --color-bg-muted: #eceff4;
+        --color-surface-hover: #f8f9fa;
+        --color-text-primary: #2e3440;
+        --color-text-secondary: #4c566a;
+        --color-text-muted: #7b88a1;
+        --color-border-default: #e5e9f0;
+        --color-border-muted: #eceff4;
+        --color-primary-bg: rgba(94, 129, 172, 0.15);
+        --color-primary-bg-hover: rgba(94, 129, 172, 0.25);
+        --color-primary-text: #5e81ac;
+        --color-primary-solid: #5e81ac;
+        --color-danger-base: #bf616a;
+        --color-warning-base: #d08770;
+        --color-todo-bg: rgba(136, 192, 208, 0.12);
+        --color-todo-text: #0b7285;
+        --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+        --color-inprogress-text: #d08770;
+        --color-done-bg: rgba(163, 190, 140, 0.1);
+        --color-done-text: #a3be8c;
+      }
+    </style>
+
+    <div class="light-theme dialog-backdrop" style="background: rgba(0,0,0,0.3);">
+      <div class="bg-surface rounded-lg shadow-2xl overflow-hidden" style="width: 580px;">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-3 border-b border-border">
+          <h3 class="text-base font-semibold text-foreground">Edit Meeting</h3>
+          <button class="w-7 h-7 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted">
+            <i class="pi pi-times text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="px-5 py-4 space-y-4">
+          <!-- Title -->
+          <div class="flex items-center gap-3">
+            <i class="pi pi-file-edit text-foreground-muted w-5"></i>
+            <input type="text" class="form-input" value="Sprint Planning">
+          </div>
+
+          <!-- Attendees -->
+          <div class="flex items-center gap-3">
+            <i class="pi pi-users text-foreground-muted w-5"></i>
+            <input type="text" class="form-input" value="John, Sarah, Mike">
+          </div>
+
+          <!-- Date -->
+          <div class="flex items-center gap-3">
+            <i class="pi pi-calendar text-foreground-muted w-5"></i>
+            <div class="flex gap-2">
+              <button class="chip selected">Jan 28</button>
+              <button class="chip">
+                <i class="pi pi-calendar mr-1 text-xs"></i>Change
+              </button>
+            </div>
+          </div>
+
+          <!-- Time -->
+          <div class="flex items-center gap-3">
+            <i class="pi pi-clock text-foreground-muted w-5"></i>
+            <div class="flex gap-2">
+              <select class="form-input py-1.5" style="width: 80px;">
+                <option selected>10:00</option>
+              </select>
+              <select class="form-input py-1.5" style="width: 70px;">
+                <option selected>AM</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Transcript -->
+          <div class="flex gap-3">
+            <i class="pi pi-align-left text-foreground-muted w-5 mt-2"></i>
+            <div class="flex-1">
+              <textarea class="form-input resize-none text-sm" rows="3">John: Let's start with the Q1 roadmap...</textarea>
+            </div>
+          </div>
+
+          <!-- AI Analysis -->
+          <div class="flex gap-3">
+            <i class="pi pi-sparkles text-foreground-muted w-5 mt-1"></i>
+            <div class="flex-1 bg-surface-subtle rounded-lg p-4 border border-border">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold text-foreground">AI Analysis</span>
+                <button class="px-2.5 py-1 text-xs bg-accent-solid text-white rounded">Re-analyze</button>
+              </div>
+              <div>
+                <h4 class="text-xs font-medium text-foreground-muted uppercase mb-1">Summary</h4>
+                <p class="text-sm text-foreground">Discussed Q1 roadmap priorities...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-end gap-3 px-5 py-3 border-t border-border">
+          <button class="px-4 py-1.5 text-sm text-foreground-secondary">Cancel</button>
+          <button class="px-4 py-1.5 bg-accent-solid text-white text-sm font-medium rounded-md">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- Summary -->
+    <!-- ============================================ -->
+    <div class="bg-gray-800 rounded-lg p-6 mt-12">
+      <h2 class="text-lg font-semibold text-white mb-4">Implementation Summary</h2>
+
+      <div class="grid grid-cols-2 gap-8">
+        <div>
+          <h3 class="font-medium text-white mb-2">Current Features (must include)</h3>
+          <ul class="text-sm text-gray-400 space-y-1">
+            <li><i class="pi pi-file-edit mr-2 text-gray-500"></i>Title input</li>
+            <li><i class="pi pi-users mr-2 text-gray-500"></i>Attendees input</li>
+            <li><i class="pi pi-calendar mr-2 text-gray-500"></i>Date chips + picker</li>
+            <li><i class="pi pi-clock mr-2 text-gray-500"></i>Time dropdowns</li>
+            <li><i class="pi pi-align-left mr-2 text-gray-500"></i>Transcript textarea (edit mode)</li>
+            <li><i class="pi pi-sparkles mr-2 text-gray-500"></i>AI Analysis section</li>
+            <li class="ml-6">• Summary, Key Points, Decisions</li>
+            <li class="ml-6">• Action Items with promote to task</li>
+            <li class="ml-6">• Behavioral Analysis (collapsible)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-medium text-white mb-2">Future Features (design accommodates)</h3>
+          <ul class="text-sm text-gray-400 space-y-1">
+            <li><i class="pi pi-upload mr-2 text-gray-500"></i>Audio upload (#233)</li>
+            <li><i class="pi pi-microphone mr-2 text-gray-500"></i>Browser recording (#235)</li>
+            <li><i class="pi pi-spin pi-spinner mr-2 text-gray-500"></i>Whisper transcription (#234)</li>
+            <li><i class="pi pi-calendar-plus mr-2 text-gray-500"></i>Calendar integration (#236)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-gray-700">
+        <h3 class="font-medium text-white mb-2">Key Design Decisions</h3>
+        <ul class="text-sm text-gray-400 space-y-1">
+          <li>• <strong>Inline icons</strong> (w-5) for consistent alignment</li>
+          <li>• <strong>No section headers</strong> - icons provide context</li>
+          <li>• <strong>Scrollable content</strong> with max-h-[520px] for edit mode</li>
+          <li>• <strong>AI Analysis</strong> wrapped in subtle bg-surface-subtle card</li>
+          <li>• <strong>Action items</strong> show status badges + promote buttons</li>
+          <li>• <strong>Behavioral analysis</strong> collapsible to save space</li>
+          <li>• <strong>Audio section</strong> placeholder between time and transcript</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Management — Rename &amp; Delete — Issue #337 — 5 Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)', 'surface-subtle': 'var(--color-bg-subtle)', 'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)', 'foreground-secondary': 'var(--color-text-secondary)', 'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)', 'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)', 'accent-solid': 'var(--color-primary-solid)', 'accent-foreground': 'var(--color-primary-text)',
+            done: 'var(--color-done-bg)', 'done-foreground': 'var(--color-done-text)', 'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            'tag-bg': 'var(--color-tag-bg)', 'tag-text': 'var(--color-tag-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8; --color-bg-subtle: #ffffff; --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440; --color-text-secondary: #4c566a; --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0; --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15); --color-primary-text: #5e81ac; --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.15); --color-tag-text: #b48ead;
+      --color-done-bg: rgba(163, 190, 140, 0.1); --color-done-text: #a3be8c; --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933; --color-bg-subtle: #2e3440; --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4; --color-text-secondary: #d8dee9; --color-text-muted: #4c566a;
+      --color-border-default: #3b4252; --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2); --color-primary-text: #88c0d0; --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.2); --color-tag-text: #b48ead;
+      --color-done-bg: rgba(163, 190, 140, 0.15); --color-done-text: #a3be8c; --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-card { background: var(--color-bg-subtle); border-radius: 12px; overflow: hidden; border: 1px solid var(--color-border-default); }
+    .option-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border-muted); display: flex; align-items: center; justify-content: space-between; }
+    .option-body { padding: 1.25rem; }
+    .option-number { background: var(--color-primary-solid); color: white; font-size: 11px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .recommended { border: 2px solid #a3be8c !important; }
+    .recommended-badge { background: #a3be8c; color: #2e3440; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+    .option-divider { border-top: 3px dashed var(--color-border-default); margin: 3rem 0; padding-top: 2rem; }
+    .pros-cons { margin-top: 12px; font-size: 11px; line-height: 1.8; }
+    .pros-cons .pro { color: #a3be8c; }
+    .pros-cons .con { color: #bf616a; }
+    .pi { font-size: inherit !important; }
+    .tag-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 9999px; cursor: pointer; transition: all 0.15s; }
+    .tag-chip:hover { opacity: 0.8; }
+    .mock-input { height: 30px; border-radius: 6px; border: 1px solid var(--color-primary-solid); background: var(--color-bg-base); padding: 0 8px; font-size: 12px; color: var(--color-text-primary); outline: none; box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.2); }
+  </style>
+</head>
+<body class="p-6 lg:p-8">
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="toggleTheme()" class="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-foreground-secondary text-sm hover:bg-surface-muted transition">
+      <i class="pi pi-moon mr-1"></i> Toggle Theme
+    </button>
+  </div>
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Tag Management — Rename & Delete — 5 Options</h1>
+    <p class="text-foreground-secondary mb-1 text-sm">Issue <a href="https://github.com/garethbaumgart/praxis-note/issues/337" class="text-accent-foreground underline">#337</a> — How to surface rename and delete actions on tags in the Tag Hub.</p>
+    <p class="text-foreground-muted mb-8 text-xs">Each option shows: (A) how actions are triggered, (B) the rename inline edit state, (C) the delete confirmation dialog.</p>
+
+    <!-- ======================= OPTION 1 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">1</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Right-Click Context Menu</div>
+            <div class="text-foreground-muted text-xs">Native-feeling right-click (or long-press on mobile) context menu</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- A: Trigger -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">A. Trigger: Right-click</div>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60">10</span></span>
+              <span class="tag-chip" style="outline: 2px dashed var(--color-primary-solid); outline-offset: 2px">architecture <span class="text-[9px] opacity-60">8</span></span>
+              <span class="tag-chip">frontend <span class="text-[9px] opacity-60">6</span></span>
+            </div>
+            <!-- Context menu -->
+            <div class="rounded-lg border border-border bg-surface-subtle shadow-lg p-1" style="width:160px; margin-left: 80px">
+              <button class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-foreground hover:bg-surface-muted text-left">
+                <i class="pi pi-pencil" style="font-size:11px"></i> Rename
+              </button>
+              <button class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-foreground hover:bg-surface-muted text-left">
+                <i class="pi pi-clone" style="font-size:11px"></i> Merge into...
+              </button>
+              <div class="border-t border-border-muted my-1"></div>
+              <button class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-danger hover:bg-surface-muted text-left">
+                <i class="pi pi-trash" style="font-size:11px"></i> Delete
+              </button>
+            </div>
+          </div>
+          <!-- B: Rename state -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">B. Rename: Inline edit</div>
+            <div class="flex flex-wrap gap-2 items-center">
+              <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60">10</span></span>
+              <div class="inline-flex items-center gap-1">
+                <input type="text" value="architecture" class="mock-input" style="width:120px">
+                <button class="w-6 h-6 rounded flex items-center justify-center text-done-foreground hover:bg-done transition" title="Save"><i class="pi pi-check" style="font-size:11px"></i></button>
+                <button class="w-6 h-6 rounded flex items-center justify-center text-foreground-muted hover:bg-surface-muted transition" title="Cancel"><i class="pi pi-times" style="font-size:11px"></i></button>
+              </div>
+              <span class="tag-chip">frontend <span class="text-[9px] opacity-60">6</span></span>
+            </div>
+            <div class="text-[10px] text-foreground-muted mt-2"><kbd class="px-1 py-0.5 rounded bg-surface-muted text-[9px]">Enter</kbd> save · <kbd class="px-1 py-0.5 rounded bg-surface-muted text-[9px]">Esc</kbd> cancel</div>
+          </div>
+          <!-- C: Delete confirmation -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">C. Delete: Confirm dialog</div>
+            <div class="rounded-lg border border-border bg-surface-subtle shadow-xl p-4" style="max-width:280px">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(191, 97, 106, 0.1)">
+                  <i class="pi pi-exclamation-triangle text-danger" style="font-size:14px"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-foreground">Delete tag?</h3>
+              </div>
+              <p class="text-xs text-foreground-secondary mb-1">The tag <strong class="text-tag-text">"architecture"</strong> is used on 8 items.</p>
+              <p class="text-xs text-foreground-muted mb-4">The tag will be removed from all notes, meetings, and tasks. This cannot be undone.</p>
+              <div class="flex justify-end gap-2">
+                <button class="px-3 py-1.5 text-xs rounded-lg border border-border text-foreground hover:bg-surface-muted transition">Cancel</button>
+                <button class="px-3 py-1.5 text-xs rounded-lg text-white transition" style="background: var(--color-danger-base)">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Zero visual clutter — no icons or buttons on the chips</div>
+          <div class="pro">+ Native OS feel — users expect right-click menus</div>
+          <div class="pro">+ Menu can include future actions (merge) without redesign</div>
+          <div class="con">- Right-click is not discoverable — new users won't know to try</div>
+          <div class="con">- Long-press on mobile is also not intuitive</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 2 (RECOMMENDED) ======================= -->
+    <div class="option-card recommended mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">2</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Hover-Reveal Three-Dot Menu</div>
+            <div class="text-foreground-muted text-xs">Ellipsis button appears on chip hover, opens a popover menu</div>
+          </div>
+        </div>
+        <div class="recommended-badge">Recommended</div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- A: Trigger -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">A. Trigger: Hover reveals &#x22EE;</div>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60">10</span></span>
+              <!-- Hovered state -->
+              <span class="tag-chip" style="padding-right:4px">
+                architecture <span class="text-[9px] opacity-60">8</span>
+                <button class="w-5 h-5 rounded-full flex items-center justify-center hover:bg-white/20 transition ml-1" style="font-size:10px">
+                  <i class="pi pi-ellipsis-v"></i>
+                </button>
+              </span>
+              <span class="tag-chip">frontend <span class="text-[9px] opacity-60">6</span></span>
+            </div>
+            <!-- Popover menu -->
+            <div class="rounded-lg border border-border bg-surface-subtle shadow-lg p-1" style="width:150px; margin-left: 80px">
+              <button class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-foreground hover:bg-surface-muted text-left">
+                <i class="pi pi-pencil" style="font-size:10px"></i> Rename
+              </button>
+              <button class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-foreground hover:bg-surface-muted text-left">
+                <i class="pi pi-clone" style="font-size:10px"></i> Merge into...
+              </button>
+              <div class="border-t border-border-muted my-0.5"></div>
+              <button class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-danger hover:bg-surface-muted text-left">
+                <i class="pi pi-trash" style="font-size:10px"></i> Delete
+              </button>
+            </div>
+          </div>
+          <!-- B: Rename state -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">B. Rename: Inline edit</div>
+            <div class="flex flex-wrap gap-2 items-center">
+              <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60">10</span></span>
+              <div class="inline-flex items-center gap-1">
+                <input type="text" value="architecture" class="mock-input" style="width:120px">
+                <button class="w-6 h-6 rounded flex items-center justify-center text-done-foreground hover:bg-done transition" title="Save"><i class="pi pi-check" style="font-size:11px"></i></button>
+                <button class="w-6 h-6 rounded flex items-center justify-center text-foreground-muted hover:bg-surface-muted transition" title="Cancel"><i class="pi pi-times" style="font-size:11px"></i></button>
+              </div>
+              <span class="tag-chip">frontend <span class="text-[9px] opacity-60">6</span></span>
+            </div>
+            <div class="text-[10px] text-foreground-muted mt-2"><kbd class="px-1 py-0.5 rounded bg-surface-muted text-[9px]">Enter</kbd> save · <kbd class="px-1 py-0.5 rounded bg-surface-muted text-[9px]">Esc</kbd> cancel · auto-lowercase</div>
+          </div>
+          <!-- C: Delete confirmation -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">C. Delete: Confirm dialog</div>
+            <div class="rounded-lg border border-border bg-surface-subtle shadow-xl p-4" style="max-width:280px">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(191, 97, 106, 0.1)">
+                  <i class="pi pi-exclamation-triangle text-danger" style="font-size:14px"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-foreground">Delete tag?</h3>
+              </div>
+              <p class="text-xs text-foreground-secondary mb-1">The tag <strong class="text-tag-text">"architecture"</strong> will be removed from:</p>
+              <div class="flex items-center gap-3 my-2 text-[11px] text-foreground-secondary">
+                <span><i class="pi pi-comments mr-1" style="font-size:10px"></i>2 meetings</span>
+                <span><i class="pi pi-file-edit mr-1" style="font-size:10px"></i>4 notes</span>
+                <span><i class="pi pi-check-square mr-1" style="font-size:10px"></i>2 tasks</span>
+              </div>
+              <p class="text-[10px] text-foreground-muted mb-4">This cannot be undone.</p>
+              <div class="flex justify-end gap-2">
+                <button class="px-3 py-1.5 text-xs rounded-lg border border-border text-foreground hover:bg-surface-muted transition">Cancel</button>
+                <button class="px-3 py-1.5 text-xs rounded-lg text-white transition" style="background: var(--color-danger-base)">Delete tag</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Clean default state — three-dot only appears on hover</div>
+          <div class="pro">+ Discoverable — users know to look for the &#x22EE; menu</div>
+          <div class="pro">+ Menu is extensible — merge, export, etc. added easily</div>
+          <div class="pro">+ Delete dialog shows per-type breakdown for informed decision</div>
+          <div class="con">- On mobile, need tap-and-hold or always-visible &#x22EE; fallback</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 3 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">3</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Always-Visible Icon Actions</div>
+            <div class="text-foreground-muted text-xs">Small edit and delete icons always visible on each tag chip</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- A: Trigger -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">A. Trigger: Always-visible icons</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="tag-chip" style="padding-right:4px">
+                project-alpha <span class="text-[9px] opacity-60 mr-1">10</span>
+                <button class="w-4 h-4 rounded flex items-center justify-center opacity-50 hover:opacity-100 transition"><i class="pi pi-pencil" style="font-size:8px"></i></button>
+                <button class="w-4 h-4 rounded flex items-center justify-center opacity-50 hover:opacity-100 transition" style="color: var(--color-danger-base)"><i class="pi pi-times" style="font-size:8px"></i></button>
+              </span>
+              <span class="tag-chip" style="padding-right:4px">
+                architecture <span class="text-[9px] opacity-60 mr-1">8</span>
+                <button class="w-4 h-4 rounded flex items-center justify-center opacity-50 hover:opacity-100 transition"><i class="pi pi-pencil" style="font-size:8px"></i></button>
+                <button class="w-4 h-4 rounded flex items-center justify-center opacity-50 hover:opacity-100 transition" style="color: var(--color-danger-base)"><i class="pi pi-times" style="font-size:8px"></i></button>
+              </span>
+              <span class="tag-chip" style="padding-right:4px">
+                frontend <span class="text-[9px] opacity-60 mr-1">6</span>
+                <button class="w-4 h-4 rounded flex items-center justify-center opacity-50 hover:opacity-100 transition"><i class="pi pi-pencil" style="font-size:8px"></i></button>
+                <button class="w-4 h-4 rounded flex items-center justify-center opacity-50 hover:opacity-100 transition" style="color: var(--color-danger-base)"><i class="pi pi-times" style="font-size:8px"></i></button>
+              </span>
+            </div>
+          </div>
+          <!-- B: Rename state -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">B. Rename</div>
+            <div class="flex flex-wrap gap-2 items-center">
+              <div class="inline-flex items-center gap-1">
+                <input type="text" value="project-alpha" class="mock-input" style="width:130px">
+                <button class="w-6 h-6 rounded flex items-center justify-center text-done-foreground hover:bg-done transition"><i class="pi pi-check" style="font-size:11px"></i></button>
+                <button class="w-6 h-6 rounded flex items-center justify-center text-foreground-muted hover:bg-surface-muted transition"><i class="pi pi-times" style="font-size:11px"></i></button>
+              </div>
+            </div>
+          </div>
+          <!-- C: Delete -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">C. Delete</div>
+            <p class="text-xs text-foreground-secondary">Same confirmation dialog as other options.</p>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Fully discoverable — actions always visible</div>
+          <div class="pro">+ Works on mobile without hover workarounds</div>
+          <div class="con">- Visual clutter — every tag chip has two tiny icons</div>
+          <div class="con">- Tags look more like an admin panel than a navigation element</div>
+          <div class="con">- Accidental clicks on delete icon (too close to tag name)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 4 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">4</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Edit Mode Toggle</div>
+            <div class="text-foreground-muted text-xs">Global "Manage tags" button toggles all chips into editable mode</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Normal mode -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Normal Mode</div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-foreground">Tags</span>
+              <button class="flex items-center gap-1 px-2 py-1 text-[10px] text-accent-foreground rounded-md hover:bg-accent transition">
+                <i class="pi pi-cog" style="font-size:10px"></i> Manage tags
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60">10</span></span>
+              <span class="tag-chip">architecture <span class="text-[9px] opacity-60">8</span></span>
+              <span class="tag-chip">frontend <span class="text-[9px] opacity-60">6</span></span>
+              <span class="tag-chip">1-on-1 <span class="text-[9px] opacity-60">5</span></span>
+            </div>
+          </div>
+          <!-- Edit mode -->
+          <div class="rounded-lg border border-border p-4" style="border-color: var(--color-primary-solid)">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">Edit Mode (active)</div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-accent-foreground">Editing tags</span>
+              <button class="flex items-center gap-1 px-2 py-1 text-[10px] text-white rounded-md transition" style="background: var(--color-primary-solid)">
+                <i class="pi pi-check" style="font-size:10px"></i> Done
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <!-- Each chip now has x and edit -->
+              <span class="tag-chip" style="padding-right:4px; animation: wobble 0.3s">
+                project-alpha
+                <button class="w-4 h-4 rounded-full flex items-center justify-center ml-1" style="background: var(--color-danger-base); color: white"><i class="pi pi-times" style="font-size:7px"></i></button>
+              </span>
+              <span class="tag-chip" style="padding-right:4px">
+                architecture
+                <button class="w-4 h-4 rounded-full flex items-center justify-center ml-1" style="background: var(--color-danger-base); color: white"><i class="pi pi-times" style="font-size:7px"></i></button>
+              </span>
+              <span class="tag-chip" style="padding-right:4px">
+                frontend
+                <button class="w-4 h-4 rounded-full flex items-center justify-center ml-1" style="background: var(--color-danger-base); color: white"><i class="pi pi-times" style="font-size:7px"></i></button>
+              </span>
+              <span class="tag-chip" style="padding-right:4px">
+                1-on-1
+                <button class="w-4 h-4 rounded-full flex items-center justify-center ml-1" style="background: var(--color-danger-base); color: white"><i class="pi pi-times" style="font-size:7px"></i></button>
+              </span>
+            </div>
+            <div class="text-[10px] text-foreground-muted mt-2">Tap a tag name to rename · Tap <span style="color: var(--color-danger-base)">&#x2715;</span> to delete</div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Clean default state — no action clutter until "Manage" is clicked</div>
+          <div class="pro">+ Familiar iOS-style pattern (jiggle-mode)</div>
+          <div class="pro">+ Clear mode boundary — user knows they're in edit mode</div>
+          <div class="con">- Extra click to enter edit mode</div>
+          <div class="con">- User might forget they're in edit mode</div>
+          <div class="con">- Doesn't support rename inline well — needs another interaction</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 5 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">5</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Double-Click to Rename, Swipe to Delete</div>
+            <div class="text-foreground-muted text-xs">Gesture-based — double-click enters edit, swipe/keyboard shortcut deletes</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- A: Double-click -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">A. Double-click → Rename</div>
+            <div class="flex flex-wrap gap-2 items-center mb-2">
+              <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60">10</span></span>
+              <span class="text-[10px] text-foreground-muted">double-click</span>
+              <span class="text-[10px] text-foreground-muted">→</span>
+            </div>
+            <div class="inline-flex items-center gap-1">
+              <input type="text" value="project-alpha" class="mock-input" style="width:130px">
+              <button class="w-6 h-6 rounded flex items-center justify-center text-done-foreground hover:bg-done transition"><i class="pi pi-check" style="font-size:11px"></i></button>
+            </div>
+          </div>
+          <!-- B: Keyboard delete -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">B. Select + Backspace → Delete</div>
+            <div class="flex flex-wrap gap-2 mb-2">
+              <span class="tag-chip">project-alpha</span>
+              <span class="tag-chip" style="outline: 2px solid var(--color-primary-solid); outline-offset: 1px">architecture</span>
+              <span class="tag-chip">frontend</span>
+            </div>
+            <div class="text-[10px] text-foreground-muted">Click to select, then <kbd class="px-1 py-0.5 rounded bg-surface-muted text-[9px]">Backspace</kbd> or <kbd class="px-1 py-0.5 rounded bg-surface-muted text-[9px]">Del</kbd> to delete</div>
+          </div>
+          <!-- C: No explicit menu -->
+          <div class="rounded-lg border border-border p-4">
+            <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-3">C. Help tooltip</div>
+            <div class="rounded bg-surface-muted p-3 text-xs text-foreground-secondary">
+              <div class="font-medium text-foreground mb-1">Tag shortcuts</div>
+              <div>Double-click to rename</div>
+              <div>Click + <kbd class="px-1 py-0.5 rounded bg-surface-subtle text-[9px]">Del</kbd> to delete</div>
+              <div>Right-click for more options</div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Zero visual noise — completely clean tag chips</div>
+          <div class="pro">+ Power-user friendly — keyboard-driven workflow</div>
+          <div class="con">- Completely undiscoverable — new users won't know gestures exist</div>
+          <div class="con">- Double-click conflicts with rapid selection on some systems</div>
+          <div class="con">- Mobile has no double-click or backspace key</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.getAttribute('data-theme') === 'dark' ? html.removeAttribute('data-theme') : html.setAttribute('data-theme', 'dark');
+    }
+  </script>
+</body>
+</html>

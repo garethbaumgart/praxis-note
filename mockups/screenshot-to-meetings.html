@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screenshot to Meetings Import - UX Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            'surface-hover': 'var(--color-surface-hover)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-hover': 'var(--color-primary-bg-hover)',
+            'accent-foreground': 'var(--color-primary-text)',
+            'accent-solid': 'var(--color-primary-solid)',
+            danger: 'var(--color-danger-base)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-surface-hover: #f8f9fa;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.25);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-danger-base: #bf616a;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f0f0; }
+    .option-card { background: white; border-radius: 12px; padding: 32px; margin-bottom: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .badge-rec { background: #a3be8c; color: white; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .badge-alt { background: #ebcb8b; color: #2e3440; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  </style>
+</head>
+<body class="p-8 max-w-5xl mx-auto">
+  <h1 class="text-3xl font-bold text-gray-800 mb-2">Screenshot to Meetings Import</h1>
+  <p class="text-gray-600 mb-8">5 design options for the calendar screenshot import dialog, triggered from the meetings page header.</p>
+
+  <!-- ===================== OPTION 1 ===================== -->
+  <div class="option-card">
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Option 1: Compact Modal with Drop Zone</h2>
+      <span class="badge-rec">Recommended</span>
+    </div>
+    <p class="text-gray-600 mb-1"><strong>Pros:</strong> Minimal, focused, matches existing dialog patterns. Drop zone doubles as paste target.</p>
+    <p class="text-gray-600 mb-6"><strong>Cons:</strong> Less visual guidance for first-time users.</p>
+
+    <!-- Upload State -->
+    <div class="bg-surface-subtle border border-border rounded-xl p-6 max-w-lg mx-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-semibold text-foreground">Import from Screenshot</h3>
+        <button class="text-foreground-muted hover:text-foreground"><i class="pi pi-times text-sm"></i></button>
+      </div>
+
+      <div class="border-2 border-dashed border-border-muted rounded-lg p-10 text-center cursor-pointer hover:border-accent-foreground hover:bg-accent/30 transition-colors">
+        <i class="pi pi-image text-4xl text-foreground-muted mb-3 block"></i>
+        <p class="text-sm text-foreground-secondary mb-1">Paste screenshot (Ctrl+V) or drag & drop</p>
+        <p class="text-xs text-foreground-muted">Supports PNG, JPG from any calendar app</p>
+      </div>
+
+      <div class="flex items-center gap-3 mt-4">
+        <div class="flex-1 border-t border-border-muted"></div>
+        <span class="text-xs text-foreground-muted">or</span>
+        <div class="flex-1 border-t border-border-muted"></div>
+      </div>
+
+      <button class="mt-4 w-full py-2 px-4 border border-border rounded-lg text-sm text-foreground-secondary hover:bg-surface-muted transition-colors">
+        <i class="pi pi-upload text-xs mr-2"></i>Choose File
+      </button>
+    </div>
+
+    <!-- Preview State (below) -->
+    <div class="bg-surface-subtle border border-border rounded-xl p-6 max-w-lg mx-auto mt-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-semibold text-foreground">Import from Screenshot</h3>
+        <button class="text-foreground-muted hover:text-foreground"><i class="pi pi-times text-sm"></i></button>
+      </div>
+
+      <p class="text-sm text-foreground-secondary mb-4">Found <strong>4 meetings</strong> in your screenshot:</p>
+
+      <div class="space-y-2 mb-5">
+        <label class="flex items-center gap-3 p-3 rounded-lg bg-surface-muted/50 hover:bg-surface-muted cursor-pointer">
+          <input type="checkbox" checked class="accent-accent-solid">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-foreground truncate">Sprint Planning</p>
+            <p class="text-xs text-foreground-muted">Wed, Feb 5 &middot; 9:00 AM - 10:00 AM</p>
+          </div>
+        </label>
+        <label class="flex items-center gap-3 p-3 rounded-lg bg-surface-muted/50 hover:bg-surface-muted cursor-pointer">
+          <input type="checkbox" checked class="accent-accent-solid">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-foreground truncate">1:1 with Sarah</p>
+            <p class="text-xs text-foreground-muted">Wed, Feb 5 &middot; 11:00 AM - 11:30 AM</p>
+          </div>
+        </label>
+        <label class="flex items-center gap-3 p-3 rounded-lg bg-surface-muted/50 hover:bg-surface-muted cursor-pointer">
+          <input type="checkbox" checked class="accent-accent-solid">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-foreground truncate">Design Review</p>
+            <p class="text-xs text-foreground-muted">Wed, Feb 5 &middot; 2:00 PM - 3:00 PM</p>
+          </div>
+        </label>
+        <label class="flex items-center gap-3 p-3 rounded-lg bg-surface-muted/50 hover:bg-surface-muted cursor-pointer opacity-50">
+          <input type="checkbox" class="accent-accent-solid">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-foreground truncate line-through">Team Standup</p>
+            <p class="text-xs text-foreground-muted">Wed, Feb 5 &middot; 9:30 AM - 9:45 AM</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button class="px-4 py-2 text-sm text-foreground-secondary border border-border rounded-lg hover:bg-surface-muted">Cancel</button>
+        <button class="px-4 py-2 text-sm text-white bg-accent-solid rounded-lg hover:bg-accent-solid/90">
+          <i class="pi pi-check text-xs mr-1"></i>Import 3 Meetings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== OPTION 2 ===================== -->
+  <div class="option-card">
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Option 2: Two-Panel Side-by-Side</h2>
+    </div>
+    <p class="text-gray-600 mb-1"><strong>Pros:</strong> Shows original screenshot alongside extracted results for easy verification.</p>
+    <p class="text-gray-600 mb-6"><strong>Cons:</strong> Requires wider dialog, less mobile-friendly.</p>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-6 max-w-3xl mx-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-semibold text-foreground">Import from Screenshot</h3>
+        <button class="text-foreground-muted hover:text-foreground"><i class="pi pi-times text-sm"></i></button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Left: Screenshot preview -->
+        <div>
+          <p class="text-xs text-foreground-muted mb-2 font-medium uppercase tracking-wide">Screenshot</p>
+          <div class="border border-border rounded-lg p-2 bg-surface-muted">
+            <div class="aspect-video bg-gradient-to-br from-blue-50 to-blue-100 rounded flex items-center justify-center">
+              <div class="text-center">
+                <i class="pi pi-calendar text-3xl text-blue-300 mb-2 block"></i>
+                <p class="text-xs text-blue-400">Calendar preview</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Extracted meetings -->
+        <div>
+          <p class="text-xs text-foreground-muted mb-2 font-medium uppercase tracking-wide">Extracted Meetings (4)</p>
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            <label class="flex items-center gap-2 p-2.5 rounded-lg bg-surface-muted/50 hover:bg-surface-muted cursor-pointer">
+              <input type="checkbox" checked class="accent-accent-solid">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground truncate">Sprint Planning</p>
+                <p class="text-xs text-foreground-muted">9:00 - 10:00 AM</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-lg bg-surface-muted/50 hover:bg-surface-muted cursor-pointer">
+              <input type="checkbox" checked class="accent-accent-solid">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground truncate">1:1 with Sarah</p>
+                <p class="text-xs text-foreground-muted">11:00 - 11:30 AM</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-lg bg-surface-muted/50 hover:bg-surface-muted cursor-pointer">
+              <input type="checkbox" checked class="accent-accent-solid">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground truncate">Design Review</p>
+                <p class="text-xs text-foreground-muted">2:00 - 3:00 PM</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-lg bg-surface-muted/50 hover:bg-surface-muted cursor-pointer">
+              <input type="checkbox" checked class="accent-accent-solid">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground truncate">Team Standup</p>
+                <p class="text-xs text-foreground-muted">9:30 - 9:45 AM</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-5 pt-4 border-t border-border-muted">
+        <button class="px-4 py-2 text-sm text-foreground-secondary border border-border rounded-lg hover:bg-surface-muted">Cancel</button>
+        <button class="px-4 py-2 text-sm text-white bg-accent-solid rounded-lg hover:bg-accent-solid/90">Import 4 Meetings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== OPTION 3 ===================== -->
+  <div class="option-card">
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Option 3: Stepper Wizard</h2>
+    </div>
+    <p class="text-gray-600 mb-1"><strong>Pros:</strong> Clear step-by-step flow, good for first-time users. Progress indicator adds confidence.</p>
+    <p class="text-gray-600 mb-6"><strong>Cons:</strong> More clicks, feels heavier for repeat users.</p>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-6 max-w-lg mx-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-semibold text-foreground">Import from Screenshot</h3>
+        <button class="text-foreground-muted hover:text-foreground"><i class="pi pi-times text-sm"></i></button>
+      </div>
+
+      <!-- Steps indicator -->
+      <div class="flex items-center gap-2 mb-6">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-accent-solid text-white text-xs flex items-center justify-center font-medium">1</span>
+          <span class="text-xs font-medium text-foreground">Upload</span>
+        </div>
+        <div class="flex-1 h-px bg-border-muted"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-surface-muted text-foreground-muted text-xs flex items-center justify-center font-medium">2</span>
+          <span class="text-xs text-foreground-muted">Review</span>
+        </div>
+        <div class="flex-1 h-px bg-border-muted"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-surface-muted text-foreground-muted text-xs flex items-center justify-center font-medium">3</span>
+          <span class="text-xs text-foreground-muted">Import</span>
+        </div>
+      </div>
+
+      <!-- Step 1 content -->
+      <div class="border-2 border-dashed border-border-muted rounded-lg p-8 text-center">
+        <i class="pi pi-camera text-4xl text-foreground-muted mb-3 block"></i>
+        <p class="text-sm font-medium text-foreground mb-1">Upload your calendar screenshot</p>
+        <p class="text-xs text-foreground-muted mb-4">Take a screenshot of your calendar and paste it here (Ctrl+V)</p>
+        <button class="px-4 py-2 text-sm text-accent-foreground bg-accent rounded-lg hover:bg-accent-hover">
+          <i class="pi pi-upload text-xs mr-1"></i>Browse Files
+        </button>
+      </div>
+
+      <div class="flex justify-end mt-5">
+        <button class="px-4 py-2 text-sm text-white bg-accent-solid rounded-lg hover:bg-accent-solid/90 opacity-50 cursor-not-allowed">
+          Next <i class="pi pi-arrow-right text-xs ml-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== OPTION 4 ===================== -->
+  <div class="option-card">
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Option 4: Inline Expandable Panel</h2>
+    </div>
+    <p class="text-gray-600 mb-1"><strong>Pros:</strong> No dialog overlay, stays in context of the meetings page. Feels lightweight.</p>
+    <p class="text-gray-600 mb-6"><strong>Cons:</strong> Pushes content down, can feel jarring on small screens.</p>
+
+    <!-- Simulated meetings page header -->
+    <div class="bg-surface border border-border rounded-xl max-w-2xl mx-auto overflow-hidden">
+      <div class="p-4 border-b border-border-muted">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h3 class="text-base font-semibold text-foreground">Meetings</h3>
+            <span class="text-sm text-foreground-muted">12 meetings</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted text-foreground-secondary border border-border rounded-md text-sm hover:bg-surface-hover">
+              <i class="pi pi-image text-xs"></i>Import
+            </button>
+            <button class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm">
+              <i class="pi pi-plus text-xs"></i>New Meeting
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expanded import panel -->
+      <div class="p-4 bg-accent/20 border-b border-border-muted">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-image text-sm text-accent-foreground"></i>
+            <span class="text-sm font-medium text-foreground">Import from calendar screenshot</span>
+          </div>
+          <button class="text-foreground-muted hover:text-foreground"><i class="pi pi-times text-xs"></i></button>
+        </div>
+        <div class="border-2 border-dashed border-accent-foreground/30 rounded-lg p-6 text-center bg-surface-subtle/50">
+          <i class="pi pi-image text-2xl text-foreground-muted mb-2 block"></i>
+          <p class="text-sm text-foreground-secondary">Paste screenshot (Ctrl+V) or drag & drop</p>
+        </div>
+      </div>
+
+      <!-- Existing meeting rows (dimmed) -->
+      <div class="p-4 opacity-50">
+        <div class="py-3 border-b border-border-muted">
+          <p class="text-sm text-foreground">Sprint Planning</p>
+          <p class="text-xs text-foreground-muted">Today &middot; 9:00 AM</p>
+        </div>
+        <div class="py-3">
+          <p class="text-sm text-foreground">1:1 with Sarah</p>
+          <p class="text-xs text-foreground-muted">Today &middot; 11:00 AM</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== OPTION 5 ===================== -->
+  <div class="option-card">
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Option 5: Full-Height Slide-Over Panel</h2>
+    </div>
+    <p class="text-gray-600 mb-1"><strong>Pros:</strong> Maximum space for screenshot preview + results. Feels like a dedicated tool.</p>
+    <p class="text-gray-600 mb-6"><strong>Cons:</strong> Heavier UI pattern, may feel disconnected from the meetings list.</p>
+
+    <div class="bg-gray-900/20 rounded-xl p-6 max-w-4xl mx-auto relative" style="min-height: 400px;">
+      <!-- Dimmed background (meetings page) -->
+      <div class="absolute inset-0 rounded-xl bg-surface opacity-30"></div>
+
+      <!-- Slide-over panel -->
+      <div class="relative ml-auto w-96 bg-surface-subtle border border-border rounded-xl shadow-xl" style="min-height: 360px;">
+        <div class="p-5 border-b border-border-muted">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold text-foreground">Import Meetings</h3>
+            <button class="text-foreground-muted hover:text-foreground"><i class="pi pi-times text-sm"></i></button>
+          </div>
+          <p class="text-xs text-foreground-muted mt-1">Extract meetings from a calendar screenshot</p>
+        </div>
+
+        <div class="p-5">
+          <!-- Image preview -->
+          <div class="border border-border rounded-lg p-2 mb-4 bg-surface-muted">
+            <div class="aspect-video bg-gradient-to-br from-blue-50 to-blue-100 rounded flex items-center justify-center">
+              <p class="text-xs text-blue-400">Screenshot loaded</p>
+            </div>
+          </div>
+
+          <!-- Extract button -->
+          <button class="w-full py-2.5 px-4 bg-accent-solid text-white rounded-lg text-sm font-medium hover:bg-accent-solid/90 mb-4">
+            <i class="pi pi-sparkles text-xs mr-1"></i>Extract Meetings
+          </button>
+
+          <!-- Results would appear here -->
+          <div class="border-t border-border-muted pt-4">
+            <p class="text-xs text-foreground-muted text-center">Results will appear here after extraction</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== RECOMMENDATION ===================== -->
+  <div class="option-card" style="border-left: 4px solid #a3be8c;">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Recommendation: Option 1</h2>
+    <ul class="text-gray-600 space-y-2">
+      <li><strong>Why:</strong> Matches existing PrimeNG dialog patterns used elsewhere in the app. Compact and focused with clear progression from upload to preview.</li>
+      <li><strong>Drop zone + paste</strong> covers both primary workflows (screenshot paste and file upload) without extra UI complexity.</li>
+      <li><strong>Checkbox preview</strong> lets users deselect irrelevant meetings before importing, with a clear "Import N Meetings" CTA showing the count.</li>
+      <li><strong>Mobile-friendly:</strong> Single column layout works well on all screen sizes.</li>
+    </ul>
+  </div>
+</body>
+</html>

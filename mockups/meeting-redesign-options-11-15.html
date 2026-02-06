@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Redesign - Options 11-15</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <style>
+    :root {
+      --color-bg-base: #fafaf8; --color-bg-subtle: #ffffff; --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440; --color-text-secondary: #4c566a; --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0; --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15); --color-primary-text: #5e81ac; --color-primary-solid: #5e81ac;
+      --color-done-text: #a3be8c; --color-danger-base: #bf616a;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933; --color-bg-subtle: #2e3440; --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4; --color-text-secondary: #d8dee9; --color-text-muted: #4c566a;
+      --color-border-default: #3b4252; --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2); --color-primary-text: #88c0d0; --color-primary-solid: #5e81ac;
+      --color-done-text: #a3be8c; --color-danger-base: #bf616a;
+    }
+    .pi { font-size: inherit !important; }
+    .option-section { border: 2px solid var(--color-border-default); border-radius: 12px; padding: 24px; margin-bottom: 48px; }
+    .option-number { width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary-solid); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+    .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border-muted); }
+    .theme-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+    @media (max-width: 1200px) { .theme-pair { grid-template-columns: 1fr; } }
+    .theme-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 6px; display: inline-block; margin-bottom: 8px; }
+    .mock-frame { border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border-default); }
+    .light-mock { background: #fafaf8; color: #2e3440; }
+    .light-mock .m-input { background: #eceff4; border: 1px solid #e5e9f0; color: #2e3440; }
+    .dark-mock { background: #242933; color: #eceff4; }
+    .dark-mock .m-input { background: #3b4252; border: 1px solid #3b4252; color: #eceff4; }
+  </style>
+</head>
+<body style="background: var(--color-bg-base); color: var(--color-text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+<div style="max-width: 1400px; margin: 0 auto; padding: 32px 24px;">
+
+  <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">Meeting Redesign - Options 11-15</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 40px; font-size: 14px;">
+    <a href="meeting-redesign-options-1-5.html" style="color: var(--color-primary-text);">Options 1-5</a> |
+    <a href="meeting-redesign-options-6-10.html" style="color: var(--color-primary-text);">Options 6-10</a> |
+    Options 11-15 |
+    <a href="meeting-redesign-options-16-20.html" style="color: var(--color-primary-text);">Options 16-20</a>
+  </p>
+
+  <!-- ========== OPTION 11 ========== -->
+  <div class="option-section">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+      <div class="option-number">11</div>
+      <h2 style="font-size: 20px; font-weight: 600; margin: 0;">Kanban-Style Status Columns</h2>
+    </div>
+    <p style="color: var(--color-text-secondary); margin-bottom: 16px;">Meetings organized in kanban columns by status (Draft, Processing, Ready, Reviewed) - exactly like the tasks page. Each meeting is a card that opens full-page on click. Status colors match tasks perfectly.</p>
+
+    <div class="theme-pair">
+      <div>
+        <div class="theme-label" style="background: #eceff4; color: #4c566a;">Light</div>
+        <div class="mock-frame light-mock" style="min-height: 380px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 18px; font-weight: 700; margin: 0;">Meetings</h2>
+            <div style="display: flex; gap: 8px;">
+              <input class="m-input" style="border-radius: 6px; padding: 6px 10px; font-size: 12px; width: 180px;" placeholder="Search... (/)">
+              <button style="background: #5e81ac; color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer;">+ New</button>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+            <!-- Draft column -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; background: rgba(136, 192, 208, 0.12); border-radius: 6px;">
+                <span style="font-size: 12px; font-weight: 600; color: #0b7285;">Draft</span>
+                <span style="font-size: 10px; background: rgba(136, 192, 208, 0.3); color: #0b7285; padding: 1px 6px; border-radius: 9999px;">2</span>
+              </div>
+              <div style="background: #ffffff; border: 1px solid #e5e9f0; border-left: 3px solid rgba(136, 192, 208, 0.8); border-radius: 6px; padding: 10px; margin-bottom: 8px; cursor: pointer;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Sprint Planning</div>
+                <div style="font-size: 11px; color: #7b88a1;">9:00 AM &bull; Today</div>
+                <div style="font-size: 11px; color: #7b88a1; margin-top: 2px;">Alice, Bob, Charlie</div>
+              </div>
+              <div style="background: #ffffff; border: 1px solid #e5e9f0; border-left: 3px solid rgba(136, 192, 208, 0.8); border-radius: 6px; padding: 10px; cursor: pointer;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">1:1 with Manager</div>
+                <div style="font-size: 11px; color: #7b88a1;">3:00 PM &bull; Tomorrow</div>
+              </div>
+            </div>
+            <!-- Processing column -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; background: rgba(208, 135, 112, 0.1); border-radius: 6px;">
+                <span style="font-size: 12px; font-weight: 600; color: #d08770;">Processing</span>
+                <span style="font-size: 10px; background: rgba(208, 135, 112, 0.2); color: #d08770; padding: 1px 6px; border-radius: 9999px;">1</span>
+              </div>
+              <div style="background: #ffffff; border: 1px solid #e5e9f0; border-left: 3px solid rgba(208, 135, 112, 0.6); border-radius: 6px; padding: 10px; cursor: pointer;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Design Review</div>
+                <div style="font-size: 11px; color: #7b88a1;">2:00 PM &bull; Today</div>
+                <div style="font-size: 11px; color: #d08770; margin-top: 4px;"><i class="pi pi-spin pi-spinner" style="font-size: 10px;"></i> Transcribing...</div>
+              </div>
+            </div>
+            <!-- Ready column -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; background: rgba(163, 190, 140, 0.1); border-radius: 6px;">
+                <span style="font-size: 12px; font-weight: 600; color: #a3be8c;">Ready</span>
+                <span style="font-size: 10px; background: rgba(163, 190, 140, 0.2); color: #a3be8c; padding: 1px 6px; border-radius: 9999px;">1</span>
+              </div>
+              <div style="background: #ffffff; border: 1px solid #e5e9f0; border-left: 3px solid rgba(163, 190, 140, 0.6); border-radius: 6px; padding: 10px; cursor: pointer;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Standup</div>
+                <div style="font-size: 11px; color: #7b88a1;">Yesterday &bull; 9:30 AM</div>
+                <div style="font-size: 11px; color: #a3be8c; margin-top: 4px;"><i class="pi pi-file-edit" style="font-size: 10px;"></i> Transcript ready</div>
+              </div>
+            </div>
+            <!-- Reviewed column -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; background: rgba(180, 142, 173, 0.1); border-radius: 6px;">
+                <span style="font-size: 12px; font-weight: 600; color: #b48ead;">Reviewed</span>
+                <span style="font-size: 10px; background: rgba(180, 142, 173, 0.2); color: #b48ead; padding: 1px 6px; border-radius: 9999px;">1</span>
+              </div>
+              <div style="background: #ffffff; border: 1px solid #e5e9f0; border-left: 3px solid rgba(180, 142, 173, 0.5); border-radius: 6px; padding: 10px; cursor: pointer; opacity: 0.7;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Retro</div>
+                <div style="font-size: 11px; color: #7b88a1;">2 days ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="theme-label" style="background: #3b4252; color: #d8dee9;">Dark</div>
+        <div class="mock-frame dark-mock" style="min-height: 380px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 18px; font-weight: 700; margin: 0;">Meetings</h2>
+            <div style="display: flex; gap: 8px;">
+              <input class="m-input" style="border-radius: 6px; padding: 6px 10px; font-size: 12px; width: 180px;" placeholder="Search... (/)">
+              <button style="background: #5e81ac; color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer;">+ New</button>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; background: rgba(136, 192, 208, 0.12); border-radius: 6px;">
+                <span style="font-size: 12px; font-weight: 600; color: #88c0d0;">Draft</span>
+                <span style="font-size: 10px; background: rgba(136, 192, 208, 0.25); color: #88c0d0; padding: 1px 6px; border-radius: 9999px;">2</span>
+              </div>
+              <div style="background: #2e3440; border: 1px solid #3b4252; border-left: 3px solid rgba(136, 192, 208, 0.5); border-radius: 6px; padding: 10px; margin-bottom: 8px; cursor: pointer;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Sprint Planning</div>
+                <div style="font-size: 11px; color: #4c566a;">9:00 AM &bull; Today</div>
+                <div style="font-size: 11px; color: #4c566a; margin-top: 2px;">Alice, Bob, Charlie</div>
+              </div>
+              <div style="background: #2e3440; border: 1px solid #3b4252; border-left: 3px solid rgba(136, 192, 208, 0.5); border-radius: 6px; padding: 10px; cursor: pointer;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">1:1 with Manager</div>
+                <div style="font-size: 11px; color: #4c566a;">3:00 PM &bull; Tomorrow</div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; background: rgba(208, 135, 112, 0.1); border-radius: 6px;">
+                <span style="font-size: 12px; font-weight: 600; color: #d08770;">Processing</span>
+                <span style="font-size: 10px; background: rgba(208, 135, 112, 0.15); color: #d08770; padding: 1px 6px; border-radius: 9999px;">1</span>
+              </div>
+              <div style="background: #2e3440; border: 1px solid #3b4252; border-left: 3px solid rgba(208, 135, 112, 0.4); border-radius: 6px; padding: 10px; cursor: pointer;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Design Review</div>
+                <div style="font-size: 11px; color: #4c566a;">2:00 PM &bull; Today</div>
+                <div style="font-size: 11px; color: #d08770; margin-top: 4px;"><i class="pi pi-spin pi-spinner" style="font-size: 10px;"></i> Transcribing...</div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; background: rgba(163, 190, 140, 0.1); border-radius: 6px;">
+                <span style="font-size: 12px; font-weight: 600; color: #a3be8c;">Ready</span>
+                <span style="font-size: 10px; background: rgba(163, 190, 140, 0.15); color: #a3be8c; padding: 1px 6px; border-radius: 9999px;">1</span>
+              </div>
+              <div style="background: #2e3440; border: 1px solid #3b4252; border-left: 3px solid rgba(163, 190, 140, 0.4); border-radius: 6px; padding: 10px; cursor: pointer;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Standup</div>
+                <div style="font-size: 11px; color: #4c566a;">Yesterday &bull; 9:30 AM</div>
+                <div style="font-size: 11px; color: #a3be8c; margin-top: 4px;"><i class="pi pi-file-edit" style="font-size: 10px;"></i> Transcript ready</div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; background: rgba(180, 142, 173, 0.1); border-radius: 6px;">
+                <span style="font-size: 12px; font-weight: 600; color: #b48ead;">Reviewed</span>
+                <span style="font-size: 10px; background: rgba(180, 142, 173, 0.15); color: #b48ead; padding: 1px 6px; border-radius: 9999px;">1</span>
+              </div>
+              <div style="background: #2e3440; border: 1px solid #3b4252; border-left: 3px solid rgba(180, 142, 173, 0.3); border-radius: 6px; padding: 10px; cursor: pointer; opacity: 0.7;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Retro</div>
+                <div style="font-size: 11px; color: #4c566a;">2 days ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <div><h4 style="color: var(--color-done-text); margin: 0 0 8px;"><i class="pi pi-check-circle" style="font-size: 14px;"></i> Pros</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Maximum consistency with tasks page</li><li>Status workflow is visually obvious</li><li>Familiar pattern for existing users</li></ul></div>
+      <div><h4 style="color: var(--color-danger-base); margin: 0 0 8px;"><i class="pi pi-times-circle" style="font-size: 14px;"></i> Cons</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Meetings are time-based, not status-based workflow</li><li>4 columns may be sparse with few meetings</li><li>Loses chronological ordering</li></ul></div>
+    </div>
+  </div>
+
+  <!-- ========== OPTION 12 ========== -->
+  <div class="option-section">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+      <div class="option-number">12</div>
+      <h2 style="font-size: 20px; font-weight: 600; margin: 0;">Minimalist Full Page - Content First</h2>
+    </div>
+    <p style="color: var(--color-text-secondary); margin-bottom: 16px;">Ultra-clean full-page editor. No labels, no sections. Just the title, a subtle metadata line, and the transcript area filling the rest. Like a focused writing tool. Actions tucked into a floating toolbar.</p>
+
+    <div class="theme-pair">
+      <div>
+        <div class="theme-label" style="background: #eceff4; color: #4c566a;">Light</div>
+        <div class="mock-frame light-mock" style="min-height: 400px; display: flex; flex-direction: column;">
+          <div style="padding: 10px 24px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #5e81ac; cursor: pointer; font-size: 13px;"><i class="pi pi-arrow-left" style="font-size: 12px;"></i> Back</span>
+            <div style="display: flex; gap: 6px;">
+              <button style="background: transparent; border: none; color: #7b88a1; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 13px;" title="Record"><i class="pi pi-microphone" style="font-size: 14px;"></i></button>
+              <button style="background: transparent; border: none; color: #7b88a1; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 13px;" title="AI"><i class="pi pi-sparkles" style="font-size: 14px;"></i></button>
+              <button style="background: transparent; border: none; color: #7b88a1; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 13px;" title="Delete"><i class="pi pi-trash" style="font-size: 14px;"></i></button>
+            </div>
+          </div>
+          <div style="flex: 1; padding: 16px 48px; max-width: 720px; margin: 0 auto; width: 100%; box-sizing: border-box;">
+            <input style="font-size: 28px; font-weight: 700; border: none; background: transparent; padding: 0; width: 100%; outline: none; color: #2e3440; margin-bottom: 8px;" value="Sprint Planning">
+            <div style="font-size: 13px; color: #7b88a1; margin-bottom: 24px; display: flex; gap: 16px;">
+              <span>Jan 30, 2026 &bull; 9:00 AM</span>
+              <span>Alice, Bob, Charlie</span>
+              <span style="color: #0b7285;">Draft</span>
+            </div>
+            <div style="border-top: 1px solid #e5e9f0; padding-top: 20px; font-size: 14px; line-height: 2; color: #4c566a;">
+              <div style="margin-bottom: 12px;"><strong style="color: #5e81ac;">Alice:</strong> Let's review the sprint backlog and see where we stand on the current iteration. I think we have some items that need re-estimation.</div>
+              <div style="margin-bottom: 12px;"><strong style="color: #d08770;">Bob:</strong> I've completed the authentication module. All unit tests are passing and the integration tests look good too.</div>
+              <div><strong style="color: #a3be8c;">Charlie:</strong> The design system needs updating for the new components we discussed last week. I'll need another day on that.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="theme-label" style="background: #3b4252; color: #d8dee9;">Dark</div>
+        <div class="mock-frame dark-mock" style="min-height: 400px; display: flex; flex-direction: column;">
+          <div style="padding: 10px 24px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #88c0d0; cursor: pointer; font-size: 13px;"><i class="pi pi-arrow-left" style="font-size: 12px;"></i> Back</span>
+            <div style="display: flex; gap: 6px;">
+              <button style="background: transparent; border: none; color: #4c566a; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 13px;"><i class="pi pi-microphone" style="font-size: 14px;"></i></button>
+              <button style="background: transparent; border: none; color: #4c566a; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 13px;"><i class="pi pi-sparkles" style="font-size: 14px;"></i></button>
+              <button style="background: transparent; border: none; color: #4c566a; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 13px;"><i class="pi pi-trash" style="font-size: 14px;"></i></button>
+            </div>
+          </div>
+          <div style="flex: 1; padding: 16px 48px; max-width: 720px; margin: 0 auto; width: 100%; box-sizing: border-box;">
+            <input style="font-size: 28px; font-weight: 700; border: none; background: transparent; padding: 0; width: 100%; outline: none; color: #eceff4; margin-bottom: 8px;" value="Sprint Planning">
+            <div style="font-size: 13px; color: #4c566a; margin-bottom: 24px; display: flex; gap: 16px;">
+              <span>Jan 30, 2026 &bull; 9:00 AM</span>
+              <span>Alice, Bob, Charlie</span>
+              <span style="color: #88c0d0;">Draft</span>
+            </div>
+            <div style="border-top: 1px solid #3b4252; padding-top: 20px; font-size: 14px; line-height: 2; color: #d8dee9;">
+              <div style="margin-bottom: 12px;"><strong style="color: #88c0d0;">Alice:</strong> Let's review the sprint backlog and see where we stand on the current iteration.</div>
+              <div style="margin-bottom: 12px;"><strong style="color: #d08770;">Bob:</strong> I've completed the authentication module. All unit tests are passing.</div>
+              <div><strong style="color: #a3be8c;">Charlie:</strong> The design system needs updating for the new components.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <div><h4 style="color: var(--color-done-text); margin: 0 0 8px;"><i class="pi pi-check-circle" style="font-size: 14px;"></i> Pros</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Maximum focus on transcript content</li><li>Beautiful reading experience</li><li>Extremely clean and distraction-free</li></ul></div>
+      <div><h4 style="color: var(--color-danger-base); margin: 0 0 8px;"><i class="pi pi-times-circle" style="font-size: 14px;"></i> Cons</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Editing metadata requires additional interaction</li><li>May feel too sparse compared to other pages</li><li>Doesn't use task-style input backgrounds</li></ul></div>
+    </div>
+  </div>
+
+  <!-- ========== OPTION 13 ========== -->
+  <div class="option-section">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+      <div class="option-number">13</div>
+      <h2 style="font-size: 20px; font-weight: 600; margin: 0;">Top Metadata Strip + Full Transcript Below</h2>
+    </div>
+    <p style="color: var(--color-text-secondary); margin-bottom: 16px;">Horizontal metadata strip at the top with editable fields in a single row. Below it, the transcript fills the remaining space. Actions in the strip. Compact but still editable.</p>
+
+    <div class="theme-pair">
+      <div>
+        <div class="theme-label" style="background: #eceff4; color: #4c566a;">Light</div>
+        <div class="mock-frame light-mock" style="min-height: 400px; display: flex; flex-direction: column;">
+          <!-- Back nav -->
+          <div style="padding: 8px 24px; font-size: 13px;">
+            <span style="color: #5e81ac; cursor: pointer;"><i class="pi pi-arrow-left" style="font-size: 12px;"></i> Meetings</span>
+          </div>
+          <!-- Metadata strip -->
+          <div style="padding: 12px 24px; background: #ffffff; border-top: 1px solid #e5e9f0; border-bottom: 1px solid #e5e9f0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <input class="m-input" style="border-radius: 6px; padding: 6px 10px; font-size: 15px; font-weight: 700; flex: 1; min-width: 200px; box-sizing: border-box;" value="Sprint Planning">
+            <input class="m-input" style="border-radius: 6px; padding: 6px 10px; font-size: 12px; width: 140px; box-sizing: border-box;" value="Jan 30, 9:00 AM">
+            <input class="m-input" style="border-radius: 6px; padding: 6px 10px; font-size: 12px; width: 180px; box-sizing: border-box;" value="Alice, Bob, Charlie">
+            <span style="font-size: 11px; padding: 4px 10px; border-radius: 6px; background: rgba(136, 192, 208, 0.12); color: #0b7285; cursor: pointer;">Draft</span>
+            <div style="display: flex; gap: 4px; margin-left: auto;">
+              <button style="background: rgba(136, 192, 208, 0.12); color: #0b7285; border: 1px solid rgba(136, 192, 208, 0.35); border-radius: 5px; padding: 5px 10px; font-size: 11px; cursor: pointer;"><i class="pi pi-microphone" style="font-size: 11px;"></i></button>
+              <button style="background: rgba(94, 129, 172, 0.15); color: #5e81ac; border: 1px solid rgba(94, 129, 172, 0.25); border-radius: 5px; padding: 5px 10px; font-size: 11px; cursor: pointer;"><i class="pi pi-sparkles" style="font-size: 11px;"></i></button>
+              <button style="background: white; color: #bf616a; border: 1px solid #e5e9f0; border-radius: 5px; padding: 5px 10px; font-size: 11px; cursor: pointer;"><i class="pi pi-trash" style="font-size: 11px;"></i></button>
+            </div>
+          </div>
+          <!-- Transcript fills rest -->
+          <div style="flex: 1; padding: 24px; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box;">
+            <div style="background: #eceff4; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.9; color: #4c566a; min-height: 230px;">
+              <div style="margin-bottom: 10px;"><strong style="color: #5e81ac;">Alice:</strong> Let's review the sprint backlog and see where we stand on the current iteration.</div>
+              <div style="margin-bottom: 10px;"><strong style="color: #d08770;">Bob:</strong> I've completed the authentication module. All unit tests are passing and integration tests look good.</div>
+              <div><strong style="color: #a3be8c;">Charlie:</strong> The design system needs updating for the new components we discussed last week.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="theme-label" style="background: #3b4252; color: #d8dee9;">Dark</div>
+        <div class="mock-frame dark-mock" style="min-height: 400px; display: flex; flex-direction: column;">
+          <div style="padding: 8px 24px; font-size: 13px;">
+            <span style="color: #88c0d0; cursor: pointer;"><i class="pi pi-arrow-left" style="font-size: 12px;"></i> Meetings</span>
+          </div>
+          <div style="padding: 12px 24px; background: #2e3440; border-top: 1px solid #3b4252; border-bottom: 1px solid #3b4252; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <input class="m-input" style="border-radius: 6px; padding: 6px 10px; font-size: 15px; font-weight: 700; flex: 1; min-width: 200px; box-sizing: border-box;" value="Sprint Planning">
+            <input class="m-input" style="border-radius: 6px; padding: 6px 10px; font-size: 12px; width: 140px; box-sizing: border-box;" value="Jan 30, 9:00 AM">
+            <input class="m-input" style="border-radius: 6px; padding: 6px 10px; font-size: 12px; width: 180px; box-sizing: border-box;" value="Alice, Bob, Charlie">
+            <span style="font-size: 11px; padding: 4px 10px; border-radius: 6px; background: rgba(136, 192, 208, 0.12); color: #88c0d0; cursor: pointer;">Draft</span>
+            <div style="display: flex; gap: 4px; margin-left: auto;">
+              <button style="background: rgba(136, 192, 208, 0.12); color: #88c0d0; border: 1px solid rgba(136, 192, 208, 0.25); border-radius: 5px; padding: 5px 10px; font-size: 11px; cursor: pointer;"><i class="pi pi-microphone" style="font-size: 11px;"></i></button>
+              <button style="background: rgba(94, 129, 172, 0.2); color: #88c0d0; border: 1px solid rgba(94, 129, 172, 0.3); border-radius: 5px; padding: 5px 10px; font-size: 11px; cursor: pointer;"><i class="pi pi-sparkles" style="font-size: 11px;"></i></button>
+              <button style="background: #2e3440; color: #bf616a; border: 1px solid #3b4252; border-radius: 5px; padding: 5px 10px; font-size: 11px; cursor: pointer;"><i class="pi pi-trash" style="font-size: 11px;"></i></button>
+            </div>
+          </div>
+          <div style="flex: 1; padding: 24px; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box;">
+            <div style="background: #3b4252; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.9; color: #d8dee9; min-height: 230px;">
+              <div style="margin-bottom: 10px;"><strong style="color: #88c0d0;">Alice:</strong> Let's review the sprint backlog and see where we stand.</div>
+              <div style="margin-bottom: 10px;"><strong style="color: #d08770;">Bob:</strong> I've completed the auth module. All tests passing.</div>
+              <div><strong style="color: #a3be8c;">Charlie:</strong> The design system needs updating.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <div><h4 style="color: var(--color-done-text); margin: 0 0 8px;"><i class="pi pi-check-circle" style="font-size: 14px;"></i> Pros</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>All metadata editable inline - no separate forms</li><li>Transcript gets maximum vertical space</li><li>Input backgrounds match task styling</li></ul></div>
+      <div><h4 style="color: var(--color-danger-base); margin: 0 0 8px;"><i class="pi pi-times-circle" style="font-size: 14px;"></i> Cons</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Horizontal strip can feel cramped on narrow screens</li><li>Fixed-width inputs may truncate content</li></ul></div>
+    </div>
+  </div>
+
+  <!-- ========== OPTION 14 ========== -->
+  <div class="option-section">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+      <div class="option-number">14</div>
+      <h2 style="font-size: 20px; font-weight: 600; margin: 0;">Card-Based Meeting List (Notes-Style Grid)</h2>
+    </div>
+    <p style="color: var(--color-text-secondary); margin-bottom: 16px;">Meetings displayed in a masonry/grid layout identical to the notes page. Each card shows a snippet of the transcript as preview. Clicking navigates to full-page editor. Cards have status-colored top borders.</p>
+
+    <div class="theme-pair">
+      <div>
+        <div class="theme-label" style="background: #eceff4; color: #4c566a;">Light</div>
+        <div class="mock-frame light-mock" style="min-height: 380px; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 18px; font-weight: 700; margin: 0;">Meetings <span style="font-size: 13px; color: #7b88a1; font-weight: 400;">4</span></h2>
+            <button style="background: #5e81ac; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer;">+ New Meeting</button>
+          </div>
+          <input class="m-input" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px; box-sizing: border-box; margin-bottom: 16px;" placeholder="Search meetings... (/)">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+            <!-- Card with transcript preview -->
+            <div style="background: #ffffff; border: 1px solid #e5e9f0; border-top: 3px solid rgba(136, 192, 208, 0.8); border-radius: 8px; padding: 14px; cursor: pointer;">
+              <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Sprint Planning</div>
+              <div style="font-size: 11px; color: #7b88a1; margin-bottom: 8px;">Today &bull; 9:00 AM</div>
+              <div style="font-size: 12px; color: #4c566a; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                Alice: Let's review the sprint backlog and see where we stand on the current iteration...
+              </div>
+              <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 4px;">
+                  <span style="background: rgba(163, 190, 140, 0.5); color: #4a6638; padding: 1px 6px; border-radius: 3px; font-size: 10px;">sprint</span>
+                </div>
+                <span style="font-size: 10px; color: #0b7285;">Draft</span>
+              </div>
+            </div>
+            <div style="background: #ffffff; border: 1px solid #e5e9f0; border-top: 3px solid rgba(208, 135, 112, 0.6); border-radius: 8px; padding: 14px; cursor: pointer;">
+              <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Design Review</div>
+              <div style="font-size: 11px; color: #7b88a1; margin-bottom: 8px;">Today &bull; 2:00 PM</div>
+              <div style="font-size: 12px; color: #d08770; line-height: 1.5;">
+                <i class="pi pi-spin pi-spinner" style="font-size: 11px;"></i> Transcribing audio...
+              </div>
+              <div style="margin-top: 8px; text-align: right;">
+                <span style="font-size: 10px; color: #d08770;">Processing</span>
+              </div>
+            </div>
+            <div style="background: #ffffff; border: 1px solid #e5e9f0; border-top: 3px solid rgba(163, 190, 140, 0.6); border-radius: 8px; padding: 14px; cursor: pointer;">
+              <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Standup</div>
+              <div style="font-size: 11px; color: #7b88a1; margin-bottom: 8px;">Yesterday &bull; 9:30 AM</div>
+              <div style="font-size: 12px; color: #4c566a; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                Team discussed blockers and progress. Main topics: API refactor status, testing coverage...
+              </div>
+              <div style="margin-top: 8px; text-align: right;">
+                <span style="font-size: 10px; color: #a3be8c;">Ready</span>
+              </div>
+            </div>
+            <!-- New meeting card (dashed) -->
+            <div style="border: 2px dashed #e5e9f0; border-radius: 8px; padding: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #7b88a1; min-height: 120px;">
+              <i class="pi pi-plus" style="font-size: 24px; margin-bottom: 8px;"></i>
+              <span style="font-size: 12px;">New Meeting</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="theme-label" style="background: #3b4252; color: #d8dee9;">Dark</div>
+        <div class="mock-frame dark-mock" style="min-height: 380px; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 18px; font-weight: 700; margin: 0;">Meetings <span style="font-size: 13px; color: #4c566a; font-weight: 400;">4</span></h2>
+            <button style="background: #5e81ac; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer;">+ New Meeting</button>
+          </div>
+          <input class="m-input" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px; box-sizing: border-box; margin-bottom: 16px;" placeholder="Search meetings... (/)">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+            <div style="background: #2e3440; border: 1px solid #3b4252; border-top: 3px solid rgba(136, 192, 208, 0.5); border-radius: 8px; padding: 14px; cursor: pointer;">
+              <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Sprint Planning</div>
+              <div style="font-size: 11px; color: #4c566a; margin-bottom: 8px;">Today &bull; 9:00 AM</div>
+              <div style="font-size: 12px; color: #d8dee9; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                Alice: Let's review the sprint backlog and see where we stand...
+              </div>
+              <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="background: rgba(163, 190, 140, 0.5); color: #a3be8c; padding: 1px 6px; border-radius: 3px; font-size: 10px;">sprint</span>
+                <span style="font-size: 10px; color: #88c0d0;">Draft</span>
+              </div>
+            </div>
+            <div style="background: #2e3440; border: 1px solid #3b4252; border-top: 3px solid rgba(208, 135, 112, 0.4); border-radius: 8px; padding: 14px; cursor: pointer;">
+              <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Design Review</div>
+              <div style="font-size: 11px; color: #4c566a; margin-bottom: 8px;">Today &bull; 2:00 PM</div>
+              <div style="font-size: 12px; color: #d08770; line-height: 1.5;"><i class="pi pi-spin pi-spinner" style="font-size: 11px;"></i> Transcribing...</div>
+              <div style="margin-top: 8px; text-align: right;"><span style="font-size: 10px; color: #d08770;">Processing</span></div>
+            </div>
+            <div style="background: #2e3440; border: 1px solid #3b4252; border-top: 3px solid rgba(163, 190, 140, 0.4); border-radius: 8px; padding: 14px; cursor: pointer;">
+              <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Standup</div>
+              <div style="font-size: 11px; color: #4c566a; margin-bottom: 8px;">Yesterday &bull; 9:30 AM</div>
+              <div style="font-size: 12px; color: #d8dee9; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                Team discussed blockers and progress. Main topics: API refactor...
+              </div>
+              <div style="margin-top: 8px; text-align: right;"><span style="font-size: 10px; color: #a3be8c;">Ready</span></div>
+            </div>
+            <div style="border: 2px dashed #3b4252; border-radius: 8px; padding: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4c566a; min-height: 120px;">
+              <i class="pi pi-plus" style="font-size: 24px; margin-bottom: 8px;"></i>
+              <span style="font-size: 12px;">New Meeting</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <div><h4 style="color: var(--color-done-text); margin: 0 0 8px;"><i class="pi pi-check-circle" style="font-size: 14px;"></i> Pros</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Mirrors notes page grid - consistency across app</li><li>Transcript previews give quick context</li><li>Top-border status colors are subtle and clean</li></ul></div>
+      <div><h4 style="color: var(--color-danger-base); margin: 0 0 8px;"><i class="pi pi-times-circle" style="font-size: 14px;"></i> Cons</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Chronological ordering less obvious than list</li><li>Grid may not suit time-based content as well as notes</li></ul></div>
+    </div>
+  </div>
+
+  <!-- ========== OPTION 15 ========== -->
+  <div class="option-section">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+      <div class="option-number">15</div>
+      <h2 style="font-size: 20px; font-weight: 600; margin: 0;">Sticky Sidebar Metadata + Scrolling Transcript</h2>
+    </div>
+    <p style="color: var(--color-text-secondary); margin-bottom: 16px;">Full-page editor where metadata is in a sticky sidebar that stays visible while the transcript scrolls independently. Sidebar contains all editable fields plus action buttons. Good for long transcripts.</p>
+
+    <div class="theme-pair">
+      <div>
+        <div class="theme-label" style="background: #eceff4; color: #4c566a;">Light</div>
+        <div class="mock-frame light-mock" style="min-height: 400px; display: flex; flex-direction: column;">
+          <div style="padding: 10px 24px; border-bottom: 1px solid #e5e9f0; display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+              <span style="color: #5e81ac; cursor: pointer;"><i class="pi pi-arrow-left" style="font-size: 12px;"></i> Meetings</span>
+              <span style="color: #7b88a1;">/</span>
+              <span style="font-weight: 600;">Sprint Planning</span>
+            </div>
+            <span style="color: #a3be8c; font-size: 12px;"><i class="pi pi-check" style="font-size: 11px;"></i> Saved</span>
+          </div>
+          <div style="flex: 1; display: flex;">
+            <!-- Scrolling transcript (main) -->
+            <div style="flex: 1; padding: 24px; overflow-y: auto;">
+              <input style="font-size: 22px; font-weight: 700; border: none; background: transparent; padding: 0; width: 100%; outline: none; color: #2e3440; margin-bottom: 16px;" value="Sprint Planning">
+              <div style="background: #eceff4; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 2; color: #4c566a; min-height: 280px;">
+                <div style="margin-bottom: 10px;"><strong style="color: #5e81ac;">Alice (0:00):</strong> Let's review the sprint backlog and see where we stand on the current iteration.</div>
+                <div style="margin-bottom: 10px;"><strong style="color: #d08770;">Bob (1:23):</strong> I've completed the authentication module. All unit tests are passing and the integration tests look good too.</div>
+                <div style="margin-bottom: 10px;"><strong style="color: #a3be8c;">Charlie (3:45):</strong> The design system needs updating for the new components we discussed last week. I'll need another day.</div>
+                <div style="margin-bottom: 10px;"><strong style="color: #5e81ac;">Alice (5:12):</strong> That's fine. Let's also look at the performance metrics from last release.</div>
+                <div><strong style="color: #d08770;">Bob (6:30):</strong> The metrics show a 15% improvement in load times after the optimization.</div>
+              </div>
+            </div>
+            <!-- Sticky sidebar -->
+            <div style="width: 220px; padding: 20px; border-left: 1px solid #e5e9f0; flex-shrink: 0; background: #ffffff;">
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #7b88a1; text-transform: uppercase; display: block; margin-bottom: 3px;">Date</label>
+                <input class="m-input" style="width: 100%; border-radius: 6px; padding: 6px 8px; font-size: 12px; box-sizing: border-box;" value="Jan 30, 2026">
+              </div>
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #7b88a1; text-transform: uppercase; display: block; margin-bottom: 3px;">Time</label>
+                <input class="m-input" style="width: 100%; border-radius: 6px; padding: 6px 8px; font-size: 12px; box-sizing: border-box;" value="9:00 AM">
+              </div>
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #7b88a1; text-transform: uppercase; display: block; margin-bottom: 3px;">Attendees</label>
+                <input class="m-input" style="width: 100%; border-radius: 6px; padding: 6px 8px; font-size: 12px; box-sizing: border-box;" value="Alice, Bob, Charlie">
+              </div>
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #7b88a1; text-transform: uppercase; display: block; margin-bottom: 3px;">Status</label>
+                <span style="font-size: 11px; padding: 3px 8px; border-radius: 4px; background: rgba(136, 192, 208, 0.12); color: #0b7285;">Draft</span>
+              </div>
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #7b88a1; text-transform: uppercase; display: block; margin-bottom: 3px;">Tags</label>
+                <div style="display: flex; gap: 3px; flex-wrap: wrap;">
+                  <span style="background: rgba(163, 190, 140, 0.5); color: #4a6638; padding: 1px 6px; border-radius: 3px; font-size: 10px;">sprint</span>
+                  <button style="border: 1px dashed #e5e9f0; background: transparent; border-radius: 3px; padding: 1px 4px; font-size: 10px; cursor: pointer; color: #7b88a1;">+</button>
+                </div>
+              </div>
+              <hr style="border: none; border-top: 1px solid #e5e9f0; margin: 14px 0;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <button style="background: rgba(136, 192, 208, 0.12); color: #0b7285; border: 1px solid rgba(136, 192, 208, 0.35); border-radius: 5px; padding: 6px; font-size: 11px; cursor: pointer; width: 100%;"><i class="pi pi-microphone" style="font-size: 11px;"></i> Record</button>
+                <button style="background: rgba(94, 129, 172, 0.15); color: #5e81ac; border: 1px solid rgba(94, 129, 172, 0.25); border-radius: 5px; padding: 6px; font-size: 11px; cursor: pointer; width: 100%;"><i class="pi pi-sparkles" style="font-size: 11px;"></i> AI Analysis</button>
+                <button style="background: white; color: #bf616a; border: 1px solid #e5e9f0; border-radius: 5px; padding: 6px; font-size: 11px; cursor: pointer; width: 100%;"><i class="pi pi-trash" style="font-size: 11px;"></i> Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="theme-label" style="background: #3b4252; color: #d8dee9;">Dark</div>
+        <div class="mock-frame dark-mock" style="min-height: 400px; display: flex; flex-direction: column;">
+          <div style="padding: 10px 24px; border-bottom: 1px solid #3b4252; display: flex; justify-content: space-between; align-items: center; background: #2e3440;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+              <span style="color: #88c0d0; cursor: pointer;"><i class="pi pi-arrow-left" style="font-size: 12px;"></i> Meetings</span>
+              <span style="color: #4c566a;">/</span>
+              <span style="font-weight: 600;">Sprint Planning</span>
+            </div>
+            <span style="color: #a3be8c; font-size: 12px;"><i class="pi pi-check" style="font-size: 11px;"></i> Saved</span>
+          </div>
+          <div style="flex: 1; display: flex;">
+            <div style="flex: 1; padding: 24px; overflow-y: auto;">
+              <input style="font-size: 22px; font-weight: 700; border: none; background: transparent; padding: 0; width: 100%; outline: none; color: #eceff4; margin-bottom: 16px;" value="Sprint Planning">
+              <div style="background: #3b4252; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 2; color: #d8dee9; min-height: 280px;">
+                <div style="margin-bottom: 10px;"><strong style="color: #88c0d0;">Alice (0:00):</strong> Let's review the sprint backlog and see where we stand.</div>
+                <div style="margin-bottom: 10px;"><strong style="color: #d08770;">Bob (1:23):</strong> I've completed the auth module. All tests passing.</div>
+                <div style="margin-bottom: 10px;"><strong style="color: #a3be8c;">Charlie (3:45):</strong> Design system needs updating for the new components.</div>
+                <div style="margin-bottom: 10px;"><strong style="color: #88c0d0;">Alice (5:12):</strong> Let's also look at the performance metrics.</div>
+                <div><strong style="color: #d08770;">Bob (6:30):</strong> Metrics show 15% improvement in load times.</div>
+              </div>
+            </div>
+            <div style="width: 220px; padding: 20px; border-left: 1px solid #3b4252; flex-shrink: 0; background: #2e3440;">
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #4c566a; text-transform: uppercase; display: block; margin-bottom: 3px;">Date</label>
+                <input class="m-input" style="width: 100%; border-radius: 6px; padding: 6px 8px; font-size: 12px; box-sizing: border-box;" value="Jan 30, 2026">
+              </div>
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #4c566a; text-transform: uppercase; display: block; margin-bottom: 3px;">Time</label>
+                <input class="m-input" style="width: 100%; border-radius: 6px; padding: 6px 8px; font-size: 12px; box-sizing: border-box;" value="9:00 AM">
+              </div>
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #4c566a; text-transform: uppercase; display: block; margin-bottom: 3px;">Attendees</label>
+                <input class="m-input" style="width: 100%; border-radius: 6px; padding: 6px 8px; font-size: 12px; box-sizing: border-box;" value="Alice, Bob, Charlie">
+              </div>
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #4c566a; text-transform: uppercase; display: block; margin-bottom: 3px;">Status</label>
+                <span style="font-size: 11px; padding: 3px 8px; border-radius: 4px; background: rgba(136, 192, 208, 0.12); color: #88c0d0;">Draft</span>
+              </div>
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 10px; font-weight: 600; color: #4c566a; text-transform: uppercase; display: block; margin-bottom: 3px;">Tags</label>
+                <div style="display: flex; gap: 3px; flex-wrap: wrap;">
+                  <span style="background: rgba(163, 190, 140, 0.5); color: #a3be8c; padding: 1px 6px; border-radius: 3px; font-size: 10px;">sprint</span>
+                  <button style="border: 1px dashed #3b4252; background: transparent; border-radius: 3px; padding: 1px 4px; font-size: 10px; cursor: pointer; color: #4c566a;">+</button>
+                </div>
+              </div>
+              <hr style="border: none; border-top: 1px solid #3b4252; margin: 14px 0;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <button style="background: rgba(136, 192, 208, 0.12); color: #88c0d0; border: 1px solid rgba(136, 192, 208, 0.25); border-radius: 5px; padding: 6px; font-size: 11px; cursor: pointer; width: 100%;"><i class="pi pi-microphone" style="font-size: 11px;"></i> Record</button>
+                <button style="background: rgba(94, 129, 172, 0.2); color: #88c0d0; border: 1px solid rgba(94, 129, 172, 0.3); border-radius: 5px; padding: 6px; font-size: 11px; cursor: pointer; width: 100%;"><i class="pi pi-sparkles" style="font-size: 11px;"></i> AI Analysis</button>
+                <button style="background: #2e3440; color: #bf616a; border: 1px solid #3b4252; border-radius: 5px; padding: 6px; font-size: 11px; cursor: pointer; width: 100%;"><i class="pi pi-trash" style="font-size: 11px;"></i> Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <div><h4 style="color: var(--color-done-text); margin: 0 0 8px;"><i class="pi pi-check-circle" style="font-size: 14px;"></i> Pros</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Metadata always visible while scrolling transcript</li><li>Great for long meetings with timestamps</li><li>Right sidebar is less intrusive than left</li></ul></div>
+      <div><h4 style="color: var(--color-danger-base); margin: 0 0 8px;"><i class="pi pi-times-circle" style="font-size: 14px;"></i> Cons</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.8;"><li>Sidebar needs collapsing on mobile</li><li>Narrow sidebar limits field width</li></ul></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
