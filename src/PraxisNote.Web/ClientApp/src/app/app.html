@@ -132,7 +132,7 @@
 
 <!-- Global toast notifications -->
 <p-toast position="bottom-right">
-  <ng-template let-message pTemplate="message">
+  <ng-template #message let-message>
     <div class="toast-content">
       <div class="flex items-center gap-3 w-full px-4 py-3">
         @if (message.severity === 'success') {
