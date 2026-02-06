@@ -10,6 +10,7 @@ import { TagService } from './tag.service';
 import { TagHubService } from './tag-hub.service';
 import { Tag } from './tag.model';
 import { TagItemDto } from './tag-hub.model';
+import { MergeTagDialogComponent } from './merge-tag-dialog.component';
 import { formatShortDate } from '../shared/date-utils';
 
 interface DateGroup {
@@ -21,7 +22,7 @@ interface DateGroup {
   selector: 'app-tags-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectModule, Menu, Dialog],
+  imports: [FormsModule, SelectModule, Menu, Dialog, MergeTagDialogComponent],
   styles: [`
     @keyframes shimmer {
       0% { background-position: -800px 0; }
@@ -330,6 +331,15 @@ interface DateGroup {
         </div>
       }
     </p-dialog>
+
+    <!-- Merge tag dialog -->
+    <app-merge-tag-dialog
+      [visible]="showMergeDialog()"
+      [sourceTag]="mergeSourceTag()"
+      [allTags]="tagService.tags()"
+      (onClose)="onMergeClose()"
+      (onMerge)="onMergeConfirm($event)"
+    />
   `,
 })
 export class TagsPage implements OnInit {
@@ -350,7 +360,7 @@ export class TagsPage implements OnInit {
 
   readonly tagActionMenuItems = computed<MenuItem[]>(() => [
     { label: 'Rename', icon: 'pi pi-pencil', command: () => this.startRename() },
-    { label: 'Merge into...', icon: 'pi pi-arrow-right-arrow-left', disabled: true },
+    { label: 'Merge into...', icon: 'pi pi-arrow-right-arrow-left', command: () => this.startMerge() },
     { separator: true },
     { label: 'Delete', icon: 'pi pi-trash', styleClass: 'text-danger', command: () => this.startDelete() },
   ]);
@@ -361,6 +371,10 @@ export class TagsPage implements OnInit {
 
   // Delete state
   readonly deletingTag = signal<Tag | null>(null);
+
+  // Merge state
+  readonly showMergeDialog = signal(false);
+  readonly mergeSourceTag = signal<Tag | null>(null);
 
   readonly deleteBreakdown = computed(() => {
     const tag = this.deletingTag();
@@ -524,6 +538,28 @@ export class TagsPage implements OnInit {
 
   cancelDelete(): void {
     this.deletingTag.set(null);
+  }
+
+  // --- Merge ---
+
+  startMerge(): void {
+    this.mergeSourceTag.set(this.actionTag());
+    this.showMergeDialog.set(true);
+  }
+
+  onMergeClose(): void {
+    this.showMergeDialog.set(false);
+    this.mergeSourceTag.set(null);
+  }
+
+  onMergeConfirm(event: { sourceId: string; targetId: string }): void {
+    this.tagService.mergeTags(event.sourceId, event.targetId);
+    this.showMergeDialog.set(false);
+    this.mergeSourceTag.set(null);
+    // If the merged source tag was selected, clear selection
+    if (this.selectedTag()?.id === event.sourceId) {
+      this.onTagSelected(null);
+    }
   }
 
   // --- Existing methods ---
