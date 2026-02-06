@@ -19,6 +19,8 @@ import { NoteService } from './note.service';
 import { PdfExportService } from './pdf-export.service';
 import { TiptapEditorComponent } from './tiptap-editor.component';
 import { ToastService } from '../shared/services/toast.service';
+import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
+import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
 
@@ -26,7 +28,7 @@ import { Tag } from '../tags/tag.model';
   selector: 'app-note-editor-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TiptapEditorComponent],
+  imports: [TiptapEditorComponent, DeleteConfirmButtonComponent],
   template: `
     <div class="note-editor-page">
       <!-- Top bar with breadcrumb -->
@@ -64,15 +66,22 @@ import { Tag } from '../tags/tag.model';
             >
               <i class="pi pi-file-pdf"></i>
             </button>
-            <button
-              type="button"
-              class="action-btn"
-              (click)="deleteNote()"
-              aria-label="Delete note"
-              title="Delete note"
-            >
-              <i class="pi pi-trash"></i>
-            </button>
+            @if (confirmingDelete()) {
+              <app-delete-confirm-button
+                ariaLabel="Confirm delete note"
+                (onConfirm)="confirmDelete()"
+              />
+            } @else {
+              <button
+                type="button"
+                class="action-btn"
+                (click)="startDeleteConfirm()"
+                aria-label="Delete note"
+                title="Delete note"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
+            }
           }
         </div>
       </header>
@@ -509,6 +518,7 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   private readonly tagService = inject(TagService);
   private readonly pdfExportService = inject(PdfExportService);
   private readonly toast = inject(ToastService);
+  private readonly deleteConfirmation = inject(DeleteConfirmationService);
   private readonly injector = inject(Injector);
 
   private readonly destroy$ = new Subject<void>();
@@ -523,6 +533,7 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   readonly isNewNote = signal(false);
   readonly resetCounter = signal(0);
   readonly checkboxStatuses = signal<CheckboxStatus[]>([]);
+  readonly confirmingDelete = signal(false);
 
   // Tag-related signals
   readonly showTagPicker = signal(false);
@@ -623,6 +634,7 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.isDestroyed = true;
     this.cancelPolling();
+    this.deleteConfirmation.cleanup();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -798,7 +810,18 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     }
   }
 
-  deleteNote(): void {
+  startDeleteConfirm(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(true);
+    this.deleteConfirmation.start(() => {
+      this.confirmingDelete.set(false);
+    });
+  }
+
+  confirmDelete(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(false);
+
     // Use noteId (always the real server ID) rather than note().id which may be stale
     const id = this.noteId;
     if (!id) return;
