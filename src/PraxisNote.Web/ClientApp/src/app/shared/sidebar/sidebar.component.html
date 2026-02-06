@@ -1,6 +1,6 @@
 <!-- Desktop Sidebar -->
 <aside
-  class="hidden lg:flex lg:flex-col border-r border-border bg-surface-subtle/80 transition-[width] duration-200 ease-in-out overflow-hidden"
+  class="hidden lg:flex lg:flex-col border-r border-border bg-surface-subtle/80 transition-[width] duration-200 ease-in-out overflow-x-hidden"
   [class.w-56]="!collapsed()"
   [class.w-[52px]]="collapsed()"
 >
@@ -16,7 +16,7 @@
         (click)="toggleCollapse()"
         aria-label="Expand sidebar"
       >
-        <i class="pi pi-bars"></i>
+        <i class="pi pi-bars text-xs"></i>
       </button>
     } @else {
       <div class="flex items-center gap-3 flex-1 min-w-0">
@@ -69,6 +69,7 @@
         [class.opacity-50]="!item.enabled"
         [class.cursor-not-allowed]="!item.enabled"
         [disabled]="!item.enabled"
+        [attr.aria-label]="item.label"
         [pTooltip]="collapsed() ? item.label : ''"
         tooltipPosition="right"
         (click)="item.enabled && navigate(item.path)"
@@ -203,12 +204,15 @@
     [class.px-1]="collapsed()"
   >
     @if (collapsed()) {
-      <!-- Collapsed: avatar only with tooltip -->
+      <!-- Collapsed: avatar only with tooltip, clickable to sign out -->
       <div class="flex justify-center">
-        <div
-          class="cursor-default"
-          [pTooltip]="user().name"
+        <button
+          type="button"
+          class="rounded-full hover:ring-accent-foreground transition-all duration-150"
+          (click)="logout()"
+          [pTooltip]="user().name + ' — Sign out'"
           tooltipPosition="right"
+          aria-label="Sign out"
         >
           @if (user().avatarUrl) {
             <img [src]="user().avatarUrl!" class="w-7 h-7 rounded-full ring-2 ring-surface shadow-sm" [alt]="user().name" />
@@ -217,7 +221,7 @@
               <span class="text-white text-xs font-medium">{{ user().name.charAt(0) }}</span>
             </div>
           }
-        </div>
+        </button>
       </div>
     } @else {
       <!-- Expanded: full user section -->
