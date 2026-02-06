@@ -104,12 +104,16 @@
   /* Toast severity backgrounds */
   --color-toast-success-bg: rgba(163, 190, 140, 0.12);
   --color-toast-success-accent: #a3be8c;
+  --color-toast-success-action-bg: rgba(163, 190, 140, 0.2);
   --color-toast-error-bg: rgba(191, 97, 106, 0.12);
   --color-toast-error-accent: #bf616a;
+  --color-toast-error-action-bg: rgba(191, 97, 106, 0.2);
   --color-toast-info-bg: rgba(94, 129, 172, 0.12);
   --color-toast-info-accent: #5e81ac;
+  --color-toast-info-action-bg: rgba(94, 129, 172, 0.2);
   --color-toast-warn-bg: rgba(235, 203, 139, 0.15);
   --color-toast-warn-accent: #c9a227;
+  --color-toast-warn-action-bg: rgba(235, 203, 139, 0.2);
 
   /* Interactive accent - Frost blue */
   --color-interactive-bg: rgba(94, 129, 172, 0.15);
@@ -272,12 +276,16 @@
   /* Toast severity backgrounds */
   --color-toast-success-bg: rgba(163, 190, 140, 0.15);
   --color-toast-success-accent: #a3be8c;
+  --color-toast-success-action-bg: rgba(163, 190, 140, 0.25);
   --color-toast-error-bg: rgba(191, 97, 106, 0.15);
   --color-toast-error-accent: #bf616a;
+  --color-toast-error-action-bg: rgba(191, 97, 106, 0.25);
   --color-toast-info-bg: rgba(136, 192, 208, 0.15);
   --color-toast-info-accent: #88c0d0;
+  --color-toast-info-action-bg: rgba(136, 192, 208, 0.25);
   --color-toast-warn-bg: rgba(235, 203, 139, 0.12);
   --color-toast-warn-accent: #ebcb8b;
+  --color-toast-warn-action-bg: rgba(235, 203, 139, 0.2);
 
   /* Interactive accent - Frost cyan */
   --color-interactive-bg: rgba(136, 192, 208, 0.2);
@@ -443,12 +451,16 @@
   /* Toast severity */
   --color-toast-success: var(--color-toast-success-bg);
   --color-toast-success-foreground: var(--color-toast-success-accent);
+  --color-toast-success-action: var(--color-toast-success-action-bg);
   --color-toast-error: var(--color-toast-error-bg);
   --color-toast-error-foreground: var(--color-toast-error-accent);
+  --color-toast-error-action: var(--color-toast-error-action-bg);
   --color-toast-info: var(--color-toast-info-bg);
   --color-toast-info-foreground: var(--color-toast-info-accent);
+  --color-toast-info-action: var(--color-toast-info-action-bg);
   --color-toast-warn: var(--color-toast-warn-bg);
   --color-toast-warn-foreground: var(--color-toast-warn-accent);
+  --color-toast-warn-action: var(--color-toast-warn-action-bg);
 
   /* Interactive accent */
   --color-interactive: var(--color-interactive-bg);
@@ -851,10 +863,10 @@
 }
 .toast-action-btn:hover { opacity: 0.8; }
 
-.toast-action-success { background: rgba(163, 190, 140, 0.2); color: var(--color-toast-success-accent); }
-.toast-action-error { background: rgba(191, 97, 106, 0.2); color: var(--color-toast-error-accent); }
-.toast-action-info { background: rgba(94, 129, 172, 0.2); color: var(--color-toast-info-accent); }
-.toast-action-warn { background: rgba(235, 203, 139, 0.2); color: var(--color-toast-warn-accent); }
+.toast-action-success { background: var(--color-toast-success-action-bg); color: var(--color-toast-success-accent); }
+.toast-action-error { background: var(--color-toast-error-action-bg); color: var(--color-toast-error-accent); }
+.toast-action-info { background: var(--color-toast-info-action-bg); color: var(--color-toast-info-accent); }
+.toast-action-warn { background: var(--color-toast-warn-action-bg); color: var(--color-toast-warn-accent); }
 
 /* Progress bar track */
 .toast-progress-track {

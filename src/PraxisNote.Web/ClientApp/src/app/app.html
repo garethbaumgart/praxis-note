@@ -128,7 +128,7 @@
         @if (message.data?.label) {
           <button
             type="button"
-            (click)="$event.stopPropagation(); message.data.callback()"
+            (click)="$event.stopPropagation(); message.data?.callback?.()"
             class="toast-action-btn shrink-0"
             [class.toast-action-success]="message.severity === 'success'"
             [class.toast-action-error]="message.severity === 'error'"
@@ -141,7 +141,7 @@
         }
       </div>
       <!-- Progress bar (animated countdown to auto-dismiss) -->
-      <div class="toast-progress-track">
+      <div class="toast-progress-track" aria-hidden="true">
         <div
           class="toast-progress-bar"
           [class.toast-progress-success]="message.severity === 'success'"
