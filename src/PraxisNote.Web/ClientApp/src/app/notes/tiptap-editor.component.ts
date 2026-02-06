@@ -42,7 +42,7 @@ interface BlockType {
   },
   template: `
     <!-- Toolbar -->
-    <div class="toolbar-container">
+    <div class="toolbar-container" #toolbarContainer>
       <!-- Row 1: Block type + Text formatting + Primary actions -->
       <div class="toolbar-row">
         <!-- Block Type Dropdown -->
@@ -52,7 +52,7 @@ interface BlockType {
           (ngModelChange)="onBlockTypeChange($event)"
           optionLabel="label"
           optionValue="value"
-          [style]="{ width: '120px' }"
+          [style]="{ width: '140px' }"
           styleClass="block-type-dropdown"
           appendTo="body"
         >
@@ -120,131 +120,139 @@ interface BlockType {
           <span class="line-through">S</span>
         </button>
 
-        <div class="divider"></div>
+        @if (toolbarLevel() < 3) {
+          <div class="divider"></div>
 
-        <!-- Link & Highlight -->
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('link')"
-          (click)="toggleLink()"
-          title="Link"
-          aria-label="Insert link"
-        >
-          <i class="pi pi-link text-sm"></i>
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('highlight')"
-          (click)="toggleHighlight()"
-          title="Highlight"
-          aria-label="Highlight text"
-        >
-          <i class="pi pi-sun text-sm"></i>
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn color-btn"
-          (click)="showColorPicker()"
-          title="Text Color"
-          aria-label="Text color"
-        >
-          <span class="color-indicator" [style.background]="currentTextColor()"></span>
-          <span>A</span>
-        </button>
+          <!-- Link & Highlight -->
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive('link')"
+            (click)="toggleLink()"
+            title="Link"
+            aria-label="Insert link"
+          >
+            <i class="pi pi-link text-sm"></i>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive('highlight')"
+            (click)="toggleHighlight()"
+            title="Highlight"
+            aria-label="Highlight text"
+          >
+            <i class="pi pi-sun text-sm"></i>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn color-btn"
+            (click)="showColorPicker()"
+            title="Text Color"
+            aria-label="Text color"
+          >
+            <span class="color-indicator" [style.background]="currentTextColor()"></span>
+            <span>A</span>
+          </button>
+        }
 
-        <div class="divider"></div>
+        @if (toolbarLevel() < 2) {
+          <div class="divider"></div>
 
-        <!-- Text Align -->
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive({ textAlign: 'left' })"
-          (click)="setTextAlign('left')"
-          title="Align Left"
-          aria-label="Align left"
-        >
-          <i class="pi pi-align-left text-sm"></i>
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive({ textAlign: 'center' })"
-          (click)="setTextAlign('center')"
-          title="Align Center"
-          aria-label="Align center"
-        >
-          <i class="pi pi-align-center text-sm"></i>
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive({ textAlign: 'right' })"
-          (click)="setTextAlign('right')"
-          title="Align Right"
-          aria-label="Align right"
-        >
-          <i class="pi pi-align-right text-sm"></i>
-        </button>
+          <!-- Text Align -->
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive({ textAlign: 'left' })"
+            (click)="setTextAlign('left')"
+            title="Align Left"
+            aria-label="Align left"
+          >
+            <i class="pi pi-align-left text-sm"></i>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive({ textAlign: 'center' })"
+            (click)="setTextAlign('center')"
+            title="Align Center"
+            aria-label="Align center"
+          >
+            <i class="pi pi-align-center text-sm"></i>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive({ textAlign: 'right' })"
+            (click)="setTextAlign('right')"
+            title="Align Right"
+            aria-label="Align right"
+          >
+            <i class="pi pi-align-right text-sm"></i>
+          </button>
+        }
 
-        <div class="divider"></div>
+        @if (toolbarLevel() < 4) {
+          <div class="divider"></div>
 
-        <!-- Lists -->
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('bulletList')"
-          (click)="toggleBulletList()"
-          title="Bullet List"
-          aria-label="Bullet list"
-        >
-          <i class="pi pi-list text-sm"></i>
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('orderedList')"
-          (click)="toggleOrderedList()"
-          title="Numbered List"
-          aria-label="Numbered list"
-        >
-          <i class="pi pi-sort-numeric-down text-sm"></i>
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn task-list-btn"
-          [class.active]="editor.isActive('taskList')"
-          (click)="toggleTaskList()"
-          title="Task List (Checkbox)"
-          aria-label="Task list"
-        >
-          <i class="pi pi-check-square text-sm"></i>
-        </button>
+          <!-- Lists -->
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive('bulletList')"
+            (click)="toggleBulletList()"
+            title="Bullet List"
+            aria-label="Bullet list"
+          >
+            <i class="pi pi-list text-sm"></i>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive('orderedList')"
+            (click)="toggleOrderedList()"
+            title="Numbered List"
+            aria-label="Numbered list"
+          >
+            <i class="pi pi-sort-numeric-down text-sm"></i>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn task-list-btn"
+            [class.active]="editor.isActive('taskList')"
+            (click)="toggleTaskList()"
+            title="Task List (Checkbox)"
+            aria-label="Task list"
+          >
+            <i class="pi pi-check-square text-sm"></i>
+          </button>
+        }
 
-        <div class="divider"></div>
+        @if (toolbarLevel() < 1) {
+          <div class="divider"></div>
 
-        <!-- Quote & Code Block -->
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('blockquote')"
-          (click)="toggleBlockquote()"
-          title="Quote"
-          aria-label="Quote"
-        >
-          <i class="pi pi-comment text-sm"></i>
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="editor.isActive('codeBlock')"
-          (click)="toggleCodeBlock()"
-          title="Code Block"
-          aria-label="Code block"
-        >
-          <i class="pi pi-code text-sm"></i>
-        </button>
+          <!-- Quote & Code Block -->
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive('blockquote')"
+            (click)="toggleBlockquote()"
+            title="Quote"
+            aria-label="Quote"
+          >
+            <i class="pi pi-comment text-sm"></i>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="editor.isActive('codeBlock')"
+            (click)="toggleCodeBlock()"
+            title="Code Block"
+            aria-label="Code block"
+          >
+            <i class="pi pi-code text-sm"></i>
+          </button>
+        }
 
         <div class="divider"></div>
 
@@ -259,7 +267,7 @@ interface BlockType {
           <i class="pi pi-ellipsis-h text-sm"></i>
         </button>
 
-        <p-menu #overflowMenu [model]="overflowMenuItems" [popup]="true" appendTo="body" />
+        <p-menu #overflowMenu [model]="dynamicOverflowMenuItems()" [popup]="true" appendTo="body" />
       </div>
     </div>
 
@@ -343,7 +351,8 @@ interface BlockType {
       align-items: center;
       gap: 4px;
       padding: 8px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow: hidden;
     }
 
     .toolbar-btn {
@@ -787,6 +796,10 @@ interface BlockType {
     :host ::ng-deep .block-type-dropdown .p-select-label {
       padding: 4px 8px;
     }
+
+    :host ::ng-deep .block-type-dropdown .p-select-overlay {
+      min-width: 160px;
+    }
   `],
 })
 export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -820,6 +833,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /** Reference to the hidden color input */
   private readonly colorInput = viewChild<ElementRef>('colorInput');
 
+  /** Reference to the toolbar container for ResizeObserver */
+  private readonly toolbarContainer = viewChild<ElementRef>('toolbarContainer');
+
   /** Block type options for the dropdown */
   readonly blockTypes: BlockType[] = [
     { label: 'Paragraph', value: 'paragraph' },
@@ -828,49 +844,77 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     { label: 'Heading 3', value: 'heading3', style: 'font-size: 1em; font-weight: 600;' },
   ];
 
-  /** Overflow menu items */
-  readonly overflowMenuItems: MenuItem[] = [
-    {
-      label: 'Formatting',
-      items: [
-        {
-          label: 'Inline Code',
-          icon: 'pi pi-code',
-          command: () => this.toggleInlineCode(),
-        },
-        {
-          label: 'Clear Formatting',
-          icon: 'pi pi-eraser',
-          command: () => this.clearFormatting(),
-        },
-      ],
-    },
-    {
-      label: 'Insert',
-      items: [
-        {
-          label: 'Toggle Section',
-          icon: 'pi pi-chevron-down',
-          command: () => this.insertToggleSection(),
-        },
-        {
-          label: 'Horizontal Rule',
-          icon: 'pi pi-minus',
-          command: () => this.insertHorizontalRule(),
-        },
-        {
-          label: 'Image',
-          icon: 'pi pi-image',
-          command: () => this.insertImage(),
-        },
-        {
-          label: 'Table',
-          icon: 'pi pi-table',
-          command: () => this.insertTable(),
-        },
-      ],
-    },
-  ];
+  /** Toolbar collapse level: 0 = all visible, higher = more collapsed */
+  readonly toolbarLevel = signal(0);
+
+  /** Dynamic overflow menu items based on toolbar level */
+  readonly dynamicOverflowMenuItems = computed(() => {
+    const level = this.toolbarLevel();
+    const items: MenuItem[] = [];
+
+    // Add collapsed groups to overflow menu
+    if (level >= 1) {
+      items.push({
+        label: 'Blocks',
+        items: [
+          { label: 'Quote', icon: 'pi pi-comment', command: () => this.toggleBlockquote() },
+          { label: 'Code Block', icon: 'pi pi-code', command: () => this.toggleCodeBlock() },
+        ],
+      });
+    }
+    if (level >= 2) {
+      items.push({
+        label: 'Alignment',
+        items: [
+          { label: 'Align Left', icon: 'pi pi-align-left', command: () => this.setTextAlign('left') },
+          { label: 'Align Center', icon: 'pi pi-align-center', command: () => this.setTextAlign('center') },
+          { label: 'Align Right', icon: 'pi pi-align-right', command: () => this.setTextAlign('right') },
+        ],
+      });
+    }
+    if (level >= 3) {
+      items.push({
+        label: 'Marks',
+        items: [
+          { label: 'Link', icon: 'pi pi-link', command: () => this.toggleLink() },
+          { label: 'Highlight', icon: 'pi pi-sun', command: () => this.toggleHighlight() },
+          { label: 'Text Color', icon: 'pi pi-palette', command: () => this.showColorPicker() },
+        ],
+      });
+    }
+    if (level >= 4) {
+      items.push({
+        label: 'Lists',
+        items: [
+          { label: 'Bullet List', icon: 'pi pi-list', command: () => this.toggleBulletList() },
+          { label: 'Numbered List', icon: 'pi pi-sort-numeric-down', command: () => this.toggleOrderedList() },
+          { label: 'Task List', icon: 'pi pi-check-square', command: () => this.toggleTaskList() },
+        ],
+      });
+    }
+
+    // Always include the base overflow items
+    items.push(
+      {
+        label: 'Formatting',
+        items: [
+          { label: 'Inline Code', icon: 'pi pi-code', command: () => this.toggleInlineCode() },
+          { label: 'Clear Formatting', icon: 'pi pi-eraser', command: () => this.clearFormatting() },
+        ],
+      },
+      {
+        label: 'Insert',
+        items: [
+          { label: 'Toggle Section', icon: 'pi pi-chevron-down', command: () => this.insertToggleSection() },
+          { label: 'Horizontal Rule', icon: 'pi pi-minus', command: () => this.insertHorizontalRule() },
+          { label: 'Image', icon: 'pi pi-image', command: () => this.insertImage() },
+          { label: 'Table', icon: 'pi pi-table', command: () => this.insertTable() },
+        ],
+      },
+    );
+
+    return items;
+  });
 
   /** Current text color */
   readonly currentTextColor = signal('#000000');
@@ -909,6 +953,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /** Scroll handler reference for cleanup */
   private scrollHandler: (() => void) | null = null;
+
+  /** ResizeObserver for toolbar responsiveness */
+  private toolbarResizeObserver: ResizeObserver | null = null;
 
   editor = new Editor({
     editable: true,
@@ -961,7 +1008,32 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     this.setupMutationObserver();
     this.setupScrollListener();
+    this.setupToolbarResizeObserver();
     this.scheduleOverlayUpdate();
+  }
+
+  private setupToolbarResizeObserver(): void {
+    const toolbar = this.toolbarContainer()?.nativeElement as HTMLElement;
+    if (!toolbar) return;
+
+    this.toolbarResizeObserver = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      // Thresholds determined by group widths:
+      // Full toolbar ~630px, collapse progressively as width decreases
+      let level: number;
+      if (width >= 630) level = 0;       // All visible
+      else if (width >= 540) level = 1;  // Hide quote/code
+      else if (width >= 440) level = 2;  // Also hide alignment
+      else if (width >= 340) level = 3;  // Also hide link/highlight/color
+      else level = 4;                    // Also hide lists
+
+      if (this.toolbarLevel() !== level) {
+        this.toolbarLevel.set(level);
+        this.cdr.markForCheck();
+      }
+    });
+
+    this.toolbarResizeObserver.observe(toolbar);
   }
 
   private setupScrollListener(): void {
@@ -1056,6 +1128,14 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setEditorContent(content: string, isNewNote: boolean): void {
+    // Skip if the editor already has this content (avoids cursor displacement)
+    if (content && this.editor.isFocused) {
+      const currentJson = JSON.stringify(this.editor.getJSON());
+      if (currentJson === content) {
+        return;
+      }
+    }
+
     this.isInitializing = true;
 
     if (content) {
@@ -1096,6 +1176,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.scrollHandler) {
       const wrapper = this.editorWrapper()?.nativeElement as HTMLElement;
       wrapper?.removeEventListener('scroll', this.scrollHandler);
+    }
+    if (this.toolbarResizeObserver) {
+      this.toolbarResizeObserver.disconnect();
     }
     this.editor.destroy();
   }

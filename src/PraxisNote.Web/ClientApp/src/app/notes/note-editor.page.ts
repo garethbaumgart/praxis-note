@@ -751,6 +751,9 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   private autoSave(content: string): void {
     if (this.isNewNote()) {
       // Create new note - use callback to get the real server ID
+      // Update initialContent before toggling isNewNote to prevent the tiptap
+      // editor effect from clearing content when isNewNote transitions to false
+      this.initialContent.set(content);
       this.isNewNote.set(false);
       this.noteService.createNote(
         content,
