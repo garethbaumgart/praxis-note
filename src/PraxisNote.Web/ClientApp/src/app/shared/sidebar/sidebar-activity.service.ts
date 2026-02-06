@@ -83,15 +83,14 @@ export class SidebarActivityService {
   });
 
   readonly dueSoonTasks = computed<ActivityItem[]>(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     return this.taskService.tasks()
       .filter(t => t.dueDate && t.status !== 'Done')
-      .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+      .sort((a, b) => new Date(a.dueDate! + 'T00:00:00').getTime() - new Date(b.dueDate! + 'T00:00:00').getTime())
       .slice(0, 3)
       .map(t => {
-        const due = new Date(t.dueDate!);
-        due.setHours(0, 0, 0, 0);
+        const due = new Date(t.dueDate! + 'T00:00:00');
         const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
         let meta = '';
         let metaUrgent = false;

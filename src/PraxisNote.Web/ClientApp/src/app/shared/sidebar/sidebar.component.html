@@ -56,7 +56,7 @@
       <button
         type="button"
         class="recording-sidebar-item"
-        (click)="navigateTo(['/meetings', activity.recorder.activeMeetingId()!])"
+        (click)="returnToRecording()"
         aria-label="Return to active recording"
       >
         <span class="pulse-dot"></span>
@@ -225,7 +225,7 @@
           <button
             type="button"
             class="recording-sidebar-item"
-            (click)="navigateTo(['/meetings', activity.recorder.activeMeetingId()!])"
+            (click)="returnToRecording()"
             aria-label="Return to active recording"
           >
             <span class="pulse-dot"></span>

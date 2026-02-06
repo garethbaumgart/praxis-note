@@ -120,6 +120,13 @@ export class SidebarComponent implements OnInit {
     this.closeMobile.emit();
   }
 
+  protected returnToRecording(): void {
+    const meetingId = this.activity.recorder.activeMeetingId();
+    if (meetingId) {
+      this.navigateTo(['/meetings', meetingId]);
+    }
+  }
+
   protected logout(): void {
     this.onLogout.emit();
   }
