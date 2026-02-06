@@ -19,6 +19,13 @@ public static class ClaimsPrincipalExtensions
         return Guid.TryParse(userIdString, out var userId) ? userId : null;
     }
 
+    /// <summary>
+    /// Extracts the user's display name from the ClaimsPrincipal's Name claim.
+    /// </summary>
+    /// <param name="user">The claims principal representing the authenticated user.</param>
+    /// <returns>
+    /// The user's display name if the Name claim exists, or null if missing.
+    /// </returns>
     public static string? GetUserName(this ClaimsPrincipal user)
     {
         return user.FindFirstValue(ClaimTypes.Name);
