@@ -3,6 +3,9 @@ export interface Tag {
   id: string;
   name: string;
   usageCount: number;
+  taskCount: number;
+  noteCount: number;
+  meetingCount: number;
 }
 
 /** Minimal tag info for embedding in task responses. */

@@ -29,6 +29,19 @@ public sealed class NoteRepository(PraxisNoteDbContext context) : INoteRepositor
         return notes.Where(n => n.TagIds.Contains(tagId)).ToList();
     }
 
+    public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var tagIdLists = await context.Notes
+            .Where(n => n.UserId == userId)
+            .Select(n => n.TagIds)
+            .ToListAsync(cancellationToken);
+
+        return tagIdLists
+            .SelectMany(tagIds => tagIds)
+            .GroupBy(tagId => tagId)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
+
     public async Task AddAsync(Note note, CancellationToken cancellationToken = default)
     {
         await context.Notes.AddAsync(note, cancellationToken);

@@ -37,6 +37,9 @@ export class TagService {
       id: tempId,
       name,
       usageCount: 0,
+      taskCount: 0,
+      noteCount: 0,
+      meetingCount: 0,
     };
 
     // Optimistic update
@@ -108,17 +111,33 @@ export class TagService {
     });
   }
 
-  /** Increment usage count for a tag (called when adding to a task). */
-  incrementUsageCount(tagId: string): void {
+  /** Increment usage count for a tag. */
+  incrementUsageCount(tagId: string, entityType: 'task' | 'note' | 'meeting'): void {
     this._tags.update(tags =>
-      tags.map(t => (t.id === tagId ? { ...t, usageCount: t.usageCount + 1 } : t))
+      tags.map(t => {
+        if (t.id !== tagId) return t;
+        const countKey = `${entityType}Count` as const;
+        return {
+          ...t,
+          usageCount: t.usageCount + 1,
+          [countKey]: (t[countKey] as number) + 1,
+        };
+      })
     );
   }
 
-  /** Decrement usage count for a tag (called when removing from a task). */
-  decrementUsageCount(tagId: string): void {
+  /** Decrement usage count for a tag. */
+  decrementUsageCount(tagId: string, entityType: 'task' | 'note' | 'meeting'): void {
     this._tags.update(tags =>
-      tags.map(t => (t.id === tagId ? { ...t, usageCount: Math.max(0, t.usageCount - 1) } : t))
+      tags.map(t => {
+        if (t.id !== tagId) return t;
+        const countKey = `${entityType}Count` as const;
+        return {
+          ...t,
+          usageCount: Math.max(0, t.usageCount - 1),
+          [countKey]: Math.max(0, (t[countKey] as number) - 1),
+        };
+      })
     );
   }
 }

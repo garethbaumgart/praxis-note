@@ -294,7 +294,7 @@ export class NotesPage implements OnInit {
     this.noteService.addTagToNote(
       noteId,
       tag,
-      () => this.tagService.incrementUsageCount(tag.id),
+      () => this.tagService.incrementUsageCount(tag.id, 'note'),
     );
   }
 
@@ -302,7 +302,7 @@ export class NotesPage implements OnInit {
     this.noteService.removeTagFromNote(
       noteId,
       tagId,
-      () => this.tagService.decrementUsageCount(tagId),
+      () => this.tagService.decrementUsageCount(tagId, 'note'),
     );
   }
 
@@ -311,7 +311,7 @@ export class NotesPage implements OnInit {
       this.noteService.addTagToNote(
         noteId,
         { id: createdTag.id, name: createdTag.name },
-        () => this.tagService.incrementUsageCount(createdTag.id),
+        () => this.tagService.incrementUsageCount(createdTag.id, 'note'),
       );
     });
   }

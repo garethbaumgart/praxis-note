@@ -81,10 +81,20 @@ interface DateGroup {
             [style]="{ 'min-width': '280px' }"
             appendTo="body"
             ariaLabel="Select a tag"
-          />
+          >
+            <ng-template pTemplate="item" let-tag>
+              <div class="flex items-center w-full">
+                <span class="text-sm">{{ tag.name }}</span>
+                <span class="ml-auto text-xs text-foreground-muted">{{ tag.usageCount }}</span>
+              </div>
+            </ng-template>
+            <ng-template pTemplate="selectedItem" let-tag>
+              <span>{{ tag.name }}</span>
+            </ng-template>
+          </p-select>
           @if (selectedTag() && !hub.loading()) {
             <span class="text-sm text-foreground-muted">
-              {{ hub.meetingCount() }} {{ hub.meetingCount() === 1 ? 'meeting' : 'meetings' }} · {{ hub.noteCount() }} {{ hub.noteCount() === 1 ? 'note' : 'notes' }} · {{ hub.taskCount() }} {{ hub.taskCount() === 1 ? 'task' : 'tasks' }}
+              {{ summaryLine() }}
             </span>
           }
           @if (selectedTag() && hub.loading()) {
@@ -243,6 +253,17 @@ export class TagsPage implements OnInit {
 
   readonly selectedTag = signal<Tag | null>(null);
   readonly tagCount = computed(() => this.tagService.tags().length);
+
+  readonly summaryLine = computed(() => {
+    const m = this.hub.meetingCount();
+    const n = this.hub.noteCount();
+    const t = this.hub.taskCount();
+    const parts: string[] = [];
+    if (m > 0) parts.push(`${m} ${m === 1 ? 'meeting' : 'meetings'}`);
+    if (n > 0) parts.push(`${n} ${n === 1 ? 'note' : 'notes'}`);
+    if (t > 0) parts.push(`${t} ${t === 1 ? 'task' : 'tasks'}`);
+    return parts.join(' · ');
+  });
   readonly skeletonRows = [0, 1, 2, 3];
 
   private readonly pendingSelectedId = signal<string | null>(null);
