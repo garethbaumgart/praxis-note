@@ -1,4 +1,5 @@
 import { Component, inject, signal, effect, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { Toast } from 'primeng/toast';
 import { AuthService } from './auth';
@@ -11,18 +12,20 @@ import { RecordingIndicatorComponent } from './shared/recording-indicator.compon
 import { AudioRecorderService } from './meetings/audio-recorder.service';
 import { ThemeService } from './shared/theme.service';
 import { PwaUpdateService } from './shared/services/pwa-update.service';
+import { ContextualHeaderService } from './shared/services/contextual-header.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, Toast, SidebarComponent, LoginComponent, MockAuthToolbarComponent, NotificationPanelComponent, RecordingIndicatorComponent],
+  imports: [RouterOutlet, Toast, NgTemplateOutlet, SidebarComponent, LoginComponent, MockAuthToolbarComponent, NotificationPanelComponent, RecordingIndicatorComponent],
   templateUrl: './app.html',
 })
 export class App {
   protected readonly auth = inject(AuthService);
   protected readonly notificationService = inject(NotificationService);
   protected readonly pwaUpdateService = inject(PwaUpdateService);
+  protected readonly headerService = inject(ContextualHeaderService);
   private readonly themeService = inject(ThemeService); // Initialize theme detection at app startup
   private readonly router = inject(Router);
   private readonly recorder = inject(AudioRecorderService);
@@ -70,5 +73,9 @@ export class App {
 
   goToSettings(): void {
     this.router.navigate(['/settings']);
+  }
+
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
   }
 }

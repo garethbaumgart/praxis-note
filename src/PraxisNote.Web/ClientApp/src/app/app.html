@@ -21,12 +21,37 @@
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
       <!-- Top bar -->
       <header class="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-border bg-surface/80 backdrop-blur-sm">
-        <div class="flex items-center gap-3">
-          <button class="lg:hidden w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg" (click)="toggleSidebar()" aria-label="Open navigation menu">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <!-- Mobile hamburger (shown only on mobile) -->
+          <button class="lg:hidden w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg shrink-0" (click)="toggleSidebar()" aria-label="Open navigation menu">
             <i class="pi pi-bars text-foreground-secondary" aria-hidden="true"></i>
           </button>
+          <!-- Contextual breadcrumb from child routes -->
+          @if (headerService.breadcrumb(); as crumbs) {
+            <nav class="flex items-center gap-2 text-sm min-w-0" aria-label="Breadcrumb">
+              @for (item of crumbs; track item.label; let last = $last) {
+                @if (item.route) {
+                  <button type="button" class="flex items-center gap-1.5 text-accent-foreground hover:bg-surface-muted px-2 py-1 rounded-md transition-colors shrink-0" (click)="navigateTo(item.route!)">
+                    @if (item.icon) { <i class="pi {{ item.icon }} text-xs" aria-hidden="true"></i> }
+                    <span>{{ item.label }}</span>
+                  </button>
+                } @else {
+                  <span class="text-foreground-secondary truncate max-w-[250px]">{{ item.label }}</span>
+                }
+                @if (!last) {
+                  <span class="text-foreground-muted shrink-0">/</span>
+                }
+              }
+            </nav>
+          }
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 shrink-0">
+          <!-- Page-specific actions (injected by child routes) -->
+          @if (headerService.actionsTemplate(); as tmpl) {
+            <ng-container [ngTemplateOutlet]="tmpl" />
+            <span class="w-px h-5 bg-border mx-1"></span>
+          }
+          <!-- Global actions (always present) -->
           <button
             class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg relative"
             [attr.aria-label]="notificationService.unseenCount() === 0 ? 'Notifications' : 'Notifications (' + (notificationService.unseenCount() > 99 ? '99+' : notificationService.unseenCount()) + ' unread)'"
