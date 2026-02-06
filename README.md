@@ -169,3 +169,13 @@ To enable Google Calendar sync in production:
 ## Architecture
 
 See [Architecture Decision Records](docs/adr/) for documented decisions on patterns and technology choices.
+
+## Claude Code Skills
+
+Custom slash commands in `.claude/skills/` that automate development workflows:
+
+| Skill | Usage | Purpose |
+|-------|-------|---------|
+| `/refine <issue>` | `/refine 336` | Reads a GitHub issue, explores the codebase, creates UX mockups if needed, writes a step-by-step implementation plan, and updates the issue body |
+| `/pr` | `/pr` | Creates a pull request with build, tests, self-review, browser validation, and AI review monitoring |
+| `/broadcast` | `/broadcast` | Generates an EF Core migration to add a "What's New" notification for user-facing changes |
