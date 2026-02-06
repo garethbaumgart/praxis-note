@@ -47,6 +47,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
       <!-- 3. Quick Action Buttons -->
       <section class="grid grid-cols-3 gap-3 mb-5 animate-fade-in-delay-2">
         <button
+          type="button"
           class="quick-action group"
           aria-label="Create new note"
           (click)="newNote()">
@@ -57,6 +58,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
         </button>
 
         <button
+          type="button"
           class="quick-action group"
           aria-label="Go to tasks board"
           (click)="newTask()">
@@ -67,6 +69,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
         </button>
 
         <button
+          type="button"
           class="quick-action group"
           aria-label="Start new meeting"
           (click)="startRecording()">
@@ -87,6 +90,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
           <div class="flex flex-col sm:flex-row gap-2">
             @for (meeting of dashboard.upcomingMeetings(); track meeting.id) {
               <button
+                type="button"
                 class="meeting-chip"
                 [attr.aria-label]="'View meeting: ' + meeting.title"
                 (click)="goToMeeting(meeting.id)">
@@ -121,6 +125,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
             <div class="py-6 text-center">
               <p class="text-sm text-foreground-muted">No tasks yet</p>
               <button
+                type="button"
                 class="text-xs text-accent-foreground font-medium mt-2 hover:underline"
                 aria-label="Go to tasks board"
                 (click)="newTask()">
@@ -173,6 +178,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
           } @else {
             @for (item of dashboard.recentItems(); track (item.type + ':' + item.id)) {
               <button
+                type="button"
                 class="recent-row"
                 [attr.aria-label]="'Open ' + item.type + ': ' + item.title"
                 (click)="goToRecentItem(item)">

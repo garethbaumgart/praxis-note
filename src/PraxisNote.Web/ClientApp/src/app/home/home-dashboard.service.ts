@@ -147,10 +147,16 @@ export class HomeDashboardService {
 
   // --- Data loading ---
 
-  loadAllData(): void {
-    this.taskService.loadTasks();
-    this.noteService.loadNotes();
-    this.meetingService.loadMeetings();
+  loadAllData(forceRefresh: boolean = false): void {
+    if (forceRefresh || !this.taskService.initialLoadComplete()) {
+      this.taskService.loadTasks();
+    }
+    if (forceRefresh || !this.noteService.initialLoadComplete()) {
+      this.noteService.loadNotes();
+    }
+    if (forceRefresh || !this.meetingService.initialLoadComplete()) {
+      this.meetingService.loadMeetings();
+    }
   }
 
   // --- Helpers ---
@@ -178,19 +184,46 @@ export class HomeDashboardService {
 
   private extractNoteTitle(note: Note): string {
     if (!note.content) return 'Untitled Note';
-    const firstLine = note.content.split('\n')[0].trim();
-    if (!firstLine) return 'Untitled Note';
-    // Strip markdown heading markers
-    const stripped = firstLine.replace(/^#+\s*/, '');
-    return stripped.length > 60 ? stripped.substring(0, 60) + '...' : stripped;
+    try {
+      const parsed = JSON.parse(note.content);
+      if (parsed?.content?.[0]) {
+        const text = this.extractTextFromNode(parsed.content[0]).trim();
+        if (!text) return 'Untitled Note';
+        return text.length > 60 ? text.substring(0, 60) + '...' : text;
+      }
+    } catch {
+      // Plain text fallback
+      const firstLine = note.content.split('\n')[0].trim();
+      if (!firstLine) return 'Untitled Note';
+      const stripped = firstLine.replace(/^#+\s*/, '');
+      return stripped.length > 60 ? stripped.substring(0, 60) + '...' : stripped;
+    }
+    return 'Untitled Note';
   }
 
   private extractNoteSubtitle(note: Note): string {
     if (!note.content) return '';
-    const lines = note.content.split('\n').filter(l => l.trim());
-    if (lines.length < 2) return '';
-    const secondLine = lines[1].trim().replace(/^#+\s*/, '');
-    return secondLine.length > 80 ? secondLine.substring(0, 80) + '...' : secondLine;
+    try {
+      const parsed = JSON.parse(note.content);
+      if (parsed?.content?.length > 1) {
+        const text = this.extractTextFromNode(parsed.content[1]).trim();
+        return text.length > 80 ? text.substring(0, 80) + '...' : text;
+      }
+    } catch {
+      // Plain text fallback
+      const lines = note.content.split('\n').filter(l => l.trim());
+      if (lines.length < 2) return '';
+      const secondLine = lines[1].trim().replace(/^#+\s*/, '');
+      return secondLine.length > 80 ? secondLine.substring(0, 80) + '...' : secondLine;
+    }
+    return '';
+  }
+
+  private extractTextFromNode(node: { type: string; text?: string; content?: unknown[] }): string {
+    if (node.type === 'text' && node.text) return node.text;
+    if (!node.content) return '';
+    return (node.content as { type: string; text?: string; content?: unknown[] }[])
+      .map(child => this.extractTextFromNode(child)).join('');
   }
 
   private timeAgo(dateStr: string): string {
