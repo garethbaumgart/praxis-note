@@ -1,10 +1,17 @@
 using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.Meetings;
+using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
 
 namespace PraxisNote.Application.Features.Tags;
 
-public sealed class DeleteTag(ITagRepository tagRepository, ITaskRepository taskRepository, IUnitOfWork unitOfWork)
+public sealed class DeleteTag(
+    ITagRepository tagRepository,
+    ITaskRepository taskRepository,
+    INoteRepository noteRepository,
+    IMeetingRepository meetingRepository,
+    IUnitOfWork unitOfWork)
 {
     public record Command(Guid UserId, Guid TagId);
 
@@ -18,12 +25,18 @@ public sealed class DeleteTag(ITagRepository tagRepository, ITaskRepository task
             throw new InvalidOperationException(NotFoundError);
         }
 
-        // Remove tag only from tasks that have it (more efficient than loading all tasks)
+        // Sequential — EF Core DbContext is not thread-safe
         var tasksWithTag = await taskRepository.GetTasksWithTagAsync(command.UserId, command.TagId, cancellationToken);
         foreach (var task in tasksWithTag)
-        {
             task.RemoveTag(command.TagId);
-        }
+
+        var notesWithTag = await noteRepository.GetByTagIdAsync(command.UserId, command.TagId, cancellationToken);
+        foreach (var note in notesWithTag)
+            note.RemoveTag(command.TagId);
+
+        var meetingsWithTag = await meetingRepository.GetByTagIdAsync(command.UserId, command.TagId, cancellationToken);
+        foreach (var meeting in meetingsWithTag)
+            meeting.RemoveTag(command.TagId);
 
         tagRepository.Remove(tag);
         await unitOfWork.SaveChangesAsync(cancellationToken);

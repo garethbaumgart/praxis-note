@@ -1,7 +1,11 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, computed, signal, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
+import { Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
+import { Dialog } from 'primeng/dialog';
+import { Select } from 'primeng/select';
 import { TagService } from './tag.service';
 import { TagHubService } from './tag-hub.service';
 import { Tag } from './tag.model';
@@ -17,7 +21,7 @@ interface DateGroup {
   selector: 'app-tags-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectModule],
+  imports: [FormsModule, SelectModule, Menu, Dialog],
   styles: [`
     @keyframes shimmer {
       0% { background-position: -800px 0; }
@@ -33,6 +37,9 @@ interface DateGroup {
       background-size: 800px 100%;
       animation: shimmer 1.5s infinite;
       border-radius: 4px;
+    }
+    @media (hover: none) {
+      .group\\/tag button { opacity: 1 !important; }
     }
   `],
   template: `
@@ -69,36 +76,76 @@ interface DateGroup {
       } @else {
         <!-- Selector row -->
         <div class="flex flex-wrap items-center gap-3 mb-6">
-          <p-select
-            [options]="tagService.tags()"
-            optionLabel="name"
-            [ngModel]="selectedTag()"
-            (ngModelChange)="onTagSelected($event)"
-            [filter]="true"
-            filterBy="name"
-            placeholder="Select a tag..."
-            [showClear]="true"
-            [style]="{ 'min-width': '280px' }"
-            appendTo="body"
-            ariaLabel="Select a tag"
-          >
-            <ng-template pTemplate="item" let-tag>
-              <div class="flex items-center w-full">
-                <span class="text-sm">{{ tag.name }}</span>
-                <span class="ml-auto text-xs text-foreground-muted">{{ tag.usageCount }}</span>
-              </div>
-            </ng-template>
-            <ng-template pTemplate="selectedItem" let-tag>
-              <span>{{ tag.name }}</span>
-            </ng-template>
-          </p-select>
-          @if (selectedTag() && !hub.loading()) {
-            <span class="text-sm text-foreground-muted">
-              {{ summaryLine() }}
-            </span>
-          }
-          @if (selectedTag() && hub.loading()) {
-            <span class="skeleton inline-block w-48 h-4"></span>
+          @if (renamingTag()) {
+            <!-- Inline rename mode -->
+            <div class="flex items-center gap-2">
+              <input
+                #renameInput
+                type="text"
+                class="px-3 py-2 text-sm border border-border rounded-lg bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                [value]="renameValue()"
+                (input)="renameValue.set($any($event.target).value)"
+                (keydown.enter)="confirmRename()"
+                (keydown.escape)="cancelRename()"
+                [style]="{ 'min-width': '200px' }"
+              />
+              <button
+                type="button"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-accent text-white hover:opacity-90 transition"
+                (click)="confirmRename()"
+                aria-label="Save rename">
+                <i class="pi pi-check text-xs"></i>
+              </button>
+              <button
+                type="button"
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-foreground-muted hover:bg-surface-muted transition"
+                (click)="cancelRename()"
+                aria-label="Cancel rename">
+                <i class="pi pi-times text-xs"></i>
+              </button>
+            </div>
+            <span class="text-xs text-foreground-muted">Enter save · Esc cancel</span>
+          } @else {
+            <!-- Normal selector -->
+            <p-select
+              #tagSelect
+              [options]="tagService.tags()"
+              optionLabel="name"
+              [ngModel]="selectedTag()"
+              (ngModelChange)="onTagSelected($event)"
+              [filter]="true"
+              filterBy="name"
+              placeholder="Select a tag..."
+              [showClear]="true"
+              [style]="{ 'min-width': '280px' }"
+              appendTo="body"
+              ariaLabel="Select a tag"
+            >
+              <ng-template pTemplate="item" let-tag>
+                <div class="flex items-center w-full group/tag">
+                  <span class="text-sm">{{ tag.name }}</span>
+                  <span class="ml-auto text-xs text-foreground-muted mr-2">{{ tag.usageCount }}</span>
+                  <button
+                    type="button"
+                    class="w-6 h-6 flex items-center justify-center rounded text-foreground-muted opacity-0 group-hover/tag:opacity-100 hover:bg-surface-muted transition-opacity"
+                    (click)="showTagActions($event, tag)"
+                    aria-label="Actions for tag {{ tag.name }}">
+                    <i class="pi pi-ellipsis-v text-xs"></i>
+                  </button>
+                </div>
+              </ng-template>
+              <ng-template pTemplate="selectedItem" let-tag>
+                <span>{{ tag.name }}</span>
+              </ng-template>
+            </p-select>
+            @if (selectedTag() && !hub.loading()) {
+              <span class="text-sm text-foreground-muted">
+                {{ summaryLine() }}
+              </span>
+            }
+            @if (selectedTag() && hub.loading()) {
+              <span class="skeleton inline-block w-48 h-4"></span>
+            }
           }
         </div>
 
@@ -243,6 +290,46 @@ interface DateGroup {
         }
       }
     </div>
+
+    <!-- Popup action menu (rendered at body level) -->
+    <p-menu #tagActionMenu [model]="tagActionMenuItems()" [popup]="true" appendTo="body" />
+
+    <!-- Delete confirmation dialog -->
+    <p-dialog
+      header="Delete tag?"
+      [visible]="!!deletingTag()"
+      (visibleChange)="$event || cancelDelete()"
+      [modal]="true"
+      [style]="{ width: '24rem' }"
+      [draggable]="false">
+      @if (deletingTag(); as tag) {
+        <div class="flex flex-col gap-3">
+          <p class="text-sm text-foreground">
+            <span class="font-semibold">"{{ tag.name }}"</span> will be removed from:
+          </p>
+          @if (deleteBreakdown()) {
+            <p class="text-sm text-foreground-secondary">{{ deleteBreakdown() }}</p>
+          } @else {
+            <p class="text-sm text-foreground-muted">This tag is not used by any items.</p>
+          }
+          <p class="text-xs text-foreground-muted">This cannot be undone.</p>
+        </div>
+        <div class="flex justify-end gap-2 mt-4">
+          <button
+            type="button"
+            class="px-4 py-2 text-sm border border-border rounded-lg text-foreground-secondary hover:bg-surface-muted transition"
+            (click)="cancelDelete()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2 text-sm bg-danger text-white rounded-lg font-medium hover:opacity-90 transition"
+            (click)="confirmDelete()">
+            Delete tag
+          </button>
+        </div>
+      }
+    </p-dialog>
   `,
 })
 export class TagsPage implements OnInit {
@@ -251,8 +338,39 @@ export class TagsPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
+  @ViewChild('tagActionMenu') tagActionMenu!: Menu;
+  @ViewChild('tagSelect') tagSelect!: Select;
+  @ViewChild('renameInput') renameInput?: ElementRef<HTMLInputElement>;
+
   readonly selectedTag = signal<Tag | null>(null);
   readonly tagCount = computed(() => this.tagService.tags().length);
+
+  // Action menu state
+  readonly actionTag = signal<Tag | null>(null);
+
+  readonly tagActionMenuItems = computed<MenuItem[]>(() => [
+    { label: 'Rename', icon: 'pi pi-pencil', command: () => this.startRename() },
+    { label: 'Merge into...', icon: 'pi pi-arrow-right-arrow-left', disabled: true },
+    { separator: true },
+    { label: 'Delete', icon: 'pi pi-trash', styleClass: 'text-danger', command: () => this.startDelete() },
+  ]);
+
+  // Rename state
+  readonly renamingTag = signal<Tag | null>(null);
+  readonly renameValue = signal('');
+
+  // Delete state
+  readonly deletingTag = signal<Tag | null>(null);
+
+  readonly deleteBreakdown = computed(() => {
+    const tag = this.deletingTag();
+    if (!tag) return '';
+    const parts: string[] = [];
+    if (tag.meetingCount > 0) parts.push(`${tag.meetingCount} ${tag.meetingCount === 1 ? 'meeting' : 'meetings'}`);
+    if (tag.noteCount > 0) parts.push(`${tag.noteCount} ${tag.noteCount === 1 ? 'note' : 'notes'}`);
+    if (tag.taskCount > 0) parts.push(`${tag.taskCount} ${tag.taskCount === 1 ? 'task' : 'tasks'}`);
+    return parts.join(' \u00b7 ');
+  });
 
   readonly summaryLine = computed(() => {
     const m = this.hub.meetingCount();
@@ -262,7 +380,7 @@ export class TagsPage implements OnInit {
     if (m > 0) parts.push(`${m} ${m === 1 ? 'meeting' : 'meetings'}`);
     if (n > 0) parts.push(`${n} ${n === 1 ? 'note' : 'notes'}`);
     if (t > 0) parts.push(`${t} ${t === 1 ? 'task' : 'tasks'}`);
-    return parts.join(' · ');
+    return parts.join(' \u00b7 ');
   });
   readonly skeletonRows = [0, 1, 2, 3];
 
@@ -345,6 +463,71 @@ export class TagsPage implements OnInit {
     });
   }
 
+  // --- Action menu ---
+
+  showTagActions(event: Event, tag: Tag): void {
+    event.stopPropagation();
+    this.actionTag.set(tag);
+    this.tagSelect.hide();
+    this.tagActionMenu.toggle(event);
+  }
+
+  // --- Rename ---
+
+  startRename(): void {
+    const tag = this.actionTag();
+    if (!tag) return;
+    this.renamingTag.set(tag);
+    this.renameValue.set(tag.name);
+    // Focus input after render
+    setTimeout(() => {
+      this.renameInput?.nativeElement.focus();
+      this.renameInput?.nativeElement.select();
+    });
+  }
+
+  confirmRename(): void {
+    const tag = this.renamingTag();
+    const newName = this.renameValue().trim().toLowerCase();
+    if (!tag || !newName || newName === tag.name) {
+      this.cancelRename();
+      return;
+    }
+    this.tagService.updateTag(tag.id, newName);
+    // Update selectedTag reference if it was the renamed tag
+    if (this.selectedTag()?.id === tag.id) {
+      this.selectedTag.update(t => t ? { ...t, name: newName } : null);
+    }
+    this.renamingTag.set(null);
+  }
+
+  cancelRename(): void {
+    this.renamingTag.set(null);
+  }
+
+  // --- Delete ---
+
+  startDelete(): void {
+    this.deletingTag.set(this.actionTag());
+  }
+
+  confirmDelete(): void {
+    const tag = this.deletingTag();
+    if (!tag) return;
+    this.tagService.deleteTag(tag.id);
+    // Clear selection if the deleted tag was selected
+    if (this.selectedTag()?.id === tag.id) {
+      this.onTagSelected(null);
+    }
+    this.deletingTag.set(null);
+  }
+
+  cancelDelete(): void {
+    this.deletingTag.set(null);
+  }
+
+  // --- Existing methods ---
+
   retryLoad(): void {
     const tag = this.selectedTag();
     if (tag) {
@@ -368,7 +551,7 @@ export class TagsPage implements OnInit {
     if (item.attendeeCount != null && item.attendeeCount > 0) {
       parts.push(`${item.attendeeCount} attendee${item.attendeeCount !== 1 ? 's' : ''}`);
     }
-    return parts.join(' · ') || 'Meeting';
+    return parts.join(' \u00b7 ') || 'Meeting';
   }
 
   formatStatus(status?: string): string {
