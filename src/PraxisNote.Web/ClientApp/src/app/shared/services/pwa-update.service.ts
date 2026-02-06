@@ -71,8 +71,13 @@ export class PwaUpdateService {
     }
   }
 
-  /** Reload the app to apply the update */
-  applyUpdate(): void {
+  /** Activate the new service worker version and reload the app */
+  async applyUpdate(): Promise<void> {
+    try {
+      await this.swUpdate.activateUpdate();
+    } catch (err) {
+      console.error('Failed to activate update:', err);
+    }
     document.location.reload();
   }
 
