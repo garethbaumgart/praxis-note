@@ -151,6 +151,7 @@ public static class TagEndpoints
             return Results.NotFound();
         }
     }
+
     private static async Task<IResult> HandlePreviewMerge(
         Guid sourceId,
         Guid targetId,
