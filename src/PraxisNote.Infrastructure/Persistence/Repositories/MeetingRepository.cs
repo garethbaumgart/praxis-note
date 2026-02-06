@@ -18,6 +18,17 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Meeting>> GetByTagIdAsync(Guid userId, Guid tagId, CancellationToken cancellationToken = default)
+    {
+        // In-memory filtering required because TagIds uses a JSON value conversion
+        // that EF Core can't translate Contains() on. Same pattern as GetTagUsageCountsAsync.
+        var meetings = await context.Meetings
+            .Where(m => m.UserId == userId)
+            .ToListAsync(cancellationToken);
+
+        return meetings.Where(m => m.TagIds.Contains(tagId)).ToList();
+    }
+
     public async Task AddAsync(Meeting meeting, CancellationToken cancellationToken = default)
     {
         await context.Meetings.AddAsync(meeting, cancellationToken);
