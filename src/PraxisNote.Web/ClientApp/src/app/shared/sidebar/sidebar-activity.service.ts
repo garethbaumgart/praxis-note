@@ -44,23 +44,20 @@ export class SidebarActivityService {
     return 'recent-activity';
   });
 
-  readonly contextLabel = computed(() => {
-    switch (this.contextSection()) {
-      case 'recent-notes': return 'Recent Notes';
-      case 'due-soon': return 'Due Soon';
-      case 'recent-meetings': return 'Recent Meetings';
-      case 'recent-activity': return 'Recent Activity';
-    }
-  });
+  private static readonly CONTEXT_CONFIG: Record<ContextSection, { label: string; icon: string }> = {
+    'recent-notes': { label: 'Recent Notes', icon: 'pi-file-edit' },
+    'due-soon': { label: 'Due Soon', icon: 'pi-clock' },
+    'recent-meetings': { label: 'Recent Meetings', icon: 'pi-comments' },
+    'recent-activity': { label: 'Recent Activity', icon: 'pi-history' },
+  };
 
-  readonly contextIcon = computed(() => {
-    switch (this.contextSection()) {
-      case 'recent-notes': return 'pi-file-edit';
-      case 'due-soon': return 'pi-clock';
-      case 'recent-meetings': return 'pi-comments';
-      case 'recent-activity': return 'pi-history';
-    }
-  });
+  readonly contextLabel = computed(() =>
+    SidebarActivityService.CONTEXT_CONFIG[this.contextSection()].label
+  );
+
+  readonly contextIcon = computed(() =>
+    SidebarActivityService.CONTEXT_CONFIG[this.contextSection()].icon
+  );
 
   readonly inProgressTasks = computed(() =>
     this.taskService.inProgressTasks().slice(0, 2)
@@ -86,14 +83,16 @@ export class SidebarActivityService {
   });
 
   readonly dueSoonTasks = computed<ActivityItem[]>(() => {
-    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     return this.taskService.tasks()
       .filter(t => t.dueDate && t.status !== 'Done')
       .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
       .slice(0, 3)
       .map(t => {
         const due = new Date(t.dueDate!);
-        const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        due.setHours(0, 0, 0, 0);
+        const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
         let meta = '';
         let metaUrgent = false;
         if (diffDays < 0) { meta = 'Overdue'; metaUrgent = true; }

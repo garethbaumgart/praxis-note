@@ -24,7 +24,8 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Dynamic sidebar activity section';
+                WHERE "Title" = 'Dynamic sidebar activity section'
+                  AND "CreatedAt" = '2026-02-06T22:00:00Z';
                 """);
         }
     }
