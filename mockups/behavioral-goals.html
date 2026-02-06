@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Behavioral Goals & Tracking - Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            'accent-solid': 'var(--color-primary-solid)',
+            'accent-foreground': 'var(--color-primary-text)',
+            accent: 'var(--color-primary-bg)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            inprogress: 'var(--color-inprogress-bg)',
+            'inprogress-foreground': 'var(--color-inprogress-text)',
+            'inprogress-border': 'var(--color-inprogress-border)',
+            todo: 'var(--color-todo-bg)',
+            'todo-foreground': 'var(--color-todo-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.2);
+      --color-todo-bg: rgba(94, 129, 172, 0.1);
+      --color-todo-text: #5e81ac;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.15);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.15);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.25);
+      --color-todo-bg: rgba(94, 129, 172, 0.15);
+      --color-todo-text: #88c0d0;
+    }
+    body { background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-divider {
+      border-top: 3px dashed var(--color-border-default);
+      margin: 3rem 0;
+      padding-top: 2rem;
+    }
+    .badge-recommended {
+      background: var(--color-done-bg);
+      color: var(--color-done-text);
+      border: 1px solid var(--color-done-border);
+    }
+
+    /* Progress bar segments */
+    .progress-segments {
+      display: flex;
+      gap: 3px;
+    }
+    .progress-segments .seg {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--color-bg-muted);
+    }
+    .progress-segments .seg.pass {
+      background: var(--color-done-text);
+    }
+    .progress-segments .seg.fail {
+      background: var(--color-danger-base);
+    }
+
+    /* Circular progress */
+    .circular-progress {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    /* Pass/fail dots */
+    .dot-track {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .dot-track .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-bg-muted);
+    }
+    .dot-track .dot.pass {
+      background: var(--color-done-text);
+    }
+    .dot-track .dot.fail {
+      background: var(--color-danger-base);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8">
+  <!-- Theme toggle -->
+  <div class="fixed top-4 right-4 z-50 flex gap-2">
+    <button onclick="document.documentElement.removeAttribute('data-theme')"
+            class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-subtle border border-border">Light</button>
+    <button onclick="document.documentElement.setAttribute('data-theme','dark')"
+            class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-subtle border border-border">Dark</button>
+  </div>
+
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">Behavioral Goals & Tracking</h1>
+    <p class="text-foreground-muted mb-2">Issue #283 — 5 design options for the goals section on the Insights page</p>
+    <p class="text-foreground-secondary text-sm mb-8">Each option shows: goals list, add goal dialog, and how it integrates with the existing Insights page. The goals section sits between the header/filters and the trend charts.</p>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 1: Card Grid with Ring Progress -->
+    <!-- ============================================================ -->
+    <div class="mb-4">
+      <h2 class="text-xl font-bold">Option 1: Card Grid with Ring Progress</h2>
+      <p class="text-foreground-muted text-sm mt-1">Each goal is a standalone card with a circular progress ring, streak badge, and pass/fail dot track. Clean and scannable.</p>
+    </div>
+
+    <!-- Goals section -->
+    <div class="bg-surface-subtle border border-border rounded-xl p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-bullseye text-accent-foreground"></i>
+          <h3 class="font-semibold text-foreground">Your Goals</h3>
+          <span class="text-xs text-foreground-muted">(3 active)</span>
+        </div>
+        <button class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent-foreground bg-accent rounded-lg hover:opacity-80 transition">
+          <i class="pi pi-plus text-xs"></i> Add Goal
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Goal card 1 — met -->
+        <div class="border border-border rounded-xl p-4 bg-surface">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="font-medium text-foreground text-sm">Keep talk time under 40%</p>
+              <p class="text-xs text-foreground-muted mt-0.5">Talk Time &lt; 40%</p>
+            </div>
+            <div class="circular-progress" style="background: conic-gradient(var(--color-done-text) 0% 80%, var(--color-bg-muted) 80% 100%); color: var(--color-done-text);">
+              <div class="bg-surface rounded-full w-9 h-9 flex items-center justify-center text-xs font-bold" style="color: var(--color-done-text);">80%</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-done-bg); color: var(--color-done-text); border: 1px solid var(--color-done-border);">
+              <i class="pi pi-bolt text-[10px]"></i> 5 streak
+            </span>
+            <span class="text-xs text-foreground-muted">8 of 10 met</span>
+          </div>
+          <div class="dot-track">
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot fail"></div>
+            <div class="dot pass"></div>
+            <div class="dot fail"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+          </div>
+        </div>
+
+        <!-- Goal card 2 — struggling -->
+        <div class="border border-border rounded-xl p-4 bg-surface">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="font-medium text-foreground text-sm">Ask 3+ questions per meeting</p>
+              <p class="text-xs text-foreground-muted mt-0.5">Question Ratio &gt; 0.3</p>
+            </div>
+            <div class="circular-progress" style="background: conic-gradient(var(--color-inprogress-text) 0% 40%, var(--color-bg-muted) 40% 100%);">
+              <div class="bg-surface rounded-full w-9 h-9 flex items-center justify-center text-xs font-bold" style="color: var(--color-inprogress-text);">40%</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-inprogress-bg); color: var(--color-inprogress-text); border: 1px solid var(--color-inprogress-border);">
+              1 streak
+            </span>
+            <span class="text-xs text-foreground-muted">4 of 10 met</span>
+          </div>
+          <div class="dot-track">
+            <div class="dot fail"></div>
+            <div class="dot fail"></div>
+            <div class="dot pass"></div>
+            <div class="dot fail"></div>
+            <div class="dot fail"></div>
+            <div class="dot fail"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot fail"></div>
+            <div class="dot pass"></div>
+          </div>
+        </div>
+
+        <!-- Goal card 3 — excellent -->
+        <div class="border border-border rounded-xl p-4 bg-surface">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="font-medium text-foreground text-sm">Zero red flags</p>
+              <p class="text-xs text-foreground-muted mt-0.5">Red Flags = 0</p>
+            </div>
+            <div class="circular-progress" style="background: conic-gradient(var(--color-done-text) 0% 90%, var(--color-bg-muted) 90% 100%);">
+              <div class="bg-surface rounded-full w-9 h-9 flex items-center justify-center text-xs font-bold" style="color: var(--color-done-text);">90%</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-done-bg); color: var(--color-done-text); border: 1px solid var(--color-done-border);">
+              <i class="pi pi-bolt text-[10px]"></i> 9 streak
+            </span>
+            <span class="text-xs text-foreground-muted">9 of 10 met</span>
+          </div>
+          <div class="dot-track">
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot pass"></div>
+            <div class="dot fail"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-4 mb-4">
+      <p class="text-sm text-foreground-secondary"><strong>Pros:</strong> Highly scannable, each goal is self-contained, ring progress is visually striking, dot track shows recent history at a glance.</p>
+      <p class="text-sm text-foreground-secondary mt-1"><strong>Cons:</strong> Takes more vertical space with 3+ goals, ring progress may feel heavy on mobile, less room for detail per card.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 2: Compact List with Progress Bars (RECOMMENDED) -->
+    <!-- ============================================================ -->
+    <div class="option-divider"></div>
+    <div class="mb-4 flex items-center gap-3">
+      <h2 class="text-xl font-bold">Option 2: Compact List with Segmented Progress</h2>
+      <span class="badge-recommended text-xs font-semibold px-2.5 py-1 rounded-full">Recommended</span>
+    </div>
+    <p class="text-foreground-muted text-sm mb-4">Goals as a tight list with segmented progress bars showing pass/fail per meeting. Streak and ratio are inline. Dense but readable — scales well to many goals.</p>
+
+    <!-- Goals section -->
+    <div class="bg-surface-subtle border border-border rounded-xl p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-bullseye text-accent-foreground"></i>
+          <h3 class="font-semibold text-foreground">Your Goals</h3>
+        </div>
+        <button class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent-foreground bg-accent rounded-lg hover:opacity-80 transition">
+          <i class="pi pi-plus text-xs"></i> Add Goal
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <!-- Goal 1 — on track -->
+        <div class="flex items-center gap-4 p-3 border border-border rounded-lg bg-surface hover:border-accent-foreground transition group cursor-pointer">
+          <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--color-done-bg);">
+            <i class="pi pi-check-circle text-sm" style="color: var(--color-done-text);"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="font-medium text-foreground text-sm truncate">Keep talk time under 40%</p>
+              <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0" style="background: var(--color-done-bg); color: var(--color-done-text);">
+                <i class="pi pi-bolt text-[8px]"></i> 5
+              </span>
+            </div>
+            <div class="flex items-center gap-3 mt-1.5">
+              <div class="progress-segments flex-1 max-w-[200px]">
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg fail"></div>
+                <div class="seg pass"></div>
+                <div class="seg fail"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+              </div>
+              <span class="text-xs text-foreground-muted flex-shrink-0">8/10</span>
+            </div>
+          </div>
+          <i class="pi pi-chevron-right text-xs text-foreground-muted opacity-0 group-hover:opacity-100 transition"></i>
+        </div>
+
+        <!-- Goal 2 — needs work -->
+        <div class="flex items-center gap-4 p-3 border border-border rounded-lg bg-surface hover:border-accent-foreground transition group cursor-pointer">
+          <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--color-inprogress-bg);">
+            <i class="pi pi-exclamation-circle text-sm" style="color: var(--color-inprogress-text);"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="font-medium text-foreground text-sm truncate">Ask 3+ questions per meeting</p>
+              <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0" style="background: var(--color-inprogress-bg); color: var(--color-inprogress-text);">
+                1
+              </span>
+            </div>
+            <div class="flex items-center gap-3 mt-1.5">
+              <div class="progress-segments flex-1 max-w-[200px]">
+                <div class="seg fail"></div>
+                <div class="seg fail"></div>
+                <div class="seg pass"></div>
+                <div class="seg fail"></div>
+                <div class="seg fail"></div>
+                <div class="seg fail"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg fail"></div>
+                <div class="seg pass"></div>
+              </div>
+              <span class="text-xs text-foreground-muted flex-shrink-0">4/10</span>
+            </div>
+          </div>
+          <i class="pi pi-chevron-right text-xs text-foreground-muted opacity-0 group-hover:opacity-100 transition"></i>
+        </div>
+
+        <!-- Goal 3 — excellent -->
+        <div class="flex items-center gap-4 p-3 border border-border rounded-lg bg-surface hover:border-accent-foreground transition group cursor-pointer">
+          <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--color-done-bg);">
+            <i class="pi pi-check-circle text-sm" style="color: var(--color-done-text);"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="font-medium text-foreground text-sm truncate">Zero red flags</p>
+              <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0" style="background: var(--color-done-bg); color: var(--color-done-text);">
+                <i class="pi pi-bolt text-[8px]"></i> 9
+              </span>
+            </div>
+            <div class="flex items-center gap-3 mt-1.5">
+              <div class="progress-segments flex-1 max-w-[200px]">
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg pass"></div>
+                <div class="seg fail"></div>
+              </div>
+              <span class="text-xs text-foreground-muted flex-shrink-0">9/10</span>
+            </div>
+          </div>
+          <i class="pi pi-chevron-right text-xs text-foreground-muted opacity-0 group-hover:opacity-100 transition"></i>
+        </div>
+
+        <!-- Suggestion -->
+        <div class="flex items-center gap-4 p-3 border border-dashed border-border rounded-lg bg-surface">
+          <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--color-primary-bg);">
+            <i class="pi pi-lightbulb text-sm" style="color: var(--color-primary-text);"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-foreground-secondary">Your sentiment dropped recently. Consider setting a tone goal.</p>
+          </div>
+          <button class="text-xs font-medium px-3 py-1 rounded-lg flex-shrink-0" style="color: var(--color-primary-text); background: var(--color-primary-bg);">
+            Set Goal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Goal Dialog for Option 2 -->
+    <div class="mb-6">
+      <p class="text-sm font-semibold text-foreground-muted uppercase tracking-wide mb-3">Add Goal Dialog</p>
+      <div class="bg-surface-subtle border border-border rounded-xl p-5 max-w-lg">
+        <h3 class="font-semibold text-foreground mb-4">Add a Goal</h3>
+
+        <!-- Presets -->
+        <p class="text-xs font-medium text-foreground-muted uppercase tracking-wide mb-2">Quick Presets</p>
+        <div class="flex flex-wrap gap-2 mb-5">
+          <button class="px-3 py-1.5 text-xs font-medium border border-border rounded-lg bg-surface hover:border-accent-foreground transition">
+            Talk time &lt; 40%
+          </button>
+          <button class="px-3 py-1.5 text-xs font-medium border border-border rounded-lg bg-surface hover:border-accent-foreground transition">
+            3+ questions
+          </button>
+          <button class="px-3 py-1.5 text-xs font-medium border border-border rounded-lg bg-surface hover:border-accent-foreground transition">
+            Zero interruptions
+          </button>
+          <button class="px-3 py-1.5 text-xs font-medium border border-border rounded-lg bg-surface hover:border-accent-foreground transition">
+            Positive sentiment
+          </button>
+          <button class="px-3 py-1.5 text-xs font-medium border border-border rounded-lg bg-surface hover:border-accent-foreground transition">
+            No red flags
+          </button>
+        </div>
+
+        <!-- Custom builder -->
+        <p class="text-xs font-medium text-foreground-muted uppercase tracking-wide mb-2">Or Build Custom</p>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs text-foreground-muted block mb-1">Metric</label>
+            <select class="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg text-foreground">
+              <option>Talk Time %</option>
+              <option>Question Ratio</option>
+              <option>Interruption Count</option>
+              <option>Sentiment Score</option>
+              <option>Red Flag Count</option>
+            </select>
+          </div>
+          <div class="flex gap-3">
+            <div class="flex-1">
+              <label class="text-xs text-foreground-muted block mb-1">Condition</label>
+              <select class="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg text-foreground">
+                <option>Less than</option>
+                <option>Greater than</option>
+                <option>Equal to</option>
+                <option>Between</option>
+              </select>
+            </div>
+            <div class="w-24">
+              <label class="text-xs text-foreground-muted block mb-1">Target</label>
+              <input type="number" value="40" class="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg text-foreground">
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-foreground-muted block mb-1">Goal Title</label>
+            <input type="text" value="Keep talk time under 40%" class="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg text-foreground">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-5">
+          <button class="px-4 py-2 text-sm font-medium text-foreground-muted hover:text-foreground transition">Cancel</button>
+          <button class="px-4 py-2 text-sm font-medium text-white rounded-lg transition" style="background: var(--color-primary-solid);">Create Goal</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-4 mb-4">
+      <p class="text-sm text-foreground-secondary"><strong>Pros:</strong> Very space-efficient, scales to many goals, segmented bars show per-meeting history clearly, streak badges are compact, chevron hints at detail view. Suggestion row integrates naturally.</p>
+      <p class="text-sm text-foreground-secondary mt-1"><strong>Cons:</strong> Segmented progress bars may be less visually striking than rings, less obvious pass/fail at a distance.</p>
+      <p class="text-sm font-medium mt-2" style="color: var(--color-done-text);"><strong>Recommended:</strong> Best balance of density, readability, and scalability. Matches the compact list patterns used elsewhere in the app (tasks, meetings). Segmented bars directly communicate meeting-level pass/fail which is the core UX.</p>
+    </div>
+
+
+    <!-- ============================================================ -->
+    <!-- OPTION 3: Stacked Horizontal Bars with Inline Stats -->
+    <!-- ============================================================ -->
+    <div class="option-divider"></div>
+    <div class="mb-4">
+      <h2 class="text-xl font-bold">Option 3: Stacked Horizontal Bars with Inline Stats</h2>
+      <p class="text-foreground-muted text-sm mt-1">Each goal is a wide row with a full-width progress bar, stats on the right, and a subtle background tint based on status.</p>
+    </div>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-bullseye text-accent-foreground"></i>
+          <h3 class="font-semibold text-foreground">Your Goals</h3>
+        </div>
+        <button class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent-foreground bg-accent rounded-lg hover:opacity-80 transition">
+          <i class="pi pi-plus text-xs"></i> Add Goal
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <!-- Goal 1 -->
+        <div class="rounded-lg p-4" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-sm" style="color: var(--color-done-text);"></i>
+              <span class="font-medium text-sm text-foreground">Keep talk time under 40%</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-foreground-muted">
+              <span class="font-semibold" style="color: var(--color-done-text);">80%</span>
+              <span>8/10 met</span>
+              <span class="inline-flex items-center gap-1 font-semibold" style="color: var(--color-done-text);">
+                <i class="pi pi-bolt text-[10px]"></i> 5
+              </span>
+            </div>
+          </div>
+          <div class="w-full h-2 rounded-full" style="background: rgba(163,190,140,0.2);">
+            <div class="h-full rounded-full" style="width: 80%; background: var(--color-done-text);"></div>
+          </div>
+        </div>
+
+        <!-- Goal 2 -->
+        <div class="rounded-lg p-4" style="background: var(--color-inprogress-bg); border: 1px solid var(--color-inprogress-border);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-exclamation-circle text-sm" style="color: var(--color-inprogress-text);"></i>
+              <span class="font-medium text-sm text-foreground">Ask 3+ questions per meeting</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-foreground-muted">
+              <span class="font-semibold" style="color: var(--color-inprogress-text);">40%</span>
+              <span>4/10 met</span>
+              <span class="inline-flex items-center gap-1 font-semibold" style="color: var(--color-inprogress-text);">
+                1
+              </span>
+            </div>
+          </div>
+          <div class="w-full h-2 rounded-full" style="background: rgba(208,135,112,0.2);">
+            <div class="h-full rounded-full" style="width: 40%; background: var(--color-inprogress-text);"></div>
+          </div>
+        </div>
+
+        <!-- Goal 3 -->
+        <div class="rounded-lg p-4" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-sm" style="color: var(--color-done-text);"></i>
+              <span class="font-medium text-sm text-foreground">Zero red flags</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-foreground-muted">
+              <span class="font-semibold" style="color: var(--color-done-text);">90%</span>
+              <span>9/10 met</span>
+              <span class="inline-flex items-center gap-1 font-semibold" style="color: var(--color-done-text);">
+                <i class="pi pi-bolt text-[10px]"></i> 9
+              </span>
+            </div>
+          </div>
+          <div class="w-full h-2 rounded-full" style="background: rgba(163,190,140,0.2);">
+            <div class="h-full rounded-full" style="width: 90%; background: var(--color-done-text);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-4 mb-4">
+      <p class="text-sm text-foreground-secondary"><strong>Pros:</strong> Color-coded backgrounds give instant status awareness, progress bars are familiar and readable, stats are inline and compact.</p>
+      <p class="text-sm text-foreground-secondary mt-1"><strong>Cons:</strong> Colored backgrounds can feel visually heavy with many goals, continuous progress bar loses per-meeting granularity, less distinct from summary cards above.</p>
+    </div>
+
+
+    <!-- ============================================================ -->
+    <!-- OPTION 4: Kanban-Style Columns (By Status) -->
+    <!-- ============================================================ -->
+    <div class="option-divider"></div>
+    <div class="mb-4">
+      <h2 class="text-xl font-bold">Option 4: Status Columns</h2>
+      <p class="text-foreground-muted text-sm mt-1">Goals organized into columns by status: On Track, Needs Work, and New. Familiar Kanban-like layout that groups goals by how well the user is doing.</p>
+    </div>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-bullseye text-accent-foreground"></i>
+          <h3 class="font-semibold text-foreground">Your Goals</h3>
+        </div>
+        <button class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent-foreground bg-accent rounded-lg hover:opacity-80 transition">
+          <i class="pi pi-plus text-xs"></i> Add Goal
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- On Track column -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full" style="background: var(--color-done-text);"></div>
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color: var(--color-done-text);">On Track</span>
+            <span class="text-xs text-foreground-muted">(2)</span>
+          </div>
+          <div class="space-y-2">
+            <div class="border border-border rounded-lg p-3 bg-surface">
+              <p class="font-medium text-sm text-foreground mb-1">Keep talk time under 40%</p>
+              <div class="flex items-center justify-between">
+                <div class="dot-track">
+                  <div class="dot pass"></div><div class="dot pass"></div><div class="dot fail"></div>
+                  <div class="dot pass"></div><div class="dot pass"></div>
+                </div>
+                <span class="text-xs font-semibold" style="color: var(--color-done-text);">
+                  <i class="pi pi-bolt text-[9px]"></i> 5
+                </span>
+              </div>
+            </div>
+            <div class="border border-border rounded-lg p-3 bg-surface">
+              <p class="font-medium text-sm text-foreground mb-1">Zero red flags</p>
+              <div class="flex items-center justify-between">
+                <div class="dot-track">
+                  <div class="dot pass"></div><div class="dot pass"></div><div class="dot pass"></div>
+                  <div class="dot pass"></div><div class="dot pass"></div>
+                </div>
+                <span class="text-xs font-semibold" style="color: var(--color-done-text);">
+                  <i class="pi pi-bolt text-[9px]"></i> 9
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Needs Work column -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full" style="background: var(--color-inprogress-text);"></div>
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color: var(--color-inprogress-text);">Needs Work</span>
+            <span class="text-xs text-foreground-muted">(1)</span>
+          </div>
+          <div class="space-y-2">
+            <div class="border border-border rounded-lg p-3 bg-surface">
+              <p class="font-medium text-sm text-foreground mb-1">Ask 3+ questions</p>
+              <div class="flex items-center justify-between">
+                <div class="dot-track">
+                  <div class="dot fail"></div><div class="dot pass"></div><div class="dot fail"></div>
+                  <div class="dot fail"></div><div class="dot pass"></div>
+                </div>
+                <span class="text-xs font-semibold" style="color: var(--color-inprogress-text);">
+                  1
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suggested column -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full" style="background: var(--color-primary-text);"></div>
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color: var(--color-primary-text);">Suggested</span>
+          </div>
+          <div class="space-y-2">
+            <div class="border border-dashed border-border rounded-lg p-3 bg-surface">
+              <p class="text-sm text-foreground-secondary mb-2">Set a sentiment goal</p>
+              <p class="text-xs text-foreground-muted mb-2">Your tone dropped recently</p>
+              <button class="text-xs font-medium px-2.5 py-1 rounded" style="color: var(--color-primary-text); background: var(--color-primary-bg);">
+                Add Goal
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-4 mb-4">
+      <p class="text-sm text-foreground-secondary"><strong>Pros:</strong> Familiar pattern from the Tasks page, status grouping adds meaning, suggestion column is natural placement.</p>
+      <p class="text-sm text-foreground-secondary mt-1"><strong>Cons:</strong> Kanban columns waste space with few goals, horizontal scrolling risk on mobile, may feel like it belongs on a separate page rather than inline with the insights dashboard.</p>
+    </div>
+
+
+    <!-- ============================================================ -->
+    <!-- OPTION 5: Minimal Inline with Expandable Detail -->
+    <!-- ============================================================ -->
+    <div class="option-divider"></div>
+    <div class="mb-4">
+      <h2 class="text-xl font-bold">Option 5: Minimal Accordion with Expandable Detail</h2>
+      <p class="text-foreground-muted text-sm mt-1">Ultra-compact collapsed view showing just name + streak. Click to expand and see full progress, per-meeting history, and metric trend overlay.</p>
+    </div>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-bullseye text-accent-foreground"></i>
+          <h3 class="font-semibold text-foreground">Your Goals</h3>
+        </div>
+        <button class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent-foreground bg-accent rounded-lg hover:opacity-80 transition">
+          <i class="pi pi-plus text-xs"></i> Add Goal
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <!-- Goal 1 — collapsed -->
+        <div class="border border-border rounded-lg bg-surface">
+          <div class="flex items-center justify-between p-3 cursor-pointer">
+            <div class="flex items-center gap-3">
+              <i class="pi pi-check-circle text-sm" style="color: var(--color-done-text);"></i>
+              <span class="font-medium text-sm text-foreground">Keep talk time under 40%</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-semibold" style="color: var(--color-done-text);">8/10</span>
+              <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style="background: var(--color-done-bg); color: var(--color-done-text);">
+                <i class="pi pi-bolt text-[8px]"></i> 5
+              </span>
+              <i class="pi pi-chevron-down text-xs text-foreground-muted"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goal 2 — expanded (showing detail view) -->
+        <div class="border border-border rounded-lg bg-surface" style="border-color: var(--color-inprogress-border);">
+          <div class="flex items-center justify-between p-3 cursor-pointer">
+            <div class="flex items-center gap-3">
+              <i class="pi pi-exclamation-circle text-sm" style="color: var(--color-inprogress-text);"></i>
+              <span class="font-medium text-sm text-foreground">Ask 3+ questions per meeting</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-semibold" style="color: var(--color-inprogress-text);">4/10</span>
+              <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style="background: var(--color-inprogress-bg); color: var(--color-inprogress-text);">
+                1
+              </span>
+              <i class="pi pi-chevron-up text-xs text-foreground-muted"></i>
+            </div>
+          </div>
+
+          <!-- Expanded detail -->
+          <div class="px-3 pb-4 border-t border-border pt-3">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-foreground-muted">Target: Question Ratio &gt; 0.3</span>
+              <span class="text-xs text-foreground-muted">|</span>
+              <span class="text-xs text-foreground-muted">Last 10 meetings</span>
+            </div>
+
+            <!-- Per-meeting results -->
+            <p class="text-xs font-medium text-foreground-muted uppercase tracking-wide mb-2">Recent Meetings</p>
+            <div class="space-y-1.5 mb-4">
+              <div class="flex items-center gap-2 text-xs">
+                <i class="pi pi-check text-[10px]" style="color: var(--color-done-text);"></i>
+                <span class="text-foreground-muted w-20">Jan 29</span>
+                <span class="text-foreground">Sprint Retro</span>
+                <span class="ml-auto font-medium" style="color: var(--color-done-text);">0.45</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <i class="pi pi-times text-[10px]" style="color: var(--color-danger-base);"></i>
+                <span class="text-foreground-muted w-20">Jan 27</span>
+                <span class="text-foreground">Design Review</span>
+                <span class="ml-auto font-medium" style="color: var(--color-danger-base);">0.12</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <i class="pi pi-times text-[10px]" style="color: var(--color-danger-base);"></i>
+                <span class="text-foreground-muted w-20">Jan 25</span>
+                <span class="text-foreground">Stakeholder Sync</span>
+                <span class="ml-auto font-medium" style="color: var(--color-danger-base);">0.08</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <i class="pi pi-check text-[10px]" style="color: var(--color-done-text);"></i>
+                <span class="text-foreground-muted w-20">Jan 23</span>
+                <span class="text-foreground">1:1 with Manager</span>
+                <span class="ml-auto font-medium" style="color: var(--color-done-text);">0.55</span>
+              </div>
+            </div>
+
+            <!-- Mini trend with goal line -->
+            <p class="text-xs font-medium text-foreground-muted uppercase tracking-wide mb-2">Trend (goal line at 0.3)</p>
+            <div class="h-16 bg-surface-muted rounded-lg flex items-end px-2 pb-1 gap-1 relative">
+              <!-- Goal line -->
+              <div class="absolute left-0 right-0" style="bottom: 37%; border-top: 2px dashed var(--color-primary-text); opacity: 0.5;"></div>
+              <!-- Bars -->
+              <div class="flex-1 rounded-t" style="height: 15%; background: var(--color-danger-base);"></div>
+              <div class="flex-1 rounded-t" style="height: 10%; background: var(--color-danger-base);"></div>
+              <div class="flex-1 rounded-t" style="height: 40%; background: var(--color-done-text);"></div>
+              <div class="flex-1 rounded-t" style="height: 20%; background: var(--color-danger-base);"></div>
+              <div class="flex-1 rounded-t" style="height: 12%; background: var(--color-danger-base);"></div>
+              <div class="flex-1 rounded-t" style="height: 8%; background: var(--color-danger-base);"></div>
+              <div class="flex-1 rounded-t" style="height: 45%; background: var(--color-done-text);"></div>
+              <div class="flex-1 rounded-t" style="height: 65%; background: var(--color-done-text);"></div>
+              <div class="flex-1 rounded-t" style="height: 18%; background: var(--color-danger-base);"></div>
+              <div class="flex-1 rounded-t" style="height: 55%; background: var(--color-done-text);"></div>
+            </div>
+
+            <div class="flex justify-end mt-3">
+              <button class="text-xs text-foreground-muted hover:text-foreground transition flex items-center gap-1">
+                <i class="pi pi-pencil text-[10px]"></i> Edit
+              </button>
+              <button class="text-xs text-danger ml-3 hover:opacity-80 transition flex items-center gap-1">
+                <i class="pi pi-trash text-[10px]"></i> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goal 3 — collapsed -->
+        <div class="border border-border rounded-lg bg-surface">
+          <div class="flex items-center justify-between p-3 cursor-pointer">
+            <div class="flex items-center gap-3">
+              <i class="pi pi-check-circle text-sm" style="color: var(--color-done-text);"></i>
+              <span class="font-medium text-sm text-foreground">Zero red flags</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-semibold" style="color: var(--color-done-text);">9/10</span>
+              <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style="background: var(--color-done-bg); color: var(--color-done-text);">
+                <i class="pi pi-bolt text-[8px]"></i> 9
+              </span>
+              <i class="pi pi-chevron-down text-xs text-foreground-muted"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-surface-subtle border border-border rounded-xl p-4 mb-4">
+      <p class="text-sm text-foreground-secondary"><strong>Pros:</strong> Most space-efficient when collapsed, expanded view provides rich detail including per-meeting results and trend chart with goal line overlay, edit/delete actions are tucked in expanded view.</p>
+      <p class="text-sm text-foreground-secondary mt-1"><strong>Cons:</strong> Collapsed state shows less at-a-glance info, requires clicks to see detail, expanded state adds significant height, mixed collapsed/expanded can look uneven.</p>
+    </div>
+
+
+    <!-- ============================================================ -->
+    <!-- COMPARISON TABLE -->
+    <!-- ============================================================ -->
+    <div class="option-divider"></div>
+    <h2 class="text-xl font-bold mb-4">Comparison</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border border-border rounded-xl overflow-hidden">
+        <thead>
+          <tr class="bg-surface-muted">
+            <th class="text-left p-3 font-semibold text-foreground">Criteria</th>
+            <th class="p-3 font-semibold text-foreground text-center">1: Card Grid</th>
+            <th class="p-3 font-semibold text-foreground text-center" style="background: var(--color-done-bg);">2: Compact List</th>
+            <th class="p-3 font-semibold text-foreground text-center">3: Horizontal Bars</th>
+            <th class="p-3 font-semibold text-foreground text-center">4: Status Columns</th>
+            <th class="p-3 font-semibold text-foreground text-center">5: Accordion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-t border-border">
+            <td class="p-3 text-foreground-secondary">Space efficiency</td>
+            <td class="p-3 text-center">Medium</td>
+            <td class="p-3 text-center font-medium" style="background: var(--color-done-bg); color: var(--color-done-text);">High</td>
+            <td class="p-3 text-center">Medium</td>
+            <td class="p-3 text-center">Low</td>
+            <td class="p-3 text-center">Very High</td>
+          </tr>
+          <tr class="border-t border-border">
+            <td class="p-3 text-foreground-secondary">At-a-glance info</td>
+            <td class="p-3 text-center">High</td>
+            <td class="p-3 text-center font-medium" style="background: var(--color-done-bg); color: var(--color-done-text);">High</td>
+            <td class="p-3 text-center">Medium</td>
+            <td class="p-3 text-center">Medium</td>
+            <td class="p-3 text-center">Low</td>
+          </tr>
+          <tr class="border-t border-border">
+            <td class="p-3 text-foreground-secondary">Per-meeting detail</td>
+            <td class="p-3 text-center">Dots</td>
+            <td class="p-3 text-center font-medium" style="background: var(--color-done-bg); color: var(--color-done-text);">Segments</td>
+            <td class="p-3 text-center">None</td>
+            <td class="p-3 text-center">Dots</td>
+            <td class="p-3 text-center">Full list</td>
+          </tr>
+          <tr class="border-t border-border">
+            <td class="p-3 text-foreground-secondary">Scales to 5+ goals</td>
+            <td class="p-3 text-center">Poor</td>
+            <td class="p-3 text-center font-medium" style="background: var(--color-done-bg); color: var(--color-done-text);">Great</td>
+            <td class="p-3 text-center">Good</td>
+            <td class="p-3 text-center">Poor</td>
+            <td class="p-3 text-center">Great</td>
+          </tr>
+          <tr class="border-t border-border">
+            <td class="p-3 text-foreground-secondary">Mobile friendliness</td>
+            <td class="p-3 text-center">Fair</td>
+            <td class="p-3 text-center font-medium" style="background: var(--color-done-bg); color: var(--color-done-text);">Great</td>
+            <td class="p-3 text-center">Good</td>
+            <td class="p-3 text-center">Poor</td>
+            <td class="p-3 text-center">Good</td>
+          </tr>
+          <tr class="border-t border-border">
+            <td class="p-3 text-foreground-secondary">Visual appeal</td>
+            <td class="p-3 text-center">High</td>
+            <td class="p-3 text-center font-medium" style="background: var(--color-done-bg); color: var(--color-done-text);">Good</td>
+            <td class="p-3 text-center">Good</td>
+            <td class="p-3 text-center">Medium</td>
+            <td class="p-3 text-center">Clean</td>
+          </tr>
+          <tr class="border-t border-border">
+            <td class="p-3 text-foreground-secondary">Matches app patterns</td>
+            <td class="p-3 text-center">New</td>
+            <td class="p-3 text-center font-medium" style="background: var(--color-done-bg); color: var(--color-done-text);">Strong</td>
+            <td class="p-3 text-center">Fair</td>
+            <td class="p-3 text-center">Tasks page</td>
+            <td class="p-3 text-center">Meeting detail</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-8 mb-16 p-5 rounded-xl" style="background: var(--color-done-bg); border: 1px solid var(--color-done-border);">
+      <h3 class="font-bold text-foreground mb-2">Recommendation: Option 2 — Compact List with Segmented Progress</h3>
+      <ul class="text-sm text-foreground-secondary space-y-1 list-disc list-inside">
+        <li>Segmented progress bars communicate pass/fail <strong>per meeting</strong> — the core information users need</li>
+        <li>Compact rows scale well from 1 goal to 10+ without overwhelming the insights page</li>
+        <li>Matches the list-based patterns already used in Tasks and Meetings pages</li>
+        <li>Streak badges are inline and unobtrusive but visible</li>
+        <li>Suggestion row integrates naturally as a dashed-border variant</li>
+        <li>Hover reveals chevron for detail view navigation — progressive disclosure</li>
+        <li>Mobile-friendly: single column stacks naturally</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

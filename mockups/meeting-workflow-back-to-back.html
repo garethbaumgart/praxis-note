@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Workflow - Back-to-Back Meetings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            'surface-hover': 'var(--color-surface-hover)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-hover': 'var(--color-primary-bg-hover)',
+            'accent-foreground': 'var(--color-primary-text)',
+            'accent-solid': 'var(--color-primary-solid)',
+            todo: 'var(--color-todo-bg)',
+            'todo-foreground': 'var(--color-todo-text)',
+            inprogress: 'var(--color-inprogress-bg)',
+            'inprogress-foreground': 'var(--color-inprogress-text)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            danger: 'var(--color-danger-base)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-surface-hover: #f8f9fa;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.25);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-todo-bg: rgba(136, 192, 208, 0.12);
+      --color-todo-text: #0b7285;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-danger-base: #bf616a;
+    }
+
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-surface-hover: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.3);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-todo-bg: rgba(136, 192, 208, 0.12);
+      --color-todo-text: #88c0d0;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-danger-base: #bf616a;
+    }
+
+    .pi { font-size: inherit !important; }
+
+    .card {
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 0.5rem;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+    }
+
+    .recording-pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .quick-record-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+
+    .quick-record-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .quick-record-btn.recording {
+      animation: recording-glow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes recording-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(191, 97, 106, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(191, 97, 106, 0); }
+    }
+
+    .processing-card {
+      border-left: 3px solid var(--color-inprogress-text);
+    }
+
+    .ready-card {
+      border-left: 3px solid var(--color-done-text);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body class="bg-surface min-h-screen transition-colors">
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle w-10 h-10 flex items-center justify-center rounded-full bg-surface-subtle border border-border text-foreground-muted hover:text-foreground shadow-lg" onclick="toggleTheme()">
+    <i class="pi pi-moon text-lg" id="theme-icon"></i>
+  </button>
+
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Back-to-Back Meeting Workflow</h1>
+    <p class="text-foreground-secondary mb-8">
+      Designed for rapid meeting capture: Start → Stop → Move on. Review later.
+    </p>
+
+    <!-- ============================================ -->
+    <!-- KEY PRINCIPLES -->
+    <!-- ============================================ -->
+    <div class="bg-accent rounded-lg p-4 mb-8">
+      <h2 class="font-semibold text-foreground mb-3">Key Design Principles</h2>
+      <div class="grid md:grid-cols-4 gap-4 text-sm">
+        <div class="flex items-start gap-2">
+          <i class="pi pi-bolt text-accent-foreground mt-0.5"></i>
+          <div>
+            <strong class="text-foreground">Fire & Forget</strong>
+            <p class="text-foreground-secondary text-xs">One click to start, one click to stop. Done.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <i class="pi pi-sync text-accent-foreground mt-0.5"></i>
+          <div>
+            <strong class="text-foreground">Background Processing</strong>
+            <p class="text-foreground-secondary text-xs">Transcription & AI analysis happen async.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <i class="pi pi-trash text-accent-foreground mt-0.5"></i>
+          <div>
+            <strong class="text-foreground">No Audio Storage</strong>
+            <p class="text-foreground-secondary text-xs">Audio transcribed then discarded.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <i class="pi pi-clock text-accent-foreground mt-0.5"></i>
+          <div>
+            <strong class="text-foreground">Review Later</strong>
+            <p class="text-foreground-secondary text-xs">Catch up between meetings or end of day.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 1: MINIMAL CAPTURE MODE -->
+    <!-- ============================================ -->
+    <div class="border-2 border-accent-solid rounded-xl p-6 mb-8 bg-accent">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-8 h-8 bg-accent-solid text-white rounded-full flex items-center justify-center font-semibold">1</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Minimal Capture Mode (Recommended)</h2>
+          <p class="text-sm text-foreground-secondary">Ultra-fast capture with optional title. Everything else is async.</p>
+        </div>
+        <span class="ml-auto px-3 py-1 bg-accent-solid text-white text-xs font-medium rounded-full">Recommended</span>
+      </div>
+
+      <!-- The main meetings page with quick capture -->
+      <div class="bg-surface rounded-lg border border-border overflow-hidden">
+        <!-- Header -->
+        <div class="bg-surface-subtle border-b border-border px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h3 class="font-semibold text-foreground">Meetings</h3>
+            <span class="text-sm text-foreground-muted">Today</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-1 bg-inprogress text-inprogress-foreground text-xs rounded-full flex items-center gap-1">
+              <span class="w-2 h-2 bg-inprogress-foreground rounded-full animate-pulse"></span>
+              1 processing
+            </span>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <!-- Quick Capture Section - Always Visible -->
+          <div class="mb-6">
+            <div class="flex items-center gap-4">
+              <!-- Big Record Button -->
+              <button class="quick-record-btn bg-danger text-white flex items-center justify-center shadow-lg" id="recordBtn">
+                <i class="pi pi-microphone text-2xl"></i>
+              </button>
+
+              <div class="flex-1">
+                <input
+                  type="text"
+                  placeholder="Meeting title (optional - can add later)"
+                  class="w-full px-4 py-3 text-lg bg-surface-muted rounded-lg border-2 border-transparent focus:border-accent-solid focus:bg-surface outline-none text-foreground placeholder:text-foreground-muted"
+                >
+                <p class="text-xs text-foreground-muted mt-1">
+                  <i class="pi pi-info-circle mr-1"></i>
+                  Click record to start. Title, attendees, and details can be added later.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Recording State (when recording) -->
+          <div class="hidden mb-6 p-4 bg-danger/10 border-2 border-danger rounded-lg" id="recordingState">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <button class="quick-record-btn recording bg-danger text-white flex items-center justify-center shadow-lg">
+                  <i class="pi pi-stop-circle text-2xl"></i>
+                </button>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 bg-danger rounded-full recording-pulse"></span>
+                    <span class="font-semibold text-foreground">Recording...</span>
+                    <span class="text-lg font-mono text-danger">12:34</span>
+                  </div>
+                  <input
+                    type="text"
+                    value="Sprint Planning"
+                    class="mt-1 px-2 py-1 bg-surface rounded border border-border text-sm text-foreground w-64"
+                  >
+                </div>
+              </div>
+              <div class="text-right text-sm text-foreground-muted">
+                <p>Click stop when done</p>
+                <p class="text-xs">Audio will be transcribed & deleted</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Today's Meetings -->
+          <div class="space-y-2">
+            <div class="section-title mb-2">Today - Monday, Jan 27</div>
+
+            <!-- Processing Meeting -->
+            <div class="card processing-card p-3 flex items-center gap-4">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-foreground">14:00</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">1:1 with Manager</h4>
+                <p class="text-xs text-foreground-muted">32 min recorded</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 px-2 py-1 bg-inprogress rounded text-xs text-inprogress-foreground">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>Transcribing...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ready Meeting -->
+            <div class="card ready-card p-3 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-foreground">10:00</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">Sprint Planning</h4>
+                <p class="text-xs text-foreground-muted">John, Sarah, Mike • 45 min</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded">3 actions</span>
+                <span class="px-2 py-1 bg-done text-done-foreground text-xs rounded-full">Ready</span>
+                <span class="px-2 py-1 bg-todo text-todo-foreground text-xs rounded-full">Review</span>
+              </div>
+            </div>
+
+            <!-- Already Reviewed Meeting -->
+            <div class="card p-3 flex items-center gap-4 opacity-70 cursor-pointer hover:opacity-100 transition-opacity">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-foreground">09:00</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">Team Standup</h4>
+                <p class="text-xs text-foreground-muted">Engineering Team • 15 min</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-1 bg-done text-done-foreground text-xs rounded-full flex items-center gap-1">
+                  <i class="pi pi-check text-xs"></i>
+                  Reviewed
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4 mt-4">
+        <div class="bg-surface rounded-lg p-3">
+          <h4 class="text-sm font-medium text-done-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Fastest possible capture (1 click)</li>
+            <li>+ Title is optional - add later</li>
+            <li>+ Clear processing status</li>
+            <li>+ "Review" badge shows what needs attention</li>
+          </ul>
+        </div>
+        <div class="bg-surface rounded-lg p-3">
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Need to remember to add title later</li>
+            <li>- Less context during recording</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 2: FLOATING RECORDER WIDGET -->
+    <!-- ============================================ -->
+    <div class="border-2 border-border rounded-xl p-6 mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-8 h-8 bg-accent-solid text-white rounded-full flex items-center justify-center font-semibold">2</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Floating Recorder Widget</h2>
+          <p class="text-sm text-foreground-secondary">Persistent mini-recorder that stays visible across the app</p>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg border border-border overflow-hidden relative" style="min-height: 400px;">
+        <!-- Simulated app content -->
+        <div class="bg-surface-subtle border-b border-border px-4 py-3">
+          <h3 class="font-semibold text-foreground">Tasks</h3>
+        </div>
+        <div class="p-4">
+          <p class="text-sm text-foreground-muted">Your kanban board or other content here...</p>
+          <div class="mt-4 grid grid-cols-3 gap-4">
+            <div class="bg-surface-muted rounded-lg p-3 h-32">
+              <h4 class="text-xs font-medium text-foreground-muted">Todo</h4>
+            </div>
+            <div class="bg-surface-muted rounded-lg p-3 h-32">
+              <h4 class="text-xs font-medium text-foreground-muted">In Progress</h4>
+            </div>
+            <div class="bg-surface-muted rounded-lg p-3 h-32">
+              <h4 class="text-xs font-medium text-foreground-muted">Done</h4>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Widget - Idle State -->
+        <div class="absolute bottom-4 right-4 bg-surface-subtle border border-border rounded-full shadow-lg p-1 flex items-center gap-1">
+          <button class="w-12 h-12 bg-danger text-white rounded-full flex items-center justify-center hover:bg-danger/90 transition-colors">
+            <i class="pi pi-microphone text-lg"></i>
+          </button>
+          <span class="px-3 text-sm text-foreground-muted">Record meeting</span>
+        </div>
+      </div>
+
+      <!-- Recording State Widget -->
+      <div class="mt-4 flex justify-end">
+        <div class="bg-danger text-white rounded-full shadow-lg px-4 py-2 flex items-center gap-3">
+          <span class="w-3 h-3 bg-white rounded-full recording-pulse"></span>
+          <span class="font-mono">12:34</span>
+          <input type="text" placeholder="Title..." class="bg-white/20 rounded px-2 py-1 text-sm placeholder:text-white/70 w-40 outline-none">
+          <button class="w-10 h-10 bg-white text-danger rounded-full flex items-center justify-center">
+            <i class="pi pi-stop-circle"></i>
+          </button>
+        </div>
+      </div>
+      <p class="text-xs text-foreground-muted text-right mt-2">Recording widget expands when active</p>
+
+      <div class="grid md:grid-cols-2 gap-4 mt-4">
+        <div class="bg-surface-muted rounded-lg p-3">
+          <h4 class="text-sm font-medium text-done-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Always accessible, any page</li>
+            <li>+ Can continue other work while recording</li>
+            <li>+ Very visible recording indicator</li>
+          </ul>
+        </div>
+        <div class="bg-surface-muted rounded-lg p-3">
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Takes screen space</li>
+            <li>- More complex to implement</li>
+            <li>- May be intrusive</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MEETING DETAIL VIEW (POST-CAPTURE) -->
+    <!-- ============================================ -->
+    <div class="border-2 border-border rounded-xl p-6 mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-8 h-8 bg-accent-solid text-white rounded-full flex items-center justify-center font-semibold">3</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Review View (Post-Processing)</h2>
+          <p class="text-sm text-foreground-secondary">What you see when you click into a completed meeting</p>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg border border-border overflow-hidden" style="max-height: 600px; overflow-y: auto;">
+        <!-- Header with inline editing -->
+        <div class="bg-surface-subtle border-b border-border px-4 py-3 sticky top-0 z-10">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <button class="text-foreground-muted hover:text-foreground">
+                <i class="pi pi-arrow-left"></i>
+              </button>
+              <input
+                type="text"
+                value="Sprint Planning"
+                class="text-lg font-semibold text-foreground bg-transparent border-b border-transparent hover:border-border focus:border-accent-solid outline-none"
+              >
+              <button class="text-foreground-muted hover:text-foreground text-sm">
+                <i class="pi pi-pencil"></i>
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-1 bg-done text-done-foreground text-xs rounded-full">Ready</span>
+              <button class="px-3 py-1.5 bg-accent text-accent-foreground text-sm rounded hover:bg-accent-hover">
+                <i class="pi pi-check mr-1"></i>Mark Reviewed
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 text-sm text-foreground-muted">
+            <span><i class="pi pi-calendar mr-1"></i>Today at 10:00 AM</span>
+            <span><i class="pi pi-clock mr-1"></i>45 min</span>
+            <div class="flex items-center gap-1">
+              <i class="pi pi-users mr-1"></i>
+              <input
+                type="text"
+                value="John, Sarah, Mike"
+                placeholder="Add attendees..."
+                class="bg-transparent border-b border-transparent hover:border-border focus:border-accent-solid outline-none w-40"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 space-y-6">
+          <!-- Quick Actions Bar -->
+          <div class="flex items-center gap-2 p-2 bg-surface-muted rounded-lg">
+            <span class="text-xs text-foreground-muted">Quick actions:</span>
+            <button class="px-2 py-1 text-xs bg-accent text-accent-foreground rounded hover:bg-accent-hover">
+              Create All Tasks (3)
+            </button>
+            <button class="px-2 py-1 text-xs text-foreground-muted hover:bg-surface rounded">
+              <i class="pi pi-refresh mr-1"></i>Re-analyze
+            </button>
+            <button class="px-2 py-1 text-xs text-foreground-muted hover:bg-surface rounded">
+              <i class="pi pi-share-alt mr-1"></i>Share
+            </button>
+          </div>
+
+          <!-- Summary - Editable -->
+          <section>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="section-title">Summary</h4>
+              <button class="text-xs text-foreground-muted hover:text-foreground">
+                <i class="pi pi-pencil mr-1"></i>Edit
+              </button>
+            </div>
+            <div class="bg-surface-muted rounded-lg p-3">
+              <p class="text-sm text-foreground">
+                Discussed Q1 roadmap priorities and resource allocation. Team agreed to focus on core authentication features
+                before adding nice-to-have items. John will lead the API design effort while Sarah coordinates with the security team.
+              </p>
+            </div>
+          </section>
+
+          <!-- Action Items - Primary Focus -->
+          <section class="bg-accent/50 rounded-lg p-4 -mx-4">
+            <div class="flex items-center justify-between mb-3 px-4">
+              <h4 class="section-title text-accent-foreground">Action Items (3)</h4>
+              <button class="px-3 py-1.5 bg-accent-solid text-white text-xs font-medium rounded">
+                <i class="pi pi-plus mr-1"></i>Create All as Tasks
+              </button>
+            </div>
+            <div class="space-y-2 px-4">
+              <div class="flex items-start gap-3 p-3 bg-surface rounded-lg border border-border">
+                <input type="checkbox" class="mt-1 w-4 h-4 accent-accent-solid">
+                <div class="flex-1">
+                  <p class="text-sm text-foreground">Draft API contract for new endpoints</p>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class="text-xs text-foreground-muted">@John</span>
+                  </div>
+                </div>
+                <button class="px-2 py-1 text-xs bg-accent text-accent-foreground rounded hover:bg-accent-hover">
+                  → Task
+                </button>
+              </div>
+              <div class="flex items-start gap-3 p-3 bg-surface rounded-lg border border-border">
+                <input type="checkbox" class="mt-1 w-4 h-4 accent-accent-solid">
+                <div class="flex-1">
+                  <p class="text-sm text-foreground">Schedule security review meeting</p>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class="text-xs text-foreground-muted">@Sarah</span>
+                  </div>
+                </div>
+                <button class="px-2 py-1 text-xs bg-accent text-accent-foreground rounded hover:bg-accent-hover">
+                  → Task
+                </button>
+              </div>
+              <div class="flex items-start gap-3 p-3 bg-surface rounded-lg border border-done-foreground">
+                <input type="checkbox" checked class="mt-1 w-4 h-4 accent-done-foreground">
+                <div class="flex-1">
+                  <p class="text-sm text-foreground line-through opacity-60">Update project timeline document</p>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class="text-xs text-foreground-muted">@Mike</span>
+                    <span class="px-1.5 py-0.5 bg-done text-done-foreground text-xs rounded">Task #123</span>
+                  </div>
+                </div>
+                <button class="px-2 py-1 text-xs text-foreground-muted hover:bg-surface-muted rounded">
+                  View Task
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Key Points & Decisions in columns -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <section>
+              <h4 class="section-title mb-2">Key Points</h4>
+              <ul class="space-y-2">
+                <li class="flex items-start gap-2 text-sm text-foreground">
+                  <i class="pi pi-circle-fill text-[6px] text-accent-foreground mt-2"></i>
+                  Focus on core features first, delay nice-to-haves until Q2
+                </li>
+                <li class="flex items-start gap-2 text-sm text-foreground">
+                  <i class="pi pi-circle-fill text-[6px] text-accent-foreground mt-2"></i>
+                  Need 2 additional engineers for the authentication workstream
+                </li>
+                <li class="flex items-start gap-2 text-sm text-foreground">
+                  <i class="pi pi-circle-fill text-[6px] text-accent-foreground mt-2"></i>
+                  Security review must happen before any external API exposure
+                </li>
+              </ul>
+            </section>
+            <section>
+              <h4 class="section-title mb-2">Decisions</h4>
+              <ul class="space-y-2">
+                <li class="flex items-start gap-2 text-sm text-foreground">
+                  <i class="pi pi-check-circle text-done-foreground mt-0.5"></i>
+                  Will use JWT for API authentication
+                </li>
+                <li class="flex items-start gap-2 text-sm text-foreground">
+                  <i class="pi pi-check-circle text-done-foreground mt-0.5"></i>
+                  Timeline extended by 2 weeks to accommodate security review
+                </li>
+              </ul>
+            </section>
+          </div>
+
+          <!-- Transcript - Collapsed by default -->
+          <section>
+            <button class="w-full flex items-center justify-between p-3 bg-surface-muted rounded-lg text-left hover:bg-surface-hover transition-colors">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-align-left text-foreground-muted"></i>
+                <h4 class="section-title">Full Transcript</h4>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-foreground-muted">4,523 words</span>
+                <i class="pi pi-chevron-down text-foreground-muted"></i>
+              </div>
+            </button>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- PROCESSING FLOW DIAGRAM -->
+    <!-- ============================================ -->
+    <div class="border-2 border-border rounded-xl p-6 mb-8">
+      <h2 class="text-lg font-semibold text-foreground mb-4">Background Processing Flow</h2>
+      <p class="text-sm text-foreground-secondary mb-4">What happens after you stop recording:</p>
+
+      <div class="flex items-center justify-between max-w-3xl mx-auto">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-danger/20 text-danger rounded-full flex items-center justify-center mx-auto mb-2">
+            <i class="pi pi-stop-circle text-2xl"></i>
+          </div>
+          <p class="text-xs text-foreground font-medium">Stop Recording</p>
+          <p class="text-xs text-foreground-muted">0s</p>
+        </div>
+
+        <div class="flex-1 h-0.5 bg-border mx-2 relative">
+          <i class="pi pi-arrow-right absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted"></i>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-inprogress text-inprogress-foreground rounded-full flex items-center justify-center mx-auto mb-2">
+            <i class="pi pi-cloud-upload text-2xl"></i>
+          </div>
+          <p class="text-xs text-foreground font-medium">Upload & Transcribe</p>
+          <p class="text-xs text-foreground-muted">~2 min</p>
+        </div>
+
+        <div class="flex-1 h-0.5 bg-border mx-2 relative">
+          <i class="pi pi-arrow-right absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted"></i>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-accent text-accent-foreground rounded-full flex items-center justify-center mx-auto mb-2">
+            <i class="pi pi-sparkles text-2xl"></i>
+          </div>
+          <p class="text-xs text-foreground font-medium">AI Analysis</p>
+          <p class="text-xs text-foreground-muted">~30s</p>
+        </div>
+
+        <div class="flex-1 h-0.5 bg-border mx-2 relative">
+          <i class="pi pi-arrow-right absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted"></i>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-danger/20 text-danger rounded-full flex items-center justify-center mx-auto mb-2">
+            <i class="pi pi-trash text-2xl"></i>
+          </div>
+          <p class="text-xs text-foreground font-medium">Delete Audio</p>
+          <p class="text-xs text-foreground-muted">Automatic</p>
+        </div>
+
+        <div class="flex-1 h-0.5 bg-border mx-2 relative">
+          <i class="pi pi-arrow-right absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted"></i>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-done text-done-foreground rounded-full flex items-center justify-center mx-auto mb-2">
+            <i class="pi pi-check text-2xl"></i>
+          </div>
+          <p class="text-xs text-foreground font-medium">Ready</p>
+          <p class="text-xs text-foreground-muted">Review when free</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-3 bg-surface-muted rounded-lg text-sm text-foreground-secondary">
+        <strong>Note:</strong> Audio is uploaded in chunks during recording (prevents data loss),
+        then immediately transcribed and deleted. Only the transcript and AI analysis are stored.
+        Total processing time: ~2-3 minutes for a 1-hour meeting.
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- NOTIFICATION OPTIONS -->
+    <!-- ============================================ -->
+    <div class="border-2 border-border rounded-xl p-6 mb-8">
+      <h2 class="text-lg font-semibold text-foreground mb-4">Notification When Ready</h2>
+      <p class="text-sm text-foreground-secondary mb-4">How to alert you when a meeting is processed:</p>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-bell text-accent-foreground"></i>
+            <h4 class="font-medium text-foreground text-sm">In-App Badge</h4>
+          </div>
+          <p class="text-xs text-foreground-muted mb-3">Badge count on Meetings nav item showing unreviewed meetings.</p>
+          <div class="bg-surface-muted rounded p-2 flex items-center gap-2">
+            <i class="pi pi-comments text-foreground"></i>
+            <span class="text-sm text-foreground">Meetings</span>
+            <span class="w-5 h-5 bg-danger text-white text-xs rounded-full flex items-center justify-center">2</span>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-desktop text-accent-foreground"></i>
+            <h4 class="font-medium text-foreground text-sm">Browser Notification</h4>
+          </div>
+          <p class="text-xs text-foreground-muted mb-3">Push notification when processing completes.</p>
+          <div class="bg-surface-muted rounded p-2 text-xs">
+            <div class="flex items-start gap-2">
+              <i class="pi pi-check-circle text-done-foreground mt-0.5"></i>
+              <div>
+                <p class="font-medium text-foreground">Sprint Planning ready</p>
+                <p class="text-foreground-muted">3 action items extracted</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-clock text-accent-foreground"></i>
+            <h4 class="font-medium text-foreground text-sm">End of Day Digest</h4>
+          </div>
+          <p class="text-xs text-foreground-muted mb-3">Summary notification at 5pm with all unreviewed meetings.</p>
+          <div class="bg-surface-muted rounded p-2 text-xs">
+            <p class="font-medium text-foreground mb-1">Daily Meeting Summary</p>
+            <p class="text-foreground-muted">3 meetings • 7 action items</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SUMMARY -->
+    <!-- ============================================ -->
+    <div class="bg-surface-subtle rounded-lg border border-border p-6">
+      <h2 class="text-lg font-semibold text-foreground mb-4">Summary: Back-to-Back Workflow</h2>
+
+      <div class="space-y-4 text-sm text-foreground-secondary">
+        <div class="flex items-start gap-3">
+          <span class="w-6 h-6 bg-accent-solid text-white rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
+          <div>
+            <strong class="text-foreground">Capture:</strong> One-click record. Optionally add title. Stop when meeting ends. Move on immediately.
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="w-6 h-6 bg-accent-solid text-white rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
+          <div>
+            <strong class="text-foreground">Process:</strong> Audio uploads in background → Whisper transcribes → Claude analyzes → Audio deleted. ~2-3 min total.
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="w-6 h-6 bg-accent-solid text-white rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
+          <div>
+            <strong class="text-foreground">Notify:</strong> Badge shows unreviewed count. Optional browser notification. End-of-day digest.
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="w-6 h-6 bg-accent-solid text-white rounded-full flex items-center justify-center text-xs flex-shrink-0">4</span>
+          <div>
+            <strong class="text-foreground">Review:</strong> When you have time, review meetings. Add/edit title & attendees. Create tasks from actions. Mark as reviewed.
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-accent rounded-lg">
+        <h3 class="font-medium text-foreground mb-2">Recommended Approach</h3>
+        <ul class="text-sm text-foreground-secondary space-y-1">
+          <li>• <strong>List View:</strong> Option 1 - Daily Grouped List (from previous mockup)</li>
+          <li>• <strong>Capture:</strong> Option 1 - Minimal Capture Mode with big record button</li>
+          <li>• <strong>Review:</strong> Single page with editable fields and action items prominent</li>
+          <li>• <strong>No audio storage:</strong> Transcribe immediately, delete audio file</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        icon.classList.remove('pi-sun');
+        icon.classList.add('pi-moon');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.classList.remove('pi-moon');
+        icon.classList.add('pi-sun');
+      }
+    }
+
+    // Demo recording toggle
+    document.getElementById('recordBtn')?.addEventListener('click', function() {
+      document.getElementById('recordingState')?.classList.toggle('hidden');
+    });
+  </script>
+
+</body>
+</html>

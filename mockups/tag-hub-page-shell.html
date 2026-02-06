@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Hub Page Shell — Issue #334 — 6 Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-solid': 'var(--color-primary-solid)',
+            'accent-foreground': 'var(--color-primary-text)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            'tag-bg': 'var(--color-tag-bg)',
+            'tag-text': 'var(--color-tag-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.15);
+      --color-tag-text: #b48ead;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.2);
+      --color-tag-text: #b48ead;
+      --color-done-bg: rgba(163, 190, 140, 0.15);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-card { background: var(--color-bg-subtle); border-radius: 12px; overflow: hidden; border: 1px solid var(--color-border-default); }
+    .option-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border-muted); display: flex; align-items: center; justify-content: space-between; }
+    .option-body { padding: 1.25rem; }
+    .option-number { background: var(--color-primary-solid); color: white; font-size: 11px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .recommended { border: 2px solid #a3be8c !important; }
+    .recommended-badge { background: #a3be8c; color: #2e3440; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+    .option-divider { border-top: 3px dashed var(--color-border-default); margin: 3rem 0; padding-top: 2rem; }
+    .pros-cons { margin-top: 12px; font-size: 11px; line-height: 1.8; }
+    .pros-cons .pro { color: #a3be8c; }
+    .pros-cons .con { color: #bf616a; }
+    .pi { font-size: inherit !important; }
+    .tag-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 9999px; cursor: pointer; transition: all 0.15s; }
+    .tag-chip:hover { opacity: 0.8; }
+    .tag-chip.selected { background: var(--color-primary-solid); color: white; box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.3); }
+    .tag-count { font-size: 10px; opacity: 0.6; margin-left: 2px; }
+    .mock-search { width: 100%; height: 36px; border-radius: 8px; border: 1px solid var(--color-border-default); background: var(--color-bg-muted); padding: 0 12px 0 34px; font-size: 13px; color: var(--color-text-primary); outline: none; }
+    .mock-search::placeholder { color: var(--color-text-muted); }
+    .mock-search:focus { border-color: var(--color-primary-solid); box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.15); }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .page-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .tag-total { font-size: 12px; font-weight: 500; color: var(--color-text-muted); background: var(--color-bg-muted); padding: 2px 8px; border-radius: 9999px; }
+    .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); margin-bottom: 8px; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; text-align: center; }
+    .empty-icon { font-size: 40px; color: var(--color-text-muted); opacity: 0.4; margin-bottom: 12px; }
+    .empty-title { font-size: 14px; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 4px; }
+    .empty-desc { font-size: 12px; color: var(--color-text-muted); max-width: 320px; line-height: 1.5; }
+  </style>
+</head>
+<body class="p-6 lg:p-8">
+
+  <!-- Theme Toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="toggleTheme()"
+      class="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-foreground-secondary text-sm hover:bg-surface-muted transition">
+      <i class="pi pi-moon mr-1"></i> Toggle Theme
+    </button>
+  </div>
+
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Tag Hub — Page Shell — 6 Design Options</h1>
+    <p class="text-foreground-secondary mb-1 text-sm">Issue <a href="https://github.com/garethbaumgart/praxis-note/issues/334" class="text-accent-foreground underline">#334</a> — Page shell &amp; navigation: how tags are displayed, searched, and selected.</p>
+    <p class="text-foreground-muted mb-2 text-xs">Scope: tag layout, search/filter, selected state, and empty state. The item detail view (what appears after selecting a tag) is covered in Issue #335.</p>
+    <p class="text-foreground-muted mb-8 text-xs">Sample data: 8 tags — project-alpha, architecture, frontend, backend, 1-on-1, retrospective, q1-planning, ux-research.</p>
+
+    <!-- ======================= OPTION 1 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">1</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Chip Cloud with Inline Search</div>
+            <div class="text-foreground-muted text-xs">Wrapping tag chips below a search bar — simple and flat</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <!-- Normal state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Normal State — No Tag Selected</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 260px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+              <span class="tag-total">8</span>
+            </div>
+          </div>
+          <div class="relative mb-4" style="max-width: 320px">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+            <input type="text" placeholder="Filter tags..." class="mock-search">
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag-chip">1-on-1</span>
+            <span class="tag-chip">architecture</span>
+            <span class="tag-chip">backend</span>
+            <span class="tag-chip">frontend</span>
+            <span class="tag-chip">project-alpha</span>
+            <span class="tag-chip">q1-planning</span>
+            <span class="tag-chip">retrospective</span>
+            <span class="tag-chip">ux-research</span>
+          </div>
+          <p class="text-foreground-muted text-xs mt-6 text-center">Select a tag to view related notes, tasks, and meetings.</p>
+        </div>
+
+        <!-- Selected state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Selected State</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 200px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+              <span class="tag-total">8</span>
+            </div>
+          </div>
+          <div class="relative mb-4" style="max-width: 320px">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+            <input type="text" placeholder="Filter tags..." class="mock-search">
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag-chip">1-on-1</span>
+            <span class="tag-chip">architecture</span>
+            <span class="tag-chip">backend</span>
+            <span class="tag-chip selected">frontend</span>
+            <span class="tag-chip">project-alpha</span>
+            <span class="tag-chip">q1-planning</span>
+            <span class="tag-chip">retrospective</span>
+            <span class="tag-chip">ux-research</span>
+          </div>
+          <div class="mt-4 p-4 rounded-lg bg-surface-muted border border-border-muted text-center">
+            <span class="text-foreground-muted text-xs italic">[ Item detail panel renders here — Issue #335 ]</span>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Empty State</div>
+        <div class="rounded-lg border border-border" style="min-height: 200px">
+          <div class="p-5">
+            <div class="page-header">
+              <div class="page-title">
+                <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+                Tags
+              </div>
+            </div>
+          </div>
+          <div class="empty-state">
+            <i class="pi pi-tags empty-icon"></i>
+            <div class="empty-title">No tags yet</div>
+            <div class="empty-desc">Tags you create on notes, tasks, and meetings will appear here.</div>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pro">✓ Simplest layout — zero learning curve, tags are immediately visible</div>
+          <div class="pro">✓ Chips wrap naturally — responsive by default on any screen size</div>
+          <div class="pro">✓ Search bar is prominent and obvious</div>
+          <div class="con">✗ Flat chip cloud can feel cluttered with many tags (30+)</div>
+          <div class="con">✗ No visual hierarchy — all tags look the same regardless of importance</div>
+          <div class="con">✗ Selected tag can be hard to spot in a large cloud</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 2 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">2</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Vertical Tag List with Search</div>
+            <div class="text-foreground-muted text-xs">Full-width rows — name on left, count on right — like a sidebar list</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <!-- Normal state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Normal State — No Tag Selected</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 300px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+              <span class="tag-total">8</span>
+            </div>
+          </div>
+          <div class="relative mb-4" style="max-width: 320px">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+            <input type="text" placeholder="Filter tags..." class="mock-search">
+          </div>
+          <div class="rounded-lg border border-border overflow-hidden" style="max-width: 420px">
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">1-on-1</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">architecture</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">backend</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">frontend</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">project-alpha</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">q1-planning</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">retrospective</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">ux-research</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Selected State</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 180px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+              <span class="tag-total">8</span>
+            </div>
+          </div>
+          <div class="rounded-lg border border-border overflow-hidden" style="max-width: 420px">
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">architecture</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 bg-accent cursor-pointer transition border-b border-border-muted">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-accent-foreground" style="font-size: 11px"></i>
+                <span class="text-sm font-medium text-accent-foreground">frontend</span>
+              </div>
+              <i class="pi pi-chevron-right text-accent-foreground" style="font-size: 10px"></i>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 hover:bg-surface-muted cursor-pointer transition">
+              <div class="flex items-center gap-2.5">
+                <i class="pi pi-tag text-tag-text" style="font-size: 11px"></i>
+                <span class="text-sm text-foreground">project-alpha</span>
+              </div>
+              <i class="pi pi-chevron-right text-foreground-muted" style="font-size: 10px"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pro">✓ Scales well to many tags — vertical scrolling is natural</div>
+          <div class="pro">✓ Clear selected state with full-width highlight</div>
+          <div class="pro">✓ Chevron affordance signals "click to drill in"</div>
+          <div class="con">✗ Takes more vertical space than chips — fewer tags visible at once</div>
+          <div class="con">✗ Feels more like a settings page than a creative hub</div>
+          <div class="con">✗ Less visual personality — no tag "cloud" feel</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 3 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">3</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Card Grid with Search</div>
+            <div class="text-foreground-muted text-xs">Tags as small cards in a responsive grid — each card shows name</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <!-- Normal state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Normal State — No Tag Selected</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 280px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+              <span class="tag-total">8</span>
+            </div>
+          </div>
+          <div class="relative mb-4" style="max-width: 320px">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+            <input type="text" placeholder="Filter tags..." class="mock-search">
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">1-on-1</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">architecture</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">backend</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">frontend</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">project-alpha</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">q1-planning</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">retrospective</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">ux-research</div>
+            </div>
+          </div>
+          <p class="text-foreground-muted text-xs mt-5 text-center">Select a tag to view related notes, tasks, and meetings.</p>
+        </div>
+
+        <!-- Selected state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Selected State</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 180px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+              <span class="tag-total">8</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">1-on-1</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">architecture</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">backend</div>
+            </div>
+            <div class="p-3 rounded-lg border-2 bg-accent cursor-pointer transition text-center" style="border-color: var(--color-primary-solid)">
+              <i class="pi pi-tag text-accent-foreground mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-semibold text-accent-foreground">frontend</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">project-alpha</div>
+            </div>
+            <div class="p-3 rounded-lg border border-border bg-surface-subtle hover:border-tag-text cursor-pointer transition text-center">
+              <i class="pi pi-tag text-tag-text mb-1.5" style="font-size: 14px; display: block"></i>
+              <div class="text-sm font-medium text-foreground">q1-planning</div>
+            </div>
+          </div>
+          <div class="mt-4 p-4 rounded-lg bg-surface-muted border border-border-muted text-center">
+            <span class="text-foreground-muted text-xs italic">[ Item detail panel renders here — Issue #335 ]</span>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pro">✓ Cards have more visual weight — tags feel like destinations</div>
+          <div class="pro">✓ Grid is naturally responsive — collapses to fewer columns on mobile</div>
+          <div class="pro">✓ Selected card is very visually distinct with border + background shift</div>
+          <div class="con">✗ Cards take more space per tag than chips — less dense</div>
+          <div class="con">✗ Icon on every card is redundant — they're all tags</div>
+          <div class="con">✗ Feels heavy for what is essentially a list of labels</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 4 (RECOMMENDED) ======================= -->
+    <div class="option-card recommended mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">4</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Compact Dropdown Selector + Summary Line</div>
+            <div class="text-foreground-muted text-xs">PrimeNG Select dropdown with search — minimal footprint, max content space</div>
+          </div>
+        </div>
+        <div class="recommended-badge">Recommended</div>
+      </div>
+      <div class="option-body">
+        <p class="text-foreground-secondary text-xs mb-4">Uses a PrimeNG Select (p-select) with built-in filtering. Tag selector takes one row, leaving maximum space for the item view below. Aligns with the recommended Option 5 from the <code>tag-hub-ux.html</code> mockup.</p>
+
+        <!-- Normal state — no tag selected -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Normal State — No Tag Selected</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 280px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+            </div>
+          </div>
+          <!-- Dropdown row -->
+          <div class="flex items-center gap-3 mb-4">
+            <div class="relative" style="width: 260px">
+              <i class="pi pi-tags absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+              <div class="flex items-center h-9 pl-9 pr-3 rounded-lg border border-border bg-surface-subtle cursor-pointer hover:border-accent-solid transition">
+                <span class="text-sm text-foreground-muted">Select a tag...</span>
+                <i class="pi pi-chevron-down text-foreground-muted ml-auto" style="font-size:10px"></i>
+              </div>
+            </div>
+            <span class="text-foreground-muted text-xs">8 tags</span>
+          </div>
+          <!-- Landing content -->
+          <div class="rounded-lg border border-border-muted bg-surface-muted p-8 text-center">
+            <i class="pi pi-tags text-foreground-muted mb-3" style="font-size: 32px; display: block; opacity: 0.3"></i>
+            <div class="text-sm font-medium text-foreground-secondary mb-1">Select a tag to get started</div>
+            <div class="text-xs text-foreground-muted">Choose a tag from the dropdown to view all related notes, tasks, and meetings.</div>
+          </div>
+        </div>
+
+        <!-- Dropdown open state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Dropdown Open — With Search</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 320px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+            </div>
+          </div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="relative" style="width: 260px">
+              <i class="pi pi-tags absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+              <div class="flex items-center h-9 pl-9 pr-3 rounded-lg border border-border bg-surface-subtle cursor-pointer" style="border-color: var(--color-primary-solid); box-shadow: 0 0 0 2px rgba(94,129,172,0.15)">
+                <span class="text-sm text-foreground-muted">Select a tag...</span>
+                <i class="pi pi-chevron-up text-accent-foreground ml-auto" style="font-size:10px"></i>
+              </div>
+              <!-- Dropdown panel -->
+              <div class="absolute top-10 left-0 right-0 rounded-lg border border-border bg-surface-subtle shadow-lg z-10 overflow-hidden">
+                <div class="p-2 border-b border-border-muted">
+                  <div class="relative">
+                    <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:11px"></i>
+                    <input type="text" placeholder="Search tags..." class="w-full h-8 pl-8 pr-3 rounded-md border border-border bg-surface-muted text-sm text-foreground placeholder:text-foreground-muted outline-none" style="font-size: 12px" value="arch">
+                  </div>
+                </div>
+                <div class="py-1 max-h-48 overflow-auto">
+                  <div class="px-3 py-2 hover:bg-surface-muted cursor-pointer flex items-center gap-2 rounded-md mx-1">
+                    <i class="pi pi-tag text-tag-text" style="font-size: 10px"></i>
+                    <span class="text-sm text-foreground"><strong>arch</strong>itecture</span>
+                  </div>
+                  <div class="px-3 py-2 hover:bg-surface-muted cursor-pointer flex items-center gap-2 rounded-md mx-1">
+                    <i class="pi pi-tag text-tag-text" style="font-size: 10px"></i>
+                    <span class="text-sm text-foreground">ux-rese<strong>arch</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Selected State</div>
+        <div class="rounded-lg border border-border p-5 mb-4" style="min-height: 200px">
+          <div class="page-header">
+            <div class="page-title">
+              <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+              Tags
+            </div>
+          </div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="relative" style="width: 260px">
+              <i class="pi pi-tags absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+              <div class="flex items-center gap-2 h-9 pl-9 pr-3 rounded-lg border border-border bg-surface-subtle cursor-pointer hover:border-accent-solid transition">
+                <span class="tag-chip selected" style="font-size:11px; padding: 2px 8px; height:22px">frontend</span>
+                <i class="pi pi-chevron-down text-foreground-muted ml-auto" style="font-size:10px"></i>
+              </div>
+            </div>
+            <span class="text-foreground-muted text-xs">6 items</span>
+          </div>
+          <div class="p-4 rounded-lg bg-surface-muted border border-border-muted text-center">
+            <span class="text-foreground-muted text-xs italic">[ Item detail panel renders here — Issue #335 ]</span>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Empty State</div>
+        <div class="rounded-lg border border-border" style="min-height: 200px">
+          <div class="p-5">
+            <div class="page-header">
+              <div class="page-title">
+                <i class="pi pi-tags" style="font-size:18px; color: var(--color-tag-text)"></i>
+                Tags
+              </div>
+            </div>
+          </div>
+          <div class="empty-state">
+            <i class="pi pi-tags empty-icon"></i>
+            <div class="empty-title">No tags yet</div>
+            <div class="empty-desc">Tags you create on notes, tasks, and meetings will appear here.</div>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pro">✓ Minimal footprint — one row for tag selection, max space for content</div>
+          <div class="pro">✓ Built-in search via PrimeNG p-select filter — zero custom code</div>
+          <div class="pro">✓ Scales to hundreds of tags — dropdown handles long lists natively</div>
+          <div class="pro">✓ Consistent with Option 5 from tag-hub-ux.html — same selector, unified vision</div>
+          <div class="pro">✓ Mobile-friendly — dropdowns are a native pattern on all devices</div>
+          <div class="con">✗ Tags are hidden until dropdown is opened — less discoverable</div>
+          <div class="con">✗ Can't see all tags at a glance — requires interaction</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 5 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">5</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Split View — Sidebar List + Content Area</div>
+            <div class="text-foreground-muted text-xs">Persistent tag list on left, content area on right — desktop focused</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <!-- Normal state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Normal State — No Tag Selected</div>
+        <div class="rounded-lg border border-border overflow-hidden mb-4" style="min-height: 340px">
+          <div class="flex" style="min-height: 340px">
+            <!-- Left sidebar -->
+            <div class="border-r border-border" style="width: 220px; flex-shrink: 0">
+              <div class="p-3">
+                <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-2 px-1">Tags</div>
+                <div class="relative mb-3">
+                  <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:11px"></i>
+                  <input type="text" placeholder="Filter..." class="mock-search" style="height:30px; font-size:12px; padding-left: 28px">
+                </div>
+                <div class="space-y-0.5">
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">1-on-1</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">architecture</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">backend</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">frontend</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">project-alpha</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">q1-planning</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">retrospective</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">ux-research</div>
+                </div>
+              </div>
+            </div>
+            <!-- Right content -->
+            <div class="flex-1 flex items-center justify-center">
+              <div class="text-center p-8">
+                <i class="pi pi-arrow-left text-foreground-muted mb-3" style="font-size: 24px; display: block; opacity: 0.3"></i>
+                <div class="text-sm font-medium text-foreground-secondary mb-1">Select a tag</div>
+                <div class="text-xs text-foreground-muted">Choose a tag from the list to view<br>related notes, tasks, and meetings.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Selected State</div>
+        <div class="rounded-lg border border-border overflow-hidden mb-4" style="min-height: 300px">
+          <div class="flex" style="min-height: 300px">
+            <!-- Left sidebar -->
+            <div class="border-r border-border" style="width: 220px; flex-shrink: 0">
+              <div class="p-3">
+                <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-2 px-1">Tags</div>
+                <div class="space-y-0.5">
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">1-on-1</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">architecture</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">backend</div>
+                  <div class="px-3 py-2 rounded-lg bg-accent cursor-pointer text-sm font-medium text-accent-foreground transition">frontend</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">project-alpha</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">q1-planning</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">retrospective</div>
+                  <div class="px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer text-sm text-foreground transition">ux-research</div>
+                </div>
+              </div>
+            </div>
+            <!-- Right content -->
+            <div class="flex-1 p-4">
+              <div class="p-4 rounded-lg bg-surface-muted border border-border-muted text-center h-full flex items-center justify-center">
+                <span class="text-foreground-muted text-xs italic">[ Item detail panel renders here — Issue #335 ]</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Mobile — Tag List Only (drawer collapses)</div>
+        <div class="rounded-lg border border-border p-4 mb-4" style="max-width: 360px; min-height: 240px">
+          <div class="flex items-center justify-between mb-3">
+            <div class="page-title" style="font-size: 16px">
+              <i class="pi pi-tags" style="font-size:16px; color: var(--color-tag-text)"></i>
+              Tags
+              <span class="tag-total">8</span>
+            </div>
+          </div>
+          <div class="relative mb-3">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:11px"></i>
+            <input type="text" placeholder="Filter tags..." class="mock-search" style="height: 32px; font-size: 12px">
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag-chip" style="font-size: 11px">1-on-1</span>
+            <span class="tag-chip" style="font-size: 11px">architecture</span>
+            <span class="tag-chip" style="font-size: 11px">backend</span>
+            <span class="tag-chip" style="font-size: 11px">frontend</span>
+            <span class="tag-chip" style="font-size: 11px">project-alpha</span>
+            <span class="tag-chip" style="font-size: 11px">q1-planning</span>
+            <span class="tag-chip" style="font-size: 11px">retrospective</span>
+            <span class="tag-chip" style="font-size: 11px">ux-research</span>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pro">✓ Tags are always visible — easy to switch between tags without scrolling</div>
+          <div class="pro">✓ Familiar pattern — email clients, file managers, Slack</div>
+          <div class="pro">✓ Clear spatial relationship — sidebar = nav, right = content</div>
+          <div class="con">✗ Sidebar takes horizontal space — less room for content on medium screens</div>
+          <div class="con">✗ Needs a mobile fallback — sidebar must collapse to chips or a drawer</div>
+          <div class="con">✗ More complex implementation — responsive breakpoint logic required</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 6 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">6</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Collapsible Chip Bar + Full-Width Content</div>
+            <div class="text-foreground-muted text-xs">Sticky chip bar at top that collapses after selection — content gets full width</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <!-- Normal state -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Normal State — Chip Bar Expanded</div>
+        <div class="rounded-lg border border-border overflow-hidden mb-4" style="min-height: 280px">
+          <!-- Sticky chip bar -->
+          <div class="p-4 border-b border-border bg-surface-subtle">
+            <div class="flex items-center justify-between mb-3">
+              <div class="page-title" style="font-size: 16px">
+                <i class="pi pi-tags" style="font-size:16px; color: var(--color-tag-text)"></i>
+                Tags
+                <span class="tag-total">8</span>
+              </div>
+              <div class="relative" style="width: 200px">
+                <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:11px"></i>
+                <input type="text" placeholder="Filter tags..." class="mock-search" style="height: 30px; font-size: 12px">
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="tag-chip">1-on-1</span>
+              <span class="tag-chip">architecture</span>
+              <span class="tag-chip">backend</span>
+              <span class="tag-chip">frontend</span>
+              <span class="tag-chip">project-alpha</span>
+              <span class="tag-chip">q1-planning</span>
+              <span class="tag-chip">retrospective</span>
+              <span class="tag-chip">ux-research</span>
+            </div>
+          </div>
+          <!-- Landing content -->
+          <div class="p-8 text-center">
+            <i class="pi pi-tags text-foreground-muted mb-3" style="font-size: 32px; display: block; opacity: 0.3"></i>
+            <div class="text-sm font-medium text-foreground-secondary mb-1">Select a tag to get started</div>
+            <div class="text-xs text-foreground-muted">Choose a tag above to view all related notes, tasks, and meetings.</div>
+          </div>
+        </div>
+
+        <!-- Selected state — collapsed bar -->
+        <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Selected State — Chip Bar Collapsed to One Row</div>
+        <div class="rounded-lg border border-border overflow-hidden mb-4" style="min-height: 260px">
+          <!-- Collapsed chip bar -->
+          <div class="px-4 py-3 border-b border-border bg-surface-subtle">
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <i class="pi pi-tags text-tag-text" style="font-size:14px"></i>
+              </div>
+              <div class="flex items-center gap-2 overflow-x-auto" style="scrollbar-width: none">
+                <span class="tag-chip" style="font-size: 10px; padding: 2px 8px; white-space: nowrap">1-on-1</span>
+                <span class="tag-chip" style="font-size: 10px; padding: 2px 8px; white-space: nowrap">architecture</span>
+                <span class="tag-chip" style="font-size: 10px; padding: 2px 8px; white-space: nowrap">backend</span>
+                <span class="tag-chip selected" style="font-size: 10px; padding: 2px 8px; white-space: nowrap">frontend</span>
+                <span class="tag-chip" style="font-size: 10px; padding: 2px 8px; white-space: nowrap">project-alpha</span>
+                <span class="tag-chip" style="font-size: 10px; padding: 2px 8px; white-space: nowrap">q1-planning</span>
+                <span class="tag-chip" style="font-size: 10px; padding: 2px 8px; white-space: nowrap">retrospective</span>
+                <span class="tag-chip" style="font-size: 10px; padding: 2px 8px; white-space: nowrap">ux-research</span>
+              </div>
+              <button class="flex-shrink-0 text-foreground-muted hover:text-foreground transition" title="Expand tag bar">
+                <i class="pi pi-chevron-down" style="font-size: 10px"></i>
+              </button>
+            </div>
+          </div>
+          <!-- Content area -->
+          <div class="p-4">
+            <div class="p-4 rounded-lg bg-surface-muted border border-border-muted text-center">
+              <span class="text-foreground-muted text-xs italic">[ Item detail panel renders here — Issue #335 ]</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pros-cons">
+          <div class="pro">✓ Tags visible at a glance in expanded state — chip cloud feel</div>
+          <div class="pro">✓ Collapses after selection — content gets maximum vertical space</div>
+          <div class="pro">✓ Horizontal scroll in collapsed state — still switchable without expanding</div>
+          <div class="pro">✓ Works on mobile — chips wrap naturally in expanded, scroll in collapsed</div>
+          <div class="con">✗ Two states (expanded/collapsed) adds interaction complexity</div>
+          <div class="con">✗ Collapsed chips may be too small to read comfortably</div>
+          <div class="con">✗ Expand/collapse toggle is an extra affordance to understand</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= COMPARISON TABLE ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="text-foreground text-sm font-semibold">Comparison Summary</div>
+        </div>
+      </div>
+      <div class="option-body overflow-x-auto">
+        <table class="w-full text-xs" style="min-width: 600px">
+          <thead>
+            <tr class="text-left text-foreground-muted border-b border-border">
+              <th class="pb-2 pr-4 font-semibold">#</th>
+              <th class="pb-2 pr-4 font-semibold">Layout</th>
+              <th class="pb-2 pr-4 font-semibold">Tags at a Glance</th>
+              <th class="pb-2 pr-4 font-semibold">Scales to 50+ Tags</th>
+              <th class="pb-2 pr-4 font-semibold">Mobile</th>
+              <th class="pb-2 pr-4 font-semibold">Effort</th>
+              <th class="pb-2 font-semibold">Best For</th>
+            </tr>
+          </thead>
+          <tbody class="text-foreground-secondary">
+            <tr class="border-b border-border-muted">
+              <td class="py-2 pr-4 font-medium text-foreground">1</td>
+              <td class="py-2 pr-4">Chip Cloud</td>
+              <td class="py-2 pr-4 text-done-foreground">All visible</td>
+              <td class="py-2 pr-4 text-danger">Gets cluttered</td>
+              <td class="py-2 pr-4 text-done-foreground">Great</td>
+              <td class="py-2 pr-4">Low</td>
+              <td class="py-2">Small tag sets (&lt;20)</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2 pr-4 font-medium text-foreground">2</td>
+              <td class="py-2 pr-4">Vertical List</td>
+              <td class="py-2 pr-4 text-done-foreground">All visible</td>
+              <td class="py-2 pr-4 text-done-foreground">Scrolls well</td>
+              <td class="py-2 pr-4 text-done-foreground">Great</td>
+              <td class="py-2 pr-4">Low</td>
+              <td class="py-2">Utility-first / settings feel</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2 pr-4 font-medium text-foreground">3</td>
+              <td class="py-2 pr-4">Card Grid</td>
+              <td class="py-2 pr-4 text-done-foreground">All visible</td>
+              <td class="py-2 pr-4 text-danger">Space heavy</td>
+              <td class="py-2 pr-4 text-done-foreground">Good</td>
+              <td class="py-2 pr-4">Low</td>
+              <td class="py-2">Visual appeal, small sets</td>
+            </tr>
+            <tr class="border-b border-border-muted" style="background: rgba(163, 190, 140, 0.06)">
+              <td class="py-2 pr-4 font-bold text-foreground">4 ✓</td>
+              <td class="py-2 pr-4 font-medium">Dropdown Selector</td>
+              <td class="py-2 pr-4" style="color: var(--color-inprogress-text)">On open only</td>
+              <td class="py-2 pr-4 text-done-foreground">Excellent</td>
+              <td class="py-2 pr-4 text-done-foreground">Great</td>
+              <td class="py-2 pr-4">Low (PrimeNG)</td>
+              <td class="py-2 font-medium">Best balance of space + scale</td>
+            </tr>
+            <tr class="border-b border-border-muted">
+              <td class="py-2 pr-4 font-medium text-foreground">5</td>
+              <td class="py-2 pr-4">Split View</td>
+              <td class="py-2 pr-4 text-done-foreground">Always visible</td>
+              <td class="py-2 pr-4 text-done-foreground">Scrolls well</td>
+              <td class="py-2 pr-4 text-danger">Needs fallback</td>
+              <td class="py-2 pr-4">Medium</td>
+              <td class="py-2">Desktop-heavy workflows</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-medium text-foreground">6</td>
+              <td class="py-2 pr-4">Collapsible Bar</td>
+              <td class="py-2 pr-4 text-done-foreground">When expanded</td>
+              <td class="py-2 pr-4" style="color: var(--color-inprogress-text)">OK with scroll</td>
+              <td class="py-2 pr-4 text-done-foreground">Good</td>
+              <td class="py-2 pr-4">Medium</td>
+              <td class="py-2">Chip feel + content space</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ======================= RECOMMENDATION ======================= -->
+    <div class="option-card recommended mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="text-foreground text-sm font-semibold">Recommendation</div>
+        </div>
+        <div class="recommended-badge">Option 4</div>
+      </div>
+      <div class="option-body">
+        <div class="text-foreground-secondary text-sm leading-relaxed mb-4">
+          <strong>Option 4 (Compact Dropdown Selector)</strong> is recommended because it:
+        </div>
+        <ul class="text-foreground-secondary text-xs space-y-2 ml-4 list-disc">
+          <li><strong>Maximises content space</strong> — the tag selector takes a single row, leaving the rest for the item detail panel (Issue #335). Other options eat into that space with chip clouds or sidebars.</li>
+          <li><strong>Scales effortlessly</strong> — PrimeNG's <code>p-select</code> with filtering handles 5 tags or 500 tags identically. Chip clouds and card grids degrade at scale.</li>
+          <li><strong>Aligns with the unified vision</strong> — the recommended Option 5 in <code>tag-hub-ux.html</code> already uses this selector pattern. Choosing it here means Issue #334 and #335 designs are consistent.</li>
+          <li><strong>Minimal implementation effort</strong> — PrimeNG <code>p-select</code> provides search, keyboard nav, and accessibility out of the box. No custom chip/grid/sidebar code needed.</li>
+          <li><strong>Mobile-first</strong> — dropdown selectors are a native mobile pattern. No responsive breakpoint logic or drawer fallbacks required.</li>
+        </ul>
+        <div class="mt-4 p-3 rounded-lg bg-surface-muted text-xs text-foreground-secondary">
+          <strong>Trade-off acknowledged:</strong> Tags aren't visible at a glance — you must open the dropdown. This is acceptable because the Tag Hub is a <em>task-oriented</em> page (find things by tag), not a <em>discovery</em> page (browse all tags). Users arrive with a tag in mind.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+      }
+    }
+  </script>
+</body>
+</html>

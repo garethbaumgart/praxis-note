@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Communication Style Profile - Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            'accent-solid': 'var(--color-primary-solid)',
+            'accent-foreground': 'var(--color-primary-text)',
+            accent: 'var(--color-primary-bg)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            inprogress: 'var(--color-inprogress-bg)',
+            'inprogress-foreground': 'var(--color-inprogress-text)',
+            'inprogress-border': 'var(--color-inprogress-border)',
+            todo: 'var(--color-todo-bg)',
+            'todo-foreground': 'var(--color-todo-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.2);
+      --color-todo-bg: rgba(94, 129, 172, 0.1);
+      --color-todo-text: #5e81ac;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.15);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.15);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.25);
+      --color-todo-bg: rgba(94, 129, 172, 0.15);
+      --color-todo-text: #88c0d0;
+    }
+    body { background: var(--color-bg-base); color: var(--color-text-primary); }
+    .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 50; }
+
+    /* Radar chart CSS */
+    .radar-container { position: relative; width: 240px; height: 240px; }
+    .radar-bg { position: absolute; inset: 0; }
+    .radar-label {
+      position: absolute; font-size: 11px; color: var(--color-text-muted);
+      transform: translate(-50%, -50%); white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+  <button class="theme-toggle px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-sm text-foreground-secondary" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">
+    Toggle Dark Mode
+  </button>
+
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-foreground mb-2">Communication Style Profile</h1>
+    <p class="text-foreground-muted mb-8">Issue #284 — UX Design Options</p>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 1: Hero Card with Inline Radar (Recommended) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="px-2 py-0.5 bg-done text-done-foreground text-xs font-semibold rounded">Recommended</span>
+        <h2 class="text-xl font-bold text-foreground">Option 1: Hero Card with Inline Radar</h2>
+      </div>
+      <p class="text-sm text-foreground-muted mb-4">
+        Large hero card with archetype name, description, and embedded radar chart side by side.
+        Context shifts and growth areas shown below in a two-column grid.
+        <strong>Pros:</strong> Strong visual impact, radar chart provides at-a-glance profile, balanced info density.
+        <strong>Cons:</strong> Takes more vertical space, radar chart may be complex to implement with SVG.
+      </p>
+
+      <div class="bg-surface-subtle border border-border rounded-xl overflow-hidden">
+        <!-- Hero section -->
+        <div class="p-6 flex flex-col lg:flex-row gap-6">
+          <!-- Left: Archetype info -->
+          <div class="flex-1">
+            <p class="text-xs font-medium text-foreground-muted uppercase tracking-wider mb-1">Your Communication Style</p>
+            <h3 class="text-2xl font-bold text-foreground mb-1">Facilitator</h3>
+            <p class="text-sm text-accent-foreground mb-3">with tendencies toward <strong>Observer</strong></p>
+            <p class="text-sm text-foreground-secondary leading-relaxed">
+              You draw others into the conversation, ask thoughtful questions, and balance airtime across participants. Your meetings tend to be collaborative and inclusive.
+            </p>
+            <div class="mt-4 flex items-center gap-2 text-xs text-foreground-muted">
+              <i class="pi pi-chart-bar text-accent-foreground"></i>
+              <span>Based on <strong class="text-foreground">12 meetings</strong> over 90 days</span>
+            </div>
+            <div class="mt-2 flex items-center gap-2 text-xs text-foreground-muted">
+              <i class="pi pi-sync text-done-foreground"></i>
+              <span>Style consistency: <strong class="text-done-foreground">78%</strong> (stable)</span>
+            </div>
+          </div>
+
+          <!-- Right: Radar chart -->
+          <div class="flex-shrink-0 flex items-center justify-center">
+            <svg viewBox="0 0 300 260" width="280" height="240" class="block">
+              <!-- Radar grid (3 levels) -->
+              <g transform="translate(150, 130)">
+                <!-- Outer hexagon -->
+                <polygon points="0,-100 86.6,-50 86.6,50 0,100 -86.6,50 -86.6,-50"
+                         fill="none" stroke="var(--color-border-default)" stroke-width="1" opacity="0.5"/>
+                <!-- Mid hexagon -->
+                <polygon points="0,-66 57.7,-33 57.7,33 0,66 -57.7,33 -57.7,-33"
+                         fill="none" stroke="var(--color-border-default)" stroke-width="1" opacity="0.3"/>
+                <!-- Inner hexagon -->
+                <polygon points="0,-33 28.9,-16.5 28.9,16.5 0,33 -28.9,16.5 -28.9,-16.5"
+                         fill="none" stroke="var(--color-border-default)" stroke-width="1" opacity="0.2"/>
+                <!-- Axes -->
+                <line x1="0" y1="0" x2="0" y2="-100" stroke="var(--color-border-default)" stroke-width="0.5" opacity="0.3"/>
+                <line x1="0" y1="0" x2="86.6" y2="-50" stroke="var(--color-border-default)" stroke-width="0.5" opacity="0.3"/>
+                <line x1="0" y1="0" x2="86.6" y2="50" stroke="var(--color-border-default)" stroke-width="0.5" opacity="0.3"/>
+                <line x1="0" y1="0" x2="0" y2="100" stroke="var(--color-border-default)" stroke-width="0.5" opacity="0.3"/>
+                <line x1="0" y1="0" x2="-86.6" y2="50" stroke="var(--color-border-default)" stroke-width="0.5" opacity="0.3"/>
+                <line x1="0" y1="0" x2="-86.6" y2="-50" stroke="var(--color-border-default)" stroke-width="0.5" opacity="0.3"/>
+                <!-- Data polygon: Facilitator=85, Challenger=40, Driver=25, Observer=65, Mediator=50, Supporter=55 -->
+                <polygon points="0,-85 34.6,-20 21.6,32.5 0,55 -43.3,25 -47.6,-27.5"
+                         fill="var(--color-primary-bg)" stroke="var(--color-primary-solid)" stroke-width="2" opacity="0.8"/>
+                <!-- Data dots -->
+                <circle cx="0" cy="-85" r="4" fill="var(--color-primary-solid)"/>
+                <circle cx="34.6" cy="-20" r="3" fill="var(--color-primary-solid)" opacity="0.7"/>
+                <circle cx="21.6" cy="32.5" r="3" fill="var(--color-primary-solid)" opacity="0.7"/>
+                <circle cx="0" cy="55" r="3" fill="var(--color-primary-solid)" opacity="0.7"/>
+                <circle cx="-43.3" cy="25" r="3" fill="var(--color-primary-solid)" opacity="0.7"/>
+                <circle cx="-47.6" cy="-27.5" r="3" fill="var(--color-primary-solid)" opacity="0.7"/>
+              </g>
+              <!-- Labels -->
+              <text x="150" y="18" text-anchor="middle" font-size="11" font-weight="600" fill="var(--color-primary-text)">Facilitator</text>
+              <text x="260" y="72" text-anchor="start" font-size="11" fill="var(--color-text-muted)">Challenger</text>
+              <text x="260" y="192" text-anchor="start" font-size="11" fill="var(--color-text-muted)">Driver</text>
+              <text x="150" y="252" text-anchor="middle" font-size="11" fill="var(--color-text-muted)">Supporter</text>
+              <text x="40" y="192" text-anchor="end" font-size="11" fill="var(--color-text-muted)">Mediator</text>
+              <text x="40" y="72" text-anchor="end" font-size="11" fill="var(--color-text-secondary)">Observer</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Context shifts + Strengths/Growth -->
+        <div class="border-t border-border grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+          <!-- Context shifts -->
+          <div class="p-5">
+            <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Context Shifts</h4>
+            <div class="space-y-2.5">
+              <div class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-accent flex items-center justify-center shrink-0 mt-0.5">
+                  <i class="pi pi-user text-[10px] text-accent-foreground"></i>
+                </span>
+                <div>
+                  <p class="text-sm text-foreground">1:1 meetings &rarr; <strong>Observer</strong></p>
+                  <p class="text-xs text-foreground-muted">You listen more and let others lead</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-inprogress flex items-center justify-center shrink-0 mt-0.5">
+                  <i class="pi pi-users text-[10px] text-inprogress-foreground"></i>
+                </span>
+                <div>
+                  <p class="text-sm text-foreground">Team standups &rarr; <strong>Driver</strong></p>
+                  <p class="text-xs text-foreground-muted">You take charge of the agenda</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-done flex items-center justify-center shrink-0 mt-0.5">
+                  <i class="pi pi-comments text-[10px] text-done-foreground"></i>
+                </span>
+                <div>
+                  <p class="text-sm text-foreground">Large groups &rarr; <strong>Facilitator</strong></p>
+                  <p class="text-xs text-foreground-muted">Your default style (most consistent)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Strengths & Growth -->
+          <div class="p-5">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <h4 class="text-xs font-semibold text-done-foreground uppercase tracking-wider mb-2">Strengths</h4>
+                <ul class="space-y-1.5 text-sm text-foreground-secondary">
+                  <li class="flex items-start gap-1.5"><i class="pi pi-check-circle text-done-foreground text-xs mt-0.5"></i> Balanced airtime</li>
+                  <li class="flex items-start gap-1.5"><i class="pi pi-check-circle text-done-foreground text-xs mt-0.5"></i> Thoughtful questions</li>
+                  <li class="flex items-start gap-1.5"><i class="pi pi-check-circle text-done-foreground text-xs mt-0.5"></i> High engagement</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="text-xs font-semibold text-inprogress-foreground uppercase tracking-wider mb-2">Growth Areas</h4>
+                <ul class="space-y-1.5 text-sm text-foreground-secondary">
+                  <li class="flex items-start gap-1.5"><i class="pi pi-arrow-up-right text-inprogress-foreground text-xs mt-0.5"></i> Challenge more</li>
+                  <li class="flex items-start gap-1.5"><i class="pi pi-arrow-up-right text-inprogress-foreground text-xs mt-0.5"></i> Share direct opinions</li>
+                  <li class="flex items-start gap-1.5"><i class="pi pi-arrow-up-right text-inprogress-foreground text-xs mt-0.5"></i> Assert position</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 2: Badge + Score Bars -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <h2 class="text-xl font-bold text-foreground mb-2">Option 2: Badge + Horizontal Score Bars</h2>
+      <p class="text-sm text-foreground-muted mb-4">
+        Archetype shown as a prominent badge with horizontal progress bars for all 6 archetypes.
+        Simpler to implement than radar chart. Context and growth areas in separate cards below.
+        <strong>Pros:</strong> Easy to read, no complex SVG, clear percentage breakdown.
+        <strong>Cons:</strong> Less visually distinctive, bar charts don't convey the "shape" of a style profile as intuitively.
+      </p>
+
+      <div class="space-y-4">
+        <!-- Archetype badge -->
+        <div class="bg-surface-subtle border border-border rounded-xl p-6">
+          <div class="flex items-center gap-4 mb-5">
+            <div class="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center">
+              <i class="pi pi-comments text-2xl text-accent-foreground"></i>
+            </div>
+            <div>
+              <p class="text-xs text-foreground-muted uppercase tracking-wider">Primary Style</p>
+              <h3 class="text-2xl font-bold text-foreground">Facilitator</h3>
+              <p class="text-sm text-foreground-secondary">Also showing <strong class="text-accent-foreground">Observer</strong> tendencies</p>
+            </div>
+          </div>
+          <p class="text-sm text-foreground-secondary mb-5">
+            You draw others into the conversation, ask thoughtful questions, and balance airtime across participants.
+          </p>
+          <div class="space-y-3">
+            <!-- Score bars -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium text-accent-foreground">Facilitator</span>
+                <span class="text-foreground-muted">85%</span>
+              </div>
+              <div class="h-2 bg-surface-muted rounded-full overflow-hidden">
+                <div class="h-full bg-accent-solid rounded-full" style="width: 85%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium text-foreground-secondary">Observer</span>
+                <span class="text-foreground-muted">65%</span>
+              </div>
+              <div class="h-2 bg-surface-muted rounded-full overflow-hidden">
+                <div class="h-full bg-accent-solid rounded-full opacity-70" style="width: 65%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium text-foreground-secondary">Supporter</span>
+                <span class="text-foreground-muted">55%</span>
+              </div>
+              <div class="h-2 bg-surface-muted rounded-full overflow-hidden">
+                <div class="h-full bg-accent-solid rounded-full opacity-50" style="width: 55%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium text-foreground-secondary">Mediator</span>
+                <span class="text-foreground-muted">50%</span>
+              </div>
+              <div class="h-2 bg-surface-muted rounded-full overflow-hidden">
+                <div class="h-full bg-accent-solid rounded-full opacity-40" style="width: 50%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium text-foreground-secondary">Challenger</span>
+                <span class="text-foreground-muted">40%</span>
+              </div>
+              <div class="h-2 bg-surface-muted rounded-full overflow-hidden">
+                <div class="h-full bg-accent-solid rounded-full opacity-30" style="width: 40%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-medium text-foreground-secondary">Driver</span>
+                <span class="text-foreground-muted">25%</span>
+              </div>
+              <div class="h-2 bg-surface-muted rounded-full overflow-hidden">
+                <div class="h-full bg-accent-solid rounded-full opacity-20" style="width: 25%"></div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-foreground-muted mt-4">Based on 12 meetings &middot; Style consistency: 78%</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 3: Archetype Cards Grid -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <h2 class="text-xl font-bold text-foreground mb-2">Option 3: Archetype Cards Grid</h2>
+      <p class="text-sm text-foreground-muted mb-4">
+        Each archetype as a card with score. Primary/secondary highlighted. Cards arranged in a 3x2 grid.
+        <strong>Pros:</strong> All archetypes equally visible, easy to scan, good on mobile (stacks to 2-col).
+        <strong>Cons:</strong> No single focal point, harder to see the "shape" of the profile, more visual noise.
+      </p>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <!-- Primary -->
+        <div class="bg-surface-subtle border-2 border-accent-solid rounded-xl p-4 relative">
+          <span class="absolute top-2 right-2 px-1.5 py-0.5 bg-accent text-accent-foreground text-[10px] font-semibold rounded">Primary</span>
+          <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center mb-3">
+            <i class="pi pi-comments text-accent-foreground"></i>
+          </div>
+          <h4 class="text-sm font-bold text-foreground">Facilitator</h4>
+          <p class="text-xs text-foreground-muted mt-1">Draws others out, balances airtime</p>
+          <div class="mt-3 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-surface-muted rounded-full overflow-hidden">
+              <div class="h-full bg-accent-solid rounded-full" style="width: 85%"></div>
+            </div>
+            <span class="text-xs font-semibold text-accent-foreground">85%</span>
+          </div>
+        </div>
+        <!-- Secondary -->
+        <div class="bg-surface-subtle border border-border rounded-xl p-4 relative">
+          <span class="absolute top-2 right-2 px-1.5 py-0.5 bg-surface-muted text-foreground-muted text-[10px] font-semibold rounded">Secondary</span>
+          <div class="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
+            <i class="pi pi-eye text-foreground-muted"></i>
+          </div>
+          <h4 class="text-sm font-bold text-foreground">Observer</h4>
+          <p class="text-xs text-foreground-muted mt-1">Listens carefully, contributes selectively</p>
+          <div class="mt-3 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-surface-muted rounded-full overflow-hidden">
+              <div class="h-full bg-accent-solid rounded-full opacity-70" style="width: 65%"></div>
+            </div>
+            <span class="text-xs font-semibold text-foreground-secondary">65%</span>
+          </div>
+        </div>
+        <!-- Others -->
+        <div class="bg-surface-subtle border border-border rounded-xl p-4">
+          <div class="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
+            <i class="pi pi-heart text-foreground-muted"></i>
+          </div>
+          <h4 class="text-sm font-bold text-foreground">Supporter</h4>
+          <p class="text-xs text-foreground-muted mt-1">Affirms and builds on others' ideas</p>
+          <div class="mt-3 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-surface-muted rounded-full overflow-hidden">
+              <div class="h-full bg-accent-solid rounded-full opacity-50" style="width: 55%"></div>
+            </div>
+            <span class="text-xs text-foreground-muted">55%</span>
+          </div>
+        </div>
+        <div class="bg-surface-subtle border border-border rounded-xl p-4">
+          <div class="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
+            <i class="pi pi-shield text-foreground-muted"></i>
+          </div>
+          <h4 class="text-sm font-bold text-foreground">Mediator</h4>
+          <p class="text-xs text-foreground-muted mt-1">Resolves tension, bridges perspectives</p>
+          <div class="mt-3 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-surface-muted rounded-full overflow-hidden">
+              <div class="h-full bg-accent-solid rounded-full opacity-40" style="width: 50%"></div>
+            </div>
+            <span class="text-xs text-foreground-muted">50%</span>
+          </div>
+        </div>
+        <div class="bg-surface-subtle border border-border rounded-xl p-4">
+          <div class="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
+            <i class="pi pi-bolt text-foreground-muted"></i>
+          </div>
+          <h4 class="text-sm font-bold text-foreground">Challenger</h4>
+          <p class="text-xs text-foreground-muted mt-1">Pushes thinking, asks hard questions</p>
+          <div class="mt-3 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-surface-muted rounded-full overflow-hidden">
+              <div class="h-full bg-accent-solid rounded-full opacity-30" style="width: 40%"></div>
+            </div>
+            <span class="text-xs text-foreground-muted">40%</span>
+          </div>
+        </div>
+        <div class="bg-surface-subtle border border-border rounded-xl p-4">
+          <div class="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
+            <i class="pi pi-forward text-foreground-muted"></i>
+          </div>
+          <h4 class="text-sm font-bold text-foreground">Driver</h4>
+          <p class="text-xs text-foreground-muted mt-1">Decisive, leads direction</p>
+          <div class="mt-3 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-surface-muted rounded-full overflow-hidden">
+              <div class="h-full bg-accent-solid rounded-full opacity-20" style="width: 25%"></div>
+            </div>
+            <span class="text-xs text-foreground-muted">25%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 4: Compact Summary + Expandable Details -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <h2 class="text-xl font-bold text-foreground mb-2">Option 4: Compact Summary with Expandable Sections</h2>
+      <p class="text-sm text-foreground-muted mb-4">
+        Minimal profile card on the Insights page with an expand/detail view. Default state is compact.
+        <strong>Pros:</strong> Doesn't overwhelm the Insights page, progressive disclosure.
+        <strong>Cons:</strong> Hides information, requires interaction to see full profile, less immediate impact.
+      </p>
+
+      <!-- Compact view -->
+      <div class="bg-surface-subtle border border-border rounded-xl p-4 mb-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-accent flex items-center justify-center">
+              <i class="pi pi-comments text-lg text-accent-foreground"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-foreground">Facilitator</h3>
+                <span class="text-xs text-foreground-muted">&middot; Observer tendencies</span>
+              </div>
+              <p class="text-xs text-foreground-muted">Balanced airtime, thoughtful questions &middot; 78% consistent</p>
+            </div>
+          </div>
+          <button class="text-accent-foreground text-sm hover:underline flex items-center gap-1">
+            View Profile <i class="pi pi-angle-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Expanded (shown for mockup) -->
+      <div class="bg-surface-subtle border border-border rounded-xl overflow-hidden opacity-60">
+        <div class="p-4 border-b border-border flex items-center justify-between">
+          <h3 class="text-base font-bold text-foreground">Communication Profile Details</h3>
+          <button class="text-xs text-foreground-muted hover:text-foreground"><i class="pi pi-angle-up"></i> Collapse</button>
+        </div>
+        <div class="p-4 grid grid-cols-3 gap-4">
+          <div>
+            <h4 class="text-xs font-semibold text-foreground-muted mb-2">Score Breakdown</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"><span>Facilitator</span><span class="font-bold text-accent-foreground">85%</span></div>
+              <div class="flex justify-between"><span>Observer</span><span>65%</span></div>
+              <div class="flex justify-between"><span>Supporter</span><span>55%</span></div>
+              <div class="flex justify-between"><span>Mediator</span><span>50%</span></div>
+              <div class="flex justify-between"><span>Challenger</span><span>40%</span></div>
+              <div class="flex justify-between"><span>Driver</span><span>25%</span></div>
+            </div>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-foreground-muted mb-2">Context Shifts</h4>
+            <div class="space-y-2 text-sm text-foreground-secondary">
+              <p>1:1 &rarr; Observer</p>
+              <p>Team &rarr; Driver</p>
+              <p>Large &rarr; Facilitator</p>
+            </div>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-foreground-muted mb-2">Growth Tips</h4>
+            <div class="space-y-2 text-sm text-foreground-secondary">
+              <p>Challenge more directly</p>
+              <p>Share your position early</p>
+              <p>Assert boundaries</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-foreground-muted mt-1 italic">^ expanded state shown at 60% opacity for mockup purposes</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 5: Donut Ring + Archetype Chips -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <h2 class="text-xl font-bold text-foreground mb-2">Option 5: Donut Ring with Archetype Chips</h2>
+      <p class="text-sm text-foreground-muted mb-4">
+        Central donut chart showing primary archetype with score distribution. Archetype chips below.
+        <strong>Pros:</strong> Familiar chart type, clear primary focus, chips are scannable.
+        <strong>Cons:</strong> Donut doesn't show multidimensional "shape" as well as radar, less unique.
+      </p>
+
+      <div class="bg-surface-subtle border border-border rounded-xl p-6">
+        <div class="flex flex-col sm:flex-row items-center gap-6">
+          <!-- Donut -->
+          <div class="relative">
+            <svg viewBox="0 0 120 120" width="160" height="160">
+              <!-- Background ring -->
+              <circle cx="60" cy="60" r="50" fill="none" stroke="var(--color-border-default)" stroke-width="12"/>
+              <!-- Facilitator (85%) -->
+              <circle cx="60" cy="60" r="50" fill="none" stroke="var(--color-primary-solid)"
+                      stroke-width="12" stroke-dasharray="267 314" stroke-dashoffset="-0"
+                      transform="rotate(-90 60 60)" stroke-linecap="round"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-2xl font-bold text-foreground">85%</span>
+              <span class="text-[10px] text-foreground-muted">Facilitator</span>
+            </div>
+          </div>
+
+          <!-- Info + chips -->
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-foreground mb-1">Facilitator</h3>
+            <p class="text-sm text-foreground-secondary mb-4">You draw others into the conversation and balance airtime.</p>
+
+            <div class="flex flex-wrap gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-medium border border-accent-solid/20">
+                <i class="pi pi-comments text-[10px]"></i> Facilitator 85%
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-muted text-foreground-secondary text-xs font-medium">
+                <i class="pi pi-eye text-[10px]"></i> Observer 65%
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-muted text-foreground-secondary text-xs font-medium">
+                <i class="pi pi-heart text-[10px]"></i> Supporter 55%
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-muted text-foreground-muted text-xs">
+                <i class="pi pi-shield text-[10px]"></i> Mediator 50%
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-muted text-foreground-muted text-xs">
+                <i class="pi pi-bolt text-[10px]"></i> Challenger 40%
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-muted text-foreground-muted text-xs">
+                <i class="pi pi-forward text-[10px]"></i> Driver 25%
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OPTION 6: Full-Width Dashboard Section -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <h2 class="text-xl font-bold text-foreground mb-2">Option 6: Full-Width Dashboard Section</h2>
+      <p class="text-sm text-foreground-muted mb-4">
+        Dedicated section spanning the full width with archetype, radar, context, and growth in a 4-panel layout.
+        <strong>Pros:</strong> Maximum information density, no scrolling needed, professional look.
+        <strong>Cons:</strong> Very large, may dominate the Insights page, complex layout.
+      </p>
+
+      <div class="bg-surface-subtle border border-border rounded-xl overflow-hidden">
+        <!-- Title bar -->
+        <div class="px-5 py-3 border-b border-border flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-foreground">Communication Style Profile</h3>
+          <span class="text-xs text-foreground-muted">12 meetings &middot; 90 days &middot; 78% consistent</span>
+        </div>
+
+        <div class="grid grid-cols-4 divide-x divide-border">
+          <!-- Panel 1: Primary archetype -->
+          <div class="p-5 flex flex-col items-center text-center">
+            <div class="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center mb-3">
+              <i class="pi pi-comments text-xl text-accent-foreground"></i>
+            </div>
+            <h4 class="text-lg font-bold text-foreground">Facilitator</h4>
+            <p class="text-xs text-accent-foreground mb-2">Primary &middot; 85%</p>
+            <p class="text-xs text-foreground-muted leading-relaxed">Draws others out, balances airtime, asks questions</p>
+            <div class="mt-3 pt-3 border-t border-border w-full">
+              <p class="text-xs text-foreground-muted">Secondary</p>
+              <p class="text-sm font-medium text-foreground">Observer <span class="text-foreground-muted">65%</span></p>
+            </div>
+          </div>
+
+          <!-- Panel 2: Mini radar -->
+          <div class="p-5 flex items-center justify-center">
+            <svg viewBox="0 0 200 180" width="180" height="160">
+              <g transform="translate(100, 90)">
+                <polygon points="0,-70 60.6,-35 60.6,35 0,70 -60.6,35 -60.6,-35"
+                         fill="none" stroke="var(--color-border-default)" stroke-width="1" opacity="0.5"/>
+                <polygon points="0,-35 30.3,-17.5 30.3,17.5 0,35 -30.3,17.5 -30.3,-17.5"
+                         fill="none" stroke="var(--color-border-default)" stroke-width="1" opacity="0.3"/>
+                <polygon points="0,-59.5 24.2,-14 15.1,22.8 0,38.5 -30.3,17.5 -33.3,-19.3"
+                         fill="var(--color-primary-bg)" stroke="var(--color-primary-solid)" stroke-width="1.5" opacity="0.8"/>
+              </g>
+              <text x="100" y="10" text-anchor="middle" font-size="9" fill="var(--color-primary-text)">Facilitator</text>
+              <text x="175" y="50" text-anchor="start" font-size="9" fill="var(--color-text-muted)">Challenger</text>
+              <text x="175" y="135" text-anchor="start" font-size="9" fill="var(--color-text-muted)">Driver</text>
+              <text x="100" y="175" text-anchor="middle" font-size="9" fill="var(--color-text-muted)">Supporter</text>
+              <text x="25" y="135" text-anchor="end" font-size="9" fill="var(--color-text-muted)">Mediator</text>
+              <text x="25" y="50" text-anchor="end" font-size="9" fill="var(--color-text-muted)">Observer</text>
+            </svg>
+          </div>
+
+          <!-- Panel 3: Context shifts -->
+          <div class="p-5">
+            <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Context Shifts</h4>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-xs text-foreground-muted"></i>
+                  <span class="text-foreground-secondary">1:1 meetings</span>
+                </div>
+                <span class="font-medium text-foreground">Observer</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-users text-xs text-foreground-muted"></i>
+                  <span class="text-foreground-secondary">Team standups</span>
+                </div>
+                <span class="font-medium text-foreground">Driver</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-sitemap text-xs text-foreground-muted"></i>
+                  <span class="text-foreground-secondary">Large groups</span>
+                </div>
+                <span class="font-medium text-foreground">Facilitator</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 4: Strengths & Growth -->
+          <div class="p-5">
+            <div class="mb-4">
+              <h4 class="text-xs font-semibold text-done-foreground uppercase tracking-wider mb-2">Strengths</h4>
+              <ul class="space-y-1 text-xs text-foreground-secondary">
+                <li>&#10003; Balanced airtime</li>
+                <li>&#10003; Thoughtful questions</li>
+                <li>&#10003; High engagement</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="text-xs font-semibold text-inprogress-foreground uppercase tracking-wider mb-2">Growth</h4>
+              <ul class="space-y-1 text-xs text-foreground-secondary">
+                <li>&rarr; Challenge more</li>
+                <li>&rarr; Share direct opinions</li>
+                <li>&rarr; Assert position early</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- EMPTY STATE -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="mb-16">
+      <h2 class="text-xl font-bold text-foreground mb-2">Empty State</h2>
+      <p class="text-sm text-foreground-muted mb-4">Shown when fewer than 5 meetings have been analyzed.</p>
+
+      <div class="bg-surface-subtle border border-border rounded-xl p-8 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-surface-muted flex items-center justify-center mx-auto mb-4">
+          <i class="pi pi-user text-2xl text-foreground-muted"></i>
+        </div>
+        <h3 class="text-base font-semibold text-foreground mb-2">Communication profile building...</h3>
+        <p class="text-sm text-foreground-muted max-w-md mx-auto mb-4">
+          Analyze <strong class="text-foreground">3 more meetings</strong> to unlock your communication style profile.
+          We need at least 5 analyzed meetings to build a reliable profile.
+        </p>
+        <div class="flex items-center justify-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-accent-solid"></span>
+          <span class="w-3 h-3 rounded-full bg-accent-solid"></span>
+          <span class="w-3 h-3 rounded-full bg-border"></span>
+          <span class="w-3 h-3 rounded-full bg-border"></span>
+          <span class="w-3 h-3 rounded-full bg-border"></span>
+          <span class="text-xs text-foreground-muted ml-2">2 of 5 meetings</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="mt-12 p-6 bg-surface-subtle border border-border rounded-xl">
+      <h2 class="text-lg font-bold text-foreground mb-3">Summary</h2>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-foreground-muted text-xs uppercase border-b border-border">
+            <th class="pb-2">Option</th>
+            <th class="pb-2">Approach</th>
+            <th class="pb-2">Visual Impact</th>
+            <th class="pb-2">Complexity</th>
+            <th class="pb-2">Mobile</th>
+          </tr>
+        </thead>
+        <tbody class="text-foreground-secondary">
+          <tr class="border-b border-border">
+            <td class="py-2 font-medium text-accent-foreground">1. Hero + Radar ★</td>
+            <td class="py-2">Hero card with embedded radar chart</td>
+            <td class="py-2">High</td>
+            <td class="py-2">Medium</td>
+            <td class="py-2">Good (stacks)</td>
+          </tr>
+          <tr class="border-b border-border">
+            <td class="py-2 font-medium">2. Badge + Bars</td>
+            <td class="py-2">Icon badge with horizontal score bars</td>
+            <td class="py-2">Medium</td>
+            <td class="py-2">Low</td>
+            <td class="py-2">Good</td>
+          </tr>
+          <tr class="border-b border-border">
+            <td class="py-2 font-medium">3. Card Grid</td>
+            <td class="py-2">6 archetype cards in a grid</td>
+            <td class="py-2">Medium</td>
+            <td class="py-2">Low</td>
+            <td class="py-2">Good (2-col)</td>
+          </tr>
+          <tr class="border-b border-border">
+            <td class="py-2 font-medium">4. Compact + Expand</td>
+            <td class="py-2">Minimal default, expandable detail</td>
+            <td class="py-2">Low</td>
+            <td class="py-2">Low</td>
+            <td class="py-2">Excellent</td>
+          </tr>
+          <tr class="border-b border-border">
+            <td class="py-2 font-medium">5. Donut + Chips</td>
+            <td class="py-2">Donut chart with archetype chips</td>
+            <td class="py-2">Medium-High</td>
+            <td class="py-2">Medium</td>
+            <td class="py-2">Good (stacks)</td>
+          </tr>
+          <tr>
+            <td class="py-2 font-medium">6. Full Dashboard</td>
+            <td class="py-2">4-panel full-width section</td>
+            <td class="py-2">High</td>
+            <td class="py-2">High</td>
+            <td class="py-2">Poor (needs redesign)</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mt-4 p-3 bg-accent rounded-lg">
+        <p class="text-sm text-accent-foreground">
+          <strong>Recommendation: Option 1 (Hero Card with Inline Radar)</strong> — Best balance of visual impact and information density.
+          The radar chart provides an intuitive "shape" for the communication profile that no other visualization achieves.
+          The two-column footer (context + strengths) is scannable without overwhelming. Stacks well on mobile.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

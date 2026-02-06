@@ -448,8 +448,5 @@ FodyWeavers.xsd
 playwright-report/
 test-results/
 
-# Mockups
-mockups/
-
 # Environment variables (API keys)
 .env

@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting List UX Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            'surface-hover': 'var(--color-surface-hover)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-hover': 'var(--color-primary-bg-hover)',
+            'accent-foreground': 'var(--color-primary-text)',
+            'accent-solid': 'var(--color-primary-solid)',
+            todo: 'var(--color-todo-bg)',
+            'todo-foreground': 'var(--color-todo-text)',
+            inprogress: 'var(--color-inprogress-bg)',
+            'inprogress-foreground': 'var(--color-inprogress-text)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            danger: 'var(--color-danger-base)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-surface-hover: #f8f9fa;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.25);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-todo-bg: rgba(136, 192, 208, 0.12);
+      --color-todo-text: #0b7285;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-danger-base: #bf616a;
+    }
+
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-surface-hover: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.3);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-todo-bg: rgba(136, 192, 208, 0.12);
+      --color-todo-text: #88c0d0;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-danger-base: #bf616a;
+    }
+
+    .pi { font-size: inherit !important; }
+
+    .card {
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+    }
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .status-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 500;
+    }
+
+    .option-section {
+      border: 2px solid var(--color-border-default);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 40px;
+    }
+
+    .recommended {
+      border-color: var(--color-primary-solid);
+      background: var(--color-primary-bg);
+    }
+
+    .option-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .option-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--color-primary-solid);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .pros-cons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--color-border-muted);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+    }
+
+    .day-header {
+      position: sticky;
+      top: 0;
+      background: var(--color-bg-base);
+      z-index: 10;
+      padding: 12px 0;
+    }
+
+    .timeline-line {
+      position: absolute;
+      left: 19px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--color-border-default);
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: 12px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--color-primary-solid);
+      background: var(--color-bg-subtle);
+    }
+  </style>
+</head>
+<body class="bg-surface min-h-screen transition-colors p-6">
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle w-10 h-10 flex items-center justify-center rounded-full bg-surface-subtle border border-border text-foreground-muted hover:text-foreground shadow-lg" onclick="toggleTheme()">
+    <i class="pi pi-moon text-lg" id="theme-icon"></i>
+  </button>
+
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Meeting List UX Options</h1>
+    <p class="text-foreground-secondary mb-2">How should meetings be organized and browsed?</p>
+    <p class="text-sm text-foreground-muted mb-8">
+      <strong>Key insight:</strong> Meetings are date-centric, typically recorded once, and grouped by day.
+      Unlike notes which are long-living and edited frequently.
+    </p>
+
+    <!-- ============================================ -->
+    <!-- OPTION 1: Daily Grouped List -->
+    <!-- ============================================ -->
+    <div class="option-section recommended">
+      <div class="option-header">
+        <span class="option-number">1</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Daily Grouped List</h2>
+          <p class="text-sm text-foreground-secondary">Meetings grouped by day with sticky date headers</p>
+        </div>
+        <span class="ml-auto px-3 py-1 bg-accent-solid text-white text-xs font-medium rounded-full">Recommended</span>
+      </div>
+
+      <div class="bg-surface rounded-lg border border-border overflow-hidden" style="max-height: 500px; overflow-y: auto;">
+        <!-- Header -->
+        <div class="bg-surface-subtle border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+          <div class="flex items-center gap-3">
+            <h3 class="font-semibold text-foreground">Meetings</h3>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted rounded-md">
+              <i class="pi pi-search text-foreground-muted text-sm"></i>
+              <input type="text" placeholder="Search..." class="bg-transparent outline-none text-sm text-foreground w-32">
+            </div>
+            <button class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium">
+              <i class="pi pi-plus text-xs"></i>
+              New Meeting
+            </button>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <!-- Today -->
+          <div class="day-header">
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-semibold text-foreground">Today</span>
+              <span class="text-xs text-foreground-muted">Monday, Jan 27</span>
+              <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded-full">3 meetings</span>
+            </div>
+          </div>
+          <div class="space-y-2 mb-6">
+            <div class="card p-3 cursor-pointer flex items-center gap-4">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-foreground">10:00</div>
+                <div class="text-xs text-foreground-muted">AM</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">Sprint Planning</h4>
+                <p class="text-xs text-foreground-muted truncate">John, Sarah, Mike • 45 min</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded">3 actions</span>
+                <span class="status-badge bg-done text-done-foreground">Ready</span>
+              </div>
+            </div>
+            <div class="card p-3 cursor-pointer flex items-center gap-4">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-foreground">14:00</div>
+                <div class="text-xs text-foreground-muted">PM</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">1:1 with Manager</h4>
+                <p class="text-xs text-foreground-muted truncate">Sarah • 30 min</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded">1 action</span>
+                <span class="status-badge bg-done text-done-foreground">Ready</span>
+              </div>
+            </div>
+            <div class="card p-3 cursor-pointer flex items-center gap-4 border-dashed border-2 border-inprogress-foreground bg-inprogress">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-inprogress-foreground">16:00</div>
+                <div class="text-xs text-foreground-muted">PM</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">Design Review</h4>
+                <p class="text-xs text-foreground-muted truncate">Alex, Jordan • In progress</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="status-badge bg-inprogress text-inprogress-foreground flex items-center gap-1">
+                  <span class="w-2 h-2 bg-inprogress-foreground rounded-full animate-pulse"></span>
+                  Recording
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Yesterday -->
+          <div class="day-header">
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-semibold text-foreground">Yesterday</span>
+              <span class="text-xs text-foreground-muted">Sunday, Jan 26</span>
+              <span class="px-2 py-0.5 bg-surface-muted text-foreground-muted text-xs rounded-full">1 meeting</span>
+            </div>
+          </div>
+          <div class="space-y-2 mb-6">
+            <div class="card p-3 cursor-pointer flex items-center gap-4">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-foreground">11:00</div>
+                <div class="text-xs text-foreground-muted">AM</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">Team Standup</h4>
+                <p class="text-xs text-foreground-muted truncate">Engineering Team • 15 min</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="status-badge bg-done text-done-foreground">Ready</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- This Week -->
+          <div class="day-header">
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-semibold text-foreground">Friday</span>
+              <span class="text-xs text-foreground-muted">Jan 24</span>
+              <span class="px-2 py-0.5 bg-surface-muted text-foreground-muted text-xs rounded-full">2 meetings</span>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="card p-3 cursor-pointer flex items-center gap-4">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-foreground">09:00</div>
+                <div class="text-xs text-foreground-muted">AM</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">Product Review</h4>
+                <p class="text-xs text-foreground-muted truncate">Product Team • 60 min</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded">5 actions</span>
+                <span class="status-badge bg-done text-done-foreground">Ready</span>
+              </div>
+            </div>
+            <div class="card p-3 cursor-pointer flex items-center gap-4">
+              <div class="text-center w-14 flex-shrink-0">
+                <div class="text-lg font-semibold text-foreground">15:00</div>
+                <div class="text-xs text-foreground-muted">PM</div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-medium text-foreground text-sm truncate">Client Call - Acme Corp</h4>
+                <p class="text-xs text-foreground-muted truncate">External • 45 min</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded">2 actions</span>
+                <span class="status-badge bg-done text-done-foreground">Ready</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-done-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Natural grouping by day (how we think about meetings)</li>
+            <li>+ Time prominently displayed</li>
+            <li>+ Easy to see "what happened today"</li>
+            <li>+ Sticky headers for scrolling</li>
+            <li>+ Shows active/recording meetings</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Takes more vertical space than cards</li>
+            <li>- Less visual variety</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 2: Timeline View -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">2</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Vertical Timeline</h2>
+          <p class="text-sm text-foreground-secondary">Visual timeline with connected events</p>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg border border-border overflow-hidden" style="max-height: 500px; overflow-y: auto;">
+        <div class="bg-surface-subtle border-b border-border px-4 py-3 flex items-center justify-between">
+          <h3 class="font-semibold text-foreground">Meetings</h3>
+          <button class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium">
+            <i class="pi pi-plus text-xs"></i>
+            New Meeting
+          </button>
+        </div>
+
+        <div class="p-4 pl-12 relative">
+          <div class="timeline-line"></div>
+
+          <!-- Today Header -->
+          <div class="relative mb-4">
+            <div class="timeline-dot bg-accent-solid border-accent-solid" style="top: 2px;"></div>
+            <div class="pl-6">
+              <span class="text-sm font-semibold text-foreground">Today - Monday, Jan 27</span>
+            </div>
+          </div>
+
+          <!-- Meeting 1 -->
+          <div class="relative mb-4">
+            <div class="timeline-dot" style="top: 8px;"></div>
+            <div class="pl-6">
+              <div class="card p-3">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs font-medium text-accent-foreground">10:00 AM</span>
+                  <span class="status-badge bg-done text-done-foreground">Ready</span>
+                </div>
+                <h4 class="font-medium text-foreground text-sm">Sprint Planning</h4>
+                <p class="text-xs text-foreground-muted">John, Sarah, Mike • 3 action items</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Meeting 2 -->
+          <div class="relative mb-4">
+            <div class="timeline-dot" style="top: 8px;"></div>
+            <div class="pl-6">
+              <div class="card p-3">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs font-medium text-accent-foreground">2:00 PM</span>
+                  <span class="status-badge bg-done text-done-foreground">Ready</span>
+                </div>
+                <h4 class="font-medium text-foreground text-sm">1:1 with Manager</h4>
+                <p class="text-xs text-foreground-muted">Sarah • 1 action item</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Meeting 3 - Active -->
+          <div class="relative mb-6">
+            <div class="timeline-dot bg-inprogress-foreground border-inprogress-foreground" style="top: 8px;"></div>
+            <div class="pl-6">
+              <div class="card p-3 border-inprogress-foreground border-2">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs font-medium text-inprogress-foreground">4:00 PM - Now</span>
+                  <span class="status-badge bg-inprogress text-inprogress-foreground flex items-center gap-1">
+                    <span class="w-2 h-2 bg-inprogress-foreground rounded-full animate-pulse"></span>
+                    Recording
+                  </span>
+                </div>
+                <h4 class="font-medium text-foreground text-sm">Design Review</h4>
+                <p class="text-xs text-foreground-muted">Alex, Jordan</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Yesterday Header -->
+          <div class="relative mb-4">
+            <div class="timeline-dot bg-surface-muted border-foreground-muted" style="top: 2px;"></div>
+            <div class="pl-6">
+              <span class="text-sm font-semibold text-foreground-secondary">Yesterday - Sunday, Jan 26</span>
+            </div>
+          </div>
+
+          <!-- Meeting 4 -->
+          <div class="relative mb-4">
+            <div class="timeline-dot" style="top: 8px; border-color: var(--color-text-muted);"></div>
+            <div class="pl-6">
+              <div class="card p-3 opacity-80">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs font-medium text-foreground-muted">11:00 AM</span>
+                  <span class="status-badge bg-done text-done-foreground">Ready</span>
+                </div>
+                <h4 class="font-medium text-foreground text-sm">Team Standup</h4>
+                <p class="text-xs text-foreground-muted">Engineering Team</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-done-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Visual connection between events</li>
+            <li>+ Clear chronological flow</li>
+            <li>+ Elegant design</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Takes significant horizontal space</li>
+            <li>- More complex to implement</li>
+            <li>- Less information density</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 3: Calendar Week View -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">3</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Calendar Week View</h2>
+          <p class="text-sm text-foreground-secondary">Week-at-a-glance with time slots</p>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg border border-border overflow-hidden">
+        <div class="bg-surface-subtle border-b border-border px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+              <i class="pi pi-chevron-left text-sm"></i>
+            </button>
+            <h3 class="font-semibold text-foreground">Jan 20 - 26, 2026</h3>
+            <button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-muted text-foreground-muted">
+              <i class="pi pi-chevron-right text-sm"></i>
+            </button>
+          </div>
+          <button class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium">
+            <i class="pi pi-plus text-xs"></i>
+            New Meeting
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <div class="grid grid-cols-8 min-w-[800px]">
+            <!-- Time column -->
+            <div class="border-r border-border">
+              <div class="h-10 border-b border-border"></div>
+              <div class="h-16 border-b border-border-muted px-2 py-1 text-xs text-foreground-muted">9 AM</div>
+              <div class="h-16 border-b border-border-muted px-2 py-1 text-xs text-foreground-muted">10 AM</div>
+              <div class="h-16 border-b border-border-muted px-2 py-1 text-xs text-foreground-muted">11 AM</div>
+              <div class="h-16 border-b border-border-muted px-2 py-1 text-xs text-foreground-muted">12 PM</div>
+              <div class="h-16 border-b border-border-muted px-2 py-1 text-xs text-foreground-muted">1 PM</div>
+              <div class="h-16 border-b border-border-muted px-2 py-1 text-xs text-foreground-muted">2 PM</div>
+              <div class="h-16 border-b border-border-muted px-2 py-1 text-xs text-foreground-muted">3 PM</div>
+              <div class="h-16 px-2 py-1 text-xs text-foreground-muted">4 PM</div>
+            </div>
+
+            <!-- Days -->
+            <div class="border-r border-border-muted">
+              <div class="h-10 border-b border-border px-2 py-2 text-center">
+                <div class="text-xs text-foreground-muted">Mon</div>
+                <div class="text-sm font-medium text-foreground">20</div>
+              </div>
+              <div class="h-16 border-b border-border-muted relative">
+                <div class="absolute inset-1 bg-accent rounded p-1 text-xs">
+                  <div class="font-medium text-accent-foreground truncate">Product Review</div>
+                </div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16"></div>
+            </div>
+
+            <!-- Tue-Sat similar structure -->
+            <div class="border-r border-border-muted">
+              <div class="h-10 border-b border-border px-2 py-2 text-center">
+                <div class="text-xs text-foreground-muted">Tue</div>
+                <div class="text-sm font-medium text-foreground">21</div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted relative">
+                <div class="absolute inset-1 bg-accent rounded p-1 text-xs">
+                  <div class="font-medium text-accent-foreground truncate">Sprint Planning</div>
+                </div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted relative">
+                <div class="absolute inset-1 bg-accent rounded p-1 text-xs">
+                  <div class="font-medium text-accent-foreground truncate">1:1</div>
+                </div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16"></div>
+            </div>
+
+            <div class="border-r border-border-muted">
+              <div class="h-10 border-b border-border px-2 py-2 text-center">
+                <div class="text-xs text-foreground-muted">Wed</div>
+                <div class="text-sm font-medium text-foreground">22</div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted relative">
+                <div class="absolute inset-1 bg-accent rounded p-1 text-xs">
+                  <div class="font-medium text-accent-foreground truncate">Team Standup</div>
+                </div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16"></div>
+            </div>
+
+            <div class="border-r border-border-muted">
+              <div class="h-10 border-b border-border px-2 py-2 text-center">
+                <div class="text-xs text-foreground-muted">Thu</div>
+                <div class="text-sm font-medium text-foreground">23</div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted relative">
+                <div class="absolute inset-1 bg-accent rounded p-1 text-xs">
+                  <div class="font-medium text-accent-foreground truncate">Design Review</div>
+                </div>
+              </div>
+              <div class="h-16"></div>
+            </div>
+
+            <div class="border-r border-border-muted">
+              <div class="h-10 border-b border-border px-2 py-2 text-center">
+                <div class="text-xs text-foreground-muted">Fri</div>
+                <div class="text-sm font-medium text-foreground">24</div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16"></div>
+            </div>
+
+            <div class="border-r border-border-muted">
+              <div class="h-10 border-b border-border px-2 py-2 text-center">
+                <div class="text-xs text-foreground-muted">Sat</div>
+                <div class="text-sm font-medium text-foreground-muted">25</div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16"></div>
+            </div>
+
+            <div>
+              <div class="h-10 border-b border-border px-2 py-2 text-center">
+                <div class="text-xs text-foreground-muted">Sun</div>
+                <div class="text-sm font-medium text-foreground-muted">26</div>
+              </div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16 border-b border-border-muted"></div>
+              <div class="h-16"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-done-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Familiar calendar mental model</li>
+            <li>+ See whole week at once</li>
+            <li>+ Natural fit with calendar sync feature</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Complex to implement well</li>
+            <li>- Limited space for meeting details</li>
+            <li>- Poor mobile experience</li>
+            <li>- Duplicates calendar app functionality</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 4: Compact List with Filters -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">4</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Compact List with Filters</h2>
+          <p class="text-sm text-foreground-secondary">Dense list with powerful filtering</p>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg border border-border overflow-hidden">
+        <div class="bg-surface-subtle border-b border-border px-4 py-3">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-foreground">Meetings</h3>
+            <button class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium">
+              <i class="pi pi-plus text-xs"></i>
+              New Meeting
+            </button>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted rounded-md flex-1 max-w-xs">
+              <i class="pi pi-search text-foreground-muted text-sm"></i>
+              <input type="text" placeholder="Search meetings..." class="bg-transparent outline-none text-sm text-foreground w-full">
+            </div>
+            <select class="px-3 py-1.5 bg-surface-muted rounded-md text-sm text-foreground border-none outline-none">
+              <option>All time</option>
+              <option selected>This week</option>
+              <option>This month</option>
+              <option>Last 30 days</option>
+            </select>
+            <select class="px-3 py-1.5 bg-surface-muted rounded-md text-sm text-foreground border-none outline-none">
+              <option selected>All statuses</option>
+              <option>Ready</option>
+              <option>Processing</option>
+              <option>Draft</option>
+            </select>
+            <button class="px-3 py-1.5 bg-surface-muted rounded-md text-sm text-foreground-muted hover:text-foreground">
+              <i class="pi pi-filter-slash text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="divide-y divide-border-muted">
+          <div class="px-4 py-2 hover:bg-surface-hover cursor-pointer flex items-center gap-4">
+            <div class="w-24 flex-shrink-0">
+              <div class="text-xs text-foreground-muted">Today</div>
+              <div class="text-sm font-medium text-foreground">10:00 AM</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm text-foreground truncate">Sprint Planning</h4>
+            </div>
+            <div class="text-xs text-foreground-muted w-32 truncate">John, Sarah, Mike</div>
+            <div class="w-20">
+              <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded">3 actions</span>
+            </div>
+            <span class="status-badge bg-done text-done-foreground w-16 text-center">Ready</span>
+          </div>
+          <div class="px-4 py-2 hover:bg-surface-hover cursor-pointer flex items-center gap-4">
+            <div class="w-24 flex-shrink-0">
+              <div class="text-xs text-foreground-muted">Today</div>
+              <div class="text-sm font-medium text-foreground">2:00 PM</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm text-foreground truncate">1:1 with Manager</h4>
+            </div>
+            <div class="text-xs text-foreground-muted w-32 truncate">Sarah</div>
+            <div class="w-20">
+              <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded">1 action</span>
+            </div>
+            <span class="status-badge bg-done text-done-foreground w-16 text-center">Ready</span>
+          </div>
+          <div class="px-4 py-2 hover:bg-surface-hover cursor-pointer flex items-center gap-4 bg-inprogress">
+            <div class="w-24 flex-shrink-0">
+              <div class="text-xs text-foreground-muted">Today</div>
+              <div class="text-sm font-medium text-inprogress-foreground">4:00 PM</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm text-foreground truncate">Design Review</h4>
+            </div>
+            <div class="text-xs text-foreground-muted w-32 truncate">Alex, Jordan</div>
+            <div class="w-20"></div>
+            <span class="status-badge bg-inprogress text-inprogress-foreground w-16 text-center flex items-center justify-center gap-1">
+              <span class="w-1.5 h-1.5 bg-inprogress-foreground rounded-full animate-pulse"></span>
+              Live
+            </span>
+          </div>
+          <div class="px-4 py-2 hover:bg-surface-hover cursor-pointer flex items-center gap-4">
+            <div class="w-24 flex-shrink-0">
+              <div class="text-xs text-foreground-muted">Yesterday</div>
+              <div class="text-sm font-medium text-foreground">11:00 AM</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm text-foreground truncate">Team Standup</h4>
+            </div>
+            <div class="text-xs text-foreground-muted w-32 truncate">Engineering Team</div>
+            <div class="w-20"></div>
+            <span class="status-badge bg-done text-done-foreground w-16 text-center">Ready</span>
+          </div>
+          <div class="px-4 py-2 hover:bg-surface-hover cursor-pointer flex items-center gap-4">
+            <div class="w-24 flex-shrink-0">
+              <div class="text-xs text-foreground-muted">Jan 24</div>
+              <div class="text-sm font-medium text-foreground">9:00 AM</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm text-foreground truncate">Product Review</h4>
+            </div>
+            <div class="text-xs text-foreground-muted w-32 truncate">Product Team</div>
+            <div class="w-20">
+              <span class="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded">5 actions</span>
+            </div>
+            <span class="status-badge bg-done text-done-foreground w-16 text-center">Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-done-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ High information density</li>
+            <li>+ Powerful filtering options</li>
+            <li>+ Easy to scan many meetings</li>
+            <li>+ Works well on all screen sizes</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Less visual appeal</li>
+            <li>- No grouping by day</li>
+            <li>- Dates can be hard to scan</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 5: Hybrid - Agenda View -->
+    <!-- ============================================ -->
+    <div class="option-section">
+      <div class="option-header">
+        <span class="option-number">5</span>
+        <div>
+          <h2 class="text-lg font-semibold text-foreground">Agenda View (Hybrid)</h2>
+          <p class="text-sm text-foreground-secondary">Today's focus + scrollable history</p>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg border border-border overflow-hidden">
+        <div class="bg-surface-subtle border-b border-border px-4 py-3 flex items-center justify-between">
+          <h3 class="font-semibold text-foreground">Meetings</h3>
+          <button class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium">
+            <i class="pi pi-plus text-xs"></i>
+            New Meeting
+          </button>
+        </div>
+
+        <div class="grid md:grid-cols-2 divide-x divide-border">
+          <!-- Today's Agenda (Left) -->
+          <div class="p-4">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h4 class="font-semibold text-foreground">Today</h4>
+                <p class="text-xs text-foreground-muted">Monday, January 27</p>
+              </div>
+              <span class="px-2 py-1 bg-accent text-accent-foreground text-xs rounded-full font-medium">3 meetings</span>
+            </div>
+
+            <div class="space-y-3">
+              <div class="card p-3 border-l-4 border-l-done-foreground">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-foreground">Sprint Planning</span>
+                  <span class="status-badge bg-done text-done-foreground">Ready</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-foreground-muted">
+                  <span><i class="pi pi-clock mr-1"></i>10:00 AM</span>
+                  <span><i class="pi pi-users mr-1"></i>3 people</span>
+                  <span class="text-accent-foreground">3 actions</span>
+                </div>
+              </div>
+
+              <div class="card p-3 border-l-4 border-l-done-foreground">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-foreground">1:1 with Manager</span>
+                  <span class="status-badge bg-done text-done-foreground">Ready</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-foreground-muted">
+                  <span><i class="pi pi-clock mr-1"></i>2:00 PM</span>
+                  <span><i class="pi pi-user mr-1"></i>Sarah</span>
+                  <span class="text-accent-foreground">1 action</span>
+                </div>
+              </div>
+
+              <div class="card p-3 border-l-4 border-l-inprogress-foreground bg-inprogress">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-foreground">Design Review</span>
+                  <span class="status-badge bg-inprogress text-inprogress-foreground flex items-center gap-1">
+                    <span class="w-2 h-2 bg-inprogress-foreground rounded-full animate-pulse"></span>
+                    Recording
+                  </span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-foreground-muted">
+                  <span><i class="pi pi-clock mr-1"></i>4:00 PM - Now</span>
+                  <span><i class="pi pi-users mr-1"></i>2 people</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick stats -->
+            <div class="mt-4 pt-4 border-t border-border-muted">
+              <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="p-2 bg-surface-muted rounded">
+                  <div class="text-lg font-semibold text-foreground">4</div>
+                  <div class="text-xs text-foreground-muted">Actions</div>
+                </div>
+                <div class="p-2 bg-surface-muted rounded">
+                  <div class="text-lg font-semibold text-foreground">2h</div>
+                  <div class="text-xs text-foreground-muted">Recorded</div>
+                </div>
+                <div class="p-2 bg-surface-muted rounded">
+                  <div class="text-lg font-semibold text-foreground">8</div>
+                  <div class="text-xs text-foreground-muted">Attendees</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- History (Right) -->
+          <div class="p-4 bg-surface-muted">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="font-medium text-foreground-secondary">Recent</h4>
+              <select class="text-xs bg-transparent text-foreground-muted border-none outline-none">
+                <option>This week</option>
+                <option>This month</option>
+                <option>All time</option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <div class="text-xs font-medium text-foreground-muted mb-1">Yesterday</div>
+              <div class="bg-surface-subtle rounded p-2 cursor-pointer hover:shadow-sm transition-shadow">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-foreground">Team Standup</span>
+                  <span class="text-xs text-foreground-muted">11:00 AM</span>
+                </div>
+              </div>
+
+              <div class="text-xs font-medium text-foreground-muted mb-1 mt-3">Friday, Jan 24</div>
+              <div class="bg-surface-subtle rounded p-2 cursor-pointer hover:shadow-sm transition-shadow">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-foreground">Product Review</span>
+                  <span class="text-xs text-accent-foreground">5 actions</span>
+                </div>
+              </div>
+              <div class="bg-surface-subtle rounded p-2 cursor-pointer hover:shadow-sm transition-shadow">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-foreground">Client Call - Acme</span>
+                  <span class="text-xs text-accent-foreground">2 actions</span>
+                </div>
+              </div>
+
+              <div class="text-xs font-medium text-foreground-muted mb-1 mt-3">Thursday, Jan 23</div>
+              <div class="bg-surface-subtle rounded p-2 cursor-pointer hover:shadow-sm transition-shadow">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-foreground">Architecture Review</span>
+                  <span class="text-xs text-foreground-muted">3:00 PM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div>
+          <h4 class="text-sm font-medium text-done-foreground mb-2">Pros</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>+ Today's agenda is prominent</li>
+            <li>+ Quick access to recent history</li>
+            <li>+ Daily stats at a glance</li>
+            <li>+ Balances focus and context</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-medium text-danger mb-2">Cons</h4>
+          <ul class="text-sm text-foreground-secondary space-y-1">
+            <li>- Less space for each meeting</li>
+            <li>- Two-column layout needs responsive handling</li>
+            <li>- History section is condensed</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="bg-surface-subtle rounded-lg border border-border p-6 mt-8">
+      <h2 class="text-lg font-semibold text-foreground mb-4">Summary</h2>
+      <p class="text-sm text-foreground-secondary mb-4">
+        Unlike Notes (long-living, frequently edited), Meetings are:
+      </p>
+      <ul class="text-sm text-foreground-secondary mb-4 list-disc pl-5 space-y-1">
+        <li>Date-centric (grouped by day)</li>
+        <li>Time-stamped (specific start times)</li>
+        <li>Write-once (recorded, analyzed, then archived)</li>
+        <li>Action-focused (extract tasks, then move on)</li>
+      </ul>
+      <p class="text-sm text-foreground-secondary">
+        <strong>Option 1 (Daily Grouped List)</strong> is recommended because it naturally reflects how we think about meetings,
+        prominently shows time, and clearly indicates today's active/recording meetings.
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        icon.classList.remove('pi-sun');
+        icon.classList.add('pi-moon');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.classList.remove('pi-moon');
+        icon.classList.add('pi-sun');
+      }
+    }
+  </script>
+
+</body>
+</html>

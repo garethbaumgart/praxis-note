@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Hub UX - 10 Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-solid': 'var(--color-primary-solid)',
+            'accent-foreground': 'var(--color-primary-text)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            'tag-bg': 'var(--color-tag-bg)',
+            'tag-text': 'var(--color-tag-text)',
+            'todo-bg': 'var(--color-todo-bg)',
+            'todo-text': 'var(--color-todo-text)',
+            'inprogress-bg': 'var(--color-inprogress-bg)',
+            'inprogress-text': 'var(--color-inprogress-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.15);
+      --color-tag-text: #b48ead;
+      --color-todo-bg: rgba(136, 192, 208, 0.12);
+      --color-todo-text: #0b7285;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.2);
+      --color-tag-text: #b48ead;
+      --color-todo-bg: rgba(136, 192, 208, 0.15);
+      --color-todo-text: #88c0d0;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.15);
+      --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.15);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-card { background: var(--color-bg-subtle); border-radius: 12px; overflow: hidden; border: 1px solid var(--color-border-default); }
+    .option-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border-muted); display: flex; align-items: center; justify-content: space-between; }
+    .option-body { padding: 1.25rem; }
+    .option-number { background: var(--color-primary-solid); color: white; font-size: 11px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .recommended { border: 2px solid #a3be8c !important; }
+    .recommended-badge { background: #a3be8c; color: #2e3440; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+    .tag-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 9999px; cursor: pointer; transition: all 0.15s; }
+    .tag-chip:hover { opacity: 0.8; }
+    .tag-chip.selected { background: var(--color-primary-solid); color: white; }
+    .tag-count { font-size: 9px; opacity: 0.7; margin-left: 2px; }
+    .status-badge { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 9999px; }
+    .status-todo { background: var(--color-todo-bg); color: var(--color-todo-text); }
+    .status-inprogress { background: var(--color-inprogress-bg); color: var(--color-inprogress-text); }
+    .status-done { background: var(--color-done-bg); color: var(--color-done-text); }
+    .priority-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-danger-base); flex-shrink: 0; }
+    .item-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s; text-decoration: none; color: inherit; }
+    .item-row:hover { background: var(--color-bg-muted); }
+    .type-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+    .type-meeting { background: var(--color-primary-bg); color: var(--color-primary-text); }
+    .type-note { background: var(--color-done-bg); color: var(--color-done-text); }
+    .type-task { background: var(--color-inprogress-bg); color: var(--color-inprogress-text); }
+    .section-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); padding: 12px 12px 4px; display: flex; align-items: center; gap: 6px; }
+    .section-count { background: var(--color-bg-muted); padding: 0 6px; border-radius: 9999px; font-size: 10px; }
+    .mock-search { width: 100%; height: 36px; border-radius: 8px; border: 1px solid var(--color-border-default); background: var(--color-bg-muted); padding: 0 12px 0 34px; font-size: 13px; color: var(--color-text-primary); outline: none; }
+    .mock-search::placeholder { color: var(--color-text-muted); }
+    .option-divider { border-top: 3px dashed var(--color-border-default); margin: 3rem 0; padding-top: 2rem; }
+    .pros-cons { margin-top: 12px; font-size: 11px; line-height: 1.8; }
+    .pros-cons .pro { color: #a3be8c; }
+    .pros-cons .con { color: #bf616a; }
+    .due-date { font-size: 10px; color: var(--color-text-muted); }
+    .meta-text { font-size: 11px; color: var(--color-text-muted); }
+    .external-icon { font-size: 9px; color: var(--color-text-muted); opacity: 0; transition: opacity 0.15s; margin-left: auto; flex-shrink: 0; }
+    .item-row:hover .external-icon { opacity: 1; }
+    .pi { font-size: inherit !important; }
+  </style>
+</head>
+<body class="p-6 lg:p-8">
+
+  <!-- Theme Toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="toggleTheme()"
+      class="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-foreground-secondary text-sm hover:bg-surface-muted transition">
+      <i class="pi pi-moon mr-1"></i> Toggle Theme
+    </button>
+  </div>
+
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Tag Hub UX — 10 Design Options</h1>
+    <p class="text-foreground-secondary mb-1 text-sm">Issue <a href="https://github.com/garethbaumgart/praxis-note/issues/335" class="text-accent-foreground underline">#335</a> — Unified view showing all Notes, Meetings, and Tasks for a selected tag.</p>
+    <p class="text-foreground-muted mb-8 text-xs">All items open in a new browser tab. Sections with zero items are hidden. Each option shows the same sample data for comparison.</p>
+
+    <!-- ======================= OPTION 1 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">1</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Classic Split Panel</div>
+            <div class="text-foreground-muted text-xs">Tag list sidebar + content area side by side</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border" style="min-height:380px">
+          <div class="flex" style="min-height:380px">
+            <!-- Left: Tag list -->
+            <div class="border-r border-border" style="width:240px; flex-shrink:0">
+              <div class="p-3">
+                <div class="relative mb-3">
+                  <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+                  <input type="text" placeholder="Filter tags..." class="mock-search" style="height:32px; font-size:12px">
+                </div>
+                <div class="space-y-0.5">
+                  <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-accent cursor-pointer">
+                    <span class="text-sm font-medium text-accent-foreground">project-alpha</span>
+                    <span class="text-xs text-accent-foreground opacity-70">12</span>
+                  </div>
+                  <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer">
+                    <span class="text-sm text-foreground">architecture</span>
+                    <span class="text-xs text-foreground-muted">8</span>
+                  </div>
+                  <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer">
+                    <span class="text-sm text-foreground">frontend</span>
+                    <span class="text-xs text-foreground-muted">6</span>
+                  </div>
+                  <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer">
+                    <span class="text-sm text-foreground">1-on-1</span>
+                    <span class="text-xs text-foreground-muted">5</span>
+                  </div>
+                  <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer">
+                    <span class="text-sm text-foreground">retrospective</span>
+                    <span class="text-xs text-foreground-muted">4</span>
+                  </div>
+                  <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-surface-muted cursor-pointer">
+                    <span class="text-sm text-foreground">q1-planning</span>
+                    <span class="text-xs text-foreground-muted">3</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Right: Items -->
+            <div class="flex-1 p-4 overflow-auto">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="tag-chip selected">project-alpha</span>
+                <span class="text-foreground-muted text-xs">12 items</span>
+              </div>
+              <!-- Meetings -->
+              <div class="section-header"><i class="pi pi-comments" style="font-size:11px"></i> Meetings <span class="section-count">3</span></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Sprint Review</div><div class="meta-text">Jan 22, 2025 · 4 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Architecture Decision</div><div class="meta-text">Jan 28, 2025 · 3 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Kickoff Meeting</div><div class="meta-text">Jan 15, 2025 · 6 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <!-- Notes -->
+              <div class="section-header mt-2"><i class="pi pi-file-edit" style="font-size:11px"></i> Notes <span class="section-count">3</span></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">API Design Notes</div><div class="meta-text">Updated 2 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Database Schema</div><div class="meta-text">Updated 3 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Technical Spec Draft</div><div class="meta-text">Updated 1 week ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <!-- Tasks -->
+              <div class="section-header mt-2"><i class="pi pi-check-square" style="font-size:11px"></i> Tasks <span class="section-count">4</span></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Set up CI/CD pipeline</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 10</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Write integration tests</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-inprogress">In Progress</span><div class="priority-dot" title="Priority"></div></div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Create database schema</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-done">Done</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Update API docs</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 15</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Tags always visible alongside content — no context switching</div>
+          <div class="pro">+ Familiar panel pattern (email clients, file managers)</div>
+          <div class="con">− Left panel wastes space on mobile — needs a drawer fallback</div>
+          <div class="con">− Less horizontal room for item details on medium screens</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 2 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">2</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Tag Cloud Header + Vertical Feed</div>
+            <div class="text-foreground-muted text-xs">Full-width tag chips at top, grouped item feed below</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border p-4" style="min-height:380px">
+          <!-- Search -->
+          <div class="relative mb-3" style="max-width:320px">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+            <input type="text" placeholder="Search tags..." class="mock-search">
+          </div>
+          <!-- Tag cloud -->
+          <div class="flex flex-wrap gap-2 mb-5 pb-4 border-b border-border-muted">
+            <span class="tag-chip selected">project-alpha <span class="tag-count">12</span></span>
+            <span class="tag-chip">architecture <span class="tag-count">8</span></span>
+            <span class="tag-chip">frontend <span class="tag-count">6</span></span>
+            <span class="tag-chip">1-on-1 <span class="tag-count">5</span></span>
+            <span class="tag-chip">retrospective <span class="tag-count">4</span></span>
+            <span class="tag-chip">q1-planning <span class="tag-count">3</span></span>
+          </div>
+          <!-- Grouped items -->
+          <div class="section-header"><i class="pi pi-comments" style="font-size:11px"></i> Meetings <span class="section-count">3</span></div>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Sprint Review</div><div class="meta-text">Jan 22, 2025 · 4 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Architecture Decision</div><div class="meta-text">Jan 28, 2025 · 3 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Kickoff Meeting</div><div class="meta-text">Jan 15, 2025 · 6 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+          <div class="section-header mt-3"><i class="pi pi-file-edit" style="font-size:11px"></i> Notes <span class="section-count">3</span></div>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">API Design Notes</div><div class="meta-text">Updated 2 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Database Schema</div><div class="meta-text">Updated 3 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Technical Spec Draft</div><div class="meta-text">Updated 1 week ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+          <div class="section-header mt-3"><i class="pi pi-check-square" style="font-size:11px"></i> Tasks <span class="section-count">4</span></div>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Set up CI/CD pipeline</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 10</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Write integration tests</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-inprogress">In Progress</span><div class="priority-dot" title="Priority"></div></div></div><i class="pi pi-external-link external-icon"></i></a>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Create database schema</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-done">Done</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+          <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Update API docs</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 15</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Maximum content width — items get full horizontal space</div>
+          <div class="pro">+ Simple, vertical scrolling — mobile-friendly by default</div>
+          <div class="con">− Tags scroll out of view when content is long</div>
+          <div class="con">− Switching tags requires scrolling back to the top</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 3 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">3</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Sticky Tag Sidebar + Card Grid</div>
+            <div class="text-foreground-muted text-xs">Narrow sticky tag list, items as cards with colored type borders</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border" style="min-height:420px">
+          <div class="flex" style="min-height:420px">
+            <!-- Narrow sidebar -->
+            <div class="border-r border-border p-3 space-y-1" style="width:180px; flex-shrink:0; position:sticky; top:0">
+              <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-2 px-2">Tags</div>
+              <div class="px-2 py-1.5 rounded-md bg-accent text-accent-foreground text-xs font-medium cursor-pointer">project-alpha <span class="opacity-60">12</span></div>
+              <div class="px-2 py-1.5 rounded-md text-foreground text-xs cursor-pointer hover:bg-surface-muted">architecture <span class="text-foreground-muted">8</span></div>
+              <div class="px-2 py-1.5 rounded-md text-foreground text-xs cursor-pointer hover:bg-surface-muted">frontend <span class="text-foreground-muted">6</span></div>
+              <div class="px-2 py-1.5 rounded-md text-foreground text-xs cursor-pointer hover:bg-surface-muted">1-on-1 <span class="text-foreground-muted">5</span></div>
+              <div class="px-2 py-1.5 rounded-md text-foreground text-xs cursor-pointer hover:bg-surface-muted">retrospective <span class="text-foreground-muted">4</span></div>
+              <div class="px-2 py-1.5 rounded-md text-foreground text-xs cursor-pointer hover:bg-surface-muted">q1-planning <span class="text-foreground-muted">3</span></div>
+            </div>
+            <!-- Card grid -->
+            <div class="flex-1 p-4">
+              <div class="text-foreground font-semibold text-sm mb-3">project-alpha <span class="text-foreground-muted font-normal">· 10 items</span></div>
+              <div class="grid grid-cols-2 gap-3">
+                <!-- Meeting cards -->
+                <a href="#" target="_blank" class="block p-3 rounded-lg border border-border hover:border-accent-solid transition-colors" style="border-left: 3px solid var(--color-primary-solid)">
+                  <div class="flex items-center gap-1.5 mb-1"><i class="pi pi-comments text-accent-foreground" style="font-size:10px"></i><span class="text-[10px] text-accent-foreground font-medium">MEETING</span></div>
+                  <div class="text-sm font-medium text-foreground">Sprint Review</div>
+                  <div class="meta-text mt-1">Jan 22 · 4 attendees</div>
+                </a>
+                <a href="#" target="_blank" class="block p-3 rounded-lg border border-border hover:border-accent-solid transition-colors" style="border-left: 3px solid var(--color-primary-solid)">
+                  <div class="flex items-center gap-1.5 mb-1"><i class="pi pi-comments text-accent-foreground" style="font-size:10px"></i><span class="text-[10px] text-accent-foreground font-medium">MEETING</span></div>
+                  <div class="text-sm font-medium text-foreground">Architecture Decision</div>
+                  <div class="meta-text mt-1">Jan 28 · 3 attendees</div>
+                </a>
+                <a href="#" target="_blank" class="block p-3 rounded-lg border border-border hover:border-accent-solid transition-colors" style="border-left: 3px solid var(--color-primary-solid)">
+                  <div class="flex items-center gap-1.5 mb-1"><i class="pi pi-comments text-accent-foreground" style="font-size:10px"></i><span class="text-[10px] text-accent-foreground font-medium">MEETING</span></div>
+                  <div class="text-sm font-medium text-foreground">Kickoff Meeting</div>
+                  <div class="meta-text mt-1">Jan 15 · 6 attendees</div>
+                </a>
+                <!-- Note cards -->
+                <a href="#" target="_blank" class="block p-3 rounded-lg border border-border hover:border-done-foreground transition-colors" style="border-left: 3px solid var(--color-done-text)">
+                  <div class="flex items-center gap-1.5 mb-1"><i class="pi pi-file-edit text-done-foreground" style="font-size:10px"></i><span class="text-[10px] text-done-foreground font-medium">NOTE</span></div>
+                  <div class="text-sm font-medium text-foreground">API Design Notes</div>
+                  <div class="meta-text mt-1">Updated 2 days ago</div>
+                </a>
+                <a href="#" target="_blank" class="block p-3 rounded-lg border border-border hover:border-done-foreground transition-colors" style="border-left: 3px solid var(--color-done-text)">
+                  <div class="flex items-center gap-1.5 mb-1"><i class="pi pi-file-edit text-done-foreground" style="font-size:10px"></i><span class="text-[10px] text-done-foreground font-medium">NOTE</span></div>
+                  <div class="text-sm font-medium text-foreground">Database Schema</div>
+                  <div class="meta-text mt-1">Updated 3 days ago</div>
+                </a>
+                <!-- Task cards -->
+                <a href="#" target="_blank" class="block p-3 rounded-lg border border-border hover:border-inprogress-text transition-colors" style="border-left: 3px solid var(--color-inprogress-text)">
+                  <div class="flex items-center gap-1.5 mb-1"><i class="pi pi-check-square text-inprogress-text" style="font-size:10px"></i><span class="text-[10px] text-inprogress-text font-medium">TASK</span></div>
+                  <div class="text-sm font-medium text-foreground">Set up CI/CD pipeline</div>
+                  <div class="flex items-center gap-2 mt-1"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 10</span></div>
+                </a>
+                <a href="#" target="_blank" class="block p-3 rounded-lg border border-border hover:border-inprogress-text transition-colors" style="border-left: 3px solid var(--color-inprogress-text)">
+                  <div class="flex items-center gap-1.5 mb-1"><i class="pi pi-check-square text-inprogress-text" style="font-size:10px"></i><span class="text-[10px] text-inprogress-text font-medium">TASK</span></div>
+                  <div class="text-sm font-medium text-foreground">Write integration tests</div>
+                  <div class="flex items-center gap-2 mt-1"><span class="status-badge status-inprogress">In Progress</span><div class="priority-dot"></div></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Tags always visible — sticky sidebar persists while scrolling</div>
+          <div class="pro">+ Cards with colored left borders make type instantly scannable</div>
+          <div class="pro">+ Grid layout uses space efficiently on wide screens</div>
+          <div class="con">− Sidebar doesn't work on mobile — needs responsive handling</div>
+          <div class="con">− Cards mixed together lose the clear grouping by type</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 4 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">4</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Tab-Style Tag Selector</div>
+            <div class="text-foreground-muted text-xs">Horizontal tag tabs + secondary type filter tabs</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border" style="min-height:380px">
+          <!-- Tag tabs -->
+          <div class="flex items-center gap-0 border-b border-border overflow-x-auto" style="scrollbar-width:none">
+            <button class="px-4 py-2.5 text-sm font-medium text-accent-foreground border-b-2 border-accent-solid whitespace-nowrap" style="margin-bottom:-1px">project-alpha</button>
+            <button class="px-4 py-2.5 text-sm text-foreground-muted hover:text-foreground whitespace-nowrap">architecture</button>
+            <button class="px-4 py-2.5 text-sm text-foreground-muted hover:text-foreground whitespace-nowrap">frontend</button>
+            <button class="px-4 py-2.5 text-sm text-foreground-muted hover:text-foreground whitespace-nowrap">1-on-1</button>
+            <button class="px-4 py-2.5 text-sm text-foreground-muted hover:text-foreground whitespace-nowrap">retrospective</button>
+            <button class="px-4 py-2.5 text-sm text-foreground-muted hover:text-foreground whitespace-nowrap">q1-planning</button>
+          </div>
+          <!-- Type filter tabs -->
+          <div class="flex items-center gap-1 px-4 py-2 border-b border-border-muted bg-surface-muted">
+            <button class="px-3 py-1 text-xs font-medium rounded-full bg-accent text-accent-foreground">All (10)</button>
+            <button class="px-3 py-1 text-xs text-foreground-muted rounded-full hover:bg-surface-subtle">Meetings (3)</button>
+            <button class="px-3 py-1 text-xs text-foreground-muted rounded-full hover:bg-surface-subtle">Notes (3)</button>
+            <button class="px-3 py-1 text-xs text-foreground-muted rounded-full hover:bg-surface-subtle">Tasks (4)</button>
+          </div>
+          <!-- Content -->
+          <div class="p-4">
+            <div class="section-header"><i class="pi pi-comments" style="font-size:11px"></i> Meetings <span class="section-count">3</span></div>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Sprint Review</div><div class="meta-text">Jan 22, 2025 · 4 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Architecture Decision</div><div class="meta-text">Jan 28, 2025 · 3 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Kickoff Meeting</div><div class="meta-text">Jan 15, 2025 · 6 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+            <div class="section-header mt-3"><i class="pi pi-file-edit" style="font-size:11px"></i> Notes <span class="section-count">3</span></div>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">API Design Notes</div><div class="meta-text">Updated 2 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Database Schema</div><div class="meta-text">Updated 3 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Technical Spec Draft</div><div class="meta-text">Updated 1 week ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+            <div class="section-header mt-3"><i class="pi pi-check-square" style="font-size:11px"></i> Tasks <span class="section-count">4</span></div>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Set up CI/CD pipeline</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 10</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Write integration tests</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-inprogress">In Progress</span><div class="priority-dot"></div></div></div><i class="pi pi-external-link external-icon"></i></a>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Create database schema</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-done">Done</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+            <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium truncate">Update API docs</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 15</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Very clean — tabs are a universally understood pattern</div>
+          <div class="pro">+ Secondary type filters let users focus on one entity type</div>
+          <div class="con">− Tabs don't scale well with many tags (horizontal overflow)</div>
+          <div class="con">− No search for tags — relies on scrolling the tab bar</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 5 (RECOMMENDED) ======================= -->
+    <div class="option-card recommended mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">5</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Searchable Dropdown + Timeline View</div>
+            <div class="text-foreground-muted text-xs">Compact tag selector, items ordered chronologically with type indicators</div>
+          </div>
+        </div>
+        <div class="recommended-badge">Recommended</div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border p-4" style="min-height:420px">
+          <!-- Tag selector row -->
+          <div class="flex items-center gap-3 mb-5">
+            <div class="relative" style="width:240px">
+              <i class="pi pi-tags absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+              <div class="flex items-center gap-2 h-9 pl-9 pr-3 rounded-lg border border-border bg-surface-subtle cursor-pointer">
+                <span class="tag-chip selected" style="font-size:12px; padding: 2px 8px; height:22px">project-alpha</span>
+                <i class="pi pi-chevron-down text-foreground-muted ml-auto" style="font-size:10px"></i>
+              </div>
+            </div>
+            <span class="text-foreground-muted text-xs">10 items across 3 meetings, 3 notes, 4 tasks</span>
+          </div>
+          <!-- Timeline -->
+          <div class="relative pl-8">
+            <!-- Timeline line -->
+            <div class="absolute left-3 top-2 bottom-2 w-px bg-border"></div>
+            <!-- This Week -->
+            <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">This Week</div>
+            <div class="relative mb-2">
+              <div class="absolute -left-5 top-3 w-2.5 h-2.5 rounded-full" style="background: var(--color-primary-solid)"></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Architecture Decision</div><div class="meta-text">Jan 28, 2025 · 3 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+            <div class="relative mb-2">
+              <div class="absolute -left-5 top-3 w-2.5 h-2.5 rounded-full" style="background: var(--color-done-text)"></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">API Design Notes</div><div class="meta-text">Updated 2 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+            <div class="relative mb-2">
+              <div class="absolute -left-5 top-3 w-2.5 h-2.5 rounded-full" style="background: var(--color-done-text)"></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Database Schema</div><div class="meta-text">Updated 3 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+            <!-- Last Week -->
+            <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mt-4 mb-3">Last Week</div>
+            <div class="relative mb-2">
+              <div class="absolute -left-5 top-3 w-2.5 h-2.5 rounded-full" style="background: var(--color-primary-solid)"></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Sprint Review</div><div class="meta-text">Jan 22, 2025 · 4 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+            <div class="relative mb-2">
+              <div class="absolute -left-5 top-3 w-2.5 h-2.5 rounded-full" style="background: var(--color-inprogress-text)"></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Write integration tests</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-inprogress">In Progress</span><div class="priority-dot"></div></div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+            <div class="relative mb-2">
+              <div class="absolute -left-5 top-3 w-2.5 h-2.5 rounded-full" style="background: var(--color-done-text)"></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-note"><i class="pi pi-file-edit"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Technical Spec Draft</div><div class="meta-text">Updated 1 week ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+            <!-- Earlier -->
+            <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mt-4 mb-3">Earlier</div>
+            <div class="relative mb-2">
+              <div class="absolute -left-5 top-3 w-2.5 h-2.5 rounded-full" style="background: var(--color-primary-solid)"></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-meeting"><i class="pi pi-comments"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Kickoff Meeting</div><div class="meta-text">Jan 15, 2025 · 6 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+            <div class="relative mb-2">
+              <div class="absolute -left-5 top-3 w-2.5 h-2.5 rounded-full" style="background: var(--color-inprogress-text)"></div>
+              <a href="#" target="_blank" class="item-row"><div class="type-icon type-task"><i class="pi pi-check-square"></i></div><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Set up CI/CD pipeline</div><div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 10</span></div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Chronological narrative — tells the story of a tag over time</div>
+          <div class="pro">+ Compact tag selector doesn't waste vertical space</div>
+          <div class="pro">+ Timeline dots with type-colors give instant visual scanning</div>
+          <div class="pro">+ Naturally shows what happened recently vs. long ago</div>
+          <div class="con">− Less clear grouping by type — harder to find "all meetings" at a glance</div>
+          <div class="con">− Timeline visual may feel unfamiliar compared to simple lists</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 6 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">6</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Full-Width Accordion Sections</div>
+            <div class="text-foreground-muted text-xs">Tag chips at top, collapsible sections per entity type</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border p-4" style="min-height:380px">
+          <!-- Tag chips -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="tag-chip selected">project-alpha <span class="tag-count">12</span></span>
+            <span class="tag-chip">architecture <span class="tag-count">8</span></span>
+            <span class="tag-chip">frontend <span class="tag-count">6</span></span>
+            <span class="tag-chip">1-on-1 <span class="tag-count">5</span></span>
+            <span class="tag-chip">retrospective <span class="tag-count">4</span></span>
+            <span class="tag-chip">q1-planning <span class="tag-count">3</span></span>
+          </div>
+          <!-- Accordion: Meetings (expanded) -->
+          <div class="border border-border rounded-lg mb-2 overflow-hidden">
+            <button class="w-full flex items-center justify-between px-4 py-3 bg-surface-muted hover:bg-surface-muted/80 transition">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-chevron-down text-foreground-muted" style="font-size:10px"></i>
+                <div class="type-icon type-meeting" style="width:22px;height:22px"><i class="pi pi-comments" style="font-size:10px"></i></div>
+                <span class="text-sm font-medium text-foreground">Meetings</span>
+                <span class="section-count">3</span>
+              </div>
+            </button>
+            <div class="px-2 pb-2">
+              <a href="#" target="_blank" class="item-row"><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Sprint Review</div><div class="meta-text">Jan 22, 2025 · 4 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Architecture Decision</div><div class="meta-text">Jan 28, 2025 · 3 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Kickoff Meeting</div><div class="meta-text">Jan 15, 2025 · 6 attendees</div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+          </div>
+          <!-- Accordion: Notes (expanded) -->
+          <div class="border border-border rounded-lg mb-2 overflow-hidden">
+            <button class="w-full flex items-center justify-between px-4 py-3 bg-surface-muted hover:bg-surface-muted/80 transition">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-chevron-down text-foreground-muted" style="font-size:10px"></i>
+                <div class="type-icon type-note" style="width:22px;height:22px"><i class="pi pi-file-edit" style="font-size:10px"></i></div>
+                <span class="text-sm font-medium text-foreground">Notes</span>
+                <span class="section-count">3</span>
+              </div>
+            </button>
+            <div class="px-2 pb-2">
+              <a href="#" target="_blank" class="item-row"><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">API Design Notes</div><div class="meta-text">Updated 2 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Database Schema</div><div class="meta-text">Updated 3 days ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+              <a href="#" target="_blank" class="item-row"><div class="flex-1 min-w-0"><div class="text-sm text-foreground font-medium">Technical Spec Draft</div><div class="meta-text">Updated 1 week ago</div></div><i class="pi pi-external-link external-icon"></i></a>
+            </div>
+          </div>
+          <!-- Accordion: Tasks (collapsed) -->
+          <div class="border border-border rounded-lg mb-2 overflow-hidden">
+            <button class="w-full flex items-center justify-between px-4 py-3 bg-surface-muted hover:bg-surface-muted/80 transition">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-chevron-right text-foreground-muted" style="font-size:10px"></i>
+                <div class="type-icon type-task" style="width:22px;height:22px"><i class="pi pi-check-square" style="font-size:10px"></i></div>
+                <span class="text-sm font-medium text-foreground">Tasks</span>
+                <span class="section-count">4</span>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Clear visual grouping — each type in its own bordered section</div>
+          <div class="pro">+ Collapse sections to focus on what matters</div>
+          <div class="pro">+ PrimeNG Accordion component maps directly to this pattern</div>
+          <div class="con">− Lots of vertical space — collapsed state hides content</div>
+          <div class="con">− Accordion headers add visual weight</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 7 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">7</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Kanban-Style Columns by Type</div>
+            <div class="text-foreground-muted text-xs">Three side-by-side columns — one per entity type</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border p-4" style="min-height:380px">
+          <!-- Tag selector -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="tag-chip selected">project-alpha <span class="tag-count">12</span></span>
+            <span class="tag-chip">architecture <span class="tag-count">8</span></span>
+            <span class="tag-chip">frontend <span class="tag-count">6</span></span>
+            <span class="tag-chip">1-on-1 <span class="tag-count">5</span></span>
+          </div>
+          <!-- Kanban columns -->
+          <div class="grid grid-cols-3 gap-3">
+            <!-- Meetings column -->
+            <div class="rounded-lg bg-surface-muted p-3">
+              <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+                <div class="type-icon type-meeting" style="width:22px;height:22px"><i class="pi pi-comments" style="font-size:10px"></i></div>
+                <span class="text-xs font-semibold text-foreground">Meetings</span>
+                <span class="section-count">3</span>
+              </div>
+              <div class="space-y-2">
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-accent-solid transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Sprint Review</div>
+                  <div class="meta-text mt-1" style="font-size:10px">Jan 22 · 4 attendees</div>
+                </a>
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-accent-solid transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Architecture Decision</div>
+                  <div class="meta-text mt-1" style="font-size:10px">Jan 28 · 3 attendees</div>
+                </a>
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-accent-solid transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Kickoff Meeting</div>
+                  <div class="meta-text mt-1" style="font-size:10px">Jan 15 · 6 attendees</div>
+                </a>
+              </div>
+            </div>
+            <!-- Notes column -->
+            <div class="rounded-lg bg-surface-muted p-3">
+              <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+                <div class="type-icon type-note" style="width:22px;height:22px"><i class="pi pi-file-edit" style="font-size:10px"></i></div>
+                <span class="text-xs font-semibold text-foreground">Notes</span>
+                <span class="section-count">3</span>
+              </div>
+              <div class="space-y-2">
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-done-foreground transition text-sm">
+                  <div class="font-medium text-foreground text-xs">API Design Notes</div>
+                  <div class="meta-text mt-1" style="font-size:10px">Updated 2 days ago</div>
+                </a>
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-done-foreground transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Database Schema</div>
+                  <div class="meta-text mt-1" style="font-size:10px">Updated 3 days ago</div>
+                </a>
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-done-foreground transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Technical Spec Draft</div>
+                  <div class="meta-text mt-1" style="font-size:10px">Updated 1 week ago</div>
+                </a>
+              </div>
+            </div>
+            <!-- Tasks column -->
+            <div class="rounded-lg bg-surface-muted p-3">
+              <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+                <div class="type-icon type-task" style="width:22px;height:22px"><i class="pi pi-check-square" style="font-size:10px"></i></div>
+                <span class="text-xs font-semibold text-foreground">Tasks</span>
+                <span class="section-count">4</span>
+              </div>
+              <div class="space-y-2">
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-inprogress-text transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Set up CI/CD pipeline</div>
+                  <div class="flex items-center gap-1.5 mt-1"><span class="status-badge status-todo" style="font-size:9px; padding:1px 6px">Todo</span><span class="due-date" style="font-size:9px">Feb 10</span></div>
+                </a>
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-inprogress-text transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Write integration tests</div>
+                  <div class="flex items-center gap-1.5 mt-1"><span class="status-badge status-inprogress" style="font-size:9px; padding:1px 6px">In Progress</span><div class="priority-dot" style="width:5px;height:5px"></div></div>
+                </a>
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-inprogress-text transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Create database schema</div>
+                  <div class="flex items-center gap-1.5 mt-1"><span class="status-badge status-done" style="font-size:9px; padding:1px 6px">Done</span></div>
+                </a>
+                <a href="#" target="_blank" class="block p-2.5 rounded-lg bg-surface-subtle border border-border hover:border-inprogress-text transition text-sm">
+                  <div class="font-medium text-foreground text-xs">Update API docs</div>
+                  <div class="flex items-center gap-1.5 mt-1"><span class="status-badge status-todo" style="font-size:9px; padding:1px 6px">Todo</span><span class="due-date" style="font-size:9px">Feb 15</span></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ See all three types at a glance — no scrolling needed</div>
+          <div class="pro">+ Familiar pattern — matches existing Tasks kanban board</div>
+          <div class="con">− Columns get cramped on smaller screens</div>
+          <div class="con">− Uneven column heights if one type has many more items</div>
+          <div class="con">− Doesn't scale for mobile at all</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 8 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">8</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Master-Detail with Preview Pane</div>
+            <div class="text-foreground-muted text-xs">Item list on left, preview panel on right, open in new tab button</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border" style="min-height:380px">
+          <!-- Tag selector -->
+          <div class="flex flex-wrap gap-2 p-4 border-b border-border">
+            <span class="tag-chip selected">project-alpha <span class="tag-count">12</span></span>
+            <span class="tag-chip">architecture <span class="tag-count">8</span></span>
+            <span class="tag-chip">frontend <span class="tag-count">6</span></span>
+          </div>
+          <div class="flex" style="min-height:320px">
+            <!-- Item list -->
+            <div class="border-r border-border overflow-auto" style="width:280px; flex-shrink:0">
+              <div class="section-header"><i class="pi pi-comments" style="font-size:11px"></i> Meetings <span class="section-count">3</span></div>
+              <div class="px-2 py-1 mx-2 rounded-lg bg-accent cursor-pointer flex items-center gap-2">
+                <div class="type-icon type-meeting" style="width:20px;height:20px"><i class="pi pi-comments" style="font-size:9px"></i></div>
+                <div class="text-xs font-medium text-accent-foreground truncate">Sprint Review</div>
+              </div>
+              <div class="px-2 py-1 mx-2 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-surface-muted">
+                <div class="type-icon type-meeting" style="width:20px;height:20px"><i class="pi pi-comments" style="font-size:9px"></i></div>
+                <div class="text-xs text-foreground truncate">Architecture Decision</div>
+              </div>
+              <div class="px-2 py-1 mx-2 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-surface-muted">
+                <div class="type-icon type-meeting" style="width:20px;height:20px"><i class="pi pi-comments" style="font-size:9px"></i></div>
+                <div class="text-xs text-foreground truncate">Kickoff Meeting</div>
+              </div>
+              <div class="section-header mt-1"><i class="pi pi-file-edit" style="font-size:11px"></i> Notes <span class="section-count">3</span></div>
+              <div class="px-2 py-1 mx-2 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-surface-muted">
+                <div class="type-icon type-note" style="width:20px;height:20px"><i class="pi pi-file-edit" style="font-size:9px"></i></div>
+                <div class="text-xs text-foreground truncate">API Design Notes</div>
+              </div>
+              <div class="px-2 py-1 mx-2 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-surface-muted">
+                <div class="type-icon type-note" style="width:20px;height:20px"><i class="pi pi-file-edit" style="font-size:9px"></i></div>
+                <div class="text-xs text-foreground truncate">Database Schema</div>
+              </div>
+              <div class="section-header mt-1"><i class="pi pi-check-square" style="font-size:11px"></i> Tasks <span class="section-count">4</span></div>
+              <div class="px-2 py-1 mx-2 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-surface-muted">
+                <div class="type-icon type-task" style="width:20px;height:20px"><i class="pi pi-check-square" style="font-size:9px"></i></div>
+                <div class="text-xs text-foreground truncate">Set up CI/CD pipeline</div>
+              </div>
+            </div>
+            <!-- Preview pane -->
+            <div class="flex-1 p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <div class="type-icon type-meeting"><i class="pi pi-comments"></i></div>
+                  <h3 class="text-foreground font-semibold text-sm">Sprint Review</h3>
+                </div>
+                <a href="#" target="_blank" class="flex items-center gap-1.5 text-xs text-accent-foreground hover:underline">
+                  Open <i class="pi pi-external-link" style="font-size:10px"></i>
+                </a>
+              </div>
+              <div class="space-y-3 text-sm">
+                <div><span class="text-foreground-muted text-xs">Date:</span><span class="text-foreground ml-2 text-xs">January 22, 2025</span></div>
+                <div><span class="text-foreground-muted text-xs">Attendees:</span><span class="text-foreground ml-2 text-xs">4 participants</span></div>
+                <div class="pt-2 border-t border-border-muted">
+                  <span class="text-foreground-muted text-xs">Summary:</span>
+                  <p class="text-foreground-secondary text-xs mt-1">Reviewed sprint progress on project-alpha. Discussed API design decisions and database schema changes. Action items assigned for CI/CD setup.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Preview content without leaving the page</div>
+          <div class="pro">+ Familiar master-detail pattern (Outlook, Slack threads)</div>
+          <div class="con">− Adds complexity — preview pane needs content for each entity type</div>
+          <div class="con">− Partially conflicts with "open in new tab" since preview is inline</div>
+          <div class="con">− Three-column layout (tags + list + preview) is tight on smaller screens</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 9 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">9</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Dashboard Cards with Stats</div>
+            <div class="text-foreground-muted text-xs">Stats overview bar, compact card rows per entity type</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border p-4" style="min-height:380px">
+          <!-- Tag selector -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="tag-chip selected">project-alpha <span class="tag-count">12</span></span>
+            <span class="tag-chip">architecture <span class="tag-count">8</span></span>
+            <span class="tag-chip">frontend <span class="tag-count">6</span></span>
+            <span class="tag-chip">1-on-1 <span class="tag-count">5</span></span>
+          </div>
+          <!-- Stats bar -->
+          <div class="flex items-center gap-4 p-3 rounded-lg bg-surface-muted mb-4">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"><span class="text-accent-foreground font-bold text-sm">10</span></div>
+              <div><div class="text-xs font-medium text-foreground">Total Items</div><div class="text-[10px] text-foreground-muted">across 3 types</div></div>
+            </div>
+            <div class="w-px h-8 bg-border"></div>
+            <div class="flex items-center gap-1.5"><div class="type-icon type-meeting" style="width:20px;height:20px"><i class="pi pi-comments" style="font-size:9px"></i></div><span class="text-xs text-foreground font-medium">3</span><span class="text-[10px] text-foreground-muted">meetings</span></div>
+            <div class="flex items-center gap-1.5"><div class="type-icon type-note" style="width:20px;height:20px"><i class="pi pi-file-edit" style="font-size:9px"></i></div><span class="text-xs text-foreground font-medium">3</span><span class="text-[10px] text-foreground-muted">notes</span></div>
+            <div class="flex items-center gap-1.5"><div class="type-icon type-task" style="width:20px;height:20px"><i class="pi pi-check-square" style="font-size:9px"></i></div><span class="text-xs text-foreground font-medium">4</span><span class="text-[10px] text-foreground-muted">tasks</span></div>
+          </div>
+          <!-- Card rows -->
+          <div class="section-header"><i class="pi pi-comments" style="font-size:11px"></i> Meetings <span class="section-count">3</span></div>
+          <div class="grid grid-cols-3 gap-2 mb-3 mt-1">
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-accent-solid transition">
+              <div class="text-xs font-medium text-foreground">Sprint Review</div>
+              <div class="meta-text mt-1" style="font-size:10px">Jan 22 · 4 attendees</div>
+            </a>
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-accent-solid transition">
+              <div class="text-xs font-medium text-foreground">Architecture Decision</div>
+              <div class="meta-text mt-1" style="font-size:10px">Jan 28 · 3 attendees</div>
+            </a>
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-accent-solid transition">
+              <div class="text-xs font-medium text-foreground">Kickoff Meeting</div>
+              <div class="meta-text mt-1" style="font-size:10px">Jan 15 · 6 attendees</div>
+            </a>
+          </div>
+          <div class="section-header"><i class="pi pi-file-edit" style="font-size:11px"></i> Notes <span class="section-count">3</span></div>
+          <div class="grid grid-cols-3 gap-2 mb-3 mt-1">
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-done-foreground transition">
+              <div class="text-xs font-medium text-foreground">API Design Notes</div>
+              <div class="meta-text mt-1" style="font-size:10px">Updated 2 days ago</div>
+            </a>
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-done-foreground transition">
+              <div class="text-xs font-medium text-foreground">Database Schema</div>
+              <div class="meta-text mt-1" style="font-size:10px">Updated 3 days ago</div>
+            </a>
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-done-foreground transition">
+              <div class="text-xs font-medium text-foreground">Technical Spec Draft</div>
+              <div class="meta-text mt-1" style="font-size:10px">Updated 1 week ago</div>
+            </a>
+          </div>
+          <div class="section-header"><i class="pi pi-check-square" style="font-size:11px"></i> Tasks <span class="section-count">4</span></div>
+          <div class="grid grid-cols-4 gap-2 mt-1">
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-inprogress-text transition">
+              <div class="text-xs font-medium text-foreground">Set up CI/CD</div>
+              <div class="flex items-center gap-1 mt-1"><span class="status-badge status-todo" style="font-size:9px;padding:1px 5px">Todo</span></div>
+            </a>
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-inprogress-text transition">
+              <div class="text-xs font-medium text-foreground">Integration tests</div>
+              <div class="flex items-center gap-1 mt-1"><span class="status-badge status-inprogress" style="font-size:9px;padding:1px 5px">In Progress</span></div>
+            </a>
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-inprogress-text transition">
+              <div class="text-xs font-medium text-foreground">DB schema</div>
+              <div class="flex items-center gap-1 mt-1"><span class="status-badge status-done" style="font-size:9px;padding:1px 5px">Done</span></div>
+            </a>
+            <a href="#" target="_blank" class="block p-3 rounded-lg border border-border bg-surface-subtle hover:border-inprogress-text transition">
+              <div class="text-xs font-medium text-foreground">Update API docs</div>
+              <div class="flex items-center gap-1 mt-1"><span class="status-badge status-todo" style="font-size:9px;padding:1px 5px">Todo</span></div>
+            </a>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Stats bar gives instant overview of tag composition</div>
+          <div class="pro">+ Card grid is visually appealing and glanceable</div>
+          <div class="con">− Grid cards truncate longer titles</div>
+          <div class="con">− Cards show less detail than list rows (no due dates, attendee names)</div>
+          <div class="con">− Doesn't scale well when one type has many items</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 10 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">10</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Minimal Unified List with Type Badges</div>
+            <div class="text-foreground-muted text-xs">Single flat list sorted by recency, type badge on each item, filter chips</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="rounded-lg overflow-hidden border border-border p-4" style="min-height:380px">
+          <!-- Search + tag row -->
+          <div class="relative mb-3" style="max-width:400px">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:12px"></i>
+            <input type="text" placeholder="Search within tag..." class="mock-search">
+          </div>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <span class="tag-chip selected">project-alpha <span class="tag-count">12</span></span>
+            <span class="tag-chip">architecture <span class="tag-count">8</span></span>
+            <span class="tag-chip">frontend <span class="tag-count">6</span></span>
+            <span class="tag-chip">1-on-1 <span class="tag-count">5</span></span>
+          </div>
+          <!-- Type filter chips -->
+          <div class="flex items-center gap-1.5 mb-3 pb-3 border-b border-border-muted">
+            <span class="text-xs text-foreground-muted mr-1">Show:</span>
+            <button class="px-2.5 py-1 text-[11px] font-medium rounded-full bg-accent text-accent-foreground">All (10)</button>
+            <button class="px-2.5 py-1 text-[11px] text-foreground-muted rounded-full hover:bg-surface-muted">Meetings (3)</button>
+            <button class="px-2.5 py-1 text-[11px] text-foreground-muted rounded-full hover:bg-surface-muted">Notes (3)</button>
+            <button class="px-2.5 py-1 text-[11px] text-foreground-muted rounded-full hover:bg-surface-muted">Tasks (4)</button>
+          </div>
+          <!-- Unified list -->
+          <div class="space-y-0.5">
+            <a href="#" target="_blank" class="item-row">
+              <div class="type-icon type-meeting"><i class="pi pi-comments"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2"><span class="text-sm text-foreground font-medium">Architecture Decision</span><span class="text-[9px] font-medium px-1.5 py-0.5 rounded bg-accent text-accent-foreground">MEETING</span></div>
+                <div class="meta-text">Jan 28, 2025 · 3 attendees</div>
+              </div><i class="pi pi-external-link external-icon"></i>
+            </a>
+            <a href="#" target="_blank" class="item-row">
+              <div class="type-icon type-note"><i class="pi pi-file-edit"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2"><span class="text-sm text-foreground font-medium">API Design Notes</span><span class="text-[9px] font-medium px-1.5 py-0.5 rounded bg-done text-done-foreground">NOTE</span></div>
+                <div class="meta-text">Updated 2 days ago</div>
+              </div><i class="pi pi-external-link external-icon"></i>
+            </a>
+            <a href="#" target="_blank" class="item-row">
+              <div class="type-icon type-note"><i class="pi pi-file-edit"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2"><span class="text-sm text-foreground font-medium">Database Schema</span><span class="text-[9px] font-medium px-1.5 py-0.5 rounded bg-done text-done-foreground">NOTE</span></div>
+                <div class="meta-text">Updated 3 days ago</div>
+              </div><i class="pi pi-external-link external-icon"></i>
+            </a>
+            <a href="#" target="_blank" class="item-row">
+              <div class="type-icon type-task"><i class="pi pi-check-square"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2"><span class="text-sm text-foreground font-medium">Write integration tests</span><span class="text-[9px] font-medium px-1.5 py-0.5 rounded bg-inprogress-bg text-inprogress-text">TASK</span></div>
+                <div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-inprogress">In Progress</span><div class="priority-dot"></div></div>
+              </div><i class="pi pi-external-link external-icon"></i>
+            </a>
+            <a href="#" target="_blank" class="item-row">
+              <div class="type-icon type-meeting"><i class="pi pi-comments"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2"><span class="text-sm text-foreground font-medium">Sprint Review</span><span class="text-[9px] font-medium px-1.5 py-0.5 rounded bg-accent text-accent-foreground">MEETING</span></div>
+                <div class="meta-text">Jan 22, 2025 · 4 attendees</div>
+              </div><i class="pi pi-external-link external-icon"></i>
+            </a>
+            <a href="#" target="_blank" class="item-row">
+              <div class="type-icon type-note"><i class="pi pi-file-edit"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2"><span class="text-sm text-foreground font-medium">Technical Spec Draft</span><span class="text-[9px] font-medium px-1.5 py-0.5 rounded bg-done text-done-foreground">NOTE</span></div>
+                <div class="meta-text">Updated 1 week ago</div>
+              </div><i class="pi pi-external-link external-icon"></i>
+            </a>
+            <a href="#" target="_blank" class="item-row">
+              <div class="type-icon type-task"><i class="pi pi-check-square"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2"><span class="text-sm text-foreground font-medium">Set up CI/CD pipeline</span><span class="text-[9px] font-medium px-1.5 py-0.5 rounded bg-inprogress-bg text-inprogress-text">TASK</span></div>
+                <div class="flex items-center gap-2 mt-0.5"><span class="status-badge status-todo">Todo</span><span class="due-date">Due Feb 10</span></div>
+              </div><i class="pi pi-external-link external-icon"></i>
+            </a>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Simplest design — minimal cognitive load</div>
+          <div class="pro">+ Type badges + filter chips give control without complexity</div>
+          <div class="pro">+ Sorted by recency — most relevant items first</div>
+          <div class="pro">+ Search within tag content for quick finding</div>
+          <div class="con">− No visual grouping by type — relies on badges and filter chips</div>
+          <div class="con">− Long lists require scrolling with no visual anchors</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+      }
+    }
+  </script>
+</body>
+</html>

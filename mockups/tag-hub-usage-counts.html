@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Hub Usage Counts — Issue #336 — 5 Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)', 'surface-subtle': 'var(--color-bg-subtle)', 'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)', 'foreground-secondary': 'var(--color-text-secondary)', 'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)', 'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)', 'accent-solid': 'var(--color-primary-solid)', 'accent-foreground': 'var(--color-primary-text)',
+            done: 'var(--color-done-bg)', 'done-foreground': 'var(--color-done-text)',
+            danger: 'var(--color-danger-base)',
+            'tag-bg': 'var(--color-tag-bg)', 'tag-text': 'var(--color-tag-text)',
+            'todo-bg': 'var(--color-todo-bg)', 'todo-text': 'var(--color-todo-text)',
+            'inprogress-bg': 'var(--color-inprogress-bg)', 'inprogress-text': 'var(--color-inprogress-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8; --color-bg-subtle: #ffffff; --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440; --color-text-secondary: #4c566a; --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0; --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15); --color-primary-text: #5e81ac; --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.15); --color-tag-text: #b48ead;
+      --color-todo-bg: rgba(136, 192, 208, 0.12); --color-todo-text: #0b7285;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1); --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.1); --color-done-text: #a3be8c; --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933; --color-bg-subtle: #2e3440; --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4; --color-text-secondary: #d8dee9; --color-text-muted: #4c566a;
+      --color-border-default: #3b4252; --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2); --color-primary-text: #88c0d0; --color-primary-solid: #5e81ac;
+      --color-tag-bg: rgba(180, 142, 173, 0.2); --color-tag-text: #b48ead;
+      --color-todo-bg: rgba(136, 192, 208, 0.15); --color-todo-text: #88c0d0;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.15); --color-inprogress-text: #d08770;
+      --color-done-bg: rgba(163, 190, 140, 0.15); --color-done-text: #a3be8c; --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-card { background: var(--color-bg-subtle); border-radius: 12px; overflow: hidden; border: 1px solid var(--color-border-default); }
+    .option-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border-muted); display: flex; align-items: center; justify-content: space-between; }
+    .option-body { padding: 1.25rem; }
+    .option-number { background: var(--color-primary-solid); color: white; font-size: 11px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .recommended { border: 2px solid #a3be8c !important; }
+    .recommended-badge { background: #a3be8c; color: #2e3440; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+    .option-divider { border-top: 3px dashed var(--color-border-default); margin: 3rem 0; padding-top: 2rem; }
+    .pros-cons { margin-top: 12px; font-size: 11px; line-height: 1.8; }
+    .pros-cons .pro { color: #a3be8c; }
+    .pros-cons .con { color: #bf616a; }
+    .pi { font-size: inherit !important; }
+    .tag-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 9999px; cursor: pointer; transition: all 0.15s; }
+    .tag-chip:hover { opacity: 0.8; }
+    .type-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  </style>
+</head>
+<body class="p-6 lg:p-8">
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="toggleTheme()" class="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-foreground-secondary text-sm hover:bg-surface-muted transition">
+      <i class="pi pi-moon mr-1"></i> Toggle Theme
+    </button>
+  </div>
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Tag Hub — Usage Count Display — 5 Options</h1>
+    <p class="text-foreground-secondary mb-1 text-sm">Issue <a href="https://github.com/garethbaumgart/praxis-note/issues/336" class="text-accent-foreground underline">#336</a> — How to display per-entity-type usage counts on tag chips and in the tag selector.</p>
+    <p class="text-foreground-muted mb-8 text-xs">Counts now include Notes + Meetings + Tasks. Each option shows the same data: project-alpha (3 meetings, 3 notes, 4 tasks = 10 total).</p>
+
+    <!-- ======================= OPTION 1 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">1</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Total Count Only</div>
+            <div class="text-foreground-muted text-xs">Single number badge — simple and clean</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <p class="text-foreground-secondary text-xs mb-4">Just the total count as a small number inside or next to the chip. Breakdown on hover via tooltip.</p>
+        <div class="rounded-lg border border-border p-5">
+          <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Tag Cloud</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag-chip">project-alpha <span class="text-[9px] opacity-60 ml-1">10</span></span>
+            <span class="tag-chip">architecture <span class="text-[9px] opacity-60 ml-1">8</span></span>
+            <span class="tag-chip">frontend <span class="text-[9px] opacity-60 ml-1">6</span></span>
+            <span class="tag-chip">1-on-1 <span class="text-[9px] opacity-60 ml-1">5</span></span>
+            <span class="tag-chip">retrospective <span class="text-[9px] opacity-60 ml-1">4</span></span>
+            <span class="tag-chip">q1-planning <span class="text-[9px] opacity-60 ml-1">3</span></span>
+          </div>
+          <div class="mt-4 p-2 rounded bg-surface-muted text-xs text-foreground-secondary">
+            <strong>Tooltip (on hover):</strong> "3 meetings · 3 notes · 4 tasks"
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Minimal visual noise — cleanest tag chips</div>
+          <div class="pro">+ Tooltip provides detail on demand</div>
+          <div class="con">- Breakdown not visible without hovering — no hover on mobile</div>
+          <div class="con">- All tags look the same regardless of composition</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 2 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">2</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Mini Dot Breakdown</div>
+            <div class="text-foreground-muted text-xs">Tiny colored dots next to count represent the type mix</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <p class="text-foreground-secondary text-xs mb-4">Total count plus small colored dots that hint at the composition. Each dot color = one type. Number of dots = relative weight.</p>
+        <div class="rounded-lg border border-border p-5">
+          <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Tag Cloud</div>
+          <div class="flex flex-wrap gap-2.5">
+            <!-- project-alpha: 3 meetings, 3 notes, 4 tasks -->
+            <span class="tag-chip" style="gap:6px">
+              project-alpha
+              <span class="flex items-center gap-0.5 ml-1">
+                <span class="type-dot" style="background: var(--color-primary-solid)"></span>
+                <span class="type-dot" style="background: var(--color-done-text)"></span>
+                <span class="type-dot" style="background: var(--color-inprogress-text)"></span>
+              </span>
+              <span class="text-[9px] opacity-60">10</span>
+            </span>
+            <!-- architecture: mostly notes -->
+            <span class="tag-chip" style="gap:6px">
+              architecture
+              <span class="flex items-center gap-0.5 ml-1">
+                <span class="type-dot" style="background: var(--color-primary-solid)"></span>
+                <span class="type-dot" style="background: var(--color-done-text)"></span>
+              </span>
+              <span class="text-[9px] opacity-60">8</span>
+            </span>
+            <!-- frontend: mostly tasks -->
+            <span class="tag-chip" style="gap:6px">
+              frontend
+              <span class="flex items-center gap-0.5 ml-1">
+                <span class="type-dot" style="background: var(--color-inprogress-text)"></span>
+                <span class="type-dot" style="background: var(--color-done-text)"></span>
+              </span>
+              <span class="text-[9px] opacity-60">6</span>
+            </span>
+            <span class="tag-chip" style="gap:6px">
+              1-on-1
+              <span class="flex items-center gap-0.5 ml-1">
+                <span class="type-dot" style="background: var(--color-primary-solid)"></span>
+              </span>
+              <span class="text-[9px] opacity-60">5</span>
+            </span>
+          </div>
+          <div class="mt-4 flex items-center gap-4 text-[10px] text-foreground-muted">
+            <span class="flex items-center gap-1"><span class="type-dot" style="background: var(--color-primary-solid)"></span> Meetings</span>
+            <span class="flex items-center gap-1"><span class="type-dot" style="background: var(--color-done-text)"></span> Notes</span>
+            <span class="flex items-center gap-1"><span class="type-dot" style="background: var(--color-inprogress-text)"></span> Tasks</span>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Visual hint of composition without text</div>
+          <div class="pro">+ Glanceable — dots are compact</div>
+          <div class="con">- Dot meaning is unclear without the legend</div>
+          <div class="con">- Adds visual complexity to chips</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 3 (RECOMMENDED) ======================= -->
+    <div class="option-card recommended mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">3</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Total on Chip + Breakdown in Selector Summary</div>
+            <div class="text-foreground-muted text-xs">Chip shows total, summary line shows breakdown when tag is selected</div>
+          </div>
+        </div>
+        <div class="recommended-badge">Recommended</div>
+      </div>
+      <div class="option-body">
+        <p class="text-foreground-secondary text-xs mb-4">Tag chips show only the total count for cleanliness. When a tag is selected, the summary stats line shows the per-type breakdown.</p>
+        <div class="rounded-lg border border-border p-5">
+          <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Tag Selector</div>
+          <!-- Dropdown trigger showing selected tag -->
+          <div class="flex items-center gap-3 mb-4">
+            <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-surface-subtle">
+              <i class="pi pi-tags text-foreground-muted" style="font-size:12px"></i>
+              <span class="tag-chip" style="background: var(--color-primary-solid); color: white; font-size:12px; padding:2px 8px; height:22px">project-alpha</span>
+              <i class="pi pi-chevron-down text-foreground-muted ml-1" style="font-size:10px"></i>
+            </div>
+            <!-- Breakdown shows HERE when selected -->
+            <span class="text-foreground-muted text-xs">3 meetings · 3 notes · 4 tasks</span>
+          </div>
+          <!-- Dropdown expanded (showing tag list with counts) -->
+          <div class="rounded-lg border border-border bg-surface-subtle p-2 shadow-lg" style="max-width:240px">
+            <div class="relative mb-2">
+              <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground-muted" style="font-size:11px"></i>
+              <input type="text" placeholder="Search tags..." class="w-full h-8 pl-8 pr-3 rounded-md border border-border bg-surface text-xs text-foreground outline-none" style="background: var(--color-bg-base)">
+            </div>
+            <div class="space-y-0.5">
+              <div class="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-accent cursor-pointer">
+                <span class="text-xs font-medium text-accent-foreground">project-alpha</span>
+                <span class="text-[10px] text-accent-foreground opacity-70">10</span>
+              </div>
+              <div class="flex items-center justify-between px-2.5 py-1.5 rounded-md hover:bg-surface-muted cursor-pointer">
+                <span class="text-xs text-foreground">architecture</span>
+                <span class="text-[10px] text-foreground-muted">8</span>
+              </div>
+              <div class="flex items-center justify-between px-2.5 py-1.5 rounded-md hover:bg-surface-muted cursor-pointer">
+                <span class="text-xs text-foreground">frontend</span>
+                <span class="text-[10px] text-foreground-muted">6</span>
+              </div>
+              <div class="flex items-center justify-between px-2.5 py-1.5 rounded-md hover:bg-surface-muted cursor-pointer">
+                <span class="text-xs text-foreground">1-on-1</span>
+                <span class="text-[10px] text-foreground-muted">5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Tag chips stay clean — just name + total number</div>
+          <div class="pro">+ Breakdown appears in context when it matters (after selection)</div>
+          <div class="pro">+ Aligns with existing Option 5 layout — no new UI patterns</div>
+          <div class="pro">+ Works perfectly on mobile — no tooltip dependency</div>
+          <div class="con">- Breakdown only visible for the selected tag, not all at once</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 4 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">4</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Inline Icon Counts</div>
+            <div class="text-foreground-muted text-xs">Tiny icons with numbers inside each tag chip</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <p class="text-foreground-secondary text-xs mb-4">Each tag chip shows mini icon+count pairs inline. Very information-dense.</p>
+        <div class="rounded-lg border border-border p-5">
+          <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Tag Cloud</div>
+          <div class="flex flex-wrap gap-2.5">
+            <span class="tag-chip" style="gap:8px; padding: 4px 10px 4px 10px">
+              project-alpha
+              <span class="flex items-center gap-1.5 text-[9px] opacity-70">
+                <span class="flex items-center gap-0.5"><i class="pi pi-comments" style="font-size:8px"></i>3</span>
+                <span class="flex items-center gap-0.5"><i class="pi pi-file-edit" style="font-size:8px"></i>3</span>
+                <span class="flex items-center gap-0.5"><i class="pi pi-check-square" style="font-size:8px"></i>4</span>
+              </span>
+            </span>
+            <span class="tag-chip" style="gap:8px; padding: 4px 10px 4px 10px">
+              architecture
+              <span class="flex items-center gap-1.5 text-[9px] opacity-70">
+                <span class="flex items-center gap-0.5"><i class="pi pi-comments" style="font-size:8px"></i>2</span>
+                <span class="flex items-center gap-0.5"><i class="pi pi-file-edit" style="font-size:8px"></i>4</span>
+                <span class="flex items-center gap-0.5"><i class="pi pi-check-square" style="font-size:8px"></i>2</span>
+              </span>
+            </span>
+            <span class="tag-chip" style="gap:8px; padding: 4px 10px 4px 10px">
+              frontend
+              <span class="flex items-center gap-1.5 text-[9px] opacity-70">
+                <span class="flex items-center gap-0.5"><i class="pi pi-comments" style="font-size:8px"></i>1</span>
+                <span class="flex items-center gap-0.5"><i class="pi pi-file-edit" style="font-size:8px"></i>1</span>
+                <span class="flex items-center gap-0.5"><i class="pi pi-check-square" style="font-size:8px"></i>4</span>
+              </span>
+            </span>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Full breakdown always visible — no hover needed</div>
+          <div class="pro">+ Can compare tag compositions at a glance</div>
+          <div class="con">- Tag chips become very wide — wrapping issues on small screens</div>
+          <div class="con">- Visual clutter — too much detail at the tag selection level</div>
+          <div class="con">- Icons at 8px are barely readable</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="option-divider"></div>
+
+    <!-- ======================= OPTION 5 ======================= -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">5</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Mini Stacked Bar</div>
+            <div class="text-foreground-muted text-xs">Tiny horizontal bar inside chip showing type proportions</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <p class="text-foreground-secondary text-xs mb-4">A 3-segment micro bar chart inside each tag chip showing the proportion of meetings/notes/tasks. Total count as a number.</p>
+        <div class="rounded-lg border border-border p-5">
+          <div class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Tag Cloud</div>
+          <div class="flex flex-wrap gap-2.5">
+            <!-- project-alpha: 3m/3n/4t = 30%/30%/40% -->
+            <div class="inline-flex flex-col items-start gap-1 bg-tag-bg text-tag-text rounded-2xl px-3 py-1.5 cursor-pointer hover:opacity-80 transition">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium">project-alpha</span>
+                <span class="text-[9px] opacity-60">10</span>
+              </div>
+              <div class="flex w-full h-1 rounded-full overflow-hidden" style="min-width:60px">
+                <div style="width:30%; background: var(--color-primary-solid)"></div>
+                <div style="width:30%; background: var(--color-done-text)"></div>
+                <div style="width:40%; background: var(--color-inprogress-text)"></div>
+              </div>
+            </div>
+            <!-- architecture: 2m/4n/2t = 25%/50%/25% -->
+            <div class="inline-flex flex-col items-start gap-1 bg-tag-bg text-tag-text rounded-2xl px-3 py-1.5 cursor-pointer hover:opacity-80 transition">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium">architecture</span>
+                <span class="text-[9px] opacity-60">8</span>
+              </div>
+              <div class="flex w-full h-1 rounded-full overflow-hidden" style="min-width:60px">
+                <div style="width:25%; background: var(--color-primary-solid)"></div>
+                <div style="width:50%; background: var(--color-done-text)"></div>
+                <div style="width:25%; background: var(--color-inprogress-text)"></div>
+              </div>
+            </div>
+            <!-- 1-on-1: 5m/0n/0t = 100%/0/0 -->
+            <div class="inline-flex flex-col items-start gap-1 bg-tag-bg text-tag-text rounded-2xl px-3 py-1.5 cursor-pointer hover:opacity-80 transition">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium">1-on-1</span>
+                <span class="text-[9px] opacity-60">5</span>
+              </div>
+              <div class="flex w-full h-1 rounded-full overflow-hidden" style="min-width:60px">
+                <div style="width:100%; background: var(--color-primary-solid)"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center gap-4 text-[10px] text-foreground-muted">
+            <span class="flex items-center gap-1"><span class="w-3 h-1 rounded-full" style="background: var(--color-primary-solid)"></span> Meetings</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-1 rounded-full" style="background: var(--color-done-text)"></span> Notes</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-1 rounded-full" style="background: var(--color-inprogress-text)"></span> Tasks</span>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Visually striking — shows composition proportionally</div>
+          <div class="pro">+ Immediately see "this tag is mostly meetings" vs "mostly tasks"</div>
+          <div class="con">- Chips become taller (two rows: text + bar)</div>
+          <div class="con">- Bar meaning unclear without legend</div>
+          <div class="con">- Over-engineered for a tag selector — adds cognitive load</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.getAttribute('data-theme') === 'dark' ? html.removeAttribute('data-theme') : html.setAttribute('data-theme', 'dark');
+    }
+  </script>
+</body>
+</html>

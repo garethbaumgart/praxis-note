@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Creation UX Options - Full Screen Focus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
+    <style>
+        :root {
+            --color-surface: #fafaf8;
+            --color-surface-subtle: #f5f5f3;
+            --color-surface-hover: #eaeae8;
+            --color-border: #e5e5e3;
+            --color-foreground: #2e3440;
+            --color-foreground-secondary: #6b7280;
+            --color-foreground-muted: #9ca3af;
+            --color-accent: #7c3aed;
+        }
+
+        body {
+            background: #e5e5e5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .mockup-frame {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-surface-subtle);
+        }
+
+        .toolbar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--color-foreground-secondary);
+            cursor: pointer;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--color-surface-hover);
+            color: var(--color-foreground);
+        }
+
+        .note-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .note-card:hover {
+            border-color: var(--color-accent);
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-recommended { background: #dcfce7; color: #166534; }
+        .badge-fullscreen { background: #fef3c7; color: #92400e; }
+        .badge-alternative { background: #e0e7ff; color: #3730a3; }
+
+        .sidebar {
+            background: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-6xl mx-auto space-y-16">
+        <header class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Note Creation UX - Full Screen Options</h1>
+            <p class="text-gray-600 mt-2">10 more approaches focusing on immersive editing experiences</p>
+        </header>
+
+        <!-- Option 1: Zen Mode - True Full Screen -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 1: Zen Mode - True Full Screen</h2>
+                <span class="badge badge-fullscreen">Full Screen</span>
+            </div>
+            <p class="text-gray-600">Click a note → entire screen becomes the editor. No chrome, no distractions. Press Escape or click X to exit.</p>
+
+            <div class="mockup-frame" style="height: 500px;">
+                <!-- Full screen editor - no sidebar, no header -->
+                <div class="h-full flex flex-col bg-gray-50">
+                    <!-- Minimal floating toolbar -->
+                    <div class="absolute top-4 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 z-10">
+                        <button class="toolbar-btn font-bold text-sm">B</button>
+                        <button class="toolbar-btn italic text-sm">I</button>
+                        <button class="toolbar-btn underline text-sm">U</button>
+                        <span class="w-px h-4 bg-gray-300"></span>
+                        <select class="text-sm border-0 bg-transparent cursor-pointer">
+                            <option>Paragraph</option>
+                            <option>Heading 1</option>
+                        </select>
+                        <span class="w-px h-4 bg-gray-300"></span>
+                        <button class="toolbar-btn"><i class="pi pi-ellipsis-h text-sm"></i></button>
+                    </div>
+                    <!-- Exit button -->
+                    <button class="absolute top-4 right-4 p-2 hover:bg-gray-200 rounded-full z-10">
+                        <i class="pi pi-times text-gray-500"></i>
+                    </button>
+                    <!-- Content area - centered, max-width -->
+                    <div class="flex-1 flex justify-center overflow-auto pt-20 pb-12">
+                        <div class="w-full max-w-2xl px-8">
+                            <h1 class="text-4xl font-bold mb-6 outline-none text-gray-800" contenteditable="true">Meeting Notes</h1>
+                            <div class="text-lg text-gray-700 leading-relaxed outline-none" contenteditable="true">
+                                <p class="mb-4">Discussed project timeline and deliverables for Q1 2026. The team agreed on the following priorities:</p>
+                                <ul class="list-disc ml-6 space-y-2">
+                                    <li>Complete design review by end of week</li>
+                                    <li>Set up CI/CD pipeline</li>
+                                    <li>Draft user documentation</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Save indicator -->
+                    <div class="absolute bottom-4 right-4 text-sm text-gray-400">
+                        <i class="pi pi-check mr-1"></i> Saved
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>Maximum focus - zero distractions</li>
+                        <li>Large text, comfortable reading/writing</li>
+                        <li>Feels like a dedicated writing app</li>
+                        <li>Great for long-form content</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>Can't see other notes at all</li>
+                        <li>Might feel disconnected from app</li>
+                        <li>Exit action requires thought</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 2: Split View - Notes List + Editor -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 2: Split View - Notes List + Full Editor</h2>
+                <span class="badge badge-fullscreen">Full Screen</span>
+                <span class="badge badge-recommended">Recommended</span>
+            </div>
+            <p class="text-gray-600">Sidebar shows note titles (not cards). Right side is always the editor. Click title to switch notes. Like Apple Notes or Bear.</p>
+
+            <div class="mockup-frame" style="height: 500px;">
+                <div class="flex h-full">
+                    <!-- Notes list sidebar -->
+                    <div class="w-72 border-r border-gray-200 bg-gray-50 flex flex-col">
+                        <div class="p-4 border-b border-gray-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <h2 class="font-semibold text-gray-800">Notes</h2>
+                                <button class="p-1.5 hover:bg-gray-200 rounded-lg">
+                                    <i class="pi pi-plus text-gray-500"></i>
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input type="text" placeholder="Search notes..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white">
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-auto">
+                            <div class="p-2 mx-2 my-1 bg-purple-100 rounded-lg border-l-3 border-purple-500">
+                                <div class="font-medium text-sm text-purple-900">Meeting Notes</div>
+                                <div class="text-xs text-purple-600 mt-0.5">Discussed project timeline...</div>
+                                <div class="text-xs text-gray-400 mt-1">2 hours ago</div>
+                            </div>
+                            <div class="p-2 mx-2 my-1 hover:bg-gray-100 rounded-lg cursor-pointer">
+                                <div class="font-medium text-sm">Shopping List</div>
+                                <div class="text-xs text-gray-500 mt-0.5">Milk, eggs, bread...</div>
+                                <div class="text-xs text-gray-400 mt-1">Yesterday</div>
+                            </div>
+                            <div class="p-2 mx-2 my-1 hover:bg-gray-100 rounded-lg cursor-pointer">
+                                <div class="font-medium text-sm">Project Ideas</div>
+                                <div class="text-xs text-gray-500 mt-0.5">New features to consider...</div>
+                                <div class="text-xs text-gray-400 mt-1">3 days ago</div>
+                            </div>
+                            <div class="p-2 mx-2 my-1 hover:bg-gray-100 rounded-lg cursor-pointer">
+                                <div class="font-medium text-sm">Book Notes</div>
+                                <div class="text-xs text-gray-500 mt-0.5">Key takeaways from...</div>
+                                <div class="text-xs text-gray-400 mt-1">1 week ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Editor -->
+                    <div class="flex-1 flex flex-col">
+                        <div class="toolbar justify-between">
+                            <div class="flex items-center gap-2">
+                                <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                                    <option>Heading 2</option>
+                                </select>
+                                <button class="toolbar-btn font-bold">B</button>
+                                <button class="toolbar-btn italic">I</button>
+                                <button class="toolbar-btn underline">U</button>
+                                <span class="w-px h-4 bg-gray-300 mx-1"></span>
+                                <button class="toolbar-btn"><i class="pi pi-list"></i></button>
+                                <button class="toolbar-btn"><i class="pi pi-check-square"></i></button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-gray-400">Saved</span>
+                                <button class="toolbar-btn"><i class="pi pi-ellipsis-v"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-auto p-8">
+                            <div class="max-w-2xl mx-auto">
+                                <h1 class="text-3xl font-bold mb-4 outline-none" contenteditable="true">Meeting Notes</h1>
+                                <div class="text-gray-700 leading-relaxed outline-none" contenteditable="true">
+                                    <p class="mb-4">Discussed project timeline and deliverables for Q1 2026.</p>
+                                    <h2 class="text-xl font-semibold mb-2 mt-6">Action Items</h2>
+                                    <ul class="list-disc ml-5 space-y-1">
+                                        <li>Review design specs by Friday</li>
+                                        <li>Set up development environment</li>
+                                        <li>Schedule follow-up meeting</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>Quick switching between notes</li>
+                        <li>Always in editing context</li>
+                        <li>Familiar Apple Notes / Bear pattern</li>
+                        <li>Search and organize without leaving editor</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>No visual card previews</li>
+                        <li>Different from current architecture</li>
+                        <li>Less visual on mobile</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 3: Takeover with Breadcrumb -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 3: Route Takeover with Breadcrumb</h2>
+                <span class="badge badge-fullscreen">Full Screen</span>
+            </div>
+            <p class="text-gray-600">Clicking a note navigates to /notes/:id. Full screen editor with a breadcrumb to go back. URL is shareable.</p>
+
+            <div class="mockup-frame" style="height: 500px;">
+                <div class="flex flex-col h-full">
+                    <!-- Top bar with breadcrumb -->
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+                        <div class="flex items-center gap-2 text-sm">
+                            <a href="#" class="text-purple-600 hover:underline flex items-center gap-1">
+                                <i class="pi pi-arrow-left text-xs"></i>
+                                Notes
+                            </a>
+                            <span class="text-gray-400">/</span>
+                            <span class="text-gray-600">Meeting Notes</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="toolbar-btn text-sm"><i class="pi pi-share-alt"></i></button>
+                            <button class="toolbar-btn text-sm"><i class="pi pi-trash"></i></button>
+                            <button class="toolbar-btn text-sm"><i class="pi pi-ellipsis-v"></i></button>
+                        </div>
+                    </div>
+                    <!-- Toolbar -->
+                    <div class="toolbar">
+                        <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                            <option>Heading 2</option>
+                        </select>
+                        <button class="toolbar-btn font-bold">B</button>
+                        <button class="toolbar-btn italic">I</button>
+                        <button class="toolbar-btn underline">U</button>
+                        <span class="w-px h-4 bg-gray-300 mx-1"></span>
+                        <button class="toolbar-btn"><i class="pi pi-list"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-check-square"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-image"></i></button>
+                    </div>
+                    <!-- Editor -->
+                    <div class="flex-1 overflow-auto bg-gray-50">
+                        <div class="max-w-3xl mx-auto p-8">
+                            <h1 class="text-3xl font-bold mb-6 outline-none" contenteditable="true">Meeting Notes</h1>
+                            <div class="text-gray-700 leading-relaxed outline-none min-h-[300px]" contenteditable="true">
+                                <p class="mb-4">Discussed project timeline and deliverables for Q1 2026.</p>
+                                <h2 class="text-xl font-semibold mb-2 mt-6">Action Items</h2>
+                                <ul class="list-disc ml-5 space-y-1">
+                                    <li>Review design specs by Friday</li>
+                                    <li>Set up development environment</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer status -->
+                    <div class="px-4 py-2 border-t border-gray-200 bg-white text-xs text-gray-400 flex justify-between">
+                        <span>Last edited 2 hours ago</span>
+                        <span>Auto-saved</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>Clean URL structure (/notes/abc123)</li>
+                        <li>Shareable links to specific notes</li>
+                        <li>Browser back button works naturally</li>
+                        <li>Full editing space</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>Page transition on every note open</li>
+                        <li>Can't quickly peek at other notes</li>
+                        <li>More "heavy" feeling navigation</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 4: Overlay with Blur -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 4: Full Overlay with Blurred Background</h2>
+                <span class="badge badge-fullscreen">Near Full Screen</span>
+            </div>
+            <p class="text-gray-600">Editor appears as a large overlay (95% screen). Background is blurred but visible. Click outside or press Escape to close.</p>
+
+            <div class="mockup-frame relative" style="height: 500px;">
+                <!-- Background (blurred cards) -->
+                <div class="absolute inset-0 p-6" style="filter: blur(4px); opacity: 0.4;">
+                    <h3 class="text-lg font-semibold mb-4">Notes</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="note-card p-4 h-32"></div>
+                        <div class="note-card p-4 h-32"></div>
+                        <div class="note-card p-4 h-32"></div>
+                    </div>
+                </div>
+                <!-- Overlay -->
+                <div class="absolute inset-4 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                        <h2 class="font-semibold text-lg">Edit Note</h2>
+                        <button class="p-2 hover:bg-gray-100 rounded-full">
+                            <i class="pi pi-times text-gray-500"></i>
+                        </button>
+                    </div>
+                    <!-- Toolbar -->
+                    <div class="toolbar px-4">
+                        <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                            <option>Heading 2</option>
+                        </select>
+                        <button class="toolbar-btn font-bold">B</button>
+                        <button class="toolbar-btn italic">I</button>
+                        <button class="toolbar-btn underline">U</button>
+                        <span class="w-px h-4 bg-gray-300 mx-1"></span>
+                        <button class="toolbar-btn"><i class="pi pi-list"></i></button>
+                        <button class="toolbar-btn"><i class="pi pi-check-square"></i></button>
+                    </div>
+                    <!-- Editor -->
+                    <div class="flex-1 overflow-auto p-6">
+                        <div class="max-w-2xl mx-auto">
+                            <h1 class="text-3xl font-bold mb-4 outline-none" contenteditable="true">Meeting Notes</h1>
+                            <div class="text-gray-700 leading-relaxed outline-none" contenteditable="true">
+                                <p class="mb-4">Discussed project timeline and deliverables for Q1 2026.</p>
+                                <h2 class="text-xl font-semibold mb-2 mt-6">Action Items</h2>
+                                <ul class="list-disc ml-5 space-y-1">
+                                    <li>Review design specs by Friday</li>
+                                    <li>Set up development environment</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                        <span class="text-sm text-gray-400">Press Escape or click outside to close</span>
+                        <div class="flex gap-2">
+                            <button class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Discard</button>
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>Large editing area without leaving page</li>
+                        <li>Visual hint that notes are "behind"</li>
+                        <li>Easy dismiss with Escape/click outside</li>
+                        <li>Elegant animation possible</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>Still feels like a modal</li>
+                        <li>Blur effect may feel heavy</li>
+                        <li>Not quite "full" full-screen</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 5: Two-Pane Resizable -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 5: Two-Pane Resizable (VSCode Style)</h2>
+                <span class="badge badge-fullscreen">Full Screen</span>
+            </div>
+            <p class="text-gray-600">Cards on left, editor on right. Drag the divider to resize. Can collapse cards to full-screen editor.</p>
+
+            <div class="mockup-frame" style="height: 500px;">
+                <div class="flex h-full">
+                    <!-- Cards pane (resizable) -->
+                    <div class="w-80 border-r border-gray-200 flex flex-col bg-gray-50">
+                        <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                            <h3 class="font-semibold">Notes</h3>
+                            <button class="p-1 hover:bg-gray-200 rounded" title="Collapse panel">
+                                <i class="pi pi-angle-double-left text-gray-500 text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-auto p-3 space-y-3">
+                            <div class="note-card p-3 ring-2 ring-purple-500">
+                                <h4 class="font-medium text-sm mb-1">Meeting Notes</h4>
+                                <p class="text-xs text-gray-500 line-clamp-2">Discussed project timeline...</p>
+                            </div>
+                            <div class="note-card p-3">
+                                <h4 class="font-medium text-sm mb-1">Shopping List</h4>
+                                <p class="text-xs text-gray-500 line-clamp-2">Milk, eggs, bread...</p>
+                            </div>
+                            <div class="note-card p-3">
+                                <h4 class="font-medium text-sm mb-1">Project Ideas</h4>
+                                <p class="text-xs text-gray-500 line-clamp-2">New features...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Resize handle -->
+                    <div class="w-1 bg-gray-200 hover:bg-purple-400 cursor-col-resize flex items-center justify-center">
+                        <div class="w-1 h-8 bg-gray-400 rounded-full"></div>
+                    </div>
+                    <!-- Editor pane -->
+                    <div class="flex-1 flex flex-col">
+                        <div class="toolbar">
+                            <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                                <option>Heading 2</option>
+                            </select>
+                            <button class="toolbar-btn font-bold">B</button>
+                            <button class="toolbar-btn italic">I</button>
+                            <span class="flex-1"></span>
+                            <button class="toolbar-btn" title="Expand to full screen">
+                                <i class="pi pi-expand"></i>
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-auto p-6">
+                            <h1 class="text-2xl font-bold mb-4 outline-none" contenteditable="true">Meeting Notes</h1>
+                            <div class="text-gray-700 outline-none" contenteditable="true">
+                                <p>Discussed project timeline and deliverables.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>User controls layout via resize</li>
+                        <li>Cards visible while editing</li>
+                        <li>Can collapse for full-screen mode</li>
+                        <li>Power-user friendly</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>More complex interaction</li>
+                        <li>Cards are small in sidebar</li>
+                        <li>May feel like an IDE</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 6: Theater Mode -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 6: Theater Mode (YouTube Style)</h2>
+                <span class="badge badge-fullscreen">Near Full Screen</span>
+            </div>
+            <p class="text-gray-600">Click a card → it expands to fill most of the screen. Other cards shrink to a mini-strip at the bottom.</p>
+
+            <div class="mockup-frame" style="height: 500px;">
+                <div class="flex flex-col h-full">
+                    <!-- Expanded editor -->
+                    <div class="flex-1 flex flex-col">
+                        <div class="toolbar justify-between">
+                            <div class="flex items-center gap-2">
+                                <button class="toolbar-btn" title="Exit theater mode">
+                                    <i class="pi pi-compress"></i>
+                                </button>
+                                <span class="w-px h-4 bg-gray-300"></span>
+                                <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                                    <option>Heading 2</option>
+                                </select>
+                                <button class="toolbar-btn font-bold">B</button>
+                                <button class="toolbar-btn italic">I</button>
+                            </div>
+                            <span class="text-xs text-gray-400">Auto-saved</span>
+                        </div>
+                        <div class="flex-1 overflow-auto p-8 bg-gray-50">
+                            <div class="max-w-2xl mx-auto">
+                                <h1 class="text-3xl font-bold mb-4 outline-none" contenteditable="true">Meeting Notes</h1>
+                                <div class="text-gray-700 leading-relaxed outline-none" contenteditable="true">
+                                    <p class="mb-4">Discussed project timeline and deliverables for Q1 2026.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Mini cards strip -->
+                    <div class="h-20 border-t border-gray-200 bg-white px-4 flex items-center gap-3 overflow-x-auto">
+                        <div class="flex-shrink-0 w-32 h-14 rounded-lg bg-purple-100 border-2 border-purple-500 p-2">
+                            <div class="text-xs font-medium truncate">Meeting Notes</div>
+                            <div class="text-xs text-gray-400">Current</div>
+                        </div>
+                        <div class="flex-shrink-0 w-32 h-14 rounded-lg border border-gray-200 p-2 cursor-pointer hover:border-purple-300">
+                            <div class="text-xs font-medium truncate">Shopping List</div>
+                            <div class="text-xs text-gray-400">Yesterday</div>
+                        </div>
+                        <div class="flex-shrink-0 w-32 h-14 rounded-lg border border-gray-200 p-2 cursor-pointer hover:border-purple-300">
+                            <div class="text-xs font-medium truncate">Project Ideas</div>
+                            <div class="text-xs text-gray-400">3 days ago</div>
+                        </div>
+                        <div class="flex-shrink-0 w-32 h-14 rounded-lg border border-gray-200 p-2 cursor-pointer hover:border-purple-300">
+                            <div class="text-xs font-medium truncate">Book Notes</div>
+                            <div class="text-xs text-gray-400">1 week ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>Large editor with quick note switching</li>
+                        <li>Can see all notes at a glance</li>
+                        <li>Smooth transition animation possible</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>Mini cards show limited info</li>
+                        <li>Horizontal scroll on many notes</li>
+                        <li>Less familiar pattern</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 7: Stacked Cards / Carousel -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 7: Stacked Cards / Carousel</h2>
+                <span class="badge badge-fullscreen">Full Screen</span>
+            </div>
+            <p class="text-gray-600">Notes are stacked cards. Current note is large and centered. Swipe/arrow to navigate. Peek at adjacent notes.</p>
+
+            <div class="mockup-frame" style="height: 500px;">
+                <div class="h-full flex items-center justify-center bg-gray-100 relative px-16">
+                    <!-- Left peek card -->
+                    <div class="absolute left-4 top-1/2 -translate-y-1/2 w-48 h-64 bg-white rounded-xl shadow-lg opacity-50 transform -rotate-3 p-4">
+                        <h4 class="font-medium text-sm">Shopping List</h4>
+                        <p class="text-xs text-gray-400 mt-2">Milk, eggs...</p>
+                    </div>
+                    <!-- Navigation arrows -->
+                    <button class="absolute left-2 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 z-10">
+                        <i class="pi pi-chevron-left text-gray-600"></i>
+                    </button>
+                    <button class="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 z-10">
+                        <i class="pi pi-chevron-right text-gray-600"></i>
+                    </button>
+                    <!-- Current card (editor) -->
+                    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl flex flex-col" style="height: 420px;">
+                        <div class="toolbar rounded-t-2xl">
+                            <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                                <option>Heading 2</option>
+                            </select>
+                            <button class="toolbar-btn font-bold">B</button>
+                            <button class="toolbar-btn italic">I</button>
+                            <span class="flex-1"></span>
+                            <button class="toolbar-btn"><i class="pi pi-ellipsis-v"></i></button>
+                        </div>
+                        <div class="flex-1 overflow-auto p-6">
+                            <h1 class="text-2xl font-bold mb-4 outline-none" contenteditable="true">Meeting Notes</h1>
+                            <div class="text-gray-700 outline-none" contenteditable="true">
+                                <p class="mb-4">Discussed project timeline and deliverables.</p>
+                                <ul class="list-disc ml-5">
+                                    <li>Review design specs</li>
+                                    <li>Set up environment</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Card indicator -->
+                        <div class="p-3 border-t border-gray-100 flex justify-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                            <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                            <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                        </div>
+                    </div>
+                    <!-- Right peek card -->
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 w-48 h-64 bg-white rounded-xl shadow-lg opacity-50 transform rotate-3 p-4">
+                        <h4 class="font-medium text-sm">Project Ideas</h4>
+                        <p class="text-xs text-gray-400 mt-2">New features...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>Visual, engaging interaction</li>
+                        <li>Gesture-friendly for touch</li>
+                        <li>Unique and modern feel</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>Unfamiliar for note apps</li>
+                        <li>Can't see all notes at once</li>
+                        <li>Complex to implement well</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 8: Command Palette Quick Open -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 8: Full Editor + Command Palette Navigation</h2>
+                <span class="badge badge-fullscreen">Full Screen</span>
+            </div>
+            <p class="text-gray-600">Editor is always full screen. Press Cmd+K (or click icon) to open a command palette to search/switch notes.</p>
+
+            <div class="mockup-frame relative" style="height: 500px;">
+                <!-- Full screen editor -->
+                <div class="h-full flex flex-col">
+                    <div class="toolbar justify-between">
+                        <div class="flex items-center gap-2">
+                            <button class="toolbar-btn text-sm px-3 bg-gray-100 rounded-lg" title="Quick open (⌘K)">
+                                <i class="pi pi-search mr-2"></i>
+                                <span class="text-gray-500">Quick open...</span>
+                                <span class="ml-4 text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">⌘K</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                                <option>Heading 2</option>
+                            </select>
+                            <button class="toolbar-btn font-bold">B</button>
+                            <button class="toolbar-btn italic">I</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-auto p-8 bg-gray-50">
+                        <div class="max-w-2xl mx-auto">
+                            <h1 class="text-3xl font-bold mb-4 outline-none" contenteditable="true">Meeting Notes</h1>
+                            <div class="text-gray-700 leading-relaxed outline-none" contenteditable="true">
+                                <p class="mb-4">Discussed project timeline and deliverables for Q1 2026.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Command palette overlay -->
+                <div class="absolute inset-0 bg-black/30 flex items-start justify-center pt-24">
+                    <div class="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden">
+                        <div class="p-3 border-b border-gray-200">
+                            <div class="flex items-center gap-3">
+                                <i class="pi pi-search text-gray-400"></i>
+                                <input type="text" class="flex-1 outline-none text-lg" placeholder="Search notes..." value="meet" autofocus>
+                                <span class="text-xs text-gray-400">ESC to close</span>
+                            </div>
+                        </div>
+                        <div class="max-h-64 overflow-auto">
+                            <div class="p-2 bg-purple-50 flex items-center gap-3 cursor-pointer">
+                                <i class="pi pi-file text-purple-500"></i>
+                                <div>
+                                    <div class="font-medium">Meeting Notes</div>
+                                    <div class="text-xs text-gray-500">Discussed project timeline...</div>
+                                </div>
+                            </div>
+                            <div class="p-2 hover:bg-gray-50 flex items-center gap-3 cursor-pointer">
+                                <i class="pi pi-file text-gray-400"></i>
+                                <div>
+                                    <div class="font-medium">Team Meeting Agenda</div>
+                                    <div class="text-xs text-gray-500">Weekly sync topics...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2 border-t border-gray-100 text-xs text-gray-400 flex justify-between">
+                            <span>↑↓ Navigate</span>
+                            <span>↵ Open</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>Maximum editing space always</li>
+                        <li>Keyboard-first navigation</li>
+                        <li>Fast for power users</li>
+                        <li>Familiar VSCode/Notion pattern</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>No visual browse of notes</li>
+                        <li>Need to know shortcut or click</li>
+                        <li>Can feel "hidden"</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 9: Tabs at Top -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 9: Browser-Style Tabs</h2>
+                <span class="badge badge-fullscreen">Full Screen</span>
+            </div>
+            <p class="text-gray-600">Notes open as tabs at the top. Switch between open notes quickly. New note = new tab.</p>
+
+            <div class="mockup-frame" style="height: 500px;">
+                <div class="h-full flex flex-col">
+                    <!-- Tab bar -->
+                    <div class="flex items-center bg-gray-100 border-b border-gray-200">
+                        <div class="flex items-center gap-0.5 px-2 py-1">
+                            <div class="flex items-center gap-2 px-3 py-2 bg-white rounded-t-lg border border-b-0 border-gray-200 max-w-[180px]">
+                                <span class="truncate text-sm font-medium">Meeting Notes</span>
+                                <button class="p-0.5 hover:bg-gray-100 rounded">
+                                    <i class="pi pi-times text-xs text-gray-400"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-t-lg max-w-[180px] cursor-pointer">
+                                <span class="truncate text-sm text-gray-600">Shopping List</span>
+                                <button class="p-0.5 hover:bg-gray-300 rounded">
+                                    <i class="pi pi-times text-xs text-gray-400"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-t-lg max-w-[180px] cursor-pointer">
+                                <span class="truncate text-sm text-gray-600">Project Ideas</span>
+                                <button class="p-0.5 hover:bg-gray-300 rounded">
+                                    <i class="pi pi-times text-xs text-gray-400"></i>
+                                </button>
+                            </div>
+                            <button class="p-2 hover:bg-gray-200 rounded" title="New note">
+                                <i class="pi pi-plus text-gray-500 text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="flex-1"></div>
+                        <button class="p-2 hover:bg-gray-200 rounded mr-2" title="All notes">
+                            <i class="pi pi-th-large text-gray-500 text-sm"></i>
+                        </button>
+                    </div>
+                    <!-- Toolbar -->
+                    <div class="toolbar">
+                        <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                            <option>Heading 2</option>
+                        </select>
+                        <button class="toolbar-btn font-bold">B</button>
+                        <button class="toolbar-btn italic">I</button>
+                        <button class="toolbar-btn underline">U</button>
+                    </div>
+                    <!-- Editor -->
+                    <div class="flex-1 overflow-auto p-8 bg-gray-50">
+                        <div class="max-w-2xl mx-auto">
+                            <h1 class="text-3xl font-bold mb-4 outline-none" contenteditable="true">Meeting Notes</h1>
+                            <div class="text-gray-700 leading-relaxed outline-none" contenteditable="true">
+                                <p class="mb-4">Discussed project timeline and deliverables for Q1 2026.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>Super familiar browser pattern</li>
+                        <li>Multiple notes open at once</li>
+                        <li>Easy visual switching</li>
+                        <li>Ctrl+Tab to cycle</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>Tabs can overflow quickly</li>
+                        <li>No visual preview of content</li>
+                        <li>Need separate "all notes" view</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Option 10: Floating Window -->
+        <section class="space-y-4">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">Option 10: Floating Draggable Window</h2>
+                <span class="badge badge-alternative">Alternative</span>
+            </div>
+            <p class="text-gray-600">Editor opens as a floating window that can be dragged, resized, and positioned anywhere over the notes grid.</p>
+
+            <div class="mockup-frame relative" style="height: 500px;">
+                <!-- Background cards -->
+                <div class="absolute inset-0 p-6">
+                    <h3 class="text-lg font-semibold mb-4">Notes</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="note-card p-4">
+                            <h4 class="font-medium mb-2">Shopping List</h4>
+                            <p class="text-sm text-gray-500 line-clamp-3">Milk, eggs, bread...</p>
+                        </div>
+                        <div class="note-card p-4 opacity-50">
+                            <h4 class="font-medium mb-2">Meeting Notes</h4>
+                            <p class="text-sm text-gray-500 line-clamp-3">Discussed project...</p>
+                        </div>
+                        <div class="note-card p-4">
+                            <h4 class="font-medium mb-2">Project Ideas</h4>
+                            <p class="text-sm text-gray-500 line-clamp-3">New features...</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Floating window -->
+                <div class="absolute bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style="top: 60px; left: 200px; width: 500px; height: 380px;">
+                    <!-- Title bar (draggable) -->
+                    <div class="flex items-center justify-between px-4 py-2 bg-gray-100 border-b border-gray-200 cursor-move">
+                        <span class="font-medium text-sm">Meeting Notes</span>
+                        <div class="flex items-center gap-1">
+                            <button class="p-1 hover:bg-gray-200 rounded" title="Minimize">
+                                <i class="pi pi-minus text-xs text-gray-500"></i>
+                            </button>
+                            <button class="p-1 hover:bg-gray-200 rounded" title="Maximize">
+                                <i class="pi pi-expand text-xs text-gray-500"></i>
+                            </button>
+                            <button class="p-1 hover:bg-red-100 rounded" title="Close">
+                                <i class="pi pi-times text-xs text-gray-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Toolbar -->
+                    <div class="toolbar py-1">
+                        <select class="toolbar-btn px-2 text-sm border border-gray-200 rounded bg-white">
+                            <option>Heading 2</option>
+                        </select>
+                        <button class="toolbar-btn font-bold text-sm">B</button>
+                        <button class="toolbar-btn italic text-sm">I</button>
+                    </div>
+                    <!-- Content -->
+                    <div class="flex-1 overflow-auto p-4">
+                        <h1 class="text-xl font-bold mb-3 outline-none" contenteditable="true">Meeting Notes</h1>
+                        <div class="text-gray-700 outline-none text-sm" contenteditable="true">
+                            <p>Discussed project timeline...</p>
+                        </div>
+                    </div>
+                    <!-- Resize handle -->
+                    <div class="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize">
+                        <svg class="w-3 h-3 text-gray-400 absolute bottom-1 right-1" fill="currentColor" viewBox="0 0 6 6">
+                            <path d="M6 6H4v-2h2v2zM6 3H3V0h1v2h2v1zM3 6H0V3h1v2h2v1z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-green-800">Pros:</h4>
+                    <ul class="text-green-700 text-sm mt-1 list-disc ml-5">
+                        <li>User controls position and size</li>
+                        <li>Can see notes while editing</li>
+                        <li>Multiple windows possible</li>
+                        <li>Desktop app feel</li>
+                    </ul>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-red-800">Cons:</h4>
+                    <ul class="text-red-700 text-sm mt-1 list-disc ml-5">
+                        <li>Can feel cluttered</li>
+                        <li>Complex to implement well</li>
+                        <li>Unusual for web apps</li>
+                        <li>Window management overhead</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary -->
+        <section class="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-xl">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Recommendation Summary</h2>
+            <div class="space-y-4">
+                <p><strong>Option 2 (Split View - Apple Notes Style)</strong> is recommended because:</p>
+                <ul class="list-disc ml-5 text-gray-700 space-y-1">
+                    <li>Provides full-screen editing while keeping notes accessible</li>
+                    <li>Well-established pattern (Apple Notes, Bear, Obsidian)</li>
+                    <li>Quick switching without losing context</li>
+                    <li>Works well on both desktop and tablet</li>
+                </ul>
+
+                <div class="mt-4 pt-4 border-t border-purple-200">
+                    <p class="font-medium text-gray-800 mb-2">Other strong options for full-screen focus:</p>
+                    <ul class="list-disc ml-5 text-gray-600 space-y-1">
+                        <li><strong>Option 1 (Zen Mode)</strong> - Best for pure writing focus, no distractions</li>
+                        <li><strong>Option 3 (Route Takeover)</strong> - Clean URLs, shareable links, browser-native navigation</li>
+                        <li><strong>Option 8 (Command Palette)</strong> - Best for keyboard power users</li>
+                        <li><strong>Option 9 (Tabs)</strong> - Most familiar, multi-note workflow</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

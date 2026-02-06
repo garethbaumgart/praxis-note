@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkbox Selection for Task Promotion - Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#eceff4',
+            'surface-subtle': '#e5e9f0',
+            'surface-hover': '#d8dee9',
+            foreground: '#2e3440',
+            'foreground-muted': '#4c566a',
+            border: '#d8dee9',
+            primary: '#5e81ac',
+            danger: '#bf616a',
+            success: '#a3be8c',
+            warning: '#ebcb8b',
+            todo: '#d8dee9',
+            inprogress: '#81a1c1',
+            done: '#a3be8c',
+            note: '#f8fafc',
+            'note-border': '#e2e8f0',
+            link: '#5e81ac',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .mockup-section { margin-bottom: 3rem; }
+    .mockup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; }
+    .mockup-card { background: #f8fafc; border-radius: 12px; padding: 1rem; }
+    .task-checkbox { width: 16px; height: 16px; accent-color: #5e81ac; }
+    .selection-checkbox { width: 14px; height: 14px; accent-color: #5e81ac; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Checkbox Selection for Task Promotion</h1>
+    <p class="text-gray-600 mb-8">Design options for selecting individual checkboxes to promote as tasks. Refining Issue #205.</p>
+
+    <!-- ============================================ -->
+    <!-- CONTEXT -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <h2 class="font-semibold text-gray-800 mb-4">Current State & Goal</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-info-circle text-amber-600"></i>
+            <span class="font-medium text-amber-800">Current Implementation</span>
+          </div>
+          <ul class="text-sm text-amber-700 space-y-1">
+            <li>- Backend API exists: <code class="text-xs bg-amber-100 px-1 rounded">POST /api/notes/{noteId}/checkboxes/{checkboxId}/promote</code></li>
+            <li>- Checkbox status endpoint exists for tracking linked state</li>
+            <li>- No UI to trigger promotion</li>
+            <li>- Previous mockup recommends "Manual Promote" approach</li>
+          </ul>
+        </div>
+        <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-bullseye text-blue-600"></i>
+            <span class="font-medium text-blue-800">Goal</span>
+          </div>
+          <p class="text-sm text-blue-700">
+            Design a UI that allows users to <strong>select individual checkboxes</strong> and promote them to tasks.
+            The selection should support both single-item and bulk promotion workflows.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 1: Selection Mode Toggle -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 1: Selection Mode Toggle</h2>
+      <p class="text-gray-600 mb-4 text-sm">Enter a "selection mode" via toolbar button. Selection checkboxes appear next to each item. Bulk action bar at bottom.</p>
+
+      <div class="mockup-grid">
+        <!-- Normal State -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Normal Editing Mode</div>
+          <div class="bg-white rounded-lg border border-note-border">
+            <!-- Toolbar -->
+            <div class="flex items-center gap-1 p-2 border-b border-gray-100">
+              <button class="p-1.5 rounded hover:bg-gray-100"><i class="pi pi-bold text-sm text-gray-600"></i></button>
+              <button class="p-1.5 rounded hover:bg-gray-100"><i class="pi pi-italic text-sm text-gray-600"></i></button>
+              <span class="w-px h-4 bg-gray-200 mx-1"></span>
+              <button class="p-1.5 rounded hover:bg-gray-100"><i class="pi pi-list text-sm text-gray-600"></i></button>
+              <button class="p-1.5 rounded hover:bg-gray-100"><i class="pi pi-check-square text-sm text-gray-600"></i></button>
+              <span class="flex-1"></span>
+              <button class="p-1.5 rounded hover:bg-gray-100 flex items-center gap-1 text-xs text-gray-600" title="Select checkboxes to promote">
+                <i class="pi pi-check-circle text-sm"></i>
+                <span class="hidden sm:inline">Select</span>
+              </button>
+            </div>
+            <!-- Content -->
+            <div class="p-4">
+              <div class="space-y-2">
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1">
+                  <span class="text-sm text-gray-700">Review authentication flow</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1" checked>
+                  <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+                  <span class="px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground">Done</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1">
+                  <span class="text-sm text-gray-700">Draft API contract</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" class="task-checkbox mt-1">
+                  <span class="text-sm text-gray-700">Buy coffee for the team</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Click "Select" button in toolbar to enter selection mode.</p>
+        </div>
+
+        <!-- Selection Mode Active -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Selection Mode Active</div>
+          <div class="bg-white rounded-lg border border-primary/50 shadow-sm">
+            <!-- Toolbar - Selection Mode -->
+            <div class="flex items-center gap-1 p-2 border-b border-primary/20 bg-primary/5">
+              <button class="p-1.5 rounded bg-primary text-white flex items-center gap-1 text-xs">
+                <i class="pi pi-times text-sm"></i>
+                <span>Cancel</span>
+              </button>
+              <span class="flex-1 text-xs text-gray-600 text-center">Select checkboxes to promote</span>
+              <button class="p-1.5 px-2 rounded text-xs text-primary hover:bg-primary/10">Select All</button>
+            </div>
+            <!-- Content with selection checkboxes -->
+            <div class="p-4">
+              <div class="space-y-2">
+                <div class="flex items-start gap-3">
+                  <input type="checkbox" class="selection-checkbox mt-1.5 cursor-pointer" checked>
+                  <div class="flex items-start gap-2 flex-1 bg-primary/5 -mx-1 px-1 py-0.5 rounded">
+                    <input type="checkbox" class="task-checkbox mt-1" disabled>
+                    <span class="text-sm text-gray-700">Review authentication flow</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3 opacity-50">
+                  <input type="checkbox" class="selection-checkbox mt-1.5" disabled title="Already linked">
+                  <div class="flex items-start gap-2 flex-1">
+                    <input type="checkbox" class="task-checkbox mt-1" checked disabled>
+                    <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+                    <span class="px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground">Linked</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <input type="checkbox" class="selection-checkbox mt-1.5 cursor-pointer" checked>
+                  <div class="flex items-start gap-2 flex-1 bg-primary/5 -mx-1 px-1 py-0.5 rounded">
+                    <input type="checkbox" class="task-checkbox mt-1" disabled>
+                    <span class="text-sm text-gray-700">Draft API contract</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <input type="checkbox" class="selection-checkbox mt-1.5 cursor-pointer">
+                  <div class="flex items-start gap-2 flex-1">
+                    <input type="checkbox" class="task-checkbox mt-1" disabled>
+                    <span class="text-sm text-gray-700">Buy coffee for the team</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Bulk Action Bar -->
+            <div class="p-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between rounded-b-lg">
+              <span class="text-xs text-gray-600">2 of 3 selected</span>
+              <button class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">
+                <i class="pi pi-arrow-right text-sm"></i>
+                Create 2 Tasks
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-emerald-600 mt-2">Selection checkboxes appear. Already-linked items are disabled. Bulk action bar shows count.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>+ Clear separation between editing and selecting</li>
+            <li>+ Explicit multi-select workflow</li>
+            <li>+ Already-linked items clearly indicated</li>
+            <li>+ Works well on both desktop and mobile</li>
+            <li>+ Bulk action count provides feedback</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>- Requires entering a separate mode</li>
+            <li>- Two clicks minimum (enter mode + select)</li>
+            <li>- May feel heavy for single-item promotion</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 2: Inline Action Icons (Recommended) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 2: Inline Action Icons (Recommended)</h2>
+      <p class="text-gray-600 mb-4 text-sm">Each unlinked checkbox has a small promote icon that appears on hover. Click to promote instantly.</p>
+
+      <div class="mockup-grid">
+        <!-- Hover State -->
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-xs font-medium mb-2 text-emerald-700">Hover to Reveal Action</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <div class="space-y-2">
+              <!-- Hover state - showing action -->
+              <div class="flex items-center gap-2 group bg-gray-50 -mx-2 px-2 py-1 rounded">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700 flex-1">Review authentication flow</span>
+                <button class="flex items-center gap-1 px-2 py-1 rounded bg-primary/10 text-primary text-[11px] hover:bg-primary/20 transition-colors">
+                  <i class="pi pi-arrow-right text-[10px]"></i>
+                  Task
+                </button>
+              </div>
+              <!-- Already linked -->
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="task-checkbox" checked>
+                <span class="text-sm text-gray-400 line-through flex-1">Schedule security meeting</span>
+                <span class="px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground cursor-pointer hover:bg-done/80">Done</span>
+              </div>
+              <!-- Normal state -->
+              <div class="flex items-center gap-2 group">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700 flex-1">Draft API contract</span>
+                <button class="opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded bg-primary/10 text-primary text-[11px] hover:bg-primary/20 transition-opacity">
+                  <i class="pi pi-arrow-right text-[10px]"></i>
+                  Task
+                </button>
+              </div>
+              <!-- Normal state -->
+              <div class="flex items-center gap-2 group">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700 flex-1">Buy coffee for the team</span>
+                <button class="opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded bg-primary/10 text-primary text-[11px] hover:bg-primary/20 transition-opacity">
+                  <i class="pi pi-arrow-right text-[10px]"></i>
+                  Task
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Hover reveals "Task" button. Single click promotes immediately.</p>
+        </div>
+
+        <!-- With Multi-Select Shift+Click -->
+        <div class="mockup-card bg-emerald-50 border-2 border-emerald-200">
+          <div class="mockup-label text-xs font-medium mb-2 text-emerald-700">Shift+Click for Multi-Select</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2 bg-primary/10 -mx-2 px-2 py-1 rounded border border-primary/30">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700 flex-1">Review authentication flow</span>
+                <i class="pi pi-check text-primary text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2 opacity-50">
+                <input type="checkbox" class="task-checkbox" checked>
+                <span class="text-sm text-gray-400 line-through flex-1">Schedule security meeting</span>
+                <span class="px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground">Linked</span>
+              </div>
+              <div class="flex items-center gap-2 bg-primary/10 -mx-2 px-2 py-1 rounded border border-primary/30">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700 flex-1">Draft API contract</span>
+                <i class="pi pi-check text-primary text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700 flex-1">Buy coffee for the team</span>
+              </div>
+            </div>
+            <!-- Floating action -->
+            <div class="mt-4 flex justify-end">
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 shadow-md">
+                <i class="pi pi-arrow-right text-xs"></i>
+                Create 2 Tasks
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Shift+Click on "Task" button to add to selection. Action bar appears when multiple selected.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>+ Fastest single-item promotion (one click)</li>
+            <li>+ No mode switching required</li>
+            <li>+ Clean UI - actions hidden until needed</li>
+            <li>+ Familiar hover pattern</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>- Multi-select requires Shift+Click (not discoverable)</li>
+            <li>- Doesn't work well on touch devices (no hover)</li>
+            <li>- Can feel cluttered with many checkboxes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 3: Checkbox Context Menu -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 3: Checkbox Context Menu</h2>
+      <p class="text-gray-600 mb-4 text-sm">Right-click or long-press on checkbox to show context menu with promote action.</p>
+
+      <div class="mockup-grid">
+        <!-- Desktop - Right Click -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Desktop - Right Click Menu</div>
+          <div class="bg-white rounded-lg border border-note-border p-4 relative">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <div class="flex items-center gap-2 bg-blue-50 -mx-2 px-2 py-1 rounded">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Buy coffee for the team</span>
+              </div>
+            </div>
+            <!-- Context menu -->
+            <div class="absolute top-14 left-20 bg-white border border-gray-200 rounded-lg shadow-xl py-1 w-44 z-10">
+              <button class="w-full px-3 py-2 text-left text-sm hover:bg-primary/10 flex items-center gap-2 text-primary font-medium">
+                <i class="pi pi-arrow-right text-xs"></i>
+                Promote to Task
+              </button>
+              <div class="border-t border-gray-100 my-1"></div>
+              <button class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                <i class="pi pi-copy text-xs text-gray-400"></i>
+                Copy Text
+              </button>
+              <button class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                <i class="pi pi-pencil text-xs text-gray-400"></i>
+                Edit
+              </button>
+              <div class="border-t border-gray-100 my-1"></div>
+              <button class="w-full px-3 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-danger">
+                <i class="pi pi-trash text-xs"></i>
+                Delete
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Right-click on checkbox row shows context menu. "Promote to Task" is primary action.</p>
+        </div>
+
+        <!-- Mobile - Long Press -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Mobile - Long Press Bottom Sheet</div>
+          <div class="bg-white rounded-lg border border-note-border p-4 relative max-w-xs mx-auto">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Review authentication</span>
+              </div>
+              <div class="flex items-center gap-2 p-2 -mx-2 bg-blue-50 rounded-lg border-2 border-blue-300">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+            </div>
+            <!-- Bottom sheet -->
+            <div class="absolute -bottom-4 left-0 right-0 bg-white border-t border-gray-200 rounded-t-2xl shadow-2xl p-4">
+              <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div class="text-sm text-gray-600 mb-3 text-center">Draft API contract</div>
+              <div class="space-y-1">
+                <button class="w-full p-3 text-left rounded-lg bg-primary/10 flex items-center gap-3 text-primary font-medium">
+                  <i class="pi pi-arrow-right"></i>
+                  Promote to Task
+                </button>
+                <button class="w-full p-3 text-left rounded-lg hover:bg-gray-50 flex items-center gap-3 text-gray-700">
+                  <i class="pi pi-copy text-gray-400"></i>
+                  Copy Text
+                </button>
+                <button class="w-full p-3 text-left rounded-lg hover:bg-red-50 flex items-center gap-3 text-danger">
+                  <i class="pi pi-trash"></i>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-12">Long-press shows bottom sheet with actions. Primary action highlighted.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>+ Familiar pattern (right-click menus)</li>
+            <li>+ Works on both desktop and mobile</li>
+            <li>+ Room for additional actions</li>
+            <li>+ Keeps UI clean - no visible buttons</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>- Not discoverable for new users</li>
+            <li>- Two steps required (right-click, then click)</li>
+            <li>- Multi-select is awkward (must repeat for each)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 4: Checkbox List Panel -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 4: Checkbox List Panel</h2>
+      <p class="text-gray-600 mb-4 text-sm">Dedicated panel showing all checkboxes with their status. Select and promote from this list view.</p>
+
+      <div class="mockup-grid">
+        <!-- Panel View -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Checkbox List Panel</div>
+          <div class="bg-white rounded-lg border border-note-border overflow-hidden">
+            <!-- Panel Header -->
+            <div class="p-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-list-check text-gray-600"></i>
+                <span class="font-medium text-sm text-gray-800">Checkboxes</span>
+                <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-gray-200 text-gray-600">4</span>
+              </div>
+              <button class="text-xs text-primary hover:underline">Select All</button>
+            </div>
+            <!-- Checkbox List -->
+            <div class="divide-y divide-gray-50">
+              <label class="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" class="selection-checkbox" checked>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm text-gray-700 truncate">Review authentication flow</div>
+                </div>
+                <span class="text-[10px] text-gray-400">Unlinked</span>
+              </label>
+              <label class="flex items-center gap-3 p-3 bg-done/10 cursor-not-allowed opacity-60">
+                <input type="checkbox" class="selection-checkbox" disabled>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm text-gray-500 truncate line-through">Schedule security meeting</div>
+                </div>
+                <span class="px-1.5 py-0.5 text-[10px] rounded bg-done text-foreground">Done</span>
+              </label>
+              <label class="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" class="selection-checkbox" checked>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm text-gray-700 truncate">Draft API contract</div>
+                </div>
+                <span class="text-[10px] text-gray-400">Unlinked</span>
+              </label>
+              <label class="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" class="selection-checkbox">
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm text-gray-700 truncate">Buy coffee for the team</div>
+                </div>
+                <span class="text-[10px] text-gray-400">Unlinked</span>
+              </label>
+            </div>
+            <!-- Action Footer -->
+            <div class="p-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+              <span class="text-xs text-gray-600">2 selected</span>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90">
+                <i class="pi pi-arrow-right text-xs"></i>
+                Promote Selected
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Dedicated list view. Click row to select. Already-linked items are disabled.</p>
+        </div>
+
+        <!-- Accessed via button -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Access via Note Editor Button</div>
+          <div class="bg-white rounded-lg border border-note-border">
+            <!-- Toolbar -->
+            <div class="flex items-center gap-1 p-2 border-b border-gray-100">
+              <button class="p-1.5 rounded hover:bg-gray-100"><i class="pi pi-bold text-sm text-gray-600"></i></button>
+              <button class="p-1.5 rounded hover:bg-gray-100"><i class="pi pi-italic text-sm text-gray-600"></i></button>
+              <span class="w-px h-4 bg-gray-200 mx-1"></span>
+              <button class="p-1.5 rounded hover:bg-gray-100"><i class="pi pi-list text-sm text-gray-600"></i></button>
+              <span class="flex-1"></span>
+              <button class="p-1.5 px-2 rounded bg-primary/10 text-primary flex items-center gap-1 text-xs hover:bg-primary/20">
+                <i class="pi pi-list-check text-sm"></i>
+                <span>3 to Promote</span>
+              </button>
+            </div>
+            <!-- Content preview -->
+            <div class="p-4">
+              <div class="space-y-2 opacity-60">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="task-checkbox" disabled>
+                  <span class="text-sm text-gray-700">Review authentication flow</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="task-checkbox" checked disabled>
+                  <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+                </div>
+                <div class="text-xs text-gray-400">...</div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Button in toolbar shows count of unlinked checkboxes. Opens panel on click.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>+ Clear overview of all checkboxes and their status</li>
+            <li>+ Easy multi-select with standard checkbox UI</li>
+            <li>+ Shows count of items to promote in toolbar</li>
+            <li>+ Separates concerns (editing vs promoting)</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>- Additional panel/view to manage</li>
+            <li>- Duplicates content from editor</li>
+            <li>- Context switch from editing flow</li>
+            <li>- May feel heavy for simple notes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 5: Drag-to-Promote Zone -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 5: Drag-to-Promote Zone</h2>
+      <p class="text-gray-600 mb-4 text-sm">Drag checkboxes to a "promote zone" area to create tasks. Visual and tactile interaction.</p>
+
+      <div class="mockup-grid">
+        <!-- Dragging State -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Drag Checkbox to Promote Zone</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-bars text-gray-300 text-xs cursor-grab"></i>
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <div class="flex items-center gap-2 opacity-50">
+                <i class="pi pi-bars text-gray-300 text-xs"></i>
+                <input type="checkbox" class="task-checkbox" checked>
+                <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+                <span class="px-1.5 py-0.5 text-[10px] rounded bg-done">Linked</span>
+              </div>
+              <!-- Dragging item -->
+              <div class="flex items-center gap-2 opacity-30">
+                <i class="pi pi-bars text-gray-300 text-xs"></i>
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="pi pi-bars text-gray-300 text-xs cursor-grab"></i>
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Buy coffee for the team</span>
+              </div>
+            </div>
+            <!-- Dragged item preview -->
+            <div class="absolute top-1/2 left-1/3 transform -rotate-3 bg-white border-2 border-primary rounded-lg p-2 shadow-xl z-10 pointer-events-none">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+            </div>
+            <!-- Drop zone -->
+            <div class="mt-4 pt-4 border-t border-dashed border-primary/50">
+              <div class="flex items-center justify-center gap-2 p-4 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 text-primary">
+                <i class="pi pi-arrow-right text-lg"></i>
+                <span class="font-medium">Drop here to create task</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Drag checkbox by handle and drop in zone. Creates task immediately.</p>
+        </div>
+
+        <!-- Multi-select Drag -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Multi-Select then Drag</div>
+          <div class="bg-white rounded-lg border border-note-border p-4">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2 bg-primary/10 -mx-2 px-2 py-1 rounded border border-primary/30">
+                <input type="checkbox" class="selection-checkbox" checked>
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Review authentication flow</span>
+              </div>
+              <div class="flex items-center gap-2 opacity-50">
+                <input type="checkbox" class="selection-checkbox" disabled>
+                <input type="checkbox" class="task-checkbox" checked>
+                <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+              </div>
+              <div class="flex items-center gap-2 bg-primary/10 -mx-2 px-2 py-1 rounded border border-primary/30">
+                <input type="checkbox" class="selection-checkbox" checked>
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Draft API contract</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="selection-checkbox">
+                <input type="checkbox" class="task-checkbox">
+                <span class="text-sm text-gray-700">Buy coffee for the team</span>
+              </div>
+            </div>
+            <!-- Drop zone with count -->
+            <div class="mt-4 pt-4 border-t border-dashed border-primary/50">
+              <div class="flex items-center justify-center gap-2 p-4 rounded-lg border-2 border-dashed border-primary bg-primary/10 text-primary animate-pulse">
+                <i class="pi pi-arrow-right text-lg"></i>
+                <span class="font-medium">Drop 2 items to create tasks</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Select multiple checkboxes first, then drag any selected item to zone.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>+ Intuitive drag-and-drop interaction</li>
+            <li>+ Visual metaphor of "promoting" items</li>
+            <li>+ Supports both single and multi-select</li>
+            <li>+ Fun and engaging interaction</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>- Complex to implement (drag-drop in TipTap)</li>
+            <li>- Doesn't work well on mobile/touch</li>
+            <li>- May conflict with reordering checkboxes</li>
+            <li>- Drop zone takes up space</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION 6: Bottom Action Bar (Always Visible) -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Option 6: Bottom Action Bar with Chip Selection</h2>
+      <p class="text-gray-600 mb-4 text-sm">Always-visible bottom bar with chips for unlinked checkboxes. Click chips to select, then promote.</p>
+
+      <div class="mockup-grid">
+        <!-- Chip Selection -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Checkbox Chips in Bottom Bar</div>
+          <div class="bg-white rounded-lg border border-note-border">
+            <!-- Editor content -->
+            <div class="p-4">
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="task-checkbox">
+                  <span class="text-sm text-gray-700">Review authentication flow</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="task-checkbox" checked>
+                  <span class="text-sm text-gray-400 line-through">Schedule security meeting</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="task-checkbox">
+                  <span class="text-sm text-gray-700">Draft API contract</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="task-checkbox">
+                  <span class="text-sm text-gray-700">Buy coffee for the team</span>
+                </div>
+              </div>
+            </div>
+            <!-- Bottom action bar -->
+            <div class="p-3 border-t border-gray-100 bg-gray-50">
+              <div class="text-xs text-gray-500 mb-2">Promote to tasks:</div>
+              <div class="flex flex-wrap gap-2 items-center">
+                <button class="px-2 py-1 rounded-full border-2 border-primary bg-primary/10 text-primary text-xs flex items-center gap-1">
+                  <i class="pi pi-check text-[10px]"></i>
+                  Review auth...
+                </button>
+                <button class="px-2 py-1 rounded-full border border-gray-300 bg-white text-gray-600 text-xs hover:border-primary hover:text-primary">
+                  Draft API...
+                </button>
+                <button class="px-2 py-1 rounded-full border border-gray-300 bg-white text-gray-600 text-xs hover:border-primary hover:text-primary">
+                  Buy coffee...
+                </button>
+                <span class="text-xs text-gray-400">|</span>
+                <button class="px-3 py-1 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary/90">
+                  Create 1 Task
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Chips show unlinked checkboxes. Click to toggle selection. Already-linked items not shown.</p>
+        </div>
+
+        <!-- Multiple Selected -->
+        <div class="mockup-card">
+          <div class="mockup-label text-xs font-medium mb-2 text-gray-600">Multiple Chips Selected</div>
+          <div class="bg-white rounded-lg border border-note-border">
+            <!-- Editor content (compact) -->
+            <div class="p-4">
+              <div class="space-y-2 text-sm text-gray-600">
+                <div class="truncate">Review authentication flow</div>
+                <div class="truncate line-through text-gray-400">Schedule security meeting</div>
+                <div class="truncate">Draft API contract</div>
+                <div class="truncate">Buy coffee for the team</div>
+              </div>
+            </div>
+            <!-- Bottom action bar - expanded -->
+            <div class="p-3 border-t border-gray-100 bg-primary/5">
+              <div class="flex flex-wrap gap-2 items-center">
+                <button class="px-2 py-1 rounded-full border-2 border-primary bg-primary/10 text-primary text-xs flex items-center gap-1">
+                  <i class="pi pi-check text-[10px]"></i>
+                  Review auth...
+                </button>
+                <button class="px-2 py-1 rounded-full border-2 border-primary bg-primary/10 text-primary text-xs flex items-center gap-1">
+                  <i class="pi pi-check text-[10px]"></i>
+                  Draft API...
+                </button>
+                <button class="px-2 py-1 rounded-full border border-gray-300 bg-white text-gray-600 text-xs hover:border-primary">
+                  Buy coffee...
+                </button>
+                <span class="flex-1"></span>
+                <button class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary/90 flex items-center gap-1">
+                  <i class="pi pi-arrow-right text-[10px]"></i>
+                  Create 2 Tasks
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Multiple chips selected. Action button updates count.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <h4 class="font-medium text-green-800 text-sm mb-1">Pros</h4>
+          <ul class="text-xs text-green-700 space-y-0.5">
+            <li>+ Always visible - highly discoverable</li>
+            <li>+ Quick overview of promotable items</li>
+            <li>+ Easy tap-to-select on mobile</li>
+            <li>+ Compact representation</li>
+          </ul>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+          <h4 class="font-medium text-red-800 text-sm mb-1">Cons</h4>
+          <ul class="text-xs text-red-700 space-y-0.5">
+            <li>- Takes up space even when not needed</li>
+            <li>- Chips may truncate long text</li>
+            <li>- Doesn't scale well with many checkboxes</li>
+            <li>- Disconnected from checkbox location in note</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- COMPARISON TABLE -->
+    <!-- ============================================ -->
+    <div class="mockup-section">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Comparison: Quick Reference</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm bg-white rounded-lg border border-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Option</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Selection Method</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Multi-Select</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Discoverability</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Mobile</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Complexity</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr>
+              <td class="px-4 py-3 font-medium">1. Selection Mode</td>
+              <td class="px-4 py-3 text-gray-600">Toggle mode + checkboxes</td>
+              <td class="px-4 py-3 text-green-600">Excellent</td>
+              <td class="px-4 py-3 text-green-600">Good</td>
+              <td class="px-4 py-3 text-green-600">Excellent</td>
+              <td class="px-4 py-3 text-amber-600">Medium</td>
+            </tr>
+            <tr class="bg-emerald-50">
+              <td class="px-4 py-3 font-medium text-emerald-700">2. Inline Action Icons (Recommended)</td>
+              <td class="px-4 py-3 text-gray-600">Hover + click</td>
+              <td class="px-4 py-3 text-amber-600">Shift+Click</td>
+              <td class="px-4 py-3 text-green-600">Good (hover)</td>
+              <td class="px-4 py-3 text-amber-600">Needs touch fallback</td>
+              <td class="px-4 py-3 text-green-600">Low</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">3. Context Menu</td>
+              <td class="px-4 py-3 text-gray-600">Right-click / Long-press</td>
+              <td class="px-4 py-3 text-red-600">Poor</td>
+              <td class="px-4 py-3 text-amber-600">Moderate</td>
+              <td class="px-4 py-3 text-green-600">Good</td>
+              <td class="px-4 py-3 text-green-600">Low</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">4. List Panel</td>
+              <td class="px-4 py-3 text-gray-600">Separate panel</td>
+              <td class="px-4 py-3 text-green-600">Excellent</td>
+              <td class="px-4 py-3 text-green-600">Excellent</td>
+              <td class="px-4 py-3 text-green-600">Good</td>
+              <td class="px-4 py-3 text-amber-600">Medium</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">5. Drag-to-Promote</td>
+              <td class="px-4 py-3 text-gray-600">Drag handle</td>
+              <td class="px-4 py-3 text-amber-600">Select + Drag</td>
+              <td class="px-4 py-3 text-amber-600">Moderate</td>
+              <td class="px-4 py-3 text-red-600">Poor</td>
+              <td class="px-4 py-3 text-red-600">High</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-medium">6. Bottom Chips</td>
+              <td class="px-4 py-3 text-gray-600">Click chips</td>
+              <td class="px-4 py-3 text-green-600">Good</td>
+              <td class="px-4 py-3 text-green-600">Excellent</td>
+              <td class="px-4 py-3 text-green-600">Excellent</td>
+              <td class="px-4 py-3 text-amber-600">Medium</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- RECOMMENDATION -->
+    <!-- ============================================ -->
+    <div class="mockup-section bg-emerald-50 rounded-xl p-6 border-2 border-emerald-200">
+      <h2 class="text-xl font-semibold text-emerald-800 mb-4">Recommendation: Option 2 - Inline Action Icons</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Why This Option?</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>+ Fastest single-item promotion (one click)</li>
+            <li>+ No mode switching - stays in editing flow</li>
+            <li>+ Clean UI - actions hidden until needed</li>
+            <li>+ Familiar hover pattern from many apps</li>
+            <li>+ Low implementation complexity</li>
+            <li>+ Status badges show linked state inline</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium text-emerald-700 mb-2">Implementation Plan</h3>
+          <ul class="text-sm text-emerald-800 space-y-1">
+            <li>+ Hover reveals "Task" button on unlinked checkboxes</li>
+            <li>+ Single click promotes immediately with toast feedback</li>
+            <li>+ Shift+Click adds to selection for bulk promote</li>
+            <li>+ Already-linked items show status badge (Todo/In Progress/Done)</li>
+            <li>+ Status badge is clickable to navigate to task on board</li>
+            <li>+ Mobile: Show action button always (no hover on touch)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-white rounded-lg border border-emerald-200">
+        <h3 class="font-medium text-emerald-700 mb-2">Mobile Adaptation</h3>
+        <p class="text-sm text-emerald-800">
+          Since hover doesn't work on touch devices, we'll show the "Task" button always visible on mobile
+          (using a media query or touch detection). Alternatively, combine with <strong>Option 3 (Context Menu)</strong>
+          using long-press on mobile to reveal the promote action in a bottom sheet.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Time Picker UX Options</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .surface { background: #1e2130; border: 1px solid #2a2d3e; color: #e2e8f0; }
+        .surface-subtle { background: #252838; }
+        .chip { background: #2a2d3e; color: #94a3b8; border-radius: 9999px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+        .chip:hover { background: #353849; }
+        .chip-active { background: #3b82f6; color: white; }
+        .recommended { border: 2px solid #10b981; }
+        .input-dark { background: #252838; border: 1px solid #3a3d4e; color: #e2e8f0; border-radius: 6px; }
+        .input-dark:focus { outline: none; border-color: #3b82f6; }
+        .time-slot { background: #252838; border: 1px solid #3a3d4e; color: #94a3b8; padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+        .time-slot:hover { background: #353849; color: #e2e8f0; }
+        .time-slot-active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .quick-time { background: #252838; color: #94a3b8; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; border: 1px solid #3a3d4e; }
+        .quick-time:hover { background: #353849; color: #e2e8f0; }
+        .scroll-picker { background: #252838; border: 1px solid #3a3d4e; border-radius: 8px; overflow: hidden; }
+        .scroll-item { padding: 6px 16px; color: #64748b; font-size: 14px; cursor: pointer; text-align: center; }
+        .scroll-item:hover { background: #353849; }
+        .scroll-item-active { background: #3b82f6; color: white; font-weight: 600; }
+        .dial-ring { width: 200px; height: 200px; border-radius: 50%; border: 2px solid #3a3d4e; background: #252838; position: relative; }
+        .dial-number { position: absolute; color: #94a3b8; font-size: 13px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; }
+        .dial-number:hover { background: #353849; }
+        .dial-number-active { background: #3b82f6; color: white; }
+        .slider-track { background: #3a3d4e; height: 6px; border-radius: 3px; position: relative; }
+        .slider-thumb { width: 20px; height: 20px; background: #3b82f6; border-radius: 50%; position: absolute; top: -7px; cursor: pointer; }
+        .toggle-seg { padding: 4px 12px; font-size: 12px; color: #94a3b8; cursor: pointer; border-radius: 4px; }
+        .toggle-seg-active { background: #3b82f6; color: white; }
+        .inline-time { background: #252838; border: 1px solid #3a3d4e; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 14px; min-width: 0; width: 52px; text-align: center; }
+        .context-label { color: #64748b; font-size: 11px; }
+    </style>
+</head>
+<body class="bg-gray-900 p-8 text-gray-200">
+    <h1 class="text-2xl font-bold mb-2">Meeting Time Picker UX Options</h1>
+    <p class="text-gray-400 mb-2">15 design options to simplify the meeting time picker. All options default to the nearest 30-minute interval.</p>
+    <p class="text-gray-400 mb-2"><strong>Options 11-15</strong> are hybrid designs that support both <span class="text-blue-400">typing</span> and <span class="text-green-400">clicking/picking</span>.</p>
+    <p class="text-gray-500 text-sm mb-8">
+        <strong>Default time logic:</strong> Round to nearest 30 min &mdash; e.g. 6:15 PM &rarr; 6:30 PM, 6:14 PM &rarr; 6:00 PM, 6:45 PM &rarr; 7:00 PM
+    </p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- ============================================================ -->
+        <!-- Option 1: Single Unified Dropdown -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 1: Single Unified Dropdown</h2>
+            <p class="text-sm text-gray-400 mb-2">Pick-only</p>
+            <p class="text-sm text-gray-400 mb-4">Replace three separate dropdowns with a single dropdown showing pre-formatted time slots in 30-minute intervals. One click to set the time.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                    <span class="chip">Feb 1</span>
+                    <span class="chip"><i class="pi pi-calendar text-xs"></i> Change</span>
+                </div>
+                <!-- Single dropdown showing formatted times -->
+                <div class="relative inline-block">
+                    <button class="input-dark px-3 py-2 flex items-center gap-2 text-sm" style="width: 150px;">
+                        <i class="pi pi-clock text-xs text-gray-500"></i>
+                        <span>6:30 PM</span>
+                        <i class="pi pi-chevron-down text-xs text-gray-500 ml-auto"></i>
+                    </button>
+                    <!-- Simulated dropdown panel -->
+                    <div class="absolute top-full mt-1 left-0 surface-subtle rounded-lg border border-gray-700 p-2 w-44 z-10" style="max-height: 200px; overflow-y: auto;">
+                        <div class="scroll-item rounded">5:00 PM</div>
+                        <div class="scroll-item rounded">5:30 PM</div>
+                        <div class="scroll-item rounded">6:00 PM</div>
+                        <div class="scroll-item-active scroll-item rounded">6:30 PM</div>
+                        <div class="scroll-item rounded">7:00 PM</div>
+                        <div class="scroll-item rounded">7:30 PM</div>
+                        <div class="scroll-item rounded">8:00 PM</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Single interaction to set time (1 click vs 3)</li>
+                    <li>Pre-formatted times eliminate AM/PM confusion</li>
+                    <li>30-min intervals are natural for meetings</li>
+                    <li>Scrollable list auto-scrolls to nearest time</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Can't easily pick non-30-min times (e.g. 6:15)</li>
+                    <li>Long list to scroll through for all 48 slots</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 2: Time Chip Grid -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 2: Time Chip Grid</h2>
+            <p class="text-sm text-gray-400 mb-4">Display common time slots as clickable chips in a compact grid, similar to how date chips already work. Quick visual scanning.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <div class="text-xs text-gray-500 mb-2">Time</div>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <span class="time-slot text-xs">8:00 AM</span>
+                    <span class="time-slot text-xs">8:30 AM</span>
+                    <span class="time-slot text-xs">9:00 AM</span>
+                    <span class="time-slot text-xs">9:30 AM</span>
+                    <span class="time-slot text-xs">10:00 AM</span>
+                    <span class="time-slot text-xs">10:30 AM</span>
+                    <span class="time-slot text-xs">11:00 AM</span>
+                    <span class="time-slot text-xs">11:30 AM</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <span class="time-slot text-xs">12:00 PM</span>
+                    <span class="time-slot text-xs">12:30 PM</span>
+                    <span class="time-slot text-xs">1:00 PM</span>
+                    <span class="time-slot text-xs">1:30 PM</span>
+                    <span class="time-slot text-xs">2:00 PM</span>
+                    <span class="time-slot text-xs">2:30 PM</span>
+                    <span class="time-slot text-xs">3:00 PM</span>
+                    <span class="time-slot text-xs">3:30 PM</span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <span class="time-slot text-xs">4:00 PM</span>
+                    <span class="time-slot text-xs">4:30 PM</span>
+                    <span class="time-slot text-xs">5:00 PM</span>
+                    <span class="time-slot text-xs">5:30 PM</span>
+                    <span class="time-slot text-xs">6:00 PM</span>
+                    <span class="time-slot-active time-slot text-xs">6:30 PM</span>
+                    <span class="time-slot text-xs">7:00 PM</span>
+                    <span class="time-slot text-xs">7:30 PM</span>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>All options visible at once - no scrolling</li>
+                    <li>Consistent with existing date chip pattern</li>
+                    <li>Very fast selection - one click</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Takes up significant vertical space</li>
+                    <li>May feel cluttered with 24+ chips visible</li>
+                    <li>No custom time entry</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 3: Inline Text Input with Smart Parsing -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 3: Smart Text Input</h2>
+            <p class="text-sm text-gray-400 mb-4">A single text input that parses natural time entries. Type "6:30p", "630pm", "18:30", or "6:30 PM" and it auto-formats.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <i class="pi pi-clock text-xs text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" value="6:30 PM" class="input-dark pl-8 pr-3 py-2 text-sm" style="width: 130px;" placeholder="e.g. 2:30 PM">
+                    </div>
+                    <span class="text-xs text-gray-500">Type: "6:30p", "630pm", "18:30"</span>
+                </div>
+                <!-- Suggestion dropdown -->
+                <div class="mt-2 surface-subtle rounded-lg border border-gray-700 p-1 w-44">
+                    <div class="text-xs text-gray-500 px-2 py-1">Suggestions</div>
+                    <div class="scroll-item rounded text-sm">6:00 PM</div>
+                    <div class="scroll-item-active scroll-item rounded text-sm">6:30 PM</div>
+                    <div class="scroll-item rounded text-sm">7:00 PM</div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Very compact - single input field</li>
+                    <li>Supports multiple formats (12h, 24h, shorthand)</li>
+                    <li>Keyboard-friendly for power users</li>
+                    <li>Autocomplete suggestions reduce typing</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Less discoverable - users must know to type</li>
+                    <li>Requires robust parsing logic</li>
+                    <li>Not as intuitive for mouse-first users</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 4: Two-Step: Hour Chips + Minute Toggle -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 4: Hour Chips + Minute Toggle</h2>
+            <p class="text-sm text-gray-400 mb-4">Two-step selection: pick the hour from chips, then toggle :00 or :30. AM/PM auto-detected from context or toggled.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <!-- AM/PM Toggle -->
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex bg-gray-900 rounded-md p-0.5">
+                        <span class="toggle-seg">AM</span>
+                        <span class="toggle-seg toggle-seg-active">PM</span>
+                    </div>
+                </div>
+                <!-- Hour selection -->
+                <div class="text-xs text-gray-500 mb-1">Hour</div>
+                <div class="flex flex-wrap gap-1.5 mb-3">
+                    <span class="time-slot text-xs py-1 px-3">12</span>
+                    <span class="time-slot text-xs py-1 px-3">1</span>
+                    <span class="time-slot text-xs py-1 px-3">2</span>
+                    <span class="time-slot text-xs py-1 px-3">3</span>
+                    <span class="time-slot text-xs py-1 px-3">4</span>
+                    <span class="time-slot text-xs py-1 px-3">5</span>
+                    <span class="time-slot-active time-slot text-xs py-1 px-3">6</span>
+                    <span class="time-slot text-xs py-1 px-3">7</span>
+                    <span class="time-slot text-xs py-1 px-3">8</span>
+                    <span class="time-slot text-xs py-1 px-3">9</span>
+                    <span class="time-slot text-xs py-1 px-3">10</span>
+                    <span class="time-slot text-xs py-1 px-3">11</span>
+                </div>
+                <!-- Minute toggle -->
+                <div class="text-xs text-gray-500 mb-1">Minutes</div>
+                <div class="flex gap-2">
+                    <span class="time-slot text-xs py-1 px-4">:00</span>
+                    <span class="time-slot-active time-slot text-xs py-1 px-4">:30</span>
+                </div>
+
+                <div class="mt-3 text-sm text-blue-400 font-medium">
+                    <i class="pi pi-clock text-xs"></i> 6:30 PM
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Clear mental model: pick hour, then half-hour</li>
+                    <li>All hours visible without scrolling</li>
+                    <li>Only 2 clicks to set time (down from 3 dropdowns)</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Takes more vertical space than a single dropdown</li>
+                    <li>Only :00 and :30 options (no :15 or :45)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 5: Quick Preset Chips + Custom Dropdown -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 5: Quick Presets + Custom</h2>
+            <p class="text-sm text-gray-400 mb-4">Show 4-5 contextually relevant time suggestions (based on current time) as chips, with a "Custom" option that opens the full picker.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <div class="text-xs text-gray-500 mb-2">Time <span class="text-gray-600">(suggested based on current time)</span></div>
+                <div class="flex flex-wrap gap-2">
+                    <span class="chip">6:00 PM</span>
+                    <span class="chip chip-active">6:30 PM</span>
+                    <span class="chip">7:00 PM</span>
+                    <span class="chip">7:30 PM</span>
+                    <span class="chip">8:00 PM</span>
+                    <span class="chip" style="border: 1px dashed #4a4d5e;">
+                        <i class="pi pi-clock text-xs"></i> Custom...
+                    </span>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Contextually smart - shows relevant times first</li>
+                    <li>Fastest possible selection for common cases</li>
+                    <li>Custom option allows any time when needed</li>
+                    <li>Very compact layout</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Limited visible options - may need custom often</li>
+                    <li>Custom opens another picker (two-step for edge cases)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 6: Scrollable Wheel Picker (Mobile-Inspired) -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 6: Scroll Wheel Picker</h2>
+            <p class="text-sm text-gray-400 mb-4">iOS-style scroll wheels for hour and minute side by side. Tactile, familiar, and works well on both desktop (scroll) and mobile (swipe).</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- Hour wheel -->
+                    <div class="scroll-picker w-16" style="height: 140px;">
+                        <div class="scroll-item text-xs opacity-30">4</div>
+                        <div class="scroll-item text-xs opacity-60">5</div>
+                        <div class="scroll-item-active scroll-item font-bold text-base">6</div>
+                        <div class="scroll-item text-xs opacity-60">7</div>
+                        <div class="scroll-item text-xs opacity-30">8</div>
+                    </div>
+                    <span class="text-xl font-bold text-gray-500">:</span>
+                    <!-- Minute wheel -->
+                    <div class="scroll-picker w-16" style="height: 140px;">
+                        <div class="scroll-item text-xs opacity-30"></div>
+                        <div class="scroll-item text-xs opacity-60">00</div>
+                        <div class="scroll-item-active scroll-item font-bold text-base">30</div>
+                        <div class="scroll-item text-xs opacity-60">00</div>
+                        <div class="scroll-item text-xs opacity-30"></div>
+                    </div>
+                    <!-- Period wheel -->
+                    <div class="scroll-picker w-16" style="height: 140px;">
+                        <div class="scroll-item text-xs opacity-30"></div>
+                        <div class="scroll-item text-xs opacity-60">AM</div>
+                        <div class="scroll-item-active scroll-item font-bold text-base">PM</div>
+                        <div class="scroll-item text-xs opacity-60"></div>
+                        <div class="scroll-item text-xs opacity-30"></div>
+                    </div>
+                </div>
+                <!-- Selection indicator line -->
+                <div class="flex items-center gap-2 mt-1">
+                    <div class="flex-1 h-px bg-blue-500 opacity-30"></div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Familiar mobile-native pattern (iOS/Android)</li>
+                    <li>Tactile and satisfying interaction</li>
+                    <li>Can limit minutes to :00/:30 only</li>
+                    <li>Works well with scroll and touch</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Still 3 columns (hour, min, AM/PM)</li>
+                    <li>Custom implementation required (no PrimeNG wheel)</li>
+                    <li>Takes vertical space</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 7: Compact Inline Stepper -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 7: Compact Inline Stepper</h2>
+            <p class="text-sm text-gray-400 mb-4">A single time display with up/down arrows that step through time in 30-minute increments. Click the time to type directly.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button class="text-gray-500 hover:text-gray-300 p-1">
+                        <i class="pi pi-chevron-down text-sm"></i>
+                    </button>
+                    <div class="input-dark px-4 py-2 flex items-center gap-2 cursor-text">
+                        <i class="pi pi-clock text-xs text-gray-500"></i>
+                        <span class="text-base font-medium">6:30 PM</span>
+                    </div>
+                    <button class="text-gray-500 hover:text-gray-300 p-1">
+                        <i class="pi pi-chevron-up text-sm"></i>
+                    </button>
+                </div>
+                <div class="text-xs text-gray-600 mt-1">Click to type, arrows step by 30 min</div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Extremely compact - single line</li>
+                    <li>Arrow keys/buttons for quick 30-min jumps</li>
+                    <li>Click to type for exact times</li>
+                    <li>Minimal visual footprint</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Slow for large time jumps (e.g. 9 AM to 6 PM)</li>
+                    <li>Less intuitive than seeing all options</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 8: Segmented Time Bar -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 8: Visual Time Bar</h2>
+            <p class="text-sm text-gray-400 mb-4">A horizontal bar representing the day, with tick marks at each half-hour. Drag or click to select a time. Shows AM/PM zones visually.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <div class="text-xs text-gray-500 mb-2">Drag or click to set time</div>
+                <!-- Time bar -->
+                <div class="relative">
+                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>6 AM</span>
+                        <span>9 AM</span>
+                        <span>12 PM</span>
+                        <span>3 PM</span>
+                        <span>6 PM</span>
+                        <span>9 PM</span>
+                    </div>
+                    <div class="slider-track">
+                        <div class="slider-thumb" style="left: 75%;"></div>
+                    </div>
+                    <!-- Labels -->
+                    <div class="flex justify-between text-xs mt-1">
+                        <span class="text-gray-700">Morning</span>
+                        <span class="text-gray-700">Afternoon</span>
+                        <span class="text-gray-700">Evening</span>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm text-blue-400 font-medium text-center">
+                    <i class="pi pi-clock text-xs"></i> 6:30 PM
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Visual representation of time of day</li>
+                    <li>Quick to drag to approximate time</li>
+                    <li>Shows morning/afternoon/evening context</li>
+                    <li>Very compact horizontally</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Imprecise - hard to hit exact 30-min marks</li>
+                    <li>Unfamiliar pattern for time selection</li>
+                    <li>Accessibility challenges with drag interaction</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 9: Period Tabs + Time Grid -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 9: Period Tabs + Time Grid</h2>
+            <p class="text-sm text-gray-400 mb-4">Tabbed sections for Morning, Afternoon, Evening. Each tab shows a compact grid of times for that period. Reduces visual noise by only showing relevant times.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <!-- Period tabs -->
+                <div class="flex border-b border-gray-700 mb-3">
+                    <button class="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-300">
+                        <i class="pi pi-sun text-xs"></i> Morning
+                    </button>
+                    <button class="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-300">
+                        <i class="pi pi-sun text-xs"></i> Afternoon
+                    </button>
+                    <button class="px-3 py-1.5 text-xs border-b-2 border-blue-500 text-blue-400">
+                        <i class="pi pi-moon text-xs"></i> Evening
+                    </button>
+                </div>
+                <!-- Time grid for Evening (5 PM - 10 PM) -->
+                <div class="grid grid-cols-4 gap-2">
+                    <span class="time-slot text-xs text-center">5:00</span>
+                    <span class="time-slot text-xs text-center">5:30</span>
+                    <span class="time-slot text-xs text-center">6:00</span>
+                    <span class="time-slot-active time-slot text-xs text-center">6:30</span>
+                    <span class="time-slot text-xs text-center">7:00</span>
+                    <span class="time-slot text-xs text-center">7:30</span>
+                    <span class="time-slot text-xs text-center">8:00</span>
+                    <span class="time-slot text-xs text-center">8:30</span>
+                    <span class="time-slot text-xs text-center">9:00</span>
+                    <span class="time-slot text-xs text-center">9:30</span>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Only shows ~10 relevant times per tab</li>
+                    <li>Auto-selects the right tab based on default time</li>
+                    <li>Clear mental model: "When is this meeting?"</li>
+                    <li>AM/PM is implicit from the tab selection</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>2 clicks if time is in a different period tab</li>
+                    <li>Boundary times (e.g. 12 PM) can be ambiguous</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 10: Hybrid: Display + Popover Picker -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 10: Clickable Time Display + Popover</h2>
+            <p class="text-sm text-gray-400 mb-4">Show the current time as a large, clickable display. Clicking opens a compact popover with a 30-min interval list. Keeps the details section clean.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Clickable time display -->
+                    <div class="relative">
+                        <button class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 transition-colors">
+                            <i class="pi pi-clock text-blue-400 text-sm"></i>
+                            <span class="text-lg font-semibold text-blue-400">6:30 PM</span>
+                            <i class="pi pi-pencil text-blue-400/50 text-xs"></i>
+                        </button>
+                        <!-- Popover -->
+                        <div class="absolute top-full mt-2 left-0 surface-subtle rounded-lg border border-gray-700 p-3 w-52 z-10 shadow-xl">
+                            <div class="text-xs text-gray-500 mb-2">Select time</div>
+                            <input type="text" placeholder="Search or type time..." class="input-dark w-full px-2 py-1.5 text-sm mb-2">
+                            <div class="space-y-0.5" style="max-height: 180px; overflow-y: auto;">
+                                <div class="scroll-item rounded text-sm">5:00 PM</div>
+                                <div class="scroll-item rounded text-sm">5:30 PM</div>
+                                <div class="scroll-item rounded text-sm">6:00 PM</div>
+                                <div class="scroll-item-active scroll-item rounded text-sm">6:30 PM</div>
+                                <div class="scroll-item rounded text-sm">7:00 PM</div>
+                                <div class="scroll-item rounded text-sm">7:30 PM</div>
+                                <div class="scroll-item rounded text-sm">8:00 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Clean default state - just shows current time</li>
+                    <li>Popover has search + scroll for flexibility</li>
+                    <li>Prominent time display makes it easy to read</li>
+                    <li>Combines best of dropdown (Option 1) with visual appeal</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Requires a click to open popover</li>
+                    <li>Popover may obscure other details content</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 11: Editable Combobox (Type or Pick) -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6 recommended">
+            <h2 class="text-lg font-semibold mb-1">Option 11: Editable Combobox (Type or Pick)</h2>
+            <p class="text-sm text-green-400 font-medium mb-2">Recommended</p>
+            <p class="text-sm text-gray-400 mb-4">A single input that works as both a text field and a dropdown. Type to filter/search times, or click the chevron to browse the full 30-min interval list. Like a PrimeNG AutoComplete.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                    <span class="chip">Feb 1</span>
+                    <span class="chip"><i class="pi pi-calendar text-xs"></i> Change</span>
+                </div>
+                <!-- Editable combobox -->
+                <div class="relative inline-block">
+                    <div class="input-dark flex items-center" style="width: 170px;">
+                        <i class="pi pi-clock text-xs text-gray-500 ml-3"></i>
+                        <input type="text" value="6:30 PM" class="bg-transparent border-none outline-none text-sm text-gray-200 px-2 py-2 w-full" placeholder="Type or pick...">
+                        <button class="px-2 text-gray-500 hover:text-gray-300 border-l border-gray-700">
+                            <i class="pi pi-chevron-down text-xs"></i>
+                        </button>
+                    </div>
+                    <!-- Dropdown panel (shown when typing "6") -->
+                    <div class="absolute top-full mt-1 left-0 surface-subtle rounded-lg border border-gray-700 w-48 z-10 shadow-xl">
+                        <div class="px-3 py-1.5 text-xs text-gray-500 border-b border-gray-700">Matching times for "6"</div>
+                        <div class="p-1" style="max-height: 180px; overflow-y: auto;">
+                            <div class="scroll-item rounded text-sm">6:00 AM</div>
+                            <div class="scroll-item rounded text-sm">6:30 AM</div>
+                            <div class="scroll-item rounded text-sm">6:00 PM</div>
+                            <div class="scroll-item-active scroll-item rounded text-sm">6:30 PM</div>
+                        </div>
+                        <div class="px-3 py-1.5 text-xs text-gray-600 border-t border-gray-700">
+                            <i class="pi pi-info-circle text-xs"></i> Type "6:30p", "18:30", or "630pm"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Best of both worlds: type OR click from dropdown</li>
+                    <li>Typing filters the list in real-time</li>
+                    <li>Supports natural formats: "6:30p", "630pm", "18:30"</li>
+                    <li>Single compact input (replaces 3 dropdowns)</li>
+                    <li>PrimeNG p-autoComplete or p-select with editable=true</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Needs smart parsing logic for free-text entry</li>
+                    <li>Slightly more complex than a plain dropdown</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 12: Input with Quick-Pick Chips Below -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 12: Type-First Input + Quick-Pick Chips</h2>
+            <p class="text-sm text-gray-400 mb-4">A text input for typing any time, with contextual 30-min chip shortcuts displayed below it. Click a chip to instantly fill the input, or type freely.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <!-- Text input -->
+                <div class="relative mb-2">
+                    <i class="pi pi-clock text-xs text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" value="6:30 PM" class="input-dark pl-8 pr-3 py-2 text-sm w-full" style="max-width: 200px;" placeholder="Type time, e.g. 2:30 PM">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-green-500"><i class="pi pi-check text-xs"></i></span>
+                </div>
+                <!-- Quick-pick chips -->
+                <div class="text-xs text-gray-600 mb-1">Quick pick:</div>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="quick-time">5:00 PM</span>
+                    <span class="quick-time">5:30 PM</span>
+                    <span class="quick-time">6:00 PM</span>
+                    <span class="quick-time" style="background: #3b82f6; color: white; border-color: #3b82f6;">6:30 PM</span>
+                    <span class="quick-time">7:00 PM</span>
+                    <span class="quick-time">7:30 PM</span>
+                    <span class="quick-time">8:00 PM</span>
+                    <span class="quick-time">8:30 PM</span>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Input is always visible - no dropdown to open</li>
+                    <li>Type any arbitrary time (e.g. 6:15 PM, 6:47 PM)</li>
+                    <li>Chips provide one-click shortcuts for common times</li>
+                    <li>Chips are contextual - centered around current time</li>
+                    <li>Green check confirms valid time was parsed</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Takes more space than a single dropdown</li>
+                    <li>Two input methods might feel redundant</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 13: Dual-Mode Toggle (Keyboard / Picker) -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 13: Dual-Mode Toggle (Type / Pick)</h2>
+            <p class="text-sm text-gray-400 mb-4">A compact control that shows a text input by default. A toggle button switches between a free-text input and a visual grid picker. Users choose their preferred mode.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+
+                <!-- Mode toggle -->
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="flex bg-gray-900 rounded-md p-0.5 text-xs">
+                        <span class="toggle-seg toggle-seg-active"><i class="pi pi-pencil text-xs mr-1"></i>Type</span>
+                        <span class="toggle-seg"><i class="pi pi-th-large text-xs mr-1"></i>Pick</span>
+                    </div>
+                </div>
+
+                <!-- TYPE mode (active) -->
+                <div class="mb-3">
+                    <div class="relative">
+                        <i class="pi pi-clock text-xs text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" value="6:30 PM" class="input-dark pl-8 pr-3 py-2 text-sm" style="width: 160px;" placeholder="e.g. 6:30 PM">
+                    </div>
+                    <div class="text-xs text-gray-600 mt-1">Accepts: "6:30 PM", "18:30", "630p"</div>
+                </div>
+
+                <!-- PICK mode (shown as preview) -->
+                <div class="border-t border-gray-700 pt-3 mt-2 opacity-50">
+                    <div class="text-xs text-gray-500 mb-1">Pick mode preview:</div>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <span class="time-slot text-xs text-center py-1">5:00</span>
+                        <span class="time-slot text-xs text-center py-1">5:30</span>
+                        <span class="time-slot text-xs text-center py-1">6:00</span>
+                        <span class="time-slot-active time-slot text-xs text-center py-1">6:30</span>
+                        <span class="time-slot text-xs text-center py-1">7:00</span>
+                        <span class="time-slot text-xs text-center py-1">7:30</span>
+                        <span class="time-slot text-xs text-center py-1">8:00</span>
+                        <span class="time-slot text-xs text-center py-1">8:30</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Users choose their preferred interaction style</li>
+                    <li>Type mode is compact and keyboard-friendly</li>
+                    <li>Pick mode shows visual grid for mouse users</li>
+                    <li>Both modes sync to the same time value</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Toggle adds cognitive overhead ("which mode am I in?")</li>
+                    <li>More complex implementation for two rendering modes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 14: Inline Editable + Stepper + Dropdown -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 14: Editable Stepper with Dropdown</h2>
+            <p class="text-sm text-gray-400 mb-4">Combines the stepper (Option 7) with direct editing. Click the time to type, use arrows to step by 30 min, or click the dropdown to browse all times. Three input methods, one compact control.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <!-- Triple-mode control -->
+                <div class="flex items-center gap-0">
+                    <!-- Down arrow -->
+                    <button class="input-dark px-2 py-2 rounded-r-none border-r-0 text-gray-500 hover:text-gray-300 hover:bg-gray-700">
+                        <i class="pi pi-chevron-down text-xs"></i>
+                    </button>
+                    <!-- Editable time display -->
+                    <div class="input-dark rounded-none flex items-center" style="width: 110px;">
+                        <i class="pi pi-clock text-xs text-gray-500 ml-2"></i>
+                        <input type="text" value="6:30 PM" class="bg-transparent border-none outline-none text-sm text-gray-200 px-2 py-2 w-full text-center">
+                    </div>
+                    <!-- Up arrow -->
+                    <button class="input-dark px-2 py-2 rounded-none border-l-0 border-r-0 text-gray-500 hover:text-gray-300 hover:bg-gray-700">
+                        <i class="pi pi-chevron-up text-xs"></i>
+                    </button>
+                    <!-- Dropdown trigger -->
+                    <button class="input-dark px-2 py-2 rounded-l-none border-l-0 text-gray-500 hover:text-gray-300 hover:bg-gray-700">
+                        <i class="pi pi-list text-xs"></i>
+                    </button>
+                </div>
+                <div class="text-xs text-gray-600 mt-1.5 flex gap-4">
+                    <span><i class="pi pi-pencil text-xs"></i> Click to type</span>
+                    <span><i class="pi pi-sort-alt text-xs"></i> Arrows: &plusmn;30 min</span>
+                    <span><i class="pi pi-list text-xs"></i> Browse all</span>
+                </div>
+                <!-- Dropdown preview -->
+                <div class="mt-2 surface-subtle rounded-lg border border-gray-700 w-44 shadow-xl">
+                    <div class="p-1" style="max-height: 140px; overflow-y: auto;">
+                        <div class="scroll-item rounded text-sm">6:00 PM</div>
+                        <div class="scroll-item-active scroll-item rounded text-sm">6:30 PM</div>
+                        <div class="scroll-item rounded text-sm">7:00 PM</div>
+                        <div class="scroll-item rounded text-sm">7:30 PM</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Three input methods in one compact control</li>
+                    <li>Steppers great for small adjustments</li>
+                    <li>Direct typing for exact times</li>
+                    <li>Dropdown for browsing when unsure</li>
+                    <li>Keyboard accessible: type, arrow keys, Enter to open</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Visually busy with 4 buttons + input</li>
+                    <li>May overwhelm users with too many interaction modes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- Option 15: Smart Input + Floating Suggestion Panel -->
+        <!-- ============================================================ -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-1">Option 15: Smart Input + Floating Suggestion Panel</h2>
+            <p class="text-sm text-gray-400 mb-4">A prominent text input that on focus shows a floating panel with: recent/common times at top, followed by the full scrollable 30-min list. Type to filter, or click any suggestion.</p>
+
+            <div class="surface rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 mb-2">Date & Time</div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="chip chip-active">Today</span>
+                    <span class="chip">Tomorrow</span>
+                    <span class="chip">Next Week</span>
+                </div>
+                <!-- Input with focus state -->
+                <div class="relative" style="width: 220px;">
+                    <i class="pi pi-clock text-xs text-blue-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" value="6:30 PM" class="input-dark pl-8 pr-3 py-2.5 text-sm w-full" style="border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15);" placeholder="Type or select time...">
+
+                    <!-- Floating suggestion panel -->
+                    <div class="absolute top-full mt-1 left-0 right-0 surface-subtle rounded-lg border border-gray-700 shadow-xl z-10">
+                        <!-- Smart suggestions section -->
+                        <div class="p-2 border-b border-gray-700">
+                            <div class="text-xs text-gray-500 mb-1.5">
+                                <i class="pi pi-sparkles text-xs text-amber-400"></i> Suggested
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="quick-time text-xs" style="background: #3b82f6; color: white; border-color: #3b82f6;">6:30 PM</span>
+                                <span class="quick-time text-xs">7:00 PM</span>
+                                <span class="quick-time text-xs">9:00 AM</span>
+                                <span class="quick-time text-xs">2:00 PM</span>
+                            </div>
+                        </div>
+                        <!-- Full list -->
+                        <div class="p-1" style="max-height: 150px; overflow-y: auto;">
+                            <div class="scroll-item rounded text-sm">5:00 PM</div>
+                            <div class="scroll-item rounded text-sm">5:30 PM</div>
+                            <div class="scroll-item rounded text-sm">6:00 PM</div>
+                            <div class="scroll-item-active scroll-item rounded text-sm">6:30 PM</div>
+                            <div class="scroll-item rounded text-sm">7:00 PM</div>
+                            <div class="scroll-item rounded text-sm">7:30 PM</div>
+                            <div class="scroll-item rounded text-sm">8:00 PM</div>
+                        </div>
+                        <!-- Hint footer -->
+                        <div class="px-3 py-1.5 text-xs text-gray-600 border-t border-gray-700">
+                            Type any time &mdash; "2p", "14:30", "230pm"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-400">
+                <p class="font-medium text-green-400 mb-1">Pros:</p>
+                <ul class="list-disc list-inside mb-2 text-xs">
+                    <li>Type any time freely OR browse suggestions</li>
+                    <li>Smart suggestions show relevant times (nearest, common meeting times)</li>
+                    <li>Full list below for browsing all 30-min slots</li>
+                    <li>Typing filters the list in real-time</li>
+                    <li>Compact when closed, rich when focused</li>
+                </ul>
+                <p class="font-medium text-red-400 mb-1">Cons:</p>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Panel may feel complex with two sections</li>
+                    <li>Floating panel can overlap other content</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Summary -->
+    <div class="mt-8 bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-lg font-semibold mb-3">Summary & Recommendation</h2>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 border-b border-gray-700">
+                    <th class="pb-2">Option</th>
+                    <th class="pb-2">Clicks</th>
+                    <th class="pb-2">Space</th>
+                    <th class="pb-2">Flexibility</th>
+                    <th class="pb-2">Best For</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-400">
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2 text-green-400 font-medium">1. Single Dropdown *</td>
+                    <td>1</td>
+                    <td>Compact</td>
+                    <td>30-min only</td>
+                    <td>Best balance of simplicity & space</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">2. Time Chip Grid</td>
+                    <td>1</td>
+                    <td>Large</td>
+                    <td>30-min only</td>
+                    <td>Visual scanning, desktop</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">3. Smart Text Input</td>
+                    <td>0 (type)</td>
+                    <td>Compact</td>
+                    <td>Any time</td>
+                    <td>Power users, keyboard-first</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">4. Hour + Minute Toggle</td>
+                    <td>2-3</td>
+                    <td>Medium</td>
+                    <td>30-min only</td>
+                    <td>Clear step-by-step selection</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">5. Quick Presets + Custom</td>
+                    <td>1</td>
+                    <td>Compact</td>
+                    <td>Any time</td>
+                    <td>Speed for common times</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">6. Scroll Wheel</td>
+                    <td>Scroll</td>
+                    <td>Medium</td>
+                    <td>Any time</td>
+                    <td>Mobile-first, touch interfaces</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">7. Inline Stepper</td>
+                    <td>N clicks</td>
+                    <td>Compact</td>
+                    <td>30-min steps</td>
+                    <td>Minimal UI, small adjustments</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">8. Visual Time Bar</td>
+                    <td>1 (drag)</td>
+                    <td>Compact</td>
+                    <td>Approximate</td>
+                    <td>Visual time-of-day context</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">9. Period Tabs + Grid</td>
+                    <td>1-2</td>
+                    <td>Medium</td>
+                    <td>30-min only</td>
+                    <td>Organized by time of day</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">10. Display + Popover</td>
+                    <td>2</td>
+                    <td>Compact</td>
+                    <td>Any time</td>
+                    <td>Clean UI with full flexibility</td>
+                </tr>
+                <tr class="border-b border-gray-700/50 bg-gray-700/20">
+                    <td class="py-2 text-blue-400 font-medium" colspan="5">Hybrid Options (Type + Pick)</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2 text-green-400 font-medium">11. Editable Combobox *</td>
+                    <td>0-1</td>
+                    <td>Compact</td>
+                    <td>Any time</td>
+                    <td>Best hybrid: type to filter OR click to browse</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">12. Input + Quick Chips</td>
+                    <td>0-1</td>
+                    <td>Medium</td>
+                    <td>Any time</td>
+                    <td>Always-visible input with shortcut chips</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">13. Dual-Mode Toggle</td>
+                    <td>0-2</td>
+                    <td>Medium</td>
+                    <td>Any time</td>
+                    <td>User picks preferred mode (type vs grid)</td>
+                </tr>
+                <tr class="border-b border-gray-700/50">
+                    <td class="py-2">14. Editable Stepper + Dropdown</td>
+                    <td>0-1</td>
+                    <td>Compact</td>
+                    <td>Any time</td>
+                    <td>Power users: type, step, or browse</td>
+                </tr>
+                <tr>
+                    <td class="py-2">15. Smart Input + Panel</td>
+                    <td>0-1</td>
+                    <td>Compact</td>
+                    <td>Any time</td>
+                    <td>Rich focused panel with suggestions + list</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="mt-4 p-3 bg-green-900/20 border border-green-800/40 rounded-lg">
+            <p class="text-green-400 font-medium text-sm mb-1">Recommendation: Option 11 (Editable Combobox)</p>
+            <p class="text-xs text-gray-400">
+                The editable combobox gives the best of both worlds: users can <strong>type any time</strong> ("6:30p", "18:30", "630pm")
+                and it filters the dropdown in real-time, or they can <strong>click the chevron to browse</strong> all 30-min interval slots.
+                It replaces 3 dropdowns with 1 compact input, uses PrimeNG's <code>p-autoComplete</code> or <code>p-select [editable]="true"</code>,
+                and handles the 95% case (pick a 30-min slot) just as fast as a plain dropdown while also supporting the 5% case (exact custom times)
+                without any extra UI. The default time auto-populates to the nearest 30 minutes.
+            </p>
+        </div>
+    </div>
+
+    <!-- Default Time Logic -->
+    <div class="mt-8 bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-lg font-semibold mb-3">Default Time Logic (All Options)</h2>
+        <p class="text-sm text-gray-400 mb-3">Round to nearest 30-minute boundary. This logic applies to all options above when a new meeting is created.</p>
+
+        <div class="bg-gray-900 rounded-lg p-4 font-mono text-sm text-gray-300">
+            <pre class="whitespace-pre-wrap">
+function getDefaultMeetingTime(): Date {
+  const now = new Date();
+  const minutes = now.getMinutes();
+
+  // Round to nearest 30 min
+  // 0-14 &rarr; :00, 15-44 &rarr; :30, 45-59 &rarr; next hour :00
+  if (minutes < 15) {
+    now.setMinutes(0, 0, 0);
+  } else if (minutes < 45) {
+    now.setMinutes(30, 0, 0);
+  } else {
+    now.setHours(now.getHours() + 1);
+    now.setMinutes(0, 0, 0);
+  }
+
+  return now;
+}
+
+// Examples:
+// 6:14 PM &rarr; 6:00 PM  (14 < 15, round down)
+// 6:15 PM &rarr; 6:30 PM  (15 >= 15, round to :30)
+// 6:44 PM &rarr; 6:30 PM  (44 < 45, stay at :30)
+// 6:45 PM &rarr; 7:00 PM  (45 >= 45, round up)</pre>
+        </div>
+    </div>
+
+</body>
+</html>

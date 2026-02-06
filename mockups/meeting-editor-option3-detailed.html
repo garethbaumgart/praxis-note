@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Editor - Option 3 Card-Based (Detailed)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            'surface-hover': 'var(--color-surface-hover)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)',
+            'accent-hover': 'var(--color-primary-bg-hover)',
+            'accent-foreground': 'var(--color-primary-text)',
+            'accent-solid': 'var(--color-primary-solid)',
+            danger: 'var(--color-danger-base)',
+            warning: 'var(--color-warning-base)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .light-theme {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-surface-hover: #f8f9fa;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.25);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-danger-base: #bf616a;
+      --color-warning-base: #d08770;
+    }
+
+    .dark-theme {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-surface-hover: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-bg-hover: rgba(94, 129, 172, 0.3);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-danger-base: #bf616a;
+      --color-warning-base: #d08770;
+    }
+
+    .pi { font-size: inherit !important; }
+
+    /* Form input styling */
+    .form-input {
+      width: 100%;
+      padding: 0.625rem 0.75rem;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 6px;
+      color: var(--color-text-primary);
+      font-size: 0.875rem;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-solid);
+      box-shadow: 0 0 0 2px var(--color-primary-bg);
+    }
+
+    .form-input::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    /* Dialog backdrop simulation */
+    .dialog-backdrop {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .section-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Option 3: Card-Based Sections - Detailed View</h1>
+    <p class="text-gray-600 mb-8">Light and dark theme comparison, plus Edit mode with full functionality</p>
+
+    <!-- ============================================ -->
+    <!-- CREATE MODE: Side by Side Light/Dark -->
+    <!-- ============================================ -->
+    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <span class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm">1</span>
+      New Meeting Dialog - Light vs Dark
+    </h2>
+
+    <div class="grid grid-cols-2 gap-6 mb-12">
+      <!-- Light Theme -->
+      <div>
+        <div class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
+          <i class="pi pi-sun"></i> Light Theme
+        </div>
+        <div class="light-theme dialog-backdrop">
+          <div class="bg-surface rounded-lg shadow-2xl overflow-hidden" style="width: 520px; max-width: 100%;">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-border bg-surface-subtle">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+                <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted hover:text-foreground transition-colors">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-4">
+              <!-- Details card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-file-edit text-accent-foreground"></i>
+                  <span class="text-sm font-medium text-foreground">Details</span>
+                </div>
+                <div class="space-y-3">
+                  <input type="text" class="form-input" placeholder="Meeting title (optional)">
+                  <input type="text" class="form-input" placeholder="Attendees (comma separated)">
+                </div>
+              </div>
+
+              <!-- Date & Time card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-calendar text-accent-foreground"></i>
+                  <span class="text-sm font-medium text-foreground">Date & Time</span>
+                </div>
+
+                <!-- Date chips -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground transition-colors">Today</button>
+                  <button class="px-3 py-1.5 text-sm bg-accent text-accent-foreground rounded-full border border-transparent">Tomorrow</button>
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground transition-colors">Next Week</button>
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground transition-colors">
+                    <i class="pi pi-calendar mr-1"></i>Pick Date
+                  </button>
+                </div>
+
+                <!-- Time selector -->
+                <div class="flex items-center gap-3">
+                  <span class="text-sm text-foreground-secondary">Time:</span>
+                  <div class="flex items-center gap-1">
+                    <select class="form-input py-1.5" style="width: auto;">
+                      <option>9:00</option>
+                      <option selected>10:00</option>
+                      <option>11:00</option>
+                      <option>12:00</option>
+                      <option>1:00</option>
+                      <option>2:00</option>
+                      <option>3:00</option>
+                      <option>4:00</option>
+                    </select>
+                    <select class="form-input py-1.5" style="width: auto;">
+                      <option selected>AM</option>
+                      <option>PM</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-surface-subtle">
+              <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground transition-colors">Cancel</button>
+              <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity">Create Meeting</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Theme -->
+      <div>
+        <div class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
+          <i class="pi pi-moon"></i> Dark Theme
+        </div>
+        <div class="dark-theme dialog-backdrop">
+          <div class="bg-surface rounded-lg shadow-2xl overflow-hidden" style="width: 520px; max-width: 100%;">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-border bg-surface-subtle">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-foreground">New Meeting</h3>
+                <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted hover:text-foreground transition-colors">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-4">
+              <!-- Details card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-file-edit text-accent-foreground"></i>
+                  <span class="text-sm font-medium text-foreground">Details</span>
+                </div>
+                <div class="space-y-3">
+                  <input type="text" class="form-input" placeholder="Meeting title (optional)">
+                  <input type="text" class="form-input" placeholder="Attendees (comma separated)">
+                </div>
+              </div>
+
+              <!-- Date & Time card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-calendar text-accent-foreground"></i>
+                  <span class="text-sm font-medium text-foreground">Date & Time</span>
+                </div>
+
+                <!-- Date chips -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground transition-colors">Today</button>
+                  <button class="px-3 py-1.5 text-sm bg-accent text-accent-foreground rounded-full border border-transparent">Tomorrow</button>
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground transition-colors">Next Week</button>
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary hover:border-accent-foreground transition-colors">
+                    <i class="pi pi-calendar mr-1"></i>Pick Date
+                  </button>
+                </div>
+
+                <!-- Time selector -->
+                <div class="flex items-center gap-3">
+                  <span class="text-sm text-foreground-secondary">Time:</span>
+                  <div class="flex items-center gap-1">
+                    <select class="form-input py-1.5" style="width: auto;">
+                      <option>9:00</option>
+                      <option selected>10:00</option>
+                      <option>11:00</option>
+                      <option>12:00</option>
+                      <option>1:00</option>
+                      <option>2:00</option>
+                      <option>3:00</option>
+                      <option>4:00</option>
+                    </select>
+                    <select class="form-input py-1.5" style="width: auto;">
+                      <option selected>AM</option>
+                      <option>PM</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-surface-subtle">
+              <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground transition-colors">Cancel</button>
+              <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity">Create Meeting</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- EDIT MODE: Side by Side Light/Dark -->
+    <!-- ============================================ -->
+    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <span class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm">2</span>
+      Edit Meeting Dialog (with Transcript & AI Analysis) - Light vs Dark
+    </h2>
+
+    <div class="grid grid-cols-2 gap-6 mb-12">
+      <!-- Light Theme - Edit Mode -->
+      <div>
+        <div class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
+          <i class="pi pi-sun"></i> Light Theme - Edit Mode
+        </div>
+        <div class="light-theme dialog-backdrop" style="min-height: 800px;">
+          <div class="bg-surface rounded-lg shadow-2xl overflow-hidden" style="width: 600px; max-width: 100%;">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-border bg-surface-subtle">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-foreground">Edit Meeting</h3>
+                <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted hover:text-foreground transition-colors">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-4 max-h-[600px] overflow-y-auto">
+              <!-- Details card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-file-edit text-accent-foreground"></i>
+                  <span class="text-sm font-medium text-foreground">Details</span>
+                </div>
+                <div class="space-y-3">
+                  <input type="text" class="form-input" value="Sprint Planning">
+                  <input type="text" class="form-input" value="John, Sarah, Mike">
+                </div>
+              </div>
+
+              <!-- Date & Time card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-calendar text-accent-foreground"></i>
+                  <span class="text-sm font-medium text-foreground">Date & Time</span>
+                </div>
+
+                <!-- Date chips -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary">Today</button>
+                  <button class="px-3 py-1.5 text-sm bg-accent text-accent-foreground rounded-full border border-transparent">Jan 28</button>
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary">
+                    <i class="pi pi-calendar mr-1"></i>Change
+                  </button>
+                </div>
+
+                <!-- Time selector -->
+                <div class="flex items-center gap-3">
+                  <span class="text-sm text-foreground-secondary">Time:</span>
+                  <div class="flex items-center gap-1">
+                    <select class="form-input py-1.5" style="width: auto;">
+                      <option>9:00</option>
+                      <option selected>10:00</option>
+                      <option>11:00</option>
+                    </select>
+                    <select class="form-input py-1.5" style="width: auto;">
+                      <option selected>AM</option>
+                      <option>PM</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transcript card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-align-left text-accent-foreground"></i>
+                    <span class="text-sm font-medium text-foreground">Transcript</span>
+                  </div>
+                  <span class="text-xs text-foreground-muted">1,247 characters</span>
+                </div>
+                <textarea class="form-input resize-none" rows="6" placeholder="Paste your meeting transcript here...">John: Let's start with the Q1 roadmap. Sarah, can you walk us through the priorities?
+
+Sarah: Sure. I think we should focus on the authentication system first. It's blocking several other features.
+
+Mike: Agreed. We'll need to do a security review before exposing any external APIs.
+
+John: I can draft the API contract. Let's plan for JWT authentication.
+
+Sarah: Sounds good. I'll coordinate with the security team to schedule the review.
+
+Mike: Timeline-wise, I think we need an extra two weeks to accommodate the security review properly.</textarea>
+                <p class="text-xs text-foreground-muted mt-2">Paste a transcript from your meeting recording or notes</p>
+              </div>
+
+              <!-- AI Analysis card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-sparkles text-accent-foreground"></i>
+                    <span class="text-sm font-medium text-foreground">AI Analysis</span>
+                  </div>
+                  <button class="px-3 py-1.5 text-xs bg-accent-solid text-white rounded-md hover:opacity-90 flex items-center gap-1.5">
+                    <i class="pi pi-sparkles text-xs"></i>
+                    Re-analyze
+                  </button>
+                </div>
+
+                <div class="space-y-4">
+                  <!-- Summary -->
+                  <div>
+                    <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Summary</h4>
+                    <p class="text-sm text-foreground">Discussed Q1 roadmap priorities. Team agreed to focus on authentication system first, with JWT as the chosen approach. Security review required before external API exposure.</p>
+                  </div>
+
+                  <!-- Key Points -->
+                  <div>
+                    <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Key Points</h4>
+                    <ul class="space-y-1.5">
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 flex-shrink-0"></i>
+                        <span>Authentication system is the top priority, blocking other features</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 flex-shrink-0"></i>
+                        <span>Security review required before external API exposure</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 flex-shrink-0"></i>
+                        <span>Need additional two weeks for security review process</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Decisions -->
+                  <div>
+                    <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Decisions</h4>
+                    <ul class="space-y-1.5">
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-bolt text-warning mt-0.5 flex-shrink-0"></i>
+                        <span>Will use JWT for API authentication</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-bolt text-warning mt-0.5 flex-shrink-0"></i>
+                        <span>Timeline extended by 2 weeks for security review</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-surface-subtle">
+              <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground transition-colors">Cancel</button>
+              <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Theme - Edit Mode -->
+      <div>
+        <div class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
+          <i class="pi pi-moon"></i> Dark Theme - Edit Mode
+        </div>
+        <div class="dark-theme dialog-backdrop" style="min-height: 800px;">
+          <div class="bg-surface rounded-lg shadow-2xl overflow-hidden" style="width: 600px; max-width: 100%;">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-border bg-surface-subtle">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-foreground">Edit Meeting</h3>
+                <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-muted text-foreground-muted hover:text-foreground transition-colors">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-4 max-h-[600px] overflow-y-auto">
+              <!-- Details card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-file-edit text-accent-foreground"></i>
+                  <span class="text-sm font-medium text-foreground">Details</span>
+                </div>
+                <div class="space-y-3">
+                  <input type="text" class="form-input" value="Sprint Planning">
+                  <input type="text" class="form-input" value="John, Sarah, Mike">
+                </div>
+              </div>
+
+              <!-- Date & Time card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <i class="pi pi-calendar text-accent-foreground"></i>
+                  <span class="text-sm font-medium text-foreground">Date & Time</span>
+                </div>
+
+                <!-- Date chips -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary">Today</button>
+                  <button class="px-3 py-1.5 text-sm bg-accent text-accent-foreground rounded-full border border-transparent">Jan 28</button>
+                  <button class="px-3 py-1.5 text-sm bg-surface rounded-full border border-border text-foreground-secondary">
+                    <i class="pi pi-calendar mr-1"></i>Change
+                  </button>
+                </div>
+
+                <!-- Time selector -->
+                <div class="flex items-center gap-3">
+                  <span class="text-sm text-foreground-secondary">Time:</span>
+                  <div class="flex items-center gap-1">
+                    <select class="form-input py-1.5" style="width: auto;">
+                      <option>9:00</option>
+                      <option selected>10:00</option>
+                      <option>11:00</option>
+                    </select>
+                    <select class="form-input py-1.5" style="width: auto;">
+                      <option selected>AM</option>
+                      <option>PM</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transcript card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-align-left text-accent-foreground"></i>
+                    <span class="text-sm font-medium text-foreground">Transcript</span>
+                  </div>
+                  <span class="text-xs text-foreground-muted">1,247 characters</span>
+                </div>
+                <textarea class="form-input resize-none" rows="6" placeholder="Paste your meeting transcript here...">John: Let's start with the Q1 roadmap. Sarah, can you walk us through the priorities?
+
+Sarah: Sure. I think we should focus on the authentication system first. It's blocking several other features.
+
+Mike: Agreed. We'll need to do a security review before exposing any external APIs.
+
+John: I can draft the API contract. Let's plan for JWT authentication.
+
+Sarah: Sounds good. I'll coordinate with the security team to schedule the review.
+
+Mike: Timeline-wise, I think we need an extra two weeks to accommodate the security review properly.</textarea>
+                <p class="text-xs text-foreground-muted mt-2">Paste a transcript from your meeting recording or notes</p>
+              </div>
+
+              <!-- AI Analysis card -->
+              <div class="bg-surface-subtle rounded-lg border border-border p-4">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-sparkles text-accent-foreground"></i>
+                    <span class="text-sm font-medium text-foreground">AI Analysis</span>
+                  </div>
+                  <button class="px-3 py-1.5 text-xs bg-accent-solid text-white rounded-md hover:opacity-90 flex items-center gap-1.5">
+                    <i class="pi pi-sparkles text-xs"></i>
+                    Re-analyze
+                  </button>
+                </div>
+
+                <div class="space-y-4">
+                  <!-- Summary -->
+                  <div>
+                    <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Summary</h4>
+                    <p class="text-sm text-foreground">Discussed Q1 roadmap priorities. Team agreed to focus on authentication system first, with JWT as the chosen approach. Security review required before external API exposure.</p>
+                  </div>
+
+                  <!-- Key Points -->
+                  <div>
+                    <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Key Points</h4>
+                    <ul class="space-y-1.5">
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 flex-shrink-0"></i>
+                        <span>Authentication system is the top priority, blocking other features</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 flex-shrink-0"></i>
+                        <span>Security review required before external API exposure</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-check-circle text-accent-solid mt-0.5 flex-shrink-0"></i>
+                        <span>Need additional two weeks for security review process</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Decisions -->
+                  <div>
+                    <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Decisions</h4>
+                    <ul class="space-y-1.5">
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-bolt text-warning mt-0.5 flex-shrink-0"></i>
+                        <span>Will use JWT for API authentication</span>
+                      </li>
+                      <li class="flex gap-2 text-sm text-foreground">
+                        <i class="pi pi-bolt text-warning mt-0.5 flex-shrink-0"></i>
+                        <span>Timeline extended by 2 weeks for security review</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-surface-subtle">
+              <button class="px-4 py-2 text-sm text-foreground-secondary hover:text-foreground transition-colors">Cancel</button>
+              <button class="px-5 py-2 bg-accent-solid text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- EDIT MODE STATES: Processing & No Analysis -->
+    <!-- ============================================ -->
+    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <span class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm">3</span>
+      AI Analysis States (Dark Theme)
+    </h2>
+
+    <div class="grid grid-cols-3 gap-6 mb-12">
+      <!-- Processing State -->
+      <div>
+        <div class="text-sm font-medium text-gray-600 mb-2">Processing State</div>
+        <div class="dark-theme rounded-lg p-4">
+          <div class="bg-surface-subtle rounded-lg border border-border p-4">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-sparkles text-accent-foreground"></i>
+                <span class="text-sm font-medium text-foreground">AI Analysis</span>
+              </div>
+              <button class="px-3 py-1.5 text-xs bg-accent-solid text-white rounded-md opacity-50 cursor-not-allowed flex items-center gap-1.5">
+                <i class="pi pi-spin pi-spinner text-xs"></i>
+                Analyzing...
+              </button>
+            </div>
+            <div class="flex items-center gap-3 text-foreground-muted">
+              <i class="pi pi-spin pi-spinner"></i>
+              <span class="text-sm">Analyzing transcript...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Transcript State -->
+      <div>
+        <div class="text-sm font-medium text-gray-600 mb-2">No Transcript</div>
+        <div class="dark-theme rounded-lg p-4">
+          <div class="bg-surface-subtle rounded-lg border border-border p-4">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-sparkles text-accent-foreground"></i>
+                <span class="text-sm font-medium text-foreground">AI Analysis</span>
+              </div>
+              <button class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-muted rounded-md cursor-not-allowed flex items-center gap-1.5">
+                <i class="pi pi-sparkles text-xs"></i>
+                Analyze
+              </button>
+            </div>
+            <p class="text-sm text-foreground-muted">Add a transcript to enable AI analysis.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Failed State -->
+      <div>
+        <div class="text-sm font-medium text-gray-600 mb-2">Failed State</div>
+        <div class="dark-theme rounded-lg p-4">
+          <div class="bg-surface-subtle rounded-lg border border-border p-4">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-sparkles text-accent-foreground"></i>
+                <span class="text-sm font-medium text-foreground">AI Analysis</span>
+              </div>
+              <button class="px-3 py-1.5 text-xs bg-accent-solid text-white rounded-md hover:opacity-90 flex items-center gap-1.5">
+                <i class="pi pi-refresh text-xs"></i>
+                Retry
+              </button>
+            </div>
+            <div class="flex items-center gap-3 text-danger">
+              <i class="pi pi-exclamation-circle"></i>
+              <span class="text-sm">Analysis failed. Please try again.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- Design Notes -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Design Notes</h2>
+
+      <div class="grid grid-cols-2 gap-8">
+        <div>
+          <h3 class="font-medium text-gray-900 mb-2">Color Token Usage</h3>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li><code class="bg-gray-100 px-1 rounded">bg-surface</code> - Main dialog background</li>
+            <li><code class="bg-gray-100 px-1 rounded">bg-surface-subtle</code> - Card backgrounds, header, footer</li>
+            <li><code class="bg-gray-100 px-1 rounded">bg-surface-muted</code> - Hover states, disabled buttons</li>
+            <li><code class="bg-gray-100 px-1 rounded">text-foreground</code> - Primary text</li>
+            <li><code class="bg-gray-100 px-1 rounded">text-foreground-secondary</code> - Secondary text, labels</li>
+            <li><code class="bg-gray-100 px-1 rounded">text-foreground-muted</code> - Hints, placeholders</li>
+            <li><code class="bg-gray-100 px-1 rounded">border-border</code> - All borders</li>
+            <li><code class="bg-gray-100 px-1 rounded">text-accent-foreground</code> - Icons, accent text</li>
+            <li><code class="bg-gray-100 px-1 rounded">bg-accent-solid</code> - Primary buttons</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-medium text-gray-900 mb-2">Key Improvements Over Current</h3>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>+ All colors use semantic tokens (no hardcoded values)</li>
+            <li>+ Cards provide clear visual grouping</li>
+            <li>+ Quick date chips for common selections</li>
+            <li>+ Consistent icon usage with accent color</li>
+            <li>+ Better spacing and typography hierarchy</li>
+            <li>+ Scrollable content area for long edit dialogs</li>
+            <li>+ Distinct states for AI analysis (processing, failed, etc.)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-gray-200">
+        <h3 class="font-medium text-gray-900 mb-2">Implementation Notes</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li>1. Replace PrimeNG Dialog default styling with custom classes using semantic tokens</li>
+          <li>2. The "Pick Date" chip should open PrimeNG DatePicker in a dropdown/popover</li>
+          <li>3. Time selects can use native selects or PrimeNG Dropdown</li>
+          <li>4. AI Analysis component already exists - just needs card wrapper styling</li>
+          <li>5. Dialog width: 520px for create, 600px for edit (to fit transcript)</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

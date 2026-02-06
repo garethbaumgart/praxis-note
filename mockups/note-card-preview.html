@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Note Card Preview - Rich Formatting Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#ffffff',
+            'surface-subtle': '#ffffff',
+            'surface-hover': '#f8fafc',
+            foreground: '#2e3440',
+            'foreground-secondary': '#4c566a',
+            'foreground-muted': '#7b88a1',
+            border: '#e5e9f0',
+            accent: '#5e81ac',
+            tag: 'rgba(163,190,140,0.5)',
+            'tag-text': '#4a6638',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #f0f2f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+    .masonry-grid {
+      column-count: 3;
+      column-gap: 16px;
+    }
+    .masonry-item {
+      break-inside: avoid;
+      margin-bottom: 16px;
+    }
+
+    .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(163,190,140,0.5);
+      color: #4a6638;
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      height: 18px;
+    }
+
+    /* Shared preview base styles */
+    .note-preview h1 { font-weight: 700; margin: 0.3em 0; }
+    .note-preview h2 { font-weight: 600; margin: 0.3em 0; }
+    .note-preview h3 { font-weight: 600; margin: 0.2em 0; }
+    .note-preview p { margin: 0.25em 0; }
+    .note-preview ul { padding-left: 1.2em; margin: 0.25em 0; list-style: disc; }
+    .note-preview ol { padding-left: 1.2em; margin: 0.25em 0; list-style: decimal; }
+    .note-preview li { margin: 0.1em 0; }
+    .note-preview blockquote { border-left: 2px solid #e5e9f0; padding-left: 0.75em; margin: 0.3em 0; color: #4c566a; }
+    .note-preview code { background: #f0f2f5; padding: 0.1em 0.3em; border-radius: 3px; font-family: monospace; font-size: 0.85em; }
+    .note-preview pre { background: #f0f2f5; padding: 0.5em; border-radius: 4px; font-family: monospace; font-size: 0.8em; overflow: hidden; margin: 0.3em 0; }
+    .note-preview pre code { background: none; padding: 0; }
+    .note-preview mark { background: #fef08a; padding: 0 0.15em; border-radius: 2px; }
+    .note-preview hr { border: none; border-top: 1px solid #e5e9f0; margin: 0.5em 0; }
+    .note-preview img { max-width: 100%; border-radius: 3px; margin: 0.25em 0; }
+    .note-preview table { border-collapse: collapse; width: 100%; margin: 0.3em 0; }
+    .note-preview th, .note-preview td { border: 1px solid #e5e9f0; padding: 0.25em 0.5em; text-align: left; font-size: 0.85em; }
+    .note-preview th { background: #f8fafc; font-weight: 600; }
+
+    .section-label {
+      display: inline-block;
+      background: #5e81ac;
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .recommended { background: #a3be8c; }
+  </style>
+</head>
+<body class="p-8">
+
+  <h1 class="text-2xl font-bold text-foreground mb-2">Note Card Preview - Rich Formatting</h1>
+  <p class="text-foreground-muted mb-8">Issue #273: 5 design options for note card rich preview with title extraction</p>
+
+  <!-- SAMPLE CONTENT for reference -->
+  <div class="mb-8 p-4 bg-white rounded-lg border border-border">
+    <h3 class="font-semibold text-sm mb-2 text-foreground-muted">Sample TipTap Content (for context):</h3>
+    <p class="text-xs text-foreground-muted">Each card below renders this same note content differently:</p>
+    <ul class="text-xs text-foreground-muted mt-1 list-disc pl-4">
+      <li>H1: "Project Planning Notes"</li>
+      <li>Paragraph with <strong>bold</strong> and <em>italic</em></li>
+      <li>Bullet list with 3 items</li>
+      <li>Code block</li>
+      <li>Blockquote</li>
+    </ul>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- OPTION 1: Title + Scaled Rich HTML (Recommended) -->
+  <!-- ============================================================ -->
+  <div class="mb-12">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="section-label recommended">Recommended</span>
+      <h2 class="text-lg font-semibold text-foreground">Option 1: Extracted Title + Rich HTML Body</h2>
+    </div>
+    <p class="text-sm text-foreground-secondary mb-4">
+      First heading becomes a distinct bold title at the top. Remaining content rendered as scaled-down rich HTML with a fade-out overflow. Clean separation between title and body.
+    </p>
+    <div class="flex gap-2 text-xs mb-4">
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Clear title hierarchy</span>
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Google Docs feel</span>
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Rich formatting visible</span>
+      <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded">~ Slightly more complex</span>
+    </div>
+
+    <div class="masonry-grid">
+      <!-- Card with heading + rich content -->
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <h3 class="text-sm font-bold text-foreground mb-2 line-clamp-1">Project Planning Notes</h3>
+            <div class="note-preview text-xs text-foreground overflow-hidden relative" style="max-height: 140px;">
+              <p>Here are the <strong>key decisions</strong> we need to make for the <em>upcoming sprint</em>.</p>
+              <ul>
+                <li>Define API contracts</li>
+                <li>Set up CI/CD pipeline</li>
+                <li>Review design mockups</li>
+              </ul>
+              <pre><code>const config = { env: 'prod' };</code></pre>
+              <div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span class="tag-badge">planning</span>
+              <span class="tag-badge">sprint-4</span>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">2h ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card without heading -->
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <div class="note-preview text-xs text-foreground overflow-hidden relative" style="max-height: 160px;">
+              <p>Quick thoughts on the <strong>database migration</strong> strategy:</p>
+              <blockquote>We should use a blue-green deployment approach to minimize downtime.</blockquote>
+              <p>Next steps:</p>
+              <ol>
+                <li>Write migration scripts</li>
+                <li>Test on staging</li>
+                <li>Schedule maintenance window</li>
+              </ol>
+              <div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">5m ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card with code block -->
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <h3 class="text-sm font-bold text-foreground mb-2 line-clamp-1">API Endpoint Reference</h3>
+            <div class="note-preview text-xs text-foreground overflow-hidden relative" style="max-height: 140px;">
+              <p>Key endpoints for the <mark>user service</mark>:</p>
+              <pre><code>GET  /api/users
+POST /api/users
+PUT  /api/users/:id</code></pre>
+              <p>All endpoints require <code>Bearer</code> token auth.</p>
+              <div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span class="tag-badge">api</span>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">1d ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- OPTION 2: Inline Title (No Separation) -->
+  <!-- ============================================================ -->
+  <div class="mb-12">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="section-label">Option 2</span>
+      <h2 class="text-lg font-semibold text-foreground">Option 2: Rich HTML Only (No Title Extraction)</h2>
+    </div>
+    <p class="text-sm text-foreground-secondary mb-4">
+      Render all content as rich HTML without extracting a separate title. The heading stays inline in the content flow. Simpler but less polished.
+    </p>
+    <div class="flex gap-2 text-xs mb-4">
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Simple implementation</span>
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ True WYSIWYG preview</span>
+      <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded">- Title not prominent</span>
+      <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded">- Heading takes up space</span>
+    </div>
+
+    <div class="masonry-grid">
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <div class="note-preview text-xs text-foreground overflow-hidden relative" style="max-height: 160px;">
+              <h1 style="font-size: 1.1em;">Project Planning Notes</h1>
+              <p>Here are the <strong>key decisions</strong> we need to make for the <em>upcoming sprint</em>.</p>
+              <ul>
+                <li>Define API contracts</li>
+                <li>Set up CI/CD pipeline</li>
+                <li>Review design mockups</li>
+              </ul>
+              <pre><code>const config = { env: 'prod' };</code></pre>
+              <div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">2h ago</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <div class="note-preview text-xs text-foreground overflow-hidden relative" style="max-height: 160px;">
+              <p>Quick thoughts on the <strong>database migration</strong> strategy:</p>
+              <blockquote>We should use a blue-green deployment approach to minimize downtime.</blockquote>
+              <p>Next steps:</p>
+              <ol>
+                <li>Write migration scripts</li>
+                <li>Test on staging</li>
+              </ol>
+              <div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">5m ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- OPTION 3: Title + Plain Text Body -->
+  <!-- ============================================================ -->
+  <div class="mb-12">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="section-label">Option 3</span>
+      <h2 class="text-lg font-semibold text-foreground">Option 3: Extracted Title + Plain Text Body</h2>
+    </div>
+    <p class="text-sm text-foreground-secondary mb-4">
+      Extract the first heading as a bold title, but keep the body as plain text (current behavior). Minimal change, adds title hierarchy without rich rendering.
+    </p>
+    <div class="flex gap-2 text-xs mb-4">
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Minimal change</span>
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Title stands out</span>
+      <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded">- Body still flat text</span>
+      <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded">- Doesn't address formatting issue</span>
+    </div>
+
+    <div class="masonry-grid">
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <h3 class="text-sm font-bold text-foreground mb-1.5 line-clamp-1">Project Planning Notes</h3>
+            <p class="text-xs text-foreground overflow-hidden whitespace-pre-wrap" style="display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical;">Here are the key decisions we need to make for the upcoming sprint.
+Define API contracts
+Set up CI/CD pipeline
+Review design mockups
+const config = { env: 'prod' };</p>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">2h ago</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <p class="text-xs text-foreground overflow-hidden whitespace-pre-wrap" style="display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical;">Quick thoughts on the database migration strategy:
+We should use a blue-green deployment approach to minimize downtime.
+Next steps:
+Write migration scripts
+Test on staging
+Schedule maintenance window</p>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">5m ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- OPTION 4: Title + Truncated Rich HTML with "More" indicator -->
+  <!-- ============================================================ -->
+  <div class="mb-12">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="section-label">Option 4</span>
+      <h2 class="text-lg font-semibold text-foreground">Option 4: Title + Rich HTML with Scroll Indicator</h2>
+    </div>
+    <p class="text-sm text-foreground-secondary mb-4">
+      Like Option 1 but with a more prominent "more content" indicator at the bottom — a subtle bar with ellipsis or arrow, rather than a fade.
+    </p>
+    <div class="flex gap-2 text-xs mb-4">
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Clear overflow indicator</span>
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Rich formatting</span>
+      <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded">~ Extra visual element</span>
+      <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded">- May look cluttered</span>
+    </div>
+
+    <div class="masonry-grid">
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <h3 class="text-sm font-bold text-foreground mb-2 line-clamp-1">Project Planning Notes</h3>
+            <div class="note-preview text-xs text-foreground overflow-hidden" style="max-height: 120px;">
+              <p>Here are the <strong>key decisions</strong> we need to make for the <em>upcoming sprint</em>.</p>
+              <ul>
+                <li>Define API contracts</li>
+                <li>Set up CI/CD pipeline</li>
+                <li>Review design mockups</li>
+              </ul>
+            </div>
+            <div class="flex items-center justify-center gap-1 mt-1.5 py-1 text-foreground-muted">
+              <i class="pi pi-ellipsis-h" style="font-size: 10px;"></i>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">2h ago</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer">
+          <div class="p-3">
+            <h3 class="text-sm font-bold text-foreground mb-2 line-clamp-1">API Endpoint Reference</h3>
+            <div class="note-preview text-xs text-foreground overflow-hidden" style="max-height: 120px;">
+              <p>Key endpoints for the <mark>user service</mark>:</p>
+              <pre><code>GET  /api/users
+POST /api/users
+PUT  /api/users/:id</code></pre>
+            </div>
+            <div class="flex items-center justify-center gap-1 mt-1.5 py-1 text-foreground-muted">
+              <i class="pi pi-ellipsis-h" style="font-size: 10px;"></i>
+            </div>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <span class="tag-badge">api</span>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">1d ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- OPTION 5: Two-Tone Card (Title background accent) -->
+  <!-- ============================================================ -->
+  <div class="mb-12">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="section-label">Option 5</span>
+      <h2 class="text-lg font-semibold text-foreground">Option 5: Accent Header Band + Rich Body</h2>
+    </div>
+    <p class="text-sm text-foreground-secondary mb-4">
+      Title displayed in a subtle accent-colored header band at the top of the card. Rich HTML body below. More visually striking but may not match the current minimal aesthetic.
+    </p>
+    <div class="flex gap-2 text-xs mb-4">
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Very visually distinct</span>
+      <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">+ Title pops</span>
+      <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded">- May clash with minimal design</span>
+      <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded">- More CSS complexity</span>
+    </div>
+
+    <div class="masonry-grid">
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer overflow-hidden">
+          <div class="px-3 py-2" style="background: rgba(94,129,172,0.08);">
+            <h3 class="text-sm font-bold text-foreground line-clamp-1">Project Planning Notes</h3>
+          </div>
+          <div class="p-3 pt-2">
+            <div class="note-preview text-xs text-foreground overflow-hidden relative" style="max-height: 120px;">
+              <p>Here are the <strong>key decisions</strong> we need to make for the <em>upcoming sprint</em>.</p>
+              <ul>
+                <li>Define API contracts</li>
+                <li>Set up CI/CD pipeline</li>
+                <li>Review design mockups</li>
+              </ul>
+              <div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span class="tag-badge">planning</span>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">2h ago</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer overflow-hidden">
+          <div class="p-3">
+            <div class="note-preview text-xs text-foreground overflow-hidden relative" style="max-height: 140px;">
+              <p>Quick thoughts on the <strong>database migration</strong> strategy:</p>
+              <blockquote>We should use a blue-green deployment approach to minimize downtime.</blockquote>
+              <ol>
+                <li>Write migration scripts</li>
+                <li>Test on staging</li>
+              </ol>
+              <div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">5m ago</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border hover:shadow-lg transition-all cursor-pointer overflow-hidden">
+          <div class="px-3 py-2" style="background: rgba(94,129,172,0.08);">
+            <h3 class="text-sm font-bold text-foreground line-clamp-1">API Endpoint Reference</h3>
+          </div>
+          <div class="p-3 pt-2">
+            <div class="note-preview text-xs text-foreground overflow-hidden relative" style="max-height: 120px;">
+              <p>Key endpoints for the <mark>user service</mark>:</p>
+              <pre><code>GET  /api/users
+POST /api/users</code></pre>
+              <div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span class="tag-badge">api</span>
+            </div>
+          </div>
+          <div class="px-3 pb-2 flex items-center justify-between">
+            <span class="text-xs text-foreground-muted">1d ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- COMPARISON: Empty & Plain Text Fallbacks -->
+  <!-- ============================================================ -->
+  <div class="mb-12">
+    <h2 class="text-lg font-semibold text-foreground mb-4">Edge Cases (All Options)</h2>
+
+    <div class="masonry-grid">
+      <!-- Empty note -->
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border cursor-pointer">
+          <div class="p-3">
+            <p class="text-sm text-foreground-muted italic">Empty note</p>
+          </div>
+          <div class="px-3 pb-2">
+            <span class="text-xs text-foreground-muted">just now</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plain text only (no heading) -->
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border cursor-pointer">
+          <div class="p-3">
+            <div class="note-preview text-xs text-foreground">
+              <p>Just a simple plain text note without any headings or formatting. This should still look clean and readable.</p>
+            </div>
+          </div>
+          <div class="px-3 pb-2">
+            <span class="text-xs text-foreground-muted">3d ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Short note with heading -->
+      <div class="masonry-item">
+        <div class="bg-white rounded-lg border border-border cursor-pointer">
+          <div class="p-3">
+            <h3 class="text-sm font-bold text-foreground mb-1.5">Quick Reminder</h3>
+            <div class="note-preview text-xs text-foreground">
+              <p>Call the dentist on Monday.</p>
+            </div>
+          </div>
+          <div class="px-3 pb-2">
+            <span class="text-xs text-foreground-muted">1h ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendation Summary -->
+  <div class="bg-white rounded-lg border border-border p-6 mb-8">
+    <h2 class="text-lg font-semibold text-foreground mb-3">Recommendation: Option 1</h2>
+    <p class="text-sm text-foreground-secondary mb-3">
+      Option 1 (Extracted Title + Rich HTML Body with fade-out) provides the best balance of:
+    </p>
+    <ul class="text-sm text-foreground-secondary list-disc pl-5 space-y-1">
+      <li><strong>Clear hierarchy</strong> — title stands out without being intrusive</li>
+      <li><strong>Rich formatting</strong> — users see their actual note structure at a glance</li>
+      <li><strong>Graceful fallback</strong> — notes without headings just show the rich body</li>
+      <li><strong>Consistent with existing design</strong> — keeps the card minimal and clean</li>
+      <li><strong>Fade-out overflow</strong> — natural indicator that there's more content</li>
+    </ul>
+  </div>
+
+</body>
+</html>

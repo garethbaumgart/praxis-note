@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meetings UX - Before &amp; After Mockups</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+
+        /* Nord-inspired palette */
+        :root {
+            --nord0: #2e3440; --nord1: #3b4252; --nord2: #434c5e; --nord3: #4c566a;
+            --nord4: #d8dee9; --nord5: #e5e9f0; --nord6: #eceff4;
+            --nord7: #8fbcbb; --nord8: #88c0d0; --nord9: #81a1c1; --nord10: #5e81ac;
+            --nord11: #bf616a; --nord12: #d08770; --nord13: #ebcb8b; --nord14: #a3be8c; --nord15: #b48ead;
+            --bg-base: #242933; --bg-subtle: #2e3440; --bg-muted: #3b4252;
+            --text-primary: #eceff4; --text-secondary: #d8dee9; --text-muted: #4c566a;
+            --border: #3b4252;
+        }
+
+        .mockup-card {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .before-label {
+            background: rgba(191, 97, 106, 0.2);
+            color: #bf616a;
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .after-label {
+            background: rgba(163, 190, 140, 0.2);
+            color: #a3be8c;
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .issue-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--nord10);
+            color: white;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .priority-tag {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 9999px;
+        }
+
+        .p0 { background: rgba(191, 97, 106, 0.25); color: #bf616a; }
+        .p1 { background: rgba(208, 135, 112, 0.25); color: #d08770; }
+        .p2 { background: rgba(235, 203, 139, 0.25); color: #ebcb8b; }
+        .p3 { background: rgba(136, 192, 208, 0.25); color: #88c0d0; }
+
+        /* Shared mockup styles */
+        .mock-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .mock-row { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 16px; }
+        .mock-input { background: var(--bg-muted); border: none; border-radius: 6px; padding: 8px 10px; font-size: 13px; color: var(--text-primary); width: 100%; }
+        .mock-chip { background: var(--bg-muted); color: var(--text-secondary); border-radius: 9999px; padding: 4px 10px; font-size: 11px; display: inline-block; }
+        .mock-chip-active { background: rgba(94, 129, 172, 0.15); color: #88c0d0; }
+        .mock-badge { font-size: 10px; padding: 2px 8px; border-radius: 9999px; font-weight: 500; }
+        .mock-section { border-left: 3px solid; padding: 16px; border-radius: 8px; background: var(--bg-subtle); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .bug-marker { display: inline-block; background: #bf616a; color: white; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+
+        /* Annotation arrows */
+        .annotation {
+            position: relative;
+            border: 2px dashed rgba(191, 97, 106, 0.5);
+            border-radius: 6px;
+            padding: 2px;
+        }
+        .annotation::after {
+            content: attr(data-label);
+            position: absolute;
+            top: -10px;
+            right: 4px;
+            background: #bf616a;
+            color: white;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        .fix-highlight {
+            border: 2px solid rgba(163, 190, 140, 0.5);
+            border-radius: 6px;
+            padding: 2px;
+        }
+        .fix-highlight::after {
+            content: attr(data-label);
+            position: absolute;
+            top: -10px;
+            right: 4px;
+            background: #a3be8c;
+            color: #2e3440;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="p-8" style="background: #1d2029; color: #eceff4;">
+
+    <h1 class="text-3xl font-bold mb-2">Meetings UX Review - Before &amp; After</h1>
+    <p class="text-gray-400 mb-8">Visual mockups showing current issues and proposed fixes for the Meetings feature.</p>
+
+    <!-- ================================================================== -->
+    <!-- ISSUE 1: Black Dropdown Backgrounds -->
+    <!-- ================================================================== -->
+    <div class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="issue-number">1</span>
+            <h2 class="text-xl font-bold">Black Dropdown / Popup Backgrounds</h2>
+            <span class="priority-tag p0">P0 - Bug</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-6 ml-10">PrimeNG overlays (p-select, p-menu) use near-black backgrounds that clash with the Nord dark theme. Affects time picker dropdown and Record menu.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-10">
+            <!-- BEFORE -->
+            <div class="mockup-card">
+                <div class="before-label">Before - Current</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-3">Time Picker Dropdown</p>
+                    <div class="relative">
+                        <!-- The p-select trigger -->
+                        <div style="background: var(--bg-muted); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; width: 170px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-primary);">
+                            6:42 PM
+                            <i class="pi pi-chevron-down" style="font-size: 10px; color: var(--text-muted);"></i>
+                        </div>
+                        <!-- The BLACK dropdown - the bug -->
+                        <div class="annotation" data-label="BUG" style="position: absolute; top: 40px; left: 0; width: 190px; z-index: 10;">
+                            <div style="background: #121212; border: 1px solid #333; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.6);">
+                                <div style="padding: 8px; border-bottom: 1px solid #333;">
+                                    <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 4px; padding: 6px 10px; font-size: 12px; color: #888; display: flex; justify-content: space-between;">
+                                        Type time... <i class="pi pi-search" style="font-size: 11px;"></i>
+                                    </div>
+                                </div>
+                                <div style="padding: 4px 0;">
+                                    <div style="padding: 8px 16px; font-size: 13px; color: #ccc;">12:00 AM</div>
+                                    <div style="padding: 8px 16px; font-size: 13px; color: #ccc;">12:30 AM</div>
+                                    <div style="padding: 8px 16px; font-size: 13px; color: #ccc;">1:00 AM</div>
+                                    <div style="padding: 8px 16px; font-size: 13px; color: #ccc;">1:30 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-44"></div>
+
+                    <p class="text-xs text-gray-500 mb-3 mt-4">Record Menu</p>
+                    <div class="relative inline-block">
+                        <div style="background: rgba(136, 192, 208, 0.12); border: 1px solid rgba(136, 192, 208, 0.35); border-radius: 5px; padding: 4px 10px; font-size: 11px; color: #88c0d0; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="pi pi-microphone"></i> Record <i class="pi pi-chevron-down" style="font-size: 9px;"></i>
+                        </div>
+                        <div class="annotation" data-label="BUG" style="position: absolute; top: 30px; right: 0; z-index: 10;">
+                            <div style="background: #121212; border: 1px solid #333; border-radius: 8px; padding: 4px 0; min-width: 180px; box-shadow: 0 4px 16px rgba(0,0,0,0.6);">
+                                <div style="padding: 8px 16px; font-size: 13px; color: #ccc; display: flex; align-items: center; gap: 8px;">
+                                    <i class="pi pi-microphone" style="font-size: 12px;"></i> Microphone Only
+                                </div>
+                                <div style="padding: 8px 16px; font-size: 13px; color: #ccc; display: flex; align-items: center; gap: 8px;">
+                                    <i class="pi pi-desktop" style="font-size: 12px;"></i> Online Meeting
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-20"></div>
+                    <p class="text-xs mt-4" style="color: #bf616a;"><i class="pi pi-exclamation-triangle" style="font-size: 10px;"></i> Near-black (#121212) clashes with Nord dark bg (#242933)</p>
+                </div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="mockup-card">
+                <div class="after-label">After - Proposed</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-3">Time Picker Dropdown</p>
+                    <div class="relative">
+                        <div style="background: var(--bg-muted); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; width: 170px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-primary);">
+                            6:42 PM
+                            <i class="pi pi-chevron-down" style="font-size: 10px; color: var(--text-muted);"></i>
+                        </div>
+                        <!-- Fixed dropdown using Nord colors -->
+                        <div style="position: absolute; top: 40px; left: 0; width: 190px; z-index: 10;">
+                            <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+                                <div style="padding: 8px; border-bottom: 1px solid var(--border);">
+                                    <div style="background: var(--bg-muted); border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between;">
+                                        Type time... <i class="pi pi-search" style="font-size: 11px;"></i>
+                                    </div>
+                                </div>
+                                <div style="padding: 4px 0;">
+                                    <div style="padding: 8px 16px; font-size: 13px; color: var(--text-secondary);">12:00 AM</div>
+                                    <div style="padding: 8px 16px; font-size: 13px; color: var(--text-secondary);">12:30 AM</div>
+                                    <div style="padding: 8px 16px; font-size: 13px; color: var(--text-secondary);">1:00 AM</div>
+                                    <div style="padding: 8px 16px; font-size: 13px; color: var(--text-secondary); background: rgba(136, 192, 208, 0.12);">1:30 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-44"></div>
+
+                    <p class="text-xs text-gray-500 mb-3 mt-4">Record Menu</p>
+                    <div class="relative inline-block">
+                        <div style="background: rgba(136, 192, 208, 0.12); border: 1px solid rgba(136, 192, 208, 0.35); border-radius: 5px; padding: 4px 10px; font-size: 11px; color: #88c0d0; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="pi pi-microphone"></i> Record <i class="pi pi-chevron-down" style="font-size: 9px;"></i>
+                        </div>
+                        <div style="position: absolute; top: 30px; right: 0; z-index: 10;">
+                            <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; padding: 4px 0; min-width: 180px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+                                <div style="padding: 8px 16px; font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                    <i class="pi pi-microphone" style="font-size: 12px; color: #88c0d0;"></i> Microphone Only
+                                </div>
+                                <div style="padding: 8px 16px; font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                    <i class="pi pi-desktop" style="font-size: 12px; color: #88c0d0;"></i> Online Meeting
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-20"></div>
+                    <p class="text-xs mt-4" style="color: #a3be8c;"><i class="pi pi-check" style="font-size: 10px;"></i> Fix: Add <code>colorScheme.dark.surface</code> overrides in PrimeNG theme preset</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================== -->
+    <!-- ISSUE 2: Stale Popup After Navigation -->
+    <!-- ================================================================== -->
+    <div class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="issue-number">2</span>
+            <h2 class="text-xl font-bold">Stale Popup Persists After Navigation</h2>
+            <span class="priority-tag p0">P0 - Bug</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-6 ml-10">When the Record menu is open and Escape is pressed, the editor navigates away but the PrimeNG popup (appended to body) remains visible on the meetings list page.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-10">
+            <!-- BEFORE -->
+            <div class="mockup-card">
+                <div class="before-label">Before - Current</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-3">Meetings list after pressing Escape with Record menu open</p>
+                    <!-- Meetings list with orphaned popup -->
+                    <div style="background: var(--bg-base); border-radius: 8px; padding: 16px; position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <div style="font-size: 16px; font-weight: 600;">Meetings <span style="font-size: 12px; color: var(--text-muted);">13 meetings</span></div>
+                            <div style="display: flex; gap: 8px;">
+                                <div style="background: var(--bg-muted); padding: 4px 12px; border-radius: 6px; font-size: 12px; color: var(--text-secondary);">Import</div>
+                                <div style="background: #5e81ac; padding: 4px 12px; border-radius: 6px; font-size: 12px; color: white;">+ New Meeting</div>
+                            </div>
+                        </div>
+                        <div class="mock-row mb-2">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">2:30</span><br><span style="font-size: 10px; color: var(--text-muted);">PM</span></div>
+                            <div style="flex: 1;"><span style="font-size: 13px;">Untitled Meeting</span><br><span style="font-size: 11px; color: var(--text-muted);">No attendees</span></div>
+                            <span class="mock-badge" style="background: var(--bg-muted); color: var(--text-muted);">Draft</span>
+                        </div>
+                        <div class="mock-row mb-2">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">6:42</span><br><span style="font-size: 10px; color: var(--text-muted);">PM</span></div>
+                            <div style="flex: 1;"><span style="font-size: 13px;">All-Hands - Q1 Planning</span><br><span style="font-size: 11px; color: var(--text-muted);">Gareth, Sarah, Mike</span></div>
+                            <span class="mock-badge" style="background: rgba(163, 190, 140, 0.1); color: #a3be8c;">Ready</span>
+                        </div>
+
+                        <!-- Orphaned popup floating -->
+                        <div class="annotation" data-label="ORPHANED" style="position: absolute; top: 50px; right: 20px; z-index: 20;">
+                            <div style="background: #121212; border: 1px solid #333; border-radius: 8px; padding: 4px 0; min-width: 170px; box-shadow: 0 4px 16px rgba(0,0,0,0.6);">
+                                <div style="padding: 8px 16px; font-size: 13px; color: #ccc; display: flex; align-items: center; gap: 8px;">
+                                    <i class="pi pi-microphone" style="font-size: 12px;"></i> Microphone Only
+                                </div>
+                                <div style="padding: 8px 16px; font-size: 13px; color: #ccc; display: flex; align-items: center; gap: 8px;">
+                                    <i class="pi pi-desktop" style="font-size: 12px;"></i> Online Meeting
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-3" style="color: #bf616a;"><i class="pi pi-exclamation-triangle" style="font-size: 10px;"></i> Popup from editor page remains floating on meetings list</p>
+                </div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="mockup-card">
+                <div class="after-label">After - Proposed</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-3">Clean meetings list - no orphaned popups</p>
+                    <div style="background: var(--bg-base); border-radius: 8px; padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <div style="font-size: 16px; font-weight: 600;">Meetings <span style="font-size: 12px; color: var(--text-muted);">13 meetings</span></div>
+                            <div style="display: flex; gap: 8px;">
+                                <div style="background: var(--bg-muted); padding: 4px 12px; border-radius: 6px; font-size: 12px; color: var(--text-secondary);">Import</div>
+                                <div style="background: #5e81ac; padding: 4px 12px; border-radius: 6px; font-size: 12px; color: white;">+ New Meeting</div>
+                            </div>
+                        </div>
+                        <div class="mock-row mb-2">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">2:30</span><br><span style="font-size: 10px; color: var(--text-muted);">PM</span></div>
+                            <div style="flex: 1;"><span style="font-size: 13px;">Untitled Meeting</span><br><span style="font-size: 11px; color: var(--text-muted);">No attendees</span></div>
+                            <span class="mock-badge" style="background: var(--bg-muted); color: var(--text-muted);">Draft</span>
+                        </div>
+                        <div class="mock-row mb-2">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">6:42</span><br><span style="font-size: 10px; color: var(--text-muted);">PM</span></div>
+                            <div style="flex: 1;"><span style="font-size: 13px;">All-Hands - Q1 Planning</span><br><span style="font-size: 11px; color: var(--text-muted);">Gareth, Sarah, Mike</span></div>
+                            <span class="mock-badge" style="background: rgba(163, 190, 140, 0.1); color: #a3be8c;">Ready</span>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-3" style="color: #a3be8c;"><i class="pi pi-check" style="font-size: 10px;"></i> Fix: Close all popups in <code>ngOnDestroy</code> before navigation</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================== -->
+    <!-- ISSUE 3: Date Picker / Time Dropdown Overlap -->
+    <!-- ================================================================== -->
+    <div class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="issue-number">3</span>
+            <h2 class="text-xl font-bold">Date Picker &amp; Time Dropdown Overlap</h2>
+            <span class="priority-tag p1">P1</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-6 ml-10">The inline calendar and time dropdown can both be open simultaneously, overlapping each other in the same visual space.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-10">
+            <!-- BEFORE -->
+            <div class="mockup-card">
+                <div class="before-label">Before - Current</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-3">Date picker and time dropdown both open</p>
+                    <div class="mock-section" style="border-left-color: rgba(136, 192, 208, 0.8);">
+                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Date &amp; Time</div>
+                        <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+                            <span class="mock-chip">Today</span>
+                            <span class="mock-chip">Tomorrow</span>
+                            <span class="mock-chip">Next Week</span>
+                            <span class="mock-chip mock-chip-active">1 Feb</span>
+                            <span class="mock-chip" style="color: #88c0d0;"><i class="pi pi-calendar" style="font-size: 9px;"></i> Change</span>
+                        </div>
+                        <!-- Calendar overlapping with dropdown -->
+                        <div style="position: relative;">
+                            <div class="annotation" data-label="OVERLAP" style="display: inline-block;">
+                                <!-- Calendar skeleton -->
+                                <div style="background: var(--bg-muted); border-radius: 8px; padding: 12px; width: 260px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <i class="pi pi-chevron-left" style="font-size: 10px; color: var(--text-muted);"></i>
+                                        <span style="font-size: 13px; font-weight: 600;">February 2026</span>
+                                        <i class="pi pi-chevron-right" style="font-size: 10px; color: var(--text-muted);"></i>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 11px; text-align: center;">
+                                        <span style="color: var(--text-muted); padding: 4px;">Su</span>
+                                        <span style="color: var(--text-muted); padding: 4px;">Mo</span>
+                                        <span style="color: var(--text-muted); padding: 4px;">Tu</span>
+                                        <span style="color: var(--text-muted); padding: 4px;">We</span>
+                                        <span style="color: var(--text-muted); padding: 4px;">Th</span>
+                                        <span style="color: var(--text-muted); padding: 4px;">Fr</span>
+                                        <span style="color: var(--text-muted); padding: 4px;">Sa</span>
+                                        <span style="padding: 4px; color: var(--text-secondary);">1</span>
+                                        <span style="padding: 4px; color: var(--text-secondary);">2</span>
+                                        <span style="padding: 4px; color: var(--text-secondary);">3</span>
+                                        <span style="padding: 4px; color: var(--text-secondary);">4</span>
+                                        <span style="padding: 4px; background: #5e81ac; color: white; border-radius: 50%;">5</span>
+                                        <span style="padding: 4px; color: var(--text-secondary);">6</span>
+                                        <span style="padding: 4px; color: var(--text-secondary);">7</span>
+                                    </div>
+                                </div>
+                                <!-- Time dropdown overlapping the calendar -->
+                                <div style="position: absolute; top: 20px; left: 80px; width: 170px; z-index: 10;">
+                                    <div style="background: #121212; border: 1px solid #333; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.6);">
+                                        <div style="padding: 6px;"><div style="background: #1a1a1a; border: 1px solid #333; border-radius: 4px; padding: 5px 8px; font-size: 11px; color: #666;">Type time...</div></div>
+                                        <div style="padding: 6px 14px; font-size: 12px; color: #aaa;">12:00 AM</div>
+                                        <div style="padding: 6px 14px; font-size: 12px; color: #aaa;">12:30 AM</div>
+                                        <div style="padding: 6px 14px; font-size: 12px; color: #aaa;">1:00 AM</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-3" style="color: #bf616a;"><i class="pi pi-exclamation-triangle" style="font-size: 10px;"></i> Both controls fight for same visual space</p>
+                </div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="mockup-card">
+                <div class="after-label">After - Proposed</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-3">Mutually exclusive: opening one closes the other</p>
+                    <div class="mock-section" style="border-left-color: rgba(136, 192, 208, 0.8);">
+                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Date &amp; Time</div>
+                        <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+                            <span class="mock-chip">Today</span>
+                            <span class="mock-chip">Tomorrow</span>
+                            <span class="mock-chip">Next Week</span>
+                            <span class="mock-chip mock-chip-active">1 Feb</span>
+                            <span class="mock-chip" style="color: #88c0d0;"><i class="pi pi-calendar" style="font-size: 9px;"></i> Change</span>
+                        </div>
+                        <!-- Calendar visible, time closed -->
+                        <div style="background: var(--bg-muted); border-radius: 8px; padding: 12px; width: 260px; margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <i class="pi pi-chevron-left" style="font-size: 10px; color: var(--text-muted);"></i>
+                                <span style="font-size: 13px; font-weight: 600;">February 2026</span>
+                                <i class="pi pi-chevron-right" style="font-size: 10px; color: var(--text-muted);"></i>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 11px; text-align: center;">
+                                <span style="color: var(--text-muted); padding: 4px;">Su</span>
+                                <span style="color: var(--text-muted); padding: 4px;">Mo</span>
+                                <span style="color: var(--text-muted); padding: 4px;">Tu</span>
+                                <span style="color: var(--text-muted); padding: 4px;">We</span>
+                                <span style="color: var(--text-muted); padding: 4px;">Th</span>
+                                <span style="color: var(--text-muted); padding: 4px;">Fr</span>
+                                <span style="color: var(--text-muted); padding: 4px;">Sa</span>
+                                <span style="padding: 4px; color: var(--text-secondary);">1</span>
+                                <span style="padding: 4px; color: var(--text-secondary);">2</span>
+                                <span style="padding: 4px; color: var(--text-secondary);">3</span>
+                                <span style="padding: 4px; color: var(--text-secondary);">4</span>
+                                <span style="padding: 4px; background: #5e81ac; color: white; border-radius: 50%;">5</span>
+                                <span style="padding: 4px; color: var(--text-secondary);">6</span>
+                                <span style="padding: 4px; color: var(--text-secondary);">7</span>
+                            </div>
+                        </div>
+                        <!-- Time picker closed while calendar is open -->
+                        <div style="background: var(--bg-muted); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; width: 170px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-primary);">
+                            6:42 PM
+                            <i class="pi pi-chevron-down" style="font-size: 10px; color: var(--text-muted);"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-3" style="color: #a3be8c;"><i class="pi pi-check" style="font-size: 10px;"></i> Fix: Close date picker when time opens (and vice versa)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================== -->
+    <!-- ISSUE 4: Escape Key Hijacking -->
+    <!-- ================================================================== -->
+    <div class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="issue-number">4</span>
+            <h2 class="text-xl font-bold">Escape Key Hijacking Navigation</h2>
+            <span class="priority-tag p1">P1</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-6 ml-10">Pressing Escape in the editor navigates back even when editing fields, popups are open, or the user just wants to dismiss something.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-10">
+            <!-- BEFORE -->
+            <div class="mockup-card">
+                <div class="before-label">Before - Current Behavior</div>
+                <div class="p-6">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Escape key actions:</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--bg-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">Esc</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">While editing title</span>
+                            <span style="margin-left: auto; font-size: 11px; color: #bf616a;"><i class="pi pi-arrow-left" style="font-size: 9px;"></i> Navigates away!</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--bg-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">Esc</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">While popup open</span>
+                            <span style="margin-left: auto; font-size: 11px; color: #bf616a;"><i class="pi pi-arrow-left" style="font-size: 9px;"></i> Navigates + orphans popup!</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--bg-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">Esc</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">While editing transcript</span>
+                            <span style="margin-left: auto; font-size: 11px; color: #bf616a;"><i class="pi pi-arrow-left" style="font-size: 9px;"></i> Navigates away!</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--bg-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">Esc</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">Nothing focused</span>
+                            <span style="margin-left: auto; font-size: 11px; color: #a3be8c;"><i class="pi pi-arrow-left" style="font-size: 9px;"></i> Navigates back (correct)</span>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-4" style="color: #bf616a;"><i class="pi pi-exclamation-triangle" style="font-size: 10px;"></i> 3 of 4 scenarios cause unexpected navigation</p>
+                </div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="mockup-card">
+                <div class="after-label">After - Proposed Behavior</div>
+                <div class="p-6">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Escape key cascade:</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--bg-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">Esc</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">While editing title</span>
+                            <span style="margin-left: auto; font-size: 11px; color: #a3be8c;">Blurs input only</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--bg-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">Esc</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">While popup open</span>
+                            <span style="margin-left: auto; font-size: 11px; color: #a3be8c;">Closes popup only</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--bg-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">Esc</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">While editing transcript</span>
+                            <span style="margin-left: auto; font-size: 11px; color: #a3be8c;">Blurs textarea only</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--bg-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">Esc</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">Nothing focused</span>
+                            <span style="margin-left: auto; font-size: 11px; color: #a3be8c;"><i class="pi pi-arrow-left" style="font-size: 9px;"></i> Navigates back</span>
+                        </div>
+                    </div>
+                    <div style="background: rgba(163, 190, 140, 0.1); border: 1px solid rgba(163, 190, 140, 0.3); border-radius: 8px; padding: 10px; margin-top: 12px;">
+                        <p class="text-xs" style="color: #a3be8c;"><strong>Rule:</strong> Escape should always dismiss the <em>nearest</em> interactive layer first (popup &gt; input focus &gt; navigation).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================== -->
+    <!-- ISSUE 5: Indistinguishable "Untitled Meeting" Rows -->
+    <!-- ================================================================== -->
+    <div class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="issue-number">5</span>
+            <h2 class="text-xl font-bold">Indistinguishable "Untitled Meeting" Rows</h2>
+            <span class="priority-tag p2">P2</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-6 ml-10">Multiple meetings show identical "Untitled Meeting / No attendees" making them impossible to tell apart in the list.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-10">
+            <!-- BEFORE -->
+            <div class="mockup-card">
+                <div class="before-label">Before - Current</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-3">Sunday, Feb 1 - 4 meetings</p>
+                    <div class="annotation" data-label="IDENTICAL" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div class="mock-row">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">10:00</span><br><span style="font-size: 10px; color: var(--text-muted);">AM</span></div>
+                            <div style="flex: 1;"><span style="font-size: 13px;">Untitled Meeting</span><br><span style="font-size: 11px; color: var(--text-muted);">No attendees</span></div>
+                            <span class="mock-badge" style="background: var(--bg-muted); color: var(--text-muted);">Draft</span>
+                        </div>
+                        <div class="mock-row">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">10:00</span><br><span style="font-size: 10px; color: var(--text-muted);">AM</span></div>
+                            <div style="flex: 1;"><span style="font-size: 13px;">Untitled Meeting</span><br><span style="font-size: 11px; color: var(--text-muted);">No attendees</span></div>
+                            <span class="mock-badge" style="background: var(--bg-muted); color: var(--text-muted);">Draft</span>
+                        </div>
+                        <div class="mock-row">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">10:00</span><br><span style="font-size: 10px; color: var(--text-muted);">AM</span></div>
+                            <div style="flex: 1;"><span style="font-size: 13px;">Untitled Meeting</span><br><span style="font-size: 11px; color: var(--text-muted);">No attendees</span></div>
+                            <span class="mock-badge" style="background: var(--bg-muted); color: var(--text-muted);">Draft</span>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-3" style="color: #bf616a;">Which meeting is which? Impossible to tell.</p>
+                </div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="mockup-card">
+                <div class="after-label">After - Proposed</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-3">Transcript preview + relative created time for differentiation</p>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div class="mock-row">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">10:00</span><br><span style="font-size: 10px; color: var(--text-muted);">AM</span></div>
+                            <div style="flex: 1;">
+                                <span style="font-size: 13px;">Untitled Meeting</span>
+                                <br><span style="font-size: 11px; color: var(--text-muted); font-style: italic;">"We discussed the Q1 roadmap and decided to..."</span>
+                            </div>
+                            <span class="mock-badge" style="background: rgba(163, 190, 140, 0.1); color: #a3be8c;">Analyzed</span>
+                        </div>
+                        <div class="mock-row">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">10:00</span><br><span style="font-size: 10px; color: var(--text-muted);">AM</span></div>
+                            <div style="flex: 1;">
+                                <span style="font-size: 13px; color: var(--text-muted); font-style: italic;">Untitled Meeting</span>
+                                <br><span style="font-size: 11px; color: var(--text-muted);">No transcript &middot; Created 2 days ago</span>
+                            </div>
+                            <span class="mock-badge" style="background: rgba(136, 192, 208, 0.12); color: #88c0d0;">Needs Transcript</span>
+                        </div>
+                        <div class="mock-row">
+                            <div style="width: 50px; text-align: center;"><span style="font-size: 16px; font-weight: 600;">10:00</span><br><span style="font-size: 10px; color: var(--text-muted);">AM</span></div>
+                            <div style="flex: 1;">
+                                <span style="font-size: 13px; color: var(--text-muted); font-style: italic;">Untitled Meeting</span>
+                                <br><span style="font-size: 11px; color: var(--text-muted);">No transcript &middot; Created 3 days ago</span>
+                            </div>
+                            <span class="mock-badge" style="background: rgba(136, 192, 208, 0.12); color: #88c0d0;">Needs Transcript</span>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-3" style="color: #a3be8c;"><i class="pi pi-check" style="font-size: 10px;"></i> Fix: Show transcript snippet or creation date to differentiate rows</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================== -->
+    <!-- ISSUE 6: Status Badge Clarity -->
+    <!-- ================================================================== -->
+    <div class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="issue-number">6</span>
+            <h2 class="text-xl font-bold">Status Badges Lack Clarity</h2>
+            <span class="priority-tag p2">P2</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-6 ml-10">"Draft" has very low contrast, and status labels (Draft, Ready, Reviewed) don't clearly communicate the meeting's state.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-10">
+            <!-- BEFORE -->
+            <div class="mockup-card">
+                <div class="before-label">Before - Current</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-4">Current status badges</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="annotation" data-label="LOW CONTRAST" style="display: inline-block;">
+                                <span class="mock-badge" style="background: var(--bg-muted); color: var(--text-muted); padding: 3px 10px;">Draft</span>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted);">Nearly invisible in dark mode</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="mock-badge" style="background: rgba(208, 135, 112, 0.1); color: #d08770; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; background: #d08770; border-radius: 50;"></span> Processing</span>
+                            <span style="font-size: 11px; color: var(--text-muted);">OK but vague</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="mock-badge" style="background: rgba(94, 129, 172, 0.15); color: #88c0d0; padding: 3px 10px;">Ready</span>
+                            <span style="font-size: 11px; color: var(--text-muted);">Ready for what?</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="mock-badge" style="background: rgba(163, 190, 140, 0.1); color: #a3be8c; padding: 3px 10px;">Reviewed</span>
+                            <span style="font-size: 11px; color: var(--text-muted);">Reviewed by whom?</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="mockup-card">
+                <div class="after-label">After - Proposed</div>
+                <div class="p-6">
+                    <p class="text-xs text-gray-500 mb-4">More descriptive and visible status badges</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="mock-badge" style="background: rgba(136, 192, 208, 0.15); color: #88c0d0; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="pi pi-pencil" style="font-size: 9px;"></i> Needs Transcript
+                            </span>
+                            <span style="font-size: 11px; color: var(--text-muted);">Clear action needed</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="mock-badge" style="background: rgba(208, 135, 112, 0.15); color: #d08770; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="pi pi-spin pi-spinner" style="font-size: 9px;"></i> Analyzing
+                            </span>
+                            <span style="font-size: 11px; color: var(--text-muted);">Describes what's happening</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="mock-badge" style="background: rgba(163, 190, 140, 0.15); color: #a3be8c; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="pi pi-sparkles" style="font-size: 9px;"></i> Analyzed
+                            </span>
+                            <span style="font-size: 11px; color: var(--text-muted);">Clear outcome</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="mock-badge" style="background: rgba(180, 142, 173, 0.15); color: #b48ead; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="pi pi-check-circle" style="font-size: 9px;"></i> Reviewed
+                            </span>
+                            <span style="font-size: 11px; color: var(--text-muted);">Final state</span>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-4" style="color: #a3be8c;"><i class="pi pi-check" style="font-size: 10px;"></i> Fix: Rename "Draft" to "Needs Transcript", "Ready" to "Analyzed". Add icons for scannability.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================== -->
+    <!-- ISSUE 7: Date & Time Layout Clutter -->
+    <!-- ================================================================== -->
+    <div class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="issue-number">7</span>
+            <h2 class="text-xl font-bold">Date &amp; Time Layout Clutter</h2>
+            <span class="priority-tag p2">P2</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-6 ml-10">The Details card has date chips + calendar + time picker on the left and a single Attendees input on the right, creating visual imbalance. Too many controls competing for attention.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-10">
+            <!-- BEFORE -->
+            <div class="mockup-card">
+                <div class="before-label">Before - Current Layout</div>
+                <div class="p-6">
+                    <div class="mock-section" style="border-left-color: rgba(136, 192, 208, 0.8);">
+                        <div style="font-size: 11px; color: #88c0d0; font-weight: 600; text-transform: uppercase; margin-bottom: 12px;"><i class="pi pi-info-circle" style="font-size: 10px;"></i> Details</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <!-- Left: Date & Time (tall!) -->
+                            <div class="annotation" data-label="TALL" style="position: relative;">
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Date &amp; Time</div>
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px;">
+                                        <span class="mock-chip" style="font-size: 10px; padding: 2px 8px;">Today</span>
+                                        <span class="mock-chip" style="font-size: 10px; padding: 2px 8px;">Tomorrow</span>
+                                        <span class="mock-chip" style="font-size: 10px; padding: 2px 8px;">Next Week</span>
+                                        <span class="mock-chip mock-chip-active" style="font-size: 10px; padding: 2px 8px;">1 Feb</span>
+                                        <span class="mock-chip" style="font-size: 10px; padding: 2px 8px; color: #88c0d0;">Change</span>
+                                    </div>
+                                    <div style="background: var(--bg-muted); border-radius: 6px; padding: 8px; margin-bottom: 8px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-muted);">[Calendar expands here]</div>
+                                    <div style="background: var(--bg-muted); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; width: 140px; font-size: 12px; color: var(--text-primary);">6:42 PM <span style="float: right; color: var(--text-muted);">v</span></div>
+                                </div>
+                            </div>
+                            <!-- Right: Attendees (short!) -->
+                            <div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Attendees</div>
+                                <input type="text" class="mock-input" value="Gareth, Sarah, Mike" readonly style="width: 100%;">
+                                <div style="height: 110px;"></div>
+                                <div style="text-align: center; font-size: 10px; color: var(--text-muted);">(wasted space)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="mockup-card">
+                <div class="after-label">After - Proposed Layout</div>
+                <div class="p-6">
+                    <div class="mock-section" style="border-left-color: rgba(136, 192, 208, 0.8);">
+                        <div style="font-size: 11px; color: #88c0d0; font-weight: 600; text-transform: uppercase; margin-bottom: 12px;"><i class="pi pi-info-circle" style="font-size: 10px;"></i> Details</div>
+                        <!-- Stacked: Date, then Time inline, then Attendees -->
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <!-- Row 1: Date & Time side by side -->
+                            <div style="display: flex; gap: 16px; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Date</div>
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                        <span class="mock-chip" style="font-size: 10px; padding: 2px 8px;">Today</span>
+                                        <span class="mock-chip" style="font-size: 10px; padding: 2px 8px;">Tomorrow</span>
+                                        <span class="mock-chip mock-chip-active" style="font-size: 10px; padding: 2px 8px;">Wed, 1 Feb</span>
+                                        <span class="mock-chip" style="font-size: 10px; padding: 2px 8px; color: #88c0d0;"><i class="pi pi-calendar" style="font-size: 8px;"></i></span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Time</div>
+                                    <div style="background: var(--bg-muted); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; width: 120px; font-size: 12px; color: var(--text-primary);">6:42 PM <span style="float: right; color: var(--text-muted);">v</span></div>
+                                </div>
+                            </div>
+                            <!-- Row 2: Attendees -->
+                            <div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Attendees</div>
+                                <input type="text" class="mock-input" value="Gareth, Sarah, Mike, Lisa, Tom, Alex, Jordan, Kim" readonly style="width: 100%;">
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-3" style="color: #a3be8c;"><i class="pi pi-check" style="font-size: 10px;"></i> Fix: Stack vertically. Date &amp; time on one row, attendees on the next. Compact date chip shows "Wed, 1 Feb" instead of separate chip + calendar.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================== -->
+    <!-- ISSUE 8: Polish - Tags Discoverability, Transcript Height, Click Feedback -->
+    <!-- ================================================================== -->
+    <div class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="issue-number">8</span>
+            <h2 class="text-xl font-bold">Polish: Tags, Transcript Height, Row Feedback</h2>
+            <span class="priority-tag p3">P3 - Polish</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-6 ml-10">Minor improvements to discoverability, space usage, and interaction feedback.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 ml-10">
+            <!-- Tags discoverability -->
+            <div class="mockup-card">
+                <div class="before-label">Before: Hidden "+" Tag Button</div>
+                <div class="p-4">
+                    <div style="display: flex; align-items: center; gap: 4px; padding: 8px; border-top: 1px solid var(--border);">
+                        <span style="font-size: 10px; color: var(--text-muted);">Last edited 2 min ago</span>
+                        <span style="flex: 1;"></span>
+                        <span style="width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--text-muted); opacity: 0.3;">+</span>
+                    </div>
+                    <p class="text-xs mt-2" style="color: #bf616a;">opacity: 0.3 makes the + button nearly invisible</p>
+                </div>
+                <div class="after-label">After: Visible Tag Button</div>
+                <div class="p-4">
+                    <div style="display: flex; align-items: center; gap: 4px; padding: 8px; border-top: 1px solid var(--border);">
+                        <span style="font-size: 10px; color: var(--text-muted);">Last edited 2 min ago</span>
+                        <span style="flex: 1;"></span>
+                        <span style="background: var(--bg-muted); padding: 2px 8px; border-radius: 9999px; font-size: 10px; color: var(--text-secondary); display: flex; align-items: center; gap: 3px;"><i class="pi pi-tag" style="font-size: 8px;"></i> Add tag</span>
+                    </div>
+                    <p class="text-xs mt-2" style="color: #a3be8c;">Visible labeled button with tag icon</p>
+                </div>
+            </div>
+
+            <!-- Transcript height -->
+            <div class="mockup-card">
+                <div class="before-label">Before: Fixed Height Textarea</div>
+                <div class="p-4">
+                    <div style="background: var(--bg-muted); border-radius: 6px; padding: 10px; font-size: 12px; color: var(--text-primary); min-height: 120px;">
+                        Transcript content for meeting 8
+                        <div style="height: 80px;"></div>
+                    </div>
+                    <p class="text-xs mt-2" style="color: #bf616a;">6 rows min for 1 line of text = wasted space</p>
+                </div>
+                <div class="after-label">After: Auto-Grow Textarea</div>
+                <div class="p-4">
+                    <div style="background: var(--bg-muted); border-radius: 6px; padding: 10px; font-size: 12px; color: var(--text-primary);">
+                        Transcript content for meeting 8
+                    </div>
+                    <p class="text-xs mt-2" style="color: #a3be8c;">Auto-grows with content (min 3 rows)</p>
+                </div>
+            </div>
+
+            <!-- Click feedback -->
+            <div class="mockup-card">
+                <div class="before-label">Before: No Click Feedback</div>
+                <div class="p-4">
+                    <div class="mock-row" style="cursor: pointer;">
+                        <div style="width: 40px; text-align: center; font-size: 14px; font-weight: 600;">6:42</div>
+                        <div style="flex: 1; font-size: 12px;">All-Hands Meeting</div>
+                    </div>
+                    <p class="text-xs mt-2" style="color: #bf616a;">No visual indication that something will happen on click</p>
+                </div>
+                <div class="after-label">After: Active State Feedback</div>
+                <div class="p-4">
+                    <div class="mock-row" style="cursor: pointer; background: rgba(94, 129, 172, 0.08); border-color: rgba(94, 129, 172, 0.3); transform: scale(0.99);">
+                        <div style="width: 40px; text-align: center; font-size: 14px; font-weight: 600;">6:42</div>
+                        <div style="flex: 1; font-size: 12px;">All-Hands Meeting</div>
+                    </div>
+                    <p class="text-xs mt-2" style="color: #a3be8c;">Subtle press state with scale + tint</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================== -->
+    <!-- Summary Table -->
+    <!-- ================================================================== -->
+    <div class="mb-16 ml-0">
+        <h2 class="text-xl font-bold mb-6">Summary</h2>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border);">
+                        <th style="text-align: left; padding: 8px 12px; color: var(--text-muted);">#</th>
+                        <th style="text-align: left; padding: 8px 12px; color: var(--text-muted);">Issue</th>
+                        <th style="text-align: left; padding: 8px 12px; color: var(--text-muted);">Priority</th>
+                        <th style="text-align: left; padding: 8px 12px; color: var(--text-muted);">Effort</th>
+                        <th style="text-align: left; padding: 8px 12px; color: var(--text-muted);">Fix Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 8px 12px;">1</td>
+                        <td style="padding: 8px 12px;">Black dropdown backgrounds</td>
+                        <td style="padding: 8px 12px;"><span class="priority-tag p0">P0</span></td>
+                        <td style="padding: 8px 12px; color: #a3be8c;">Small</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 11px;">app.config.ts</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 8px 12px;">2</td>
+                        <td style="padding: 8px 12px;">Stale popup after navigation</td>
+                        <td style="padding: 8px 12px;"><span class="priority-tag p0">P0</span></td>
+                        <td style="padding: 8px 12px; color: #a3be8c;">Small</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 11px;">meeting-editor.page.ts</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 8px 12px;">3</td>
+                        <td style="padding: 8px 12px;">Date picker / time overlap</td>
+                        <td style="padding: 8px 12px;"><span class="priority-tag p1">P1</span></td>
+                        <td style="padding: 8px 12px; color: #ebcb8b;">Medium</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 11px;">meeting-editor.page.ts</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 8px 12px;">4</td>
+                        <td style="padding: 8px 12px;">Escape key hijacking</td>
+                        <td style="padding: 8px 12px;"><span class="priority-tag p1">P1</span></td>
+                        <td style="padding: 8px 12px; color: #a3be8c;">Small</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 11px;">meeting-editor.page.ts</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 8px 12px;">5</td>
+                        <td style="padding: 8px 12px;">Indistinguishable untitled meetings</td>
+                        <td style="padding: 8px 12px;"><span class="priority-tag p2">P2</span></td>
+                        <td style="padding: 8px 12px; color: #ebcb8b;">Medium</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 11px;">meeting-row.component.ts</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 8px 12px;">6</td>
+                        <td style="padding: 8px 12px;">Status badge clarity</td>
+                        <td style="padding: 8px 12px;"><span class="priority-tag p2">P2</span></td>
+                        <td style="padding: 8px 12px; color: #a3be8c;">Small</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 11px;">meeting-row.component.ts</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 8px 12px;">7</td>
+                        <td style="padding: 8px 12px;">Date &amp; time layout clutter</td>
+                        <td style="padding: 8px 12px;"><span class="priority-tag p2">P2</span></td>
+                        <td style="padding: 8px 12px; color: #ebcb8b;">Medium</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 11px;">meeting-editor.page.ts</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 8px 12px;">8</td>
+                        <td style="padding: 8px 12px;">Polish (tags, textarea, feedback)</td>
+                        <td style="padding: 8px 12px;"><span class="priority-tag p3">P3</span></td>
+                        <td style="padding: 8px 12px; color: #a3be8c;">Small</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 11px;">Various</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

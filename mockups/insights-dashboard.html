@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insights Dashboard - Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)',
+            'surface-subtle': 'var(--color-bg-subtle)',
+            'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)',
+            'foreground-secondary': 'var(--color-text-secondary)',
+            'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)',
+            'border-muted': 'var(--color-border-muted)',
+            'accent-solid': 'var(--color-primary-solid)',
+            'accent-foreground': 'var(--color-primary-text)',
+            accent: 'var(--color-primary-bg)',
+            done: 'var(--color-done-bg)',
+            'done-foreground': 'var(--color-done-text)',
+            'done-border': 'var(--color-done-border)',
+            danger: 'var(--color-danger-base)',
+            inprogress: 'var(--color-inprogress-bg)',
+            'inprogress-foreground': 'var(--color-inprogress-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8;
+      --color-bg-subtle: #ffffff;
+      --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440;
+      --color-text-secondary: #4c566a;
+      --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0;
+      --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15);
+      --color-primary-text: #5e81ac;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.1);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.2);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.1);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.2);
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933;
+      --color-bg-subtle: #2e3440;
+      --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4;
+      --color-text-secondary: #d8dee9;
+      --color-text-muted: #4c566a;
+      --color-border-default: #3b4252;
+      --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2);
+      --color-primary-text: #88c0d0;
+      --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.15);
+      --color-done-text: #a3be8c;
+      --color-done-border: rgba(163, 190, 140, 0.25);
+      --color-danger-base: #bf616a;
+      --color-inprogress-bg: rgba(208, 135, 112, 0.15);
+      --color-inprogress-text: #d08770;
+      --color-inprogress-border: rgba(208, 135, 112, 0.25);
+    }
+    body { background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-divider {
+      border-top: 3px dashed var(--color-border-default);
+      margin: 3rem 0;
+      padding-top: 2rem;
+    }
+    .badge-recommended {
+      background: var(--color-done-bg);
+      color: var(--color-done-text);
+      border: 1px solid var(--color-done-border);
+    }
+    .trend-up { color: var(--color-done-text); }
+    .trend-down { color: var(--color-danger-base); }
+    .chart-placeholder {
+      background: var(--color-bg-muted);
+      border: 1px dashed var(--color-border-default);
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      color: var(--color-text-muted);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body class="font-sans p-6">
+
+  <!-- Theme Toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="document.documentElement.toggleAttribute('data-theme') || document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') ? '' : 'dark')"
+      class="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-foreground-secondary text-sm hover:bg-surface-muted transition">
+      <i class="pi pi-moon mr-1"></i> Toggle Dark
+    </button>
+  </div>
+
+  <div class="max-w-6xl mx-auto">
+
+    <h1 class="text-3xl font-bold text-foreground mb-2">Insights Dashboard - Design Options</h1>
+    <p class="text-foreground-secondary mb-8">5 layout options for the Personal Insights page. Each shows summary cards + trend charts.</p>
+
+    <!-- ========================================== -->
+    <!-- OPTION 1: Classic Dashboard (RECOMMENDED) -->
+    <!-- ========================================== -->
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-2xl font-bold text-foreground">Option 1: Classic Dashboard</h2>
+        <span class="badge-recommended text-xs font-semibold px-2.5 py-1 rounded-full">Recommended</span>
+      </div>
+      <p class="text-foreground-secondary mb-2">Summary cards in a horizontal row at top, full-width charts stacked below. Clean, scannable, familiar dashboard pattern.</p>
+      <p class="text-sm text-foreground-muted mb-6"><strong>Pros:</strong> Immediately scannable, works well on all screen sizes, familiar pattern. <strong>Cons:</strong> Long vertical scroll for all charts.</p>
+
+      <div class="bg-surface-subtle border border-border rounded-2xl p-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-foreground">Insights</h1>
+            <p class="text-sm text-foreground-muted mt-0.5">Behavioral trends across your meetings</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex bg-surface-muted rounded-lg p-0.5">
+              <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted hover:text-foreground transition">7d</button>
+              <button class="px-3 py-1.5 text-sm rounded-md bg-accent-solid text-white font-medium">30d</button>
+              <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted hover:text-foreground transition">90d</button>
+              <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted hover:text-foreground transition">All</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Cards Row -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Talk Time</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold text-foreground">38%</span>
+              <span class="text-sm trend-down font-medium flex items-center gap-0.5"><i class="pi pi-arrow-down text-xs"></i>4%</span>
+            </div>
+            <p class="text-xs text-foreground-muted mt-1">vs previous period</p>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Question Ratio</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold text-foreground">0.42</span>
+              <span class="text-sm trend-up font-medium flex items-center gap-0.5"><i class="pi pi-arrow-up text-xs"></i>12%</span>
+            </div>
+            <p class="text-xs text-foreground-muted mt-1">questions per statement</p>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Red Flags</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold text-foreground">2</span>
+              <span class="text-sm trend-up font-medium flex items-center gap-0.5"><i class="pi pi-arrow-down text-xs"></i>3</span>
+            </div>
+            <p class="text-xs text-foreground-muted mt-1">fewer than last period</p>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Top Style</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-lg font-bold text-foreground">Facilitator</span>
+            </div>
+            <p class="text-xs text-foreground-muted mt-1">high engagement</p>
+          </div>
+        </div>
+
+        <!-- Charts stacked full-width -->
+        <div class="space-y-6">
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Talk-Time % Over Time</h3>
+            <canvas id="chart1-talk" height="80"></canvas>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Question vs Statement Ratio</h3>
+            <canvas id="chart1-question" height="80"></canvas>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Interruptions Per Meeting</h3>
+            <canvas id="chart1-interrupt" height="80"></canvas>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Sentiment Trend</h3>
+            <canvas id="chart1-sentiment" height="80"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- OPTION 2: Two-Column Grid -->
+    <!-- ========================================== -->
+    <div class="option-divider">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-2xl font-bold text-foreground">Option 2: Two-Column Chart Grid</h2>
+      </div>
+      <p class="text-foreground-secondary mb-2">Summary cards at top, charts in a 2-column grid below. More compact vertical layout.</p>
+      <p class="text-sm text-foreground-muted mb-6"><strong>Pros:</strong> Less scrolling, shows more data at once. <strong>Cons:</strong> Charts are smaller, less detail visible. Doesn't work well on mobile (falls back to single column).</p>
+
+      <div class="bg-surface-subtle border border-border rounded-2xl p-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-foreground">Insights</h1>
+            <p class="text-sm text-foreground-muted mt-0.5">12 meetings analyzed</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <select class="bg-surface border border-border rounded-lg px-3 py-1.5 text-sm text-foreground">
+              <option>You (Gareth)</option>
+              <option>All Participants</option>
+            </select>
+            <div class="flex bg-surface-muted rounded-lg p-0.5">
+              <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">7d</button>
+              <button class="px-3 py-1.5 text-sm rounded-md bg-accent-solid text-white font-medium">30d</button>
+              <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">90d</button>
+              <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">All</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+          <div class="bg-surface border border-border rounded-xl p-3 text-center">
+            <p class="text-xs text-foreground-muted font-medium">Talk Time</p>
+            <p class="text-xl font-bold text-foreground mt-0.5">38%</p>
+            <p class="text-xs trend-down mt-0.5"><i class="pi pi-arrow-down text-xs"></i> 4%</p>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-3 text-center">
+            <p class="text-xs text-foreground-muted font-medium">Questions</p>
+            <p class="text-xl font-bold text-foreground mt-0.5">0.42</p>
+            <p class="text-xs trend-up mt-0.5"><i class="pi pi-arrow-up text-xs"></i> 12%</p>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-3 text-center">
+            <p class="text-xs text-foreground-muted font-medium">Interrupts</p>
+            <p class="text-xl font-bold text-foreground mt-0.5">1.2</p>
+            <p class="text-xs trend-up mt-0.5"><i class="pi pi-arrow-down text-xs"></i> 25%</p>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-3 text-center">
+            <p class="text-xs text-foreground-muted font-medium">Sentiment</p>
+            <p class="text-xl font-bold text-foreground mt-0.5">0.72</p>
+            <p class="text-xs trend-up mt-0.5"><i class="pi pi-arrow-up text-xs"></i> 8%</p>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-3 text-center">
+            <p class="text-xs text-foreground-muted font-medium">Red Flags</p>
+            <p class="text-xl font-bold text-foreground mt-0.5">2</p>
+            <p class="text-xs trend-up mt-0.5"><i class="pi pi-arrow-down text-xs"></i> 3</p>
+          </div>
+        </div>
+
+        <!-- 2-Column Chart Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Talk-Time % Over Time</h3>
+            <canvas id="chart2-talk" height="100"></canvas>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Question Ratio</h3>
+            <canvas id="chart2-question" height="100"></canvas>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Interruptions</h3>
+            <canvas id="chart2-interrupt" height="100"></canvas>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Sentiment</h3>
+            <canvas id="chart2-sentiment" height="100"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- OPTION 3: Tabbed Sections -->
+    <!-- ========================================== -->
+    <div class="option-divider">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-2xl font-bold text-foreground">Option 3: Tabbed Chart Sections</h2>
+      </div>
+      <p class="text-foreground-secondary mb-2">Summary cards always visible. Charts organized by tabs (Speaking, Sentiment, Flags). One chart section visible at a time.</p>
+      <p class="text-sm text-foreground-muted mb-6"><strong>Pros:</strong> Minimal scrolling, focused view per category. <strong>Cons:</strong> Can't compare charts across categories at a glance. Extra click to switch tabs.</p>
+
+      <div class="bg-surface-subtle border border-border rounded-2xl p-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h1 class="text-2xl font-bold text-foreground">Insights</h1>
+          <div class="flex bg-surface-muted rounded-lg p-0.5">
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">7d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md bg-accent-solid text-white font-medium">30d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">90d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">All</button>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Talk Time</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold">38%</span>
+              <span class="text-sm trend-down"><i class="pi pi-arrow-down text-xs"></i> 4%</span>
+            </div>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Questions</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold">0.42</span>
+              <span class="text-sm trend-up"><i class="pi pi-arrow-up text-xs"></i> 12%</span>
+            </div>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Sentiment</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold">0.72</span>
+              <span class="text-sm trend-up"><i class="pi pi-arrow-up text-xs"></i> 8%</span>
+            </div>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Red Flags</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold">2</span>
+              <span class="text-sm trend-up"><i class="pi pi-arrow-down text-xs"></i> 3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="flex gap-1 border-b border-border mb-6">
+          <button class="px-4 py-2 text-sm font-medium text-accent-solid border-b-2 border-accent-solid -mb-px">
+            <i class="pi pi-microphone mr-1.5"></i>Speaking
+          </button>
+          <button class="px-4 py-2 text-sm font-medium text-foreground-muted hover:text-foreground transition">
+            <i class="pi pi-heart mr-1.5"></i>Sentiment
+          </button>
+          <button class="px-4 py-2 text-sm font-medium text-foreground-muted hover:text-foreground transition">
+            <i class="pi pi-exclamation-triangle mr-1.5"></i>Red Flags
+          </button>
+          <button class="px-4 py-2 text-sm font-medium text-foreground-muted hover:text-foreground transition">
+            <i class="pi pi-users mr-1.5"></i>Engagement
+          </button>
+        </div>
+
+        <!-- Active Tab: Speaking -->
+        <div class="space-y-6">
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Talk-Time % Over Time</h3>
+            <canvas id="chart3-talk" height="90"></canvas>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Question vs Statement Ratio</h3>
+            <canvas id="chart3-question" height="90"></canvas>
+          </div>
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-foreground mb-3">Interruptions Per Meeting</h3>
+            <canvas id="chart3-interrupt" height="90"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- OPTION 4: Compact Cards with Sparklines -->
+    <!-- ========================================== -->
+    <div class="option-divider">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-2xl font-bold text-foreground">Option 4: Compact Cards with Inline Sparklines</h2>
+      </div>
+      <p class="text-foreground-secondary mb-2">Each metric gets a card containing both the summary stat AND a small sparkline chart. No separate chart section.</p>
+      <p class="text-sm text-foreground-muted mb-6"><strong>Pros:</strong> Very compact, each metric is self-contained, minimal scrolling. <strong>Cons:</strong> Charts are tiny (sparklines), hard to read detailed trends. Not ideal for red flag breakdown.</p>
+
+      <div class="bg-surface-subtle border border-border rounded-2xl p-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-foreground">Insights</h1>
+            <p class="text-sm text-foreground-muted mt-0.5">12 meetings &middot; Last 30 days</p>
+          </div>
+          <div class="flex bg-surface-muted rounded-lg p-0.5">
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">7d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md bg-accent-solid text-white font-medium">30d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">90d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">All</button>
+          </div>
+        </div>
+
+        <!-- Sparkline Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Talk Time Card -->
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Talk Time</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="text-2xl font-bold">38%</span>
+                  <span class="text-sm trend-down"><i class="pi pi-arrow-down text-xs"></i> 4%</span>
+                </div>
+              </div>
+              <i class="pi pi-microphone text-2xl text-foreground-muted opacity-30"></i>
+            </div>
+            <canvas id="chart4-talk" height="50"></canvas>
+          </div>
+
+          <!-- Question Ratio Card -->
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Question Ratio</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="text-2xl font-bold">0.42</span>
+                  <span class="text-sm trend-up"><i class="pi pi-arrow-up text-xs"></i> 12%</span>
+                </div>
+              </div>
+              <i class="pi pi-question-circle text-2xl text-foreground-muted opacity-30"></i>
+            </div>
+            <canvas id="chart4-question" height="50"></canvas>
+          </div>
+
+          <!-- Interruptions Card -->
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Interruptions</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="text-2xl font-bold">1.2</span>
+                  <span class="text-sm trend-up"><i class="pi pi-arrow-down text-xs"></i> 25%</span>
+                </div>
+              </div>
+              <i class="pi pi-ban text-2xl text-foreground-muted opacity-30"></i>
+            </div>
+            <canvas id="chart4-interrupt" height="50"></canvas>
+          </div>
+
+          <!-- Sentiment Card -->
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Sentiment</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="text-2xl font-bold">0.72</span>
+                  <span class="text-sm trend-up"><i class="pi pi-arrow-up text-xs"></i> 8%</span>
+                </div>
+              </div>
+              <i class="pi pi-heart text-2xl text-foreground-muted opacity-30"></i>
+            </div>
+            <canvas id="chart4-sentiment" height="50"></canvas>
+          </div>
+
+          <!-- Red Flags Card -->
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Red Flags</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="text-2xl font-bold">2</span>
+                  <span class="text-sm trend-up"><i class="pi pi-arrow-down text-xs"></i> 60%</span>
+                </div>
+              </div>
+              <i class="pi pi-exclamation-triangle text-2xl text-foreground-muted opacity-30"></i>
+            </div>
+            <canvas id="chart4-flags" height="50"></canvas>
+          </div>
+
+          <!-- Engagement Card -->
+          <div class="bg-surface border border-border rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-foreground-muted font-medium uppercase tracking-wide">Engagement</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="text-2xl font-bold">High</span>
+                </div>
+              </div>
+              <i class="pi pi-bolt text-2xl text-foreground-muted opacity-30"></i>
+            </div>
+            <canvas id="chart4-engage" height="50"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- OPTION 5: Hero Chart + Sidebar Stats -->
+    <!-- ========================================== -->
+    <div class="option-divider">
+      <div class="flex items-center gap-3 mb-4">
+        <h2 class="text-2xl font-bold text-foreground">Option 5: Hero Chart with Stat Sidebar</h2>
+      </div>
+      <p class="text-foreground-secondary mb-2">Large featured chart on the left, vertical stat cards on the right. Clickable stat cards switch the main chart.</p>
+      <p class="text-sm text-foreground-muted mb-6"><strong>Pros:</strong> Dramatic, large chart is easy to read, interactive. <strong>Cons:</strong> Only one chart visible at a time, sidebar takes up space. Complex interaction model.</p>
+
+      <div class="bg-surface-subtle border border-border rounded-2xl p-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h1 class="text-2xl font-bold text-foreground">Insights</h1>
+          <div class="flex bg-surface-muted rounded-lg p-0.5">
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">7d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md bg-accent-solid text-white font-medium">30d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">90d</button>
+            <button class="px-3 py-1.5 text-sm rounded-md text-foreground-muted">All</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+          <!-- Hero Chart (left) -->
+          <div class="flex-1 bg-surface border border-border rounded-xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-base font-semibold text-foreground">Talk-Time % Over Time</h3>
+              <span class="text-xs text-foreground-muted">12 meetings</span>
+            </div>
+            <canvas id="chart5-hero" height="140"></canvas>
+          </div>
+
+          <!-- Stat Sidebar (right) -->
+          <div class="lg:w-64 space-y-3">
+            <!-- Active stat (highlighted) -->
+            <div class="bg-accent border-2 border-accent-solid rounded-xl p-4 cursor-pointer">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-microphone text-accent-foreground text-sm"></i>
+                <p class="text-xs text-accent-foreground font-semibold uppercase tracking-wide">Talk Time</p>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-2xl font-bold text-foreground">38%</span>
+                <span class="text-sm trend-down"><i class="pi pi-arrow-down text-xs"></i> 4%</span>
+              </div>
+            </div>
+
+            <!-- Inactive stats -->
+            <div class="bg-surface border border-border rounded-xl p-4 cursor-pointer hover:border-accent-solid transition">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-question-circle text-foreground-muted text-sm"></i>
+                <p class="text-xs text-foreground-muted font-semibold uppercase tracking-wide">Question Ratio</p>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-xl font-bold text-foreground">0.42</span>
+                <span class="text-sm trend-up"><i class="pi pi-arrow-up text-xs"></i> 12%</span>
+              </div>
+            </div>
+
+            <div class="bg-surface border border-border rounded-xl p-4 cursor-pointer hover:border-accent-solid transition">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-ban text-foreground-muted text-sm"></i>
+                <p class="text-xs text-foreground-muted font-semibold uppercase tracking-wide">Interruptions</p>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-xl font-bold text-foreground">1.2</span>
+                <span class="text-sm trend-up"><i class="pi pi-arrow-down text-xs"></i> 25%</span>
+              </div>
+            </div>
+
+            <div class="bg-surface border border-border rounded-xl p-4 cursor-pointer hover:border-accent-solid transition">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-heart text-foreground-muted text-sm"></i>
+                <p class="text-xs text-foreground-muted font-semibold uppercase tracking-wide">Sentiment</p>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-xl font-bold text-foreground">0.72</span>
+                <span class="text-sm trend-up"><i class="pi pi-arrow-up text-xs"></i> 8%</span>
+              </div>
+            </div>
+
+            <div class="bg-surface border border-border rounded-xl p-4 cursor-pointer hover:border-accent-solid transition">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-exclamation-triangle text-foreground-muted text-sm"></i>
+                <p class="text-xs text-foreground-muted font-semibold uppercase tracking-wide">Red Flags</p>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-xl font-bold text-foreground">2</span>
+                <span class="text-sm trend-up"><i class="pi pi-arrow-down text-xs"></i> 60%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /max-w-6xl -->
+
+  <!-- Chart.js Initialization -->
+  <script>
+    const accentColor = '#5e81ac';
+    const accentColorAlpha = 'rgba(94, 129, 172, 0.15)';
+    const dangerColor = '#bf616a';
+    const dangerColorAlpha = 'rgba(191, 97, 106, 0.15)';
+    const successColor = '#a3be8c';
+    const successColorAlpha = 'rgba(163, 190, 140, 0.15)';
+    const warmColor = '#d08770';
+    const warmColorAlpha = 'rgba(208, 135, 112, 0.15)';
+
+    const dates = ['Jan 2', 'Jan 5', 'Jan 8', 'Jan 12', 'Jan 15', 'Jan 18', 'Jan 21', 'Jan 24', 'Jan 27', 'Jan 30'];
+    const talkData = [45, 42, 38, 40, 35, 38, 36, 34, 38, 37];
+    const questionData = [0.30, 0.32, 0.35, 0.38, 0.40, 0.38, 0.42, 0.45, 0.41, 0.44];
+    const interruptData = [3, 2, 2, 1, 2, 1, 0, 1, 1, 0];
+    const sentimentData = [0.60, 0.62, 0.65, 0.68, 0.70, 0.72, 0.69, 0.74, 0.73, 0.75];
+    const flagData = [2, 1, 1, 0, 1, 0, 0, 1, 0, 0];
+    const engageData = [2, 2, 3, 2, 3, 3, 3, 2, 3, 3];
+
+    const baseLineOpts = {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#7b88a1' } },
+        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, color: '#7b88a1' } }
+      },
+      elements: { point: { radius: 3, hoverRadius: 5 }, line: { tension: 0.3 } }
+    };
+
+    const sparkOpts = {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: { x: { display: false }, y: { display: false } },
+      elements: { point: { radius: 0 }, line: { tension: 0.4, borderWidth: 2 } }
+    };
+
+    function lineDataset(data, color, bgColor) {
+      return { data, borderColor: color, backgroundColor: bgColor, fill: true, borderWidth: 2 };
+    }
+    function barDataset(data, color, bgColor) {
+      return { data, backgroundColor: bgColor, borderColor: color, borderWidth: 1 };
+    }
+
+    // Option 1 charts
+    new Chart('chart1-talk', { type: 'line', data: { labels: dates, datasets: [lineDataset(talkData, accentColor, accentColorAlpha)] }, options: baseLineOpts });
+    new Chart('chart1-question', { type: 'line', data: { labels: dates, datasets: [lineDataset(questionData, successColor, successColorAlpha)] }, options: baseLineOpts });
+    new Chart('chart1-interrupt', { type: 'bar', data: { labels: dates, datasets: [barDataset(interruptData, warmColor, warmColorAlpha)] }, options: baseLineOpts });
+    new Chart('chart1-sentiment', { type: 'line', data: { labels: dates, datasets: [lineDataset(sentimentData, successColor, successColorAlpha)] }, options: baseLineOpts });
+
+    // Option 2 charts
+    new Chart('chart2-talk', { type: 'line', data: { labels: dates, datasets: [lineDataset(talkData, accentColor, accentColorAlpha)] }, options: baseLineOpts });
+    new Chart('chart2-question', { type: 'line', data: { labels: dates, datasets: [lineDataset(questionData, successColor, successColorAlpha)] }, options: baseLineOpts });
+    new Chart('chart2-interrupt', { type: 'bar', data: { labels: dates, datasets: [barDataset(interruptData, warmColor, warmColorAlpha)] }, options: baseLineOpts });
+    new Chart('chart2-sentiment', { type: 'line', data: { labels: dates, datasets: [lineDataset(sentimentData, successColor, successColorAlpha)] }, options: baseLineOpts });
+
+    // Option 3 charts
+    new Chart('chart3-talk', { type: 'line', data: { labels: dates, datasets: [lineDataset(talkData, accentColor, accentColorAlpha)] }, options: baseLineOpts });
+    new Chart('chart3-question', { type: 'line', data: { labels: dates, datasets: [lineDataset(questionData, successColor, successColorAlpha)] }, options: baseLineOpts });
+    new Chart('chart3-interrupt', { type: 'bar', data: { labels: dates, datasets: [barDataset(interruptData, warmColor, warmColorAlpha)] }, options: baseLineOpts });
+
+    // Option 4 sparklines
+    new Chart('chart4-talk', { type: 'line', data: { labels: dates, datasets: [lineDataset(talkData, accentColor, accentColorAlpha)] }, options: sparkOpts });
+    new Chart('chart4-question', { type: 'line', data: { labels: dates, datasets: [lineDataset(questionData, successColor, successColorAlpha)] }, options: sparkOpts });
+    new Chart('chart4-interrupt', { type: 'line', data: { labels: dates, datasets: [lineDataset(interruptData, warmColor, warmColorAlpha)] }, options: sparkOpts });
+    new Chart('chart4-sentiment', { type: 'line', data: { labels: dates, datasets: [lineDataset(sentimentData, successColor, successColorAlpha)] }, options: sparkOpts });
+    new Chart('chart4-flags', { type: 'line', data: { labels: dates, datasets: [lineDataset(flagData, dangerColor, dangerColorAlpha)] }, options: sparkOpts });
+    new Chart('chart4-engage', { type: 'line', data: { labels: dates, datasets: [lineDataset(engageData, accentColor, accentColorAlpha)] }, options: sparkOpts });
+
+    // Option 5 hero chart
+    new Chart('chart5-hero', { type: 'line', data: { labels: dates, datasets: [lineDataset(talkData, accentColor, accentColorAlpha)] }, options: { ...baseLineOpts, maintainAspectRatio: true } });
+  </script>
+
+</body>
+</html>
