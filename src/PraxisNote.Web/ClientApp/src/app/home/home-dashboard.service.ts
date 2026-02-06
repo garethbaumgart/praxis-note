@@ -4,7 +4,6 @@ import { NoteService } from '../notes/note.service';
 import { MeetingService } from '../meetings/meeting.service';
 import { Task } from '../tasks/task.model';
 import { Note } from '../notes/note.model';
-import { Meeting } from '../meetings/meeting.model';
 import { formatShortDate } from '../shared/date-utils';
 
 export interface MeetingChip {
