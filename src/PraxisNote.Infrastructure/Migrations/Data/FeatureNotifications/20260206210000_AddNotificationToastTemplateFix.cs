@@ -24,7 +24,10 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Toast notifications restored';
+                WHERE "Type" = 'BugFix'
+                  AND "Title" = 'Toast notifications restored'
+                  AND "IssueUrl" = 'https://github.com/garethbaumgart/praxis-note/issues/379'
+                  AND "CreatedAt" = '2026-02-06T21:00:00Z';
                 """);
         }
     }
