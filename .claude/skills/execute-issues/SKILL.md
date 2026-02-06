@@ -74,8 +74,7 @@ Do NOT ask the user whether to broadcast. Make the decision based on the criteri
 
 #### /pr Step 9 Override (Merge Approval)
 
-- **Markdown-only PRs**: Merge immediately without asking
-- **All other PRs**: Ask the user for approval before merging
+- **All PRs**: Merge immediately without waiting for user approval
 
 ### Step 6: Verify Merge
 
@@ -119,4 +118,4 @@ Include links to each merged PR.
 - **Fresh branch each time** — every issue branches off the latest `main` after pulling
 - **Self-healing** — if tests or CI fail, fix and retry. Do not stop and ask unless you are truly stuck after multiple attempts.
 - **Refine autonomously** — if `/refine` asks a clarifying question, use context from the issue body and codebase to answer it with your best judgment. Only escalate to the user if you genuinely cannot decide.
-- **No blocking prompts in the loop** — broadcast decisions and refine answers should be made autonomously. The only user interaction point is merge approval for non-markdown PRs.
+- **No blocking prompts in the loop** — broadcast decisions, refine answers, and merge approvals should all be made autonomously. Do not ask the user for permission to merge.
