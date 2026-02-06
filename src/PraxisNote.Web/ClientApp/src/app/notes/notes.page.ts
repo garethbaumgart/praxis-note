@@ -175,22 +175,23 @@ import { TagService } from '../tags/tag.service';
       border-radius: 9999px;
       font-size: 12px;
       font-weight: 500;
-      background: var(--color-surface-muted);
-      color: var(--color-foreground-secondary);
-      border: 1px solid var(--color-border-default);
+      background: var(--color-tag-bg);
+      color: var(--color-tag-text);
+      border: 1px solid transparent;
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .tag-chip:hover {
-      border-color: var(--color-tag-text);
+      background: var(--color-tags-collapsed-bg);
       color: var(--color-tag-text);
+      border-color: var(--color-tag-text);
     }
 
     .tag-chip.active {
-      background: var(--color-tag-bg);
-      color: var(--color-tag-text);
-      border-color: var(--color-tag-text);
+      background: var(--color-tags-expanded-bg);
+      color: var(--color-tags-expanded-text);
+      border-color: var(--color-tags-expanded-bg);
     }
 
     .tag-chip-count {
