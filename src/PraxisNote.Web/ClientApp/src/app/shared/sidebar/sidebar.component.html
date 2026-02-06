@@ -51,13 +51,90 @@
       <div class="h-px bg-border"></div>
     </div>
 
-    <!-- Recent section -->
-    <div class="px-3 h-8 flex items-center">
-      <span class="text-xs font-medium text-foreground-muted uppercase tracking-wider">Recent</span>
+    <!-- Recording indicator -->
+    @if (activity.recorder.isActive()) {
+      <button
+        type="button"
+        class="recording-sidebar-item"
+        (click)="returnToRecording()"
+        aria-label="Return to active recording"
+      >
+        <span class="pulse-dot"></span>
+        <span class="flex-1 truncate">Recording</span>
+        <span class="font-mono">{{ activity.recorder.formattedTime() }}</span>
+      </button>
+    }
+
+    <!-- In Progress tasks -->
+    @if (activity.inProgressTasks().length > 0) {
+      <div class="px-3 h-7 flex items-center">
+        <span class="text-[10px] font-semibold text-inprogress-foreground uppercase tracking-wider">In Progress</span>
+      </div>
+      @for (task of activity.inProgressTasks(); track task.id) {
+        <button
+          type="button"
+          class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+          (click)="navigate('/tasks')"
+          aria-label="Go to Tasks"
+        >
+          <i class="pi pi-spinner text-inprogress-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+          <span class="truncate">{{ task.title }}</span>
+        </button>
+      }
+    }
+
+    <!-- Up Next tasks -->
+    @if (activity.upNextTasks().length > 0) {
+      <div class="px-3 h-7 flex items-center">
+        <span class="text-[10px] font-semibold text-todo-foreground uppercase tracking-wider">Up Next</span>
+      </div>
+      @for (task of activity.upNextTasks(); track task.id) {
+        <button
+          type="button"
+          class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+          (click)="navigate('/tasks')"
+          aria-label="Go to Tasks"
+        >
+          <i class="pi pi-circle text-todo-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+          <span class="truncate">{{ task.title }}</span>
+        </button>
+      }
+    }
+
+    <!-- Context section divider -->
+    @if (activity.inProgressTasks().length > 0 || activity.upNextTasks().length > 0) {
+      <div class="py-2">
+        <div class="h-px bg-border mx-3"></div>
+      </div>
+    }
+
+    <!-- Context-aware section -->
+    <div class="px-3 h-7 flex items-center gap-1.5">
+      <i class="pi {{ activity.contextIcon() }} text-[10px] text-foreground-muted" aria-hidden="true"></i>
+      <span class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider">{{ activity.contextLabel() }}</span>
     </div>
-    <div class="px-3 py-2">
-      <p class="text-xs text-foreground-muted">No recent notes yet</p>
-    </div>
+    @if (activity.contextItems().length === 0) {
+      <div class="px-3 py-2">
+        <p class="text-xs text-foreground-muted">No recent activity yet</p>
+      </div>
+    } @else {
+      @for (item of activity.contextItems(); track item.id) {
+        <button
+          type="button"
+          class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left"
+          (click)="navigateTo(item.route)"
+          [attr.aria-label]="item.type === 'task' ? 'Go to Tasks' : 'Go to ' + item.type + ': ' + item.title"
+        >
+          <i class="pi {{ item.icon }} text-[10px] text-foreground-muted flex-shrink-0" aria-hidden="true"></i>
+          <span class="truncate flex-1">{{ item.title }}</span>
+          <span
+            class="text-[10px] flex-shrink-0"
+            [class.text-danger]="item.metaUrgent"
+            [class.text-foreground-muted]="!item.metaUrgent"
+          >{{ item.meta }}</span>
+        </button>
+      }
+    }
   </nav>
 
   <!-- User section -->
@@ -136,6 +213,96 @@
             ></i>
             <span>{{ item.label }}</span>
           </button>
+        }
+
+        <!-- Divider -->
+        <div class="py-3">
+          <div class="h-px bg-border"></div>
+        </div>
+
+        <!-- Recording indicator -->
+        @if (activity.recorder.isActive()) {
+          <button
+            type="button"
+            class="recording-sidebar-item"
+            (click)="returnToRecording()"
+            aria-label="Return to active recording"
+          >
+            <span class="pulse-dot"></span>
+            <span class="flex-1 truncate">Recording</span>
+            <span class="font-mono">{{ activity.recorder.formattedTime() }}</span>
+          </button>
+        }
+
+        <!-- In Progress tasks -->
+        @if (activity.inProgressTasks().length > 0) {
+          <div class="px-3 h-7 flex items-center">
+            <span class="text-[10px] font-semibold text-inprogress-foreground uppercase tracking-wider">In Progress</span>
+          </div>
+          @for (task of activity.inProgressTasks(); track task.id) {
+            <button
+              type="button"
+              class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+              (click)="navigate('/tasks')"
+              aria-label="Go to Tasks"
+            >
+              <i class="pi pi-spinner text-inprogress-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+              <span class="truncate">{{ task.title }}</span>
+            </button>
+          }
+        }
+
+        <!-- Up Next tasks -->
+        @if (activity.upNextTasks().length > 0) {
+          <div class="px-3 h-7 flex items-center">
+            <span class="text-[10px] font-semibold text-todo-foreground uppercase tracking-wider">Up Next</span>
+          </div>
+          @for (task of activity.upNextTasks(); track task.id) {
+            <button
+              type="button"
+              class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+              (click)="navigate('/tasks')"
+              aria-label="Go to Tasks"
+            >
+              <i class="pi pi-circle text-todo-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+              <span class="truncate">{{ task.title }}</span>
+            </button>
+          }
+        }
+
+        <!-- Context section divider -->
+        @if (activity.inProgressTasks().length > 0 || activity.upNextTasks().length > 0) {
+          <div class="py-2">
+            <div class="h-px bg-border mx-3"></div>
+          </div>
+        }
+
+        <!-- Context-aware section -->
+        <div class="px-3 h-7 flex items-center gap-1.5">
+          <i class="pi {{ activity.contextIcon() }} text-[10px] text-foreground-muted" aria-hidden="true"></i>
+          <span class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider">{{ activity.contextLabel() }}</span>
+        </div>
+        @if (activity.contextItems().length === 0) {
+          <div class="px-3 py-2">
+            <p class="text-xs text-foreground-muted">No recent activity yet</p>
+          </div>
+        } @else {
+          @for (item of activity.contextItems(); track item.id) {
+            <button
+              type="button"
+              class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left"
+              (click)="navigateTo(item.route)"
+              [attr.aria-label]="item.type === 'task' ? 'Go to Tasks' : 'Go to ' + item.type + ': ' + item.title"
+            >
+              <i class="pi {{ item.icon }} text-[10px] text-foreground-muted flex-shrink-0" aria-hidden="true"></i>
+              <span class="truncate flex-1">{{ item.title }}</span>
+              <span
+                class="text-[10px] flex-shrink-0"
+                [class.text-danger]="item.metaUrgent"
+                [class.text-foreground-muted]="!item.metaUrgent"
+              >{{ item.meta }}</span>
+            </button>
+          }
         }
       </nav>
 

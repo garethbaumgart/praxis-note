@@ -2,6 +2,7 @@ import { Component, inject, input, output, ChangeDetectionStrategy, signal, OnIn
 import { Router, NavigationEnd } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
+import { SidebarActivityService } from './sidebar-activity.service';
 
 interface NavItem {
   path: string;
@@ -21,10 +22,52 @@ interface User {
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar.component.html',
   host: { class: 'contents' },
+  styles: [`
+    .recording-sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      margin: 2px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      background: var(--color-danger-bg);
+      border: 1px solid color-mix(in srgb, var(--color-danger-base) 20%, transparent);
+      color: var(--color-danger-base);
+      cursor: pointer;
+      transition: all 0.15s;
+      width: calc(100% - 24px);
+    }
+
+    .recording-sidebar-item:hover {
+      background: var(--color-danger-base);
+      color: var(--color-surface);
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-danger-base);
+      animation: sidebar-pulse 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .recording-sidebar-item:hover .pulse-dot {
+      background: var(--color-surface);
+    }
+
+    @keyframes sidebar-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  `],
 })
 export class SidebarComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  protected readonly activity = inject(SidebarActivityService);
 
   readonly user = input.required<User>();
   readonly mobileOpen = input(false);
@@ -70,6 +113,18 @@ export class SidebarComponent implements OnInit {
   protected navigate(path: string): void {
     this.router.navigate([path]);
     this.closeMobile.emit();
+  }
+
+  protected navigateTo(route: string[]): void {
+    this.router.navigate(route);
+    this.closeMobile.emit();
+  }
+
+  protected returnToRecording(): void {
+    const meetingId = this.activity.recorder.activeMeetingId();
+    if (meetingId) {
+      this.navigateTo(['/meetings', meetingId]);
+    }
   }
 
   protected logout(): void {
