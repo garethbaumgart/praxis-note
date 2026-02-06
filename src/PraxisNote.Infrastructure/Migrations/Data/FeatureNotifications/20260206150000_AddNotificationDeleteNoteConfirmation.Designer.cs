@@ -13,7 +13,7 @@ using PraxisNote.Infrastructure.Persistence;
 namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
 {
     [DbContext(typeof(PraxisNoteDbContext))]
-    [Migration("20260206130000_AddNotificationDeleteNoteConfirmation")]
+    [Migration("20260206150000_AddNotificationDeleteNoteConfirmation")]
     partial class AddNotificationDeleteNoteConfirmation
     {
         /// <inheritdoc />
