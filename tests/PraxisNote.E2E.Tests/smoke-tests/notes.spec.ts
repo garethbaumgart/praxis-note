@@ -37,8 +37,9 @@ test.describe('Notes', () => {
     await setupAuth(page, testUser);
     await page.goto('/notes');
 
-    // Verify note is visible in the grid
-    await expect(page.getByText('Test note content')).toBeVisible();
+    // Verify note is visible in the main content area (not sidebar)
+    const main = page.locator('main');
+    await expect(main.getByText('Test note content')).toBeVisible();
   });
 
   test('can edit note content', async ({ page, request }) => {
@@ -53,8 +54,9 @@ test.describe('Notes', () => {
     await setupAuth(page, testUser);
     await page.goto('/notes');
 
-    // Wait for the note to appear (with longer timeout for reliability)
-    await expect(page.getByText(originalContent)).toBeVisible({ timeout: 10000 });
+    // Wait for the note to appear in the main content area (with longer timeout for reliability)
+    const main = page.locator('main');
+    await expect(main.getByText(originalContent)).toBeVisible({ timeout: 10000 });
 
     // Find the note card with our content and click it to navigate to editor
     const noteCard = page.locator('.note-card').filter({ hasText: originalContent });
@@ -114,8 +116,9 @@ test.describe('Notes', () => {
     await setupAuth(page, testUser);
     await page.goto('/notes');
 
-    // Verify note is visible
-    await expect(page.getByText('Delete me')).toBeVisible();
+    // Verify note is visible in the main content area (not sidebar)
+    const main = page.locator('main');
+    await expect(main.getByText('Delete me')).toBeVisible();
 
     // Find the note card and hover to reveal delete button
     const noteCard = page.locator('.note-card').filter({ hasText: 'Delete me' });
@@ -127,8 +130,8 @@ test.describe('Notes', () => {
     // Click confirm to actually delete
     await noteCard.getByLabel('Confirm delete note').click();
 
-    // Verify the note is no longer visible
-    await expect(page.getByText('Delete me')).not.toBeVisible();
+    // Verify the note is no longer visible in the main content area
+    await expect(main.getByText('Delete me')).not.toBeVisible();
   });
 });
 
