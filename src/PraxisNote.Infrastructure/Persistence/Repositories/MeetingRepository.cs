@@ -29,6 +29,19 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
         return meetings.Where(m => m.TagIds.Contains(tagId)).ToList();
     }
 
+    public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var tagIdLists = await context.Meetings
+            .Where(m => m.UserId == userId)
+            .Select(m => m.TagIds)
+            .ToListAsync(cancellationToken);
+
+        return tagIdLists
+            .SelectMany(tagIds => tagIds)
+            .GroupBy(tagId => tagId)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
+
     public async Task AddAsync(Meeting meeting, CancellationToken cancellationToken = default)
     {
         await context.Meetings.AddAsync(meeting, cancellationToken);

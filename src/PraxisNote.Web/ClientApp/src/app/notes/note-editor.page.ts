@@ -912,7 +912,7 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     }
 
     this.noteService.addTagToNote(n.id, tag, () => {
-      this.tagService.incrementUsageCount(tag.id);
+      this.tagService.incrementUsageCount(tag.id, 'note');
     });
     this.showTagPicker.set(false);
     this.tagSearch.set('');
@@ -923,7 +923,7 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     if (!n) return;
 
     this.noteService.removeTagFromNote(n.id, tagId, () => {
-      this.tagService.decrementUsageCount(tagId);
+      this.tagService.decrementUsageCount(tagId, 'note');
     });
   }
 

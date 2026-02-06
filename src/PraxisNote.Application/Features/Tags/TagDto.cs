@@ -6,7 +6,10 @@ namespace PraxisNote.Application.Features.Tags;
 public record TagDto(
     Guid Id,
     string Name,
-    int UsageCount);
+    int UsageCount,
+    int TaskCount,
+    int NoteCount,
+    int MeetingCount);
 
 /// <summary>
 /// Minimal tag info for embedding in task responses.

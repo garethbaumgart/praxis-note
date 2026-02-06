@@ -516,8 +516,8 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     this.taskService.addTagToTask(
       taskId,
       tag,
-      () => this.tagService.incrementUsageCount(tag.id),
-      () => this.tagService.decrementUsageCount(tag.id)
+      () => this.tagService.incrementUsageCount(tag.id, 'task'),
+      () => this.tagService.decrementUsageCount(tag.id, 'task')
     );
   }
 
@@ -525,8 +525,8 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     this.taskService.removeTagFromTask(
       taskId,
       tagId,
-      () => this.tagService.decrementUsageCount(tagId),
-      () => this.tagService.incrementUsageCount(tagId)
+      () => this.tagService.decrementUsageCount(tagId, 'task'),
+      () => this.tagService.incrementUsageCount(tagId, 'task')
     );
   }
 
@@ -537,7 +537,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
       this.taskService.addTagToTask(
         taskId,
         taskTag,
-        () => this.tagService.incrementUsageCount(createdTag.id)
+        () => this.tagService.incrementUsageCount(createdTag.id, 'task')
       );
     });
   }

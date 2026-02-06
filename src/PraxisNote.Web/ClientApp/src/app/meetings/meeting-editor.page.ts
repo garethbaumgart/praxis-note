@@ -1586,7 +1586,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       return;
     }
     this.meetingService.addTag(id, tag.id, tag.name);
-    this.tagService.incrementUsageCount(tag.id);
+    this.tagService.incrementUsageCount(tag.id, 'meeting');
     this.showTagPicker.set(false);
     this.tagSearch.set('');
   }
@@ -1595,7 +1595,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
     const id = this.meetingId();
     if (!id) return;
     this.meetingService.removeTag(id, tagId);
-    this.tagService.decrementUsageCount(tagId);
+    this.tagService.decrementUsageCount(tagId, 'meeting');
   }
 
   createAndAddTag(name: string): void {
