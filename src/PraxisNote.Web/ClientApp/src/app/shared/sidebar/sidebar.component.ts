@@ -106,8 +106,9 @@ export class SidebarComponent implements OnInit {
     { path: '/notes', label: 'Notes', icon: 'pi-file-edit', enabled: true },
     { path: '/tasks', label: 'Tasks', icon: 'pi-check-square', enabled: true },
     { path: '/meetings', label: 'Meetings', icon: 'pi-comments', enabled: true },
-    { path: '/insights', label: 'Insights', icon: 'pi-chart-line', enabled: true },
     { path: '/tags', label: 'Tag Hub', icon: 'pi-tags', enabled: true },
+    { path: '/summary', label: 'Summary', icon: 'pi-clock', enabled: true },
+    { path: '/insights', label: 'Insights', icon: 'pi-chart-line', enabled: true },
   ];
 
   ngOnInit(): void {
