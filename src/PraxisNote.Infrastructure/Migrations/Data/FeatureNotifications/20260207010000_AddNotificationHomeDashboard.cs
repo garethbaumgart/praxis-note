@@ -24,7 +24,8 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Action-First Home Dashboard';
+                WHERE "Title" = 'Action-First Home Dashboard'
+                  AND "CreatedAt" = '2026-02-07T01:00:00Z';
                 """);
         }
     }

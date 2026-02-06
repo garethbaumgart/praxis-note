@@ -49,8 +49,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
         <button
           class="quick-action group"
           aria-label="Create new note"
-          (click)="newNote()"
-          (keydown.enter)="newNote()">
+          (click)="newNote()">
           <div class="w-9 h-9 rounded-lg bg-archive flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <i class="pi pi-file-edit text-archive-foreground text-sm" aria-hidden="true"></i>
           </div>
@@ -60,8 +59,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
         <button
           class="quick-action group"
           aria-label="Create new task"
-          (click)="newTask()"
-          (keydown.enter)="newTask()">
+          (click)="newTask()">
           <div class="w-9 h-9 rounded-lg bg-todo flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <i class="pi pi-check-square text-todo-foreground text-sm" aria-hidden="true"></i>
           </div>
@@ -71,8 +69,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
         <button
           class="quick-action group"
           aria-label="Record a meeting"
-          (click)="startRecording()"
-          (keydown.enter)="startRecording()">
+          (click)="startRecording()">
           <div class="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <i class="pi pi-microphone text-accent-foreground text-sm" aria-hidden="true"></i>
           </div>
@@ -92,8 +89,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
               <button
                 class="meeting-chip"
                 [attr.aria-label]="'View meeting: ' + meeting.title"
-                (click)="goToMeeting(meeting.id)"
-                (keydown.enter)="goToMeeting(meeting.id)">
+                (click)="goToMeeting(meeting.id)">
                 <span class="meeting-chip-time">{{ meeting.time }}</span>
                 <span class="meeting-chip-divider" aria-hidden="true"></span>
                 <span class="meeting-chip-info">
@@ -179,8 +175,7 @@ import { InsightsWidgetComponent } from './insights-widget.component';
               <button
                 class="recent-row"
                 [attr.aria-label]="'Open ' + item.type + ': ' + item.title"
-                (click)="goToRecentItem(item)"
-                (keydown.enter)="goToRecentItem(item)">
+                (click)="goToRecentItem(item)">
                 <div class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center"
                      [class.bg-archive]="item.type === 'note'"
                      [class.bg-accent]="item.type === 'meeting'">
