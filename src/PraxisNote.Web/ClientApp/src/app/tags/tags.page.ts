@@ -49,7 +49,7 @@ interface DateGroup {
       <!-- Header -->
       <div class="flex items-center gap-3 mb-6">
         <i class="pi pi-tags text-lg text-foreground-secondary" aria-hidden="true"></i>
-        <h1 class="text-lg font-semibold text-foreground">Tags</h1>
+        <h1 class="text-lg font-semibold text-foreground">Tag Hub</h1>
         @if (!tagService.loading() && !tagService.error()) {
           <span class="text-sm text-foreground-muted">{{ tagCount() }} tags</span>
         }
