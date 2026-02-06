@@ -333,15 +333,13 @@ interface DateGroup {
     </p-dialog>
 
     <!-- Merge tag dialog -->
-    @if (mergeSourceTag()) {
-      <app-merge-tag-dialog
-        [visible]="showMergeDialog()"
-        [sourceTag]="mergeSourceTag()!"
-        [allTags]="tagService.tags()"
-        (onClose)="onMergeClose()"
-        (onMerge)="onMergeConfirm($event)"
-      />
-    }
+    <app-merge-tag-dialog
+      [visible]="showMergeDialog()"
+      [sourceTag]="mergeSourceTag()"
+      [allTags]="tagService.tags()"
+      (onClose)="onMergeClose()"
+      (onMerge)="onMergeConfirm($event)"
+    />
   `,
 })
 export class TagsPage implements OnInit {

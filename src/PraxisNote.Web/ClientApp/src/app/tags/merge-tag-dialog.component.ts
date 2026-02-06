@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Dialog } from 'primeng/dialog';
 import { TagService } from './tag.service';
 import { Tag, MergePreview } from './tag.model';
@@ -50,8 +51,8 @@ import { Tag, MergePreview } from './tag.model';
           <div class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider mb-1">Merging</div>
           <div class="flex items-center gap-2">
             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tag text-tag-foreground text-xs font-medium">
-              {{ sourceTag().name }}
-              <span class="text-[9px] opacity-60">{{ sourceTag().usageCount }}</span>
+              {{ sourceTag()?.name }}
+              <span class="text-[9px] opacity-60">{{ sourceTag()?.usageCount }}</span>
             </span>
             <span class="text-[10px] text-foreground-muted italic">into...</span>
           </div>
@@ -114,9 +115,9 @@ import { Tag, MergePreview } from './tag.model';
         <div class="flex items-center gap-3 mb-4">
           <div class="text-center">
             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tag text-tag-foreground text-xs font-medium">
-              {{ sourceTag().name }}
+              {{ sourceTag()?.name }}
             </span>
-            <div class="text-[9px] text-foreground-muted mt-1">{{ sourceTag().usageCount }} items</div>
+            <div class="text-[9px] text-foreground-muted mt-1">{{ sourceTag()?.usageCount }} items</div>
           </div>
           <i class="pi pi-arrow-right text-accent-foreground" style="font-size: 14px" aria-hidden="true"></i>
           <div class="text-center">
@@ -185,7 +186,7 @@ import { Tag, MergePreview } from './tag.model';
           <div class="flex items-start gap-2 rounded-lg border border-danger-bg bg-danger-bg px-3 py-2">
             <i class="pi pi-exclamation-triangle text-danger mt-0.5" style="font-size: 11px" aria-hidden="true"></i>
             <span class="text-xs text-danger">
-              <strong>"{{ sourceTag().name }}"</strong> will be permanently deleted. This cannot be undone.
+              <strong>"{{ sourceTag()?.name }}"</strong> will be permanently deleted. This cannot be undone.
             </span>
           </div>
         }
@@ -214,12 +215,13 @@ import { Tag, MergePreview } from './tag.model';
 })
 export class MergeTagDialogComponent {
   readonly visible = input.required<boolean>();
-  readonly sourceTag = input.required<Tag>();
+  readonly sourceTag = input<Tag | null>(null);
   readonly allTags = input.required<Tag[]>();
   readonly onClose = output<void>();
   readonly onMerge = output<{ sourceId: string; targetId: string }>();
 
   private readonly tagService = inject(TagService);
+  private previewSub?: Subscription;
 
   readonly step = signal<1 | 2>(1);
   readonly searchText = signal('');
@@ -230,6 +232,7 @@ export class MergeTagDialogComponent {
 
   readonly filteredTags = computed(() => {
     const source = this.sourceTag();
+    if (!source) return [];
     const search = this.searchText().toLowerCase();
     return this.allTags()
       .filter(t => t.id !== source.id)
@@ -257,14 +260,16 @@ export class MergeTagDialogComponent {
 
   goToStep2(): void {
     const target = this.selectedTarget();
-    if (!target) return;
+    const source = this.sourceTag();
+    if (!target || !source) return;
 
     this.step.set(2);
     this.loadingPreview.set(true);
     this.previewError.set(null);
     this.preview.set(null);
 
-    this.tagService.getMergePreview(this.sourceTag().id, target.id).subscribe({
+    this.previewSub?.unsubscribe();
+    this.previewSub = this.tagService.getMergePreview(source.id, target.id).subscribe({
       next: (result) => {
         this.preview.set(result);
         this.loadingPreview.set(false);
@@ -284,9 +289,10 @@ export class MergeTagDialogComponent {
 
   confirmMerge(): void {
     const target = this.selectedTarget();
-    if (!target) return;
+    const source = this.sourceTag();
+    if (!target || !source) return;
 
-    this.onMerge.emit({ sourceId: this.sourceTag().id, targetId: target.id });
+    this.onMerge.emit({ sourceId: source.id, targetId: target.id });
   }
 
   close(): void {
@@ -302,6 +308,7 @@ export class MergeTagDialogComponent {
   }
 
   private resetState(): void {
+    this.previewSub?.unsubscribe();
     this.step.set(1);
     this.searchText.set('');
     this.selectedTarget.set(null);
