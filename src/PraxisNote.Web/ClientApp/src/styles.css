@@ -101,6 +101,16 @@
   --color-danger-hover-base: #d08770;
   --color-danger-bg-base: rgba(191, 97, 106, 0.15);
 
+  /* Toast severity backgrounds */
+  --color-toast-success-bg: rgba(163, 190, 140, 0.12);
+  --color-toast-success-accent: #a3be8c;
+  --color-toast-error-bg: rgba(191, 97, 106, 0.12);
+  --color-toast-error-accent: #bf616a;
+  --color-toast-info-bg: rgba(94, 129, 172, 0.12);
+  --color-toast-info-accent: #5e81ac;
+  --color-toast-warn-bg: rgba(235, 203, 139, 0.15);
+  --color-toast-warn-accent: #c9a227;
+
   /* Interactive accent - Frost blue */
   --color-interactive-bg: rgba(94, 129, 172, 0.15);
   --color-interactive-text: #5e81ac;
@@ -258,6 +268,16 @@
   --color-danger-base: #bf616a;
   --color-danger-hover-base: #d08770;
   --color-danger-bg-base: rgba(191, 97, 106, 0.2);
+
+  /* Toast severity backgrounds */
+  --color-toast-success-bg: rgba(163, 190, 140, 0.15);
+  --color-toast-success-accent: #a3be8c;
+  --color-toast-error-bg: rgba(191, 97, 106, 0.15);
+  --color-toast-error-accent: #bf616a;
+  --color-toast-info-bg: rgba(136, 192, 208, 0.15);
+  --color-toast-info-accent: #88c0d0;
+  --color-toast-warn-bg: rgba(235, 203, 139, 0.12);
+  --color-toast-warn-accent: #ebcb8b;
 
   /* Interactive accent - Frost cyan */
   --color-interactive-bg: rgba(136, 192, 208, 0.2);
@@ -419,6 +439,16 @@
   --color-danger: var(--color-danger-base);
   --color-danger-hover: var(--color-danger-hover-base);
   --color-danger-bg: var(--color-danger-bg-base);
+
+  /* Toast severity */
+  --color-toast-success: var(--color-toast-success-bg);
+  --color-toast-success-foreground: var(--color-toast-success-accent);
+  --color-toast-error: var(--color-toast-error-bg);
+  --color-toast-error-foreground: var(--color-toast-error-accent);
+  --color-toast-info: var(--color-toast-info-bg);
+  --color-toast-info-foreground: var(--color-toast-info-accent);
+  --color-toast-warn: var(--color-toast-warn-bg);
+  --color-toast-warn-foreground: var(--color-toast-warn-accent);
 
   /* Interactive accent */
   --color-interactive: var(--color-interactive-bg);
@@ -757,4 +787,106 @@
   text-decoration-color: var(--color-highlight-underline);
   text-underline-offset: 2px;
   text-decoration-thickness: 2px;
+}
+
+/* ========================================
+   PrimeNG Toast Overrides — Nord Theme
+   ======================================== */
+
+/* Base toast message container */
+.p-toast-message {
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
+  border: none !important;
+  margin-bottom: 8px !important;
+}
+
+/* Remove PrimeNG's default left border */
+.p-toast-message-content {
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Severity backgrounds */
+.p-toast-message-success {
+  background: var(--color-toast-success-bg) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.p-toast-message-error {
+  background: var(--color-toast-error-bg) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.p-toast-message-info {
+  background: var(--color-toast-info-bg) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.p-toast-message-warn {
+  background: var(--color-toast-warn-bg) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Toast close button */
+.p-toast-message .p-toast-icon-close {
+  color: var(--color-text-muted) !important;
+}
+
+.p-toast-message .p-toast-icon-close:hover {
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Toast action button (Undo, etc.) */
+.toast-action-btn {
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.toast-action-btn:hover { opacity: 0.8; }
+
+.toast-action-success { background: rgba(163, 190, 140, 0.2); color: var(--color-toast-success-accent); }
+.toast-action-error { background: rgba(191, 97, 106, 0.2); color: var(--color-toast-error-accent); }
+.toast-action-info { background: rgba(94, 129, 172, 0.2); color: var(--color-toast-info-accent); }
+.toast-action-warn { background: rgba(235, 203, 139, 0.2); color: var(--color-toast-warn-accent); }
+
+/* Progress bar track */
+.toast-progress-track {
+  height: 2px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .toast-progress-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Progress bar (animated shrink from 100% to 0%) */
+.toast-progress-bar {
+  height: 100%;
+  width: 100%;
+  border-radius: 0 1px 1px 0;
+  animation: toast-progress-shrink linear forwards;
+}
+
+.toast-progress-success { background: var(--color-toast-success-accent); }
+.toast-progress-error { background: var(--color-toast-error-accent); }
+.toast-progress-info { background: var(--color-toast-info-accent); }
+.toast-progress-warn { background: var(--color-toast-warn-accent); }
+
+@keyframes toast-progress-shrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-progress-bar {
+    animation: none;
+    width: 50%;
+  }
 }

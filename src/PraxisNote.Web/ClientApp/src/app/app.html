@@ -108,32 +108,49 @@
 <!-- Global toast notifications -->
 <p-toast position="bottom-right">
   <ng-template let-message pTemplate="message">
-    <div class="flex items-center gap-3 w-full">
-      @if (message.severity === 'success') {
-        <span class="pi pi-check-circle text-xl shrink-0"></span>
-      } @else if (message.severity === 'error') {
-        <span class="pi pi-times-circle text-xl shrink-0"></span>
-      } @else if (message.severity === 'info') {
-        <span class="pi pi-info-circle text-xl shrink-0"></span>
-      } @else if (message.severity === 'warn') {
-        <span class="pi pi-exclamation-triangle text-xl shrink-0"></span>
-      }
-      <div class="flex-1">
-        <span class="font-medium">{{ message.summary }}</span>
-        @if (message.detail) {
-          <div class="text-sm opacity-80">{{ message.detail }}</div>
+    <div class="toast-content">
+      <div class="flex items-center gap-3 w-full px-4 py-3">
+        @if (message.severity === 'success') {
+          <span class="pi pi-check-circle text-lg shrink-0" style="color: var(--color-toast-success-accent);"></span>
+        } @else if (message.severity === 'error') {
+          <span class="pi pi-times-circle text-lg shrink-0" style="color: var(--color-toast-error-accent);"></span>
+        } @else if (message.severity === 'info') {
+          <span class="pi pi-info-circle text-lg shrink-0" style="color: var(--color-toast-info-accent);"></span>
+        } @else if (message.severity === 'warn') {
+          <span class="pi pi-exclamation-triangle text-lg shrink-0" style="color: var(--color-toast-warn-accent);"></span>
+        }
+        <div class="flex-1 min-w-0">
+          <span class="font-semibold text-sm text-foreground">{{ message.summary }}</span>
+          @if (message.detail) {
+            <div class="text-xs text-foreground-secondary mt-0.5">{{ message.detail }}</div>
+          }
+        </div>
+        @if (message.data?.label) {
+          <button
+            type="button"
+            (click)="$event.stopPropagation(); message.data.callback()"
+            class="toast-action-btn shrink-0"
+            [class.toast-action-success]="message.severity === 'success'"
+            [class.toast-action-error]="message.severity === 'error'"
+            [class.toast-action-info]="message.severity === 'info'"
+            [class.toast-action-warn]="message.severity === 'warn'"
+            [attr.aria-label]="message.data.label"
+          >
+            {{ message.data.label }}
+          </button>
         }
       </div>
-      @if (message.data?.label) {
-        <button
-          type="button"
-          (click)="$event.stopPropagation(); message.data.callback()"
-          class="px-3 py-1 text-sm font-medium bg-white/20 hover:bg-white/30 rounded transition-colors shrink-0"
-          [attr.aria-label]="message.data.label"
-        >
-          {{ message.data.label }}
-        </button>
-      }
+      <!-- Progress bar (animated countdown to auto-dismiss) -->
+      <div class="toast-progress-track">
+        <div
+          class="toast-progress-bar"
+          [class.toast-progress-success]="message.severity === 'success'"
+          [class.toast-progress-error]="message.severity === 'error'"
+          [class.toast-progress-info]="message.severity === 'info'"
+          [class.toast-progress-warn]="message.severity === 'warn'"
+          [style.animation-duration.ms]="message.life || 5000"
+        ></div>
+      </div>
     </div>
   </ng-template>
 </p-toast>
