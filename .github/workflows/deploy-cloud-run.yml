@@ -3,7 +3,16 @@ name: Deploy to Cloud Run
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'mockups/**'
+      - '.claude/**'
   workflow_dispatch: # Allow manual trigger
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}

@@ -3,6 +3,11 @@ name: E2E Tests
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'mockups/**'
+      - '.claude/**'
   pull_request:
     branches: [main]
   workflow_call: # Allow other workflows to call this one
