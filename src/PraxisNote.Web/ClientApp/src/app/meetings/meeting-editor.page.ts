@@ -7,8 +7,10 @@ import {
   effect,
   OnInit,
   OnDestroy,
+  AfterViewInit,
   HostListener,
   ElementRef,
+  TemplateRef,
   viewChild,
   afterNextRender,
   Injector,
@@ -27,6 +29,7 @@ import { MeetingReflectionComponent } from './meeting-reflection.component';
 import { AudioRecorderService } from './audio-recorder.service';
 import { DeepgramTranscriptionService } from './deepgram-transcription.service';
 import { ToastService } from '../shared/services/toast.service';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
 import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
@@ -45,44 +48,21 @@ interface DateOption {
   imports: [FormsModule, DatePickerModule, SelectModule, MenuModule, MeetingAnalysisComponent, MeetingReflectionComponent],
   template: `
     <div class="meeting-editor-page">
-      <!-- Header bar -->
-      <header class="header">
-        <div class="breadcrumb">
-          <button
-            type="button"
-            class="back-link"
-            (click)="navigateBack()"
-            aria-label="Back to meetings"
-          >
-            <i class="pi pi-arrow-left"></i>
-            <span>Meetings</span>
-          </button>
-          <span class="separator">/</span>
-          <span class="current-meeting">{{ displayTitle() }}</span>
-        </div>
-        <div class="actions">
-          <span class="save-status" [class.saving]="isSaving()">
-            @if (isSaving()) {
-              <i class="pi pi-spin pi-spinner"></i>
-              <span>Saving...</span>
-            } @else if (lastSaved()) {
-              <i class="pi pi-check"></i>
-              <span>Saved</span>
-            }
-          </span>
-          @if (meetingId()) {
-            <button
-              type="button"
-              class="action-btn delete-btn"
-              (click)="deleteMeeting()"
-              aria-label="Delete meeting"
-              title="Delete meeting"
-            >
-              <i class="pi pi-trash"></i>
-            </button>
+      <!-- Actions template (rendered by app shell top bar) -->
+      <ng-template #headerActions>
+        <span class="flex items-center gap-1.5 text-xs text-foreground-muted pr-2" [class.text-accent-foreground]="isSaving()">
+          @if (isSaving()) {
+            <i class="pi pi-spin pi-spinner"></i> Saving...
+          } @else if (lastSaved()) {
+            <i class="pi pi-check text-done-foreground"></i> <span class="text-done-foreground">Saved</span>
           }
-        </div>
-      </header>
+        </span>
+        @if (meetingId()) {
+          <button type="button" class="w-8 h-8 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="deleteMeeting()" aria-label="Delete meeting" title="Delete meeting">
+            <i class="pi pi-trash text-sm" aria-hidden="true"></i>
+          </button>
+        }
+      </ng-template>
 
       <!-- Scrollable content -->
       <main class="editor-container">
@@ -560,28 +540,6 @@ interface DateOption {
       height: 100%;
     }
 
-    .header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--color-border-default); background: var(--color-bg-subtle);
-    }
-    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; }
-
-    .back-link {
-      display: flex; align-items: center; gap: 6px; color: var(--color-primary-solid);
-      background: none; border: none; cursor: pointer; font-size: 13px;
-      padding: 4px 8px; margin: -4px -8px; border-radius: 4px;
-    }
-    .back-link:hover { background: var(--color-bg-subtle); }
-    .separator { color: var(--color-text-muted); }
-    .current-meeting { font-weight: 600; color: var(--color-text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .actions { display: flex; align-items: center; gap: 8px; }
-    .save-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-done-text); padding-right: 12px; }
-    .save-status.saving { color: var(--color-primary-solid); }
-    .action-btn {
-      display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;
-      border: 1px solid var(--color-border-default); background: var(--color-bg-subtle); border-radius: 6px; cursor: pointer;
-    }
-    .delete-btn { color: var(--color-danger-base); }
     .editor-container { flex: 1; overflow: auto; }
     .loading, .not-found { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
     .editor-wrapper { max-width: 800px; margin: 0 auto; width: 100%; padding: 1.5rem; box-sizing: border-box; }
@@ -716,12 +674,13 @@ interface DateOption {
     .collapse-btn:hover { background: var(--color-tags-collapsed-bg); }
   `],
 })
-export class MeetingEditorPage implements OnInit, OnDestroy {
+export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly meetingService = inject(MeetingService);
   private readonly tagService = inject(TagService);
   private readonly toast = inject(ToastService);
+  private readonly headerService = inject(ContextualHeaderService);
   private readonly auth = inject(AuthService);
   private readonly injector = inject(Injector);
   readonly recorder = inject(AudioRecorderService);
@@ -800,6 +759,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
   readonly showTagPicker = signal(false);
   readonly inlineTagsExpanded = signal(false);
   readonly tagSearch = signal('');
+  readonly headerActions = viewChild<TemplateRef<unknown>>('headerActions');
   readonly tagInput = viewChild<ElementRef<HTMLInputElement>>('tagInput');
   readonly timeSelect = viewChild<Select>('timeSelect');
   readonly recordMenuRef = viewChild<Menu>('recordMenu');
@@ -911,6 +871,22 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
         }
       }
     });
+
+    // Update breadcrumb when display title changes
+    effect(() => {
+      const title = this.displayTitle();
+      this.headerService.breadcrumb.set([
+        { label: 'Meetings', icon: 'pi-arrow-left', route: '/meetings' },
+        { label: title },
+      ]);
+    });
+  }
+
+  ngAfterViewInit(): void {
+    const tmpl = this.headerActions();
+    if (tmpl) {
+      this.headerService.actionsTemplate.set(tmpl);
+    }
   }
 
   ngOnInit(): void {
@@ -961,6 +937,7 @@ export class MeetingEditorPage implements OnInit, OnDestroy {
       this.transcription.stop();
       this.recorder.discard();
     }
+    this.headerService.clearContext();
     this.metadataChange$.complete();
     this.transcriptChange$.complete();
     this.destroy$.next();

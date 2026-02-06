@@ -4,10 +4,13 @@ import {
   inject,
   signal,
   computed,
+  effect,
   OnInit,
   OnDestroy,
+  AfterViewInit,
   HostListener,
   ElementRef,
+  TemplateRef,
   viewChild,
   afterNextRender,
   Injector,
@@ -21,6 +24,7 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
 import { ToastService } from '../shared/services/toast.service';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
 
@@ -31,60 +35,28 @@ import { Tag } from '../tags/tag.model';
   imports: [TiptapEditorComponent, DeleteConfirmButtonComponent],
   template: `
     <div class="note-editor-page">
-      <!-- Top bar with breadcrumb -->
-      <header class="header">
-        <div class="breadcrumb">
-          <button
-            type="button"
-            class="back-link"
-            (click)="navigateBack()"
-            aria-label="Back to notes"
-          >
-            <i class="pi pi-arrow-left"></i>
-            <span>Notes</span>
-          </button>
-          <span class="separator">/</span>
-          <span class="current-note">{{ noteTitle() || 'Untitled' }}</span>
-        </div>
-        <div class="actions">
-          <span class="save-status" [class.saving]="isSaving()">
-            @if (isSaving()) {
-              <i class="pi pi-spin pi-spinner"></i>
-              <span>Saving...</span>
-            } @else if (lastSaved()) {
-              <i class="pi pi-check"></i>
-              <span>Saved</span>
-            }
-          </span>
-          @if (note()) {
-            <button
-              type="button"
-              class="action-btn"
-              (click)="exportToPdf()"
-              aria-label="Export to PDF"
-              title="Export to PDF"
-            >
-              <i class="pi pi-file-pdf"></i>
-            </button>
-            @if (confirmingDelete()) {
-              <app-delete-confirm-button
-                ariaLabel="Confirm delete note"
-                (onConfirm)="confirmDelete()"
-              />
-            } @else {
-              <button
-                type="button"
-                class="action-btn"
-                (click)="startDeleteConfirm()"
-                aria-label="Delete note"
-                title="Delete note"
-              >
-                <i class="pi pi-trash"></i>
-              </button>
-            }
+      <!-- Actions template (rendered by app shell top bar) -->
+      <ng-template #headerActions>
+        <span class="flex items-center gap-1.5 text-xs text-foreground-muted pr-2" [class.text-accent-foreground]="isSaving()">
+          @if (isSaving()) {
+            <i class="pi pi-spin pi-spinner"></i> Saving...
+          } @else if (lastSaved()) {
+            <i class="pi pi-check text-done-foreground"></i> <span class="text-done-foreground">Saved</span>
           }
-        </div>
-      </header>
+        </span>
+        @if (note()) {
+          <button type="button" class="w-8 h-8 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="exportToPdf()" aria-label="Export to PDF" title="Export to PDF">
+            <i class="pi pi-file-pdf text-sm" aria-hidden="true"></i>
+          </button>
+          @if (confirmingDelete()) {
+            <app-delete-confirm-button ariaLabel="Confirm delete note" (onConfirm)="confirmDelete()" />
+          } @else {
+            <button type="button" class="w-8 h-8 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="startDeleteConfirm()" aria-label="Delete note" title="Delete note">
+              <i class="pi pi-trash text-sm" aria-hidden="true"></i>
+            </button>
+          }
+        }
+      </ng-template>
 
       <!-- Editor area -->
       <main class="editor-container">
@@ -238,91 +210,6 @@ import { Tag } from '../tags/tag.model';
     :host {
       display: block;
       height: 100%;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1.5rem;
-      border-bottom: 1px solid var(--color-border-default);
-      background: var(--color-bg-default);
-    }
-
-    .breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-    }
-
-    .back-link {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      color: var(--color-accent-solid);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-      padding: 0.25rem 0.5rem;
-      margin: -0.25rem -0.5rem;
-      border-radius: 0.25rem;
-      transition: background 0.15s;
-    }
-
-    .back-link:hover {
-      background: var(--color-bg-subtle);
-    }
-
-    .separator {
-      color: var(--color-text-muted);
-    }
-
-    .current-note {
-      color: var(--color-text-secondary);
-      max-width: 300px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .save-status {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-      padding-right: 0.75rem;
-    }
-
-    .save-status.saving {
-      color: var(--color-accent-solid);
-    }
-
-    .action-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      height: 2rem;
-      border: none;
-      background: none;
-      color: var(--color-text-secondary);
-      border-radius: 0.375rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .action-btn:hover {
-      background: var(--color-bg-subtle);
-      color: var(--color-text-default);
     }
 
     .editor-container {
@@ -511,7 +398,7 @@ import { Tag } from '../tags/tag.model';
     }
   `],
 })
-export class NoteEditorPage implements OnInit, OnDestroy {
+export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly noteService = inject(NoteService);
@@ -519,10 +406,13 @@ export class NoteEditorPage implements OnInit, OnDestroy {
   private readonly pdfExportService = inject(PdfExportService);
   private readonly toast = inject(ToastService);
   private readonly deleteConfirmation = inject(DeleteConfirmationService);
+  private readonly headerService = inject(ContextualHeaderService);
   private readonly injector = inject(Injector);
 
   private readonly destroy$ = new Subject<void>();
   private readonly contentChange$ = new Subject<string>();
+
+  readonly headerActions = viewChild<TemplateRef<unknown>>('headerActions');
 
   readonly note = signal<Note | null>(null);
   readonly loading = signal(true);
@@ -606,6 +496,24 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
   });
 
+  constructor() {
+    // Update breadcrumb when note title changes
+    effect(() => {
+      const title = this.noteTitle();
+      this.headerService.breadcrumb.set([
+        { label: 'Notes', icon: 'pi-arrow-left', route: '/notes' },
+        { label: title || 'Untitled' },
+      ]);
+    });
+  }
+
+  ngAfterViewInit(): void {
+    const tmpl = this.headerActions();
+    if (tmpl) {
+      this.headerService.actionsTemplate.set(tmpl);
+    }
+  }
+
   ngOnInit(): void {
     // Load tags
     if (this.tagService.tags().length === 0) {
@@ -635,6 +543,7 @@ export class NoteEditorPage implements OnInit, OnDestroy {
     this.isDestroyed = true;
     this.cancelPolling();
     this.deleteConfirmation.cleanup();
+    this.headerService.clearContext();
     this.destroy$.next();
     this.destroy$.complete();
   }
