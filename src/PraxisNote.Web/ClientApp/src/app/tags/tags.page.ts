@@ -84,7 +84,7 @@ interface DateGroup {
           />
           @if (selectedTag() && !hub.loading()) {
             <span class="text-sm text-foreground-muted">
-              {{ hub.meetingCount() }} meetings · {{ hub.noteCount() }} notes · {{ hub.taskCount() }} tasks
+              {{ hub.meetingCount() }} {{ hub.meetingCount() === 1 ? 'meeting' : 'meetings' }} · {{ hub.noteCount() }} {{ hub.noteCount() === 1 ? 'note' : 'notes' }} · {{ hub.taskCount() }} {{ hub.taskCount() === 1 ? 'task' : 'tasks' }}
             </span>
           }
           @if (selectedTag() && hub.loading()) {
