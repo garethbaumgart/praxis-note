@@ -343,6 +343,7 @@ import { Tag } from '../tags/tag.model';
       font-size: 12px;
       cursor: pointer;
       transition: background 0.15s;
+      box-sizing: border-box;
     }
 
     .tag-dropdown-item:hover {
