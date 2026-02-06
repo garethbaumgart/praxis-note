@@ -849,7 +849,7 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.noteService.addTagToNote(n.id, tag, () => {
       this.tagService.incrementUsageCount(tag.id, 'note');
     }, () => {
-      // Sync local note on rollback so removed tag reappears
+      // Rollback: sync local note so the added tag disappears from the UI
       this.syncLocalNote(n.id);
     });
 
@@ -867,7 +867,7 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.noteService.removeTagFromNote(n.id, tagId, () => {
       this.tagService.decrementUsageCount(tagId, 'note');
     }, () => {
-      // Sync local note on rollback so removed tag reappears
+      // Rollback: sync local note so the removed tag reappears in the UI
       this.syncLocalNote(n.id);
     });
 
