@@ -7,11 +7,15 @@ description: Create or update a pull request. Use when the user wants to create 
 
 You are creating or updating a pull request. Follow these steps in order.
 
-## Step 1: Check for Uncommitted Changes
+## Step 1: Verify Feature Branch and Check for Uncommitted Changes
 
-Run `git status` to check for uncommitted changes. If there are changes:
-- Stage and commit them with a clear, descriptive message
-- Push to the remote branch
+**Branch protection rules prevent direct pushes to `main`.** All changes must go through a pull request.
+
+1. Run `git branch --show-current` to check which branch you're on
+2. If on `main`, create a feature branch first: `git checkout -b feat/short-description` (use `feat/`, `fix/`, `chore/`, or `docs/` prefix as appropriate)
+3. Run `git status` to check for uncommitted changes. If there are changes:
+   - Stage and commit them with a clear, descriptive message
+   - Push to the remote branch
 
 ## Step 2: Review and Update README.md
 
