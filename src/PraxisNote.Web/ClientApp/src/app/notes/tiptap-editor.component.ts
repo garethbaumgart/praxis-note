@@ -1014,7 +1014,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setupToolbarResizeObserver(): void {
     const toolbar = this.toolbarContainer()?.nativeElement as HTMLElement;
-    if (!toolbar) return;
+    if (!toolbar || typeof ResizeObserver === 'undefined') return;
 
     this.toolbarResizeObserver = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width ?? 0;
@@ -1030,6 +1030,12 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       if (this.toolbarLevel() !== level) {
         this.toolbarLevel.set(level);
         this.cdr.markForCheck();
+      }
+
+      // Ensure overflow button is always reachable on very narrow widths
+      const row = toolbar.querySelector('.toolbar-row') as HTMLElement;
+      if (row) {
+        row.style.overflowX = row.scrollWidth > row.clientWidth + 1 ? 'auto' : 'hidden';
       }
     });
 
