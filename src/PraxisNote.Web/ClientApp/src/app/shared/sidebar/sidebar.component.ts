@@ -2,7 +2,9 @@ import { Component, inject, input, output, ChangeDetectionStrategy, signal, OnIn
 import { Router, NavigationEnd } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
+import { Tooltip } from 'primeng/tooltip';
 import { SidebarActivityService } from './sidebar-activity.service';
+import { SidebarService } from './sidebar.service';
 
 interface NavItem {
   path: string;
@@ -19,6 +21,7 @@ interface User {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
+  imports: [Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar.component.html',
   host: { class: 'contents' },
@@ -62,12 +65,32 @@ interface User {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
+
+    .toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .toggle-btn:hover {
+      background: var(--color-bg-muted);
+      color: var(--color-text-secondary);
+    }
   `],
 })
 export class SidebarComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly activity = inject(SidebarActivityService);
+  private readonly sidebarService = inject(SidebarService);
+
+  readonly collapsed = this.sidebarService.collapsed;
 
   readonly user = input.required<User>();
   readonly mobileOpen = input(false);
@@ -125,6 +148,10 @@ export class SidebarComponent implements OnInit {
     if (meetingId) {
       this.navigateTo(['/meetings', meetingId]);
     }
+  }
+
+  protected toggleCollapse(): void {
+    this.sidebarService.toggle();
   }
 
   protected logout(): void {

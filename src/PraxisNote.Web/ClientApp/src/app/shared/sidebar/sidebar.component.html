@@ -1,32 +1,66 @@
 <!-- Desktop Sidebar -->
-<aside class="hidden lg:flex lg:flex-col w-56 border-r border-border bg-surface-subtle/80">
+<aside
+  class="hidden lg:flex lg:flex-col border-r border-border bg-surface-subtle/80 transition-[width] duration-200 ease-in-out overflow-x-hidden"
+  [class.w-56]="!collapsed()"
+  [class.w-[52px]]="collapsed()"
+>
   <!-- Workspace header -->
-  <div class="h-14 flex items-center gap-3 px-4 border-b border-border">
-    <div class="w-8 h-8 rounded-lg overflow-hidden shadow-sm">
-      <svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true">
-        <defs><linearGradient id="sidebarLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#5e81ac"/><stop offset="100%" style="stop-color:#81a1c1"/></linearGradient></defs>
-        <rect width="64" height="64" fill="url(#sidebarLogoGradient)"/>
-        <rect x="14" y="14" width="36" height="36" rx="8" fill="white"/>
-        <polyline points="22,32 30,40 44,24" fill="none" stroke="#5e81ac" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="8" cy="8" r="3" fill="white" opacity="0.6"/><circle cx="56" cy="8" r="3" fill="white" opacity="0.6"/>
-        <circle cx="8" cy="56" r="3" fill="white" opacity="0.6"/><circle cx="56" cy="56" r="3" fill="white" opacity="0.6"/>
-        <line x1="11" y1="11" x2="16" y2="16" stroke="white" stroke-width="1" opacity="0.4"/>
-        <line x1="53" y1="11" x2="48" y2="16" stroke="white" stroke-width="1" opacity="0.4"/>
-        <line x1="11" y1="53" x2="16" y2="48" stroke="white" stroke-width="1" opacity="0.4"/>
-        <line x1="53" y1="53" x2="48" y2="48" stroke="white" stroke-width="1" opacity="0.4"/>
-      </svg>
-    </div>
-    <div class="flex-1 min-w-0">
-      <span class="font-semibold text-foreground text-sm">PraxisNote</span>
-    </div>
+  <div class="h-14 flex items-center border-b border-border shrink-0"
+    [class.px-4]="!collapsed()"
+    [class.justify-center]="collapsed()"
+  >
+    @if (collapsed()) {
+      <button
+        type="button"
+        class="toggle-btn"
+        (click)="toggleCollapse()"
+        aria-label="Expand sidebar"
+      >
+        <i class="pi pi-bars text-xs"></i>
+      </button>
+    } @else {
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <div class="w-8 h-8 rounded-lg overflow-hidden shadow-sm shrink-0">
+          <svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true">
+            <defs><linearGradient id="sidebarLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#5e81ac"/><stop offset="100%" style="stop-color:#81a1c1"/></linearGradient></defs>
+            <rect width="64" height="64" fill="url(#sidebarLogoGradient)"/>
+            <rect x="14" y="14" width="36" height="36" rx="8" fill="white"/>
+            <polyline points="22,32 30,40 44,24" fill="none" stroke="#5e81ac" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="8" cy="8" r="3" fill="white" opacity="0.6"/><circle cx="56" cy="8" r="3" fill="white" opacity="0.6"/>
+            <circle cx="8" cy="56" r="3" fill="white" opacity="0.6"/><circle cx="56" cy="56" r="3" fill="white" opacity="0.6"/>
+            <line x1="11" y1="11" x2="16" y2="16" stroke="white" stroke-width="1" opacity="0.4"/>
+            <line x1="53" y1="11" x2="48" y2="16" stroke="white" stroke-width="1" opacity="0.4"/>
+            <line x1="11" y1="53" x2="16" y2="48" stroke="white" stroke-width="1" opacity="0.4"/>
+            <line x1="53" y1="53" x2="48" y2="48" stroke="white" stroke-width="1" opacity="0.4"/>
+          </svg>
+        </div>
+        <span class="font-semibold text-foreground text-sm truncate">PraxisNote</span>
+      </div>
+      <button
+        type="button"
+        class="toggle-btn shrink-0"
+        (click)="toggleCollapse()"
+        aria-label="Collapse sidebar"
+      >
+        <i class="pi pi-chevron-left text-xs"></i>
+      </button>
+    }
   </div>
 
   <!-- Main navigation -->
-  <nav class="flex-1 px-3 py-1 space-y-0.5 overflow-y-auto" role="navigation" aria-label="Main navigation">
+  <nav class="flex-1 py-1 space-y-0.5 overflow-y-auto overflow-x-hidden" role="navigation" aria-label="Main navigation"
+    [class.px-3]="!collapsed()"
+    [class.px-1]="collapsed()"
+  >
     @for (item of navItems; track item.path) {
       <button
         type="button"
-        class="w-full group flex items-center gap-3 h-9 px-3 text-sm rounded-lg text-left"
+        class="w-full group flex items-center h-9 text-sm rounded-lg"
+        [class.gap-3]="!collapsed()"
+        [class.px-3]="!collapsed()"
+        [class.text-left]="!collapsed()"
+        [class.justify-center]="collapsed()"
+        [class.px-0]="collapsed()"
         [class.font-medium]="isActive(item.path)"
         [class.text-foreground]="isActive(item.path)"
         [class.bg-accent]="isActive(item.path)"
@@ -35,6 +69,9 @@
         [class.opacity-50]="!item.enabled"
         [class.cursor-not-allowed]="!item.enabled"
         [disabled]="!item.enabled"
+        [attr.aria-label]="item.label"
+        [pTooltip]="collapsed() ? item.label : ''"
+        tooltipPosition="right"
         (click)="item.enabled && navigate(item.path)"
       >
         <i
@@ -42,121 +79,170 @@
           [class.text-accent-foreground]="isActive(item.path)"
           [class.text-foreground-muted]="!isActive(item.path)"
         ></i>
-        <span>{{ item.label }}</span>
+        @if (!collapsed()) {
+          <span>{{ item.label }}</span>
+        }
       </button>
     }
 
-    <!-- Divider -->
-    <div class="py-3">
-      <div class="h-px bg-border"></div>
-    </div>
-
-    <!-- Recording indicator -->
-    @if (activity.recorder.isActive()) {
-      <button
-        type="button"
-        class="recording-sidebar-item"
-        (click)="returnToRecording()"
-        aria-label="Return to active recording"
-      >
-        <span class="pulse-dot"></span>
-        <span class="flex-1 truncate">Recording</span>
-        <span class="font-mono">{{ activity.recorder.formattedTime() }}</span>
-      </button>
-    }
-
-    <!-- In Progress tasks -->
-    @if (activity.inProgressTasks().length > 0) {
-      <div class="px-3 h-7 flex items-center">
-        <span class="text-[10px] font-semibold text-inprogress-foreground uppercase tracking-wider">In Progress</span>
+    @if (!collapsed()) {
+      <!-- Divider -->
+      <div class="py-3">
+        <div class="h-px bg-border"></div>
       </div>
-      @for (task of activity.inProgressTasks(); track task.id) {
+
+      <!-- Recording indicator -->
+      @if (activity.recorder.isActive()) {
         <button
           type="button"
-          class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
-          (click)="navigate('/tasks')"
-          aria-label="Go to Tasks"
+          class="recording-sidebar-item"
+          (click)="returnToRecording()"
+          aria-label="Return to active recording"
         >
-          <i class="pi pi-spinner text-inprogress-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
-          <span class="truncate">{{ task.title }}</span>
+          <span class="pulse-dot"></span>
+          <span class="flex-1 truncate">Recording</span>
+          <span class="font-mono">{{ activity.recorder.formattedTime() }}</span>
         </button>
       }
-    }
 
-    <!-- Up Next tasks -->
-    @if (activity.upNextTasks().length > 0) {
-      <div class="px-3 h-7 flex items-center">
-        <span class="text-[10px] font-semibold text-todo-foreground uppercase tracking-wider">Up Next</span>
-      </div>
-      @for (task of activity.upNextTasks(); track task.id) {
-        <button
-          type="button"
-          class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
-          (click)="navigate('/tasks')"
-          aria-label="Go to Tasks"
-        >
-          <i class="pi pi-circle text-todo-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
-          <span class="truncate">{{ task.title }}</span>
-        </button>
+      <!-- In Progress tasks -->
+      @if (activity.inProgressTasks().length > 0) {
+        <div class="px-3 h-7 flex items-center">
+          <span class="text-[10px] font-semibold text-inprogress-foreground uppercase tracking-wider">In Progress</span>
+        </div>
+        @for (task of activity.inProgressTasks(); track task.id) {
+          <button
+            type="button"
+            class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+            (click)="navigate('/tasks')"
+            aria-label="Go to Tasks"
+          >
+            <i class="pi pi-spinner text-inprogress-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+            <span class="truncate">{{ task.title }}</span>
+          </button>
+        }
       }
-    }
 
-    <!-- Context section divider -->
-    @if (activity.inProgressTasks().length > 0 || activity.upNextTasks().length > 0) {
-      <div class="py-2">
-        <div class="h-px bg-border mx-3"></div>
-      </div>
-    }
+      <!-- Up Next tasks -->
+      @if (activity.upNextTasks().length > 0) {
+        <div class="px-3 h-7 flex items-center">
+          <span class="text-[10px] font-semibold text-todo-foreground uppercase tracking-wider">Up Next</span>
+        </div>
+        @for (task of activity.upNextTasks(); track task.id) {
+          <button
+            type="button"
+            class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+            (click)="navigate('/tasks')"
+            aria-label="Go to Tasks"
+          >
+            <i class="pi pi-circle text-todo-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+            <span class="truncate">{{ task.title }}</span>
+          </button>
+        }
+      }
 
-    <!-- Context-aware section -->
-    <div class="px-3 h-7 flex items-center gap-1.5">
-      <i class="pi {{ activity.contextIcon() }} text-[10px] text-foreground-muted" aria-hidden="true"></i>
-      <span class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider">{{ activity.contextLabel() }}</span>
-    </div>
-    @if (activity.contextItems().length === 0) {
-      <div class="px-3 py-2">
-        <p class="text-xs text-foreground-muted">No recent activity yet</p>
+      <!-- Context section divider -->
+      @if (activity.inProgressTasks().length > 0 || activity.upNextTasks().length > 0) {
+        <div class="py-2">
+          <div class="h-px bg-border mx-3"></div>
+        </div>
+      }
+
+      <!-- Context-aware section -->
+      <div class="px-3 h-7 flex items-center gap-1.5">
+        <i class="pi {{ activity.contextIcon() }} text-[10px] text-foreground-muted" aria-hidden="true"></i>
+        <span class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider">{{ activity.contextLabel() }}</span>
       </div>
+      @if (activity.contextItems().length === 0) {
+        <div class="px-3 py-2">
+          <p class="text-xs text-foreground-muted">No recent activity yet</p>
+        </div>
+      } @else {
+        @for (item of activity.contextItems(); track item.id) {
+          <button
+            type="button"
+            class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left"
+            (click)="navigateTo(item.route)"
+            [attr.aria-label]="item.type === 'task' ? 'Go to Tasks' : 'Go to ' + item.type + ': ' + item.title"
+          >
+            <i class="pi {{ item.icon }} text-[10px] text-foreground-muted flex-shrink-0" aria-hidden="true"></i>
+            <span class="truncate flex-1">{{ item.title }}</span>
+            <span
+              class="text-[10px] flex-shrink-0"
+              [class.text-danger]="item.metaUrgent"
+              [class.text-foreground-muted]="!item.metaUrgent"
+            >{{ item.meta }}</span>
+          </button>
+        }
+      }
     } @else {
-      @for (item of activity.contextItems(); track item.id) {
+      <!-- Collapsed: show divider -->
+      <div class="py-3 px-2">
+        <div class="h-px bg-border"></div>
+      </div>
+
+      <!-- Collapsed: recording indicator (icon only) -->
+      @if (activity.recorder.isActive()) {
         <button
           type="button"
-          class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left"
-          (click)="navigateTo(item.route)"
-          [attr.aria-label]="item.type === 'task' ? 'Go to Tasks' : 'Go to ' + item.type + ': ' + item.title"
+          class="w-full flex items-center justify-center h-9 rounded-lg"
+          pTooltip="Recording in progress"
+          tooltipPosition="right"
+          (click)="returnToRecording()"
+          aria-label="Return to active recording"
         >
-          <i class="pi {{ item.icon }} text-[10px] text-foreground-muted flex-shrink-0" aria-hidden="true"></i>
-          <span class="truncate flex-1">{{ item.title }}</span>
-          <span
-            class="text-[10px] flex-shrink-0"
-            [class.text-danger]="item.metaUrgent"
-            [class.text-foreground-muted]="!item.metaUrgent"
-          >{{ item.meta }}</span>
+          <span class="pulse-dot"></span>
         </button>
       }
     }
   </nav>
 
   <!-- User section -->
-  <div class="p-3 border-t border-border">
-    <!-- User -->
-    <button
-      class="w-full flex items-center gap-3 h-10 px-2 hover:bg-surface-muted rounded-lg transition-colors duration-150"
-      (click)="logout()"
-      aria-label="Sign out"
-    >
-      @if (user().avatarUrl) {
-        <img [src]="user().avatarUrl!" class="w-7 h-7 rounded-full ring-2 ring-surface shadow-sm" [alt]="user().name" />
-      } @else {
-        <div class="w-7 h-7 rounded-full bg-brand-gradient flex items-center justify-center ring-2 ring-surface shadow-sm">
-          <span class="text-white text-xs font-medium">{{ user().name.charAt(0) }}</span>
-        </div>
-      }
-      <div class="flex-1 min-w-0 text-left">
-        <p class="text-sm font-medium text-foreground truncate">{{ user().name }}</p>
+  <div class="border-t border-border"
+    [class.p-3]="!collapsed()"
+    [class.py-3]="collapsed()"
+    [class.px-1]="collapsed()"
+  >
+    @if (collapsed()) {
+      <!-- Collapsed: avatar only with tooltip, clickable to sign out -->
+      <div class="flex justify-center">
+        <button
+          type="button"
+          class="rounded-full hover:ring-accent-foreground transition-all duration-150"
+          (click)="logout()"
+          [pTooltip]="user().name + ' — Sign out'"
+          tooltipPosition="right"
+          aria-label="Sign out"
+        >
+          @if (user().avatarUrl) {
+            <img [src]="user().avatarUrl!" class="w-7 h-7 rounded-full ring-2 ring-surface shadow-sm" [alt]="user().name" />
+          } @else {
+            <div class="w-7 h-7 rounded-full bg-brand-gradient flex items-center justify-center ring-2 ring-surface shadow-sm">
+              <span class="text-white text-xs font-medium">{{ user().name.charAt(0) }}</span>
+            </div>
+          }
+        </button>
       </div>
-      <i class="pi pi-sign-out text-foreground-muted text-sm" aria-hidden="true"></i>
-    </button>
+    } @else {
+      <!-- Expanded: full user section -->
+      <button
+        class="w-full flex items-center gap-3 h-10 px-2 hover:bg-surface-muted rounded-lg transition-colors duration-150"
+        (click)="logout()"
+        aria-label="Sign out"
+      >
+        @if (user().avatarUrl) {
+          <img [src]="user().avatarUrl!" class="w-7 h-7 rounded-full ring-2 ring-surface shadow-sm" [alt]="user().name" />
+        } @else {
+          <div class="w-7 h-7 rounded-full bg-brand-gradient flex items-center justify-center ring-2 ring-surface shadow-sm">
+            <span class="text-white text-xs font-medium">{{ user().name.charAt(0) }}</span>
+          </div>
+        }
+        <div class="flex-1 min-w-0 text-left">
+          <p class="text-sm font-medium text-foreground truncate">{{ user().name }}</p>
+        </div>
+        <i class="pi pi-sign-out text-foreground-muted text-sm" aria-hidden="true"></i>
+      </button>
+    }
   </div>
 </aside>
 
