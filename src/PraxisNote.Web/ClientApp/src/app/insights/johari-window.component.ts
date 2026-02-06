@@ -11,7 +11,14 @@ import { InsightsService } from './insights.service';
   imports: [Skeleton, Tooltip],
   template: `
     <section class="mb-6">
-      <h2 class="text-lg font-semibold text-foreground mb-3">Self-Awareness (Johari Window)</h2>
+      <div class="flex items-center gap-2 mb-3">
+        <h2 class="text-lg font-semibold text-foreground">Self-Awareness (Johari Window)</h2>
+        <i class="pi pi-info-circle text-foreground-muted text-sm cursor-help"
+           pTooltip="Maps your self-awareness across four quadrants: what you and others see, what only others see, what only you see, and blind spots. Based on feedback patterns in your meetings."
+           tooltipPosition="top"
+           role="img"
+           aria-label="Johari window info"></i>
+      </div>
 
       @if (johariService.loading()) {
         <!-- Skeleton loading -->

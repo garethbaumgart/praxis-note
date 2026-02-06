@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
 import { Skeleton } from 'primeng/skeleton';
+import { Tooltip } from 'primeng/tooltip';
 import { GoalsService } from './goals.service';
 import { GoalCardComponent } from './goal-card.component';
 import { AddGoalDialogComponent } from './add-goal-dialog.component';
@@ -8,11 +9,18 @@ import { AddGoalDialogComponent } from './add-goal-dialog.component';
   selector: 'app-goals-section',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Skeleton, GoalCardComponent, AddGoalDialogComponent],
+  imports: [Skeleton, Tooltip, GoalCardComponent, AddGoalDialogComponent],
   template: `
     <section class="mb-6">
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-semibold text-foreground">Goals</h2>
+        <div class="flex items-center gap-2">
+          <h2 class="text-lg font-semibold text-foreground">Goals</h2>
+          <i class="pi pi-info-circle text-foreground-muted text-sm cursor-help"
+             pTooltip="Track behavioral goals based on your meeting patterns. Set targets for communication habits you want to improve and monitor progress over time."
+             tooltipPosition="top"
+             role="img"
+             aria-label="Goals info"></i>
+        </div>
         <button type="button"
                 class="flex items-center gap-1 text-sm text-accent-foreground hover:opacity-80 transition"
                 (click)="showAddDialog.set(true)"
