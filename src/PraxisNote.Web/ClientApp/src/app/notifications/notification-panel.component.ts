@@ -107,7 +107,7 @@ import { NotificationService } from './notification.service';
                           </p>
                           <div class="flex items-center gap-3 mt-2">
                             <span class="text-xs text-foreground-muted">
-                              {{ notification.createdAt | date:'MMM d, yyyy' }}
+                              {{ notification.createdAt | date:'MMM d, yyyy':'UTC' }}
                             </span>
                             @if (notification.issueUrl) {
                               <a
