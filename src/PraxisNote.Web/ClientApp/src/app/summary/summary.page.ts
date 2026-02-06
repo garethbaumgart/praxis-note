@@ -294,11 +294,7 @@ export class SummaryPage implements OnInit {
     });
   });
 
-  ngOnInit(): void {
-    this.summaryService.loadSummary();
-  }
-
-  protected isEmptyDay(): boolean {
+  protected readonly isEmptyDay = computed(() => {
     const summary = this.summaryService.summary();
     if (!summary) return true;
     const s = summary.stats;
@@ -307,6 +303,10 @@ export class SummaryPage implements OnInit {
       && s.tasksStarted === 0
       && s.actionItemsOpen === 0
       && s.notesUpdated === 0;
+  });
+
+  ngOnInit(): void {
+    this.summaryService.loadSummary();
   }
 
   protected formatMeetingTime(dateStr: string | null): string {

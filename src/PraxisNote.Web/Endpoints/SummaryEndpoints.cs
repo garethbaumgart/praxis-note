@@ -27,7 +27,7 @@ public static class SummaryEndpoints
 
         var targetDate = string.IsNullOrWhiteSpace(date)
             ? DateOnly.FromDateTime(DateTime.UtcNow)
-            : DateOnly.Parse(date);
+            : DateOnly.TryParse(date, out var parsed) ? parsed : DateOnly.FromDateTime(DateTime.UtcNow);
 
         var query = new GetDailySummary.Query(userId.Value, targetDate);
         var result = await getDailySummary.ExecuteAsync(query, cancellationToken);
