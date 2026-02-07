@@ -6,14 +6,15 @@ import { SummaryService } from './summary.service';
 import { MeetingSummaryItem } from './summary.model';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
+import { PageContentComponent } from '../shared/components/page-content.component';
 
 @Component({
   selector: 'app-summary-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Skeleton, Tooltip, ErrorStateComponent],
+  imports: [Skeleton, Tooltip, ErrorStateComponent, PageContentComponent],
   template: `
-    <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
+    <app-page-content>
       <h1 class="sr-only">Daily Summary</h1>
       <!-- Date navigation -->
       <div class="flex items-center justify-between gap-4 mb-6">
@@ -276,7 +277,7 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
           </div>
         }
       }
-    </div>
+    </app-page-content>
   `,
 })
 export class SummaryPage implements OnInit, OnDestroy {

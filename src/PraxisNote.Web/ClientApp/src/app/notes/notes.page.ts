@@ -8,14 +8,15 @@ import { ToastService } from '../shared/services/toast.service';
 import { TagService } from '../tags/tag.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
+import { PageContentComponent } from '../shared/components/page-content.component';
 
 @Component({
   selector: 'app-notes-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NoteCardComponent, NoteCardSkeletonComponent, ErrorStateComponent],
+  imports: [NoteCardComponent, NoteCardSkeletonComponent, ErrorStateComponent, PageContentComponent],
   template: `
-    <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
+    <app-page-content>
       <h1 class="sr-only">Notes</h1>
       <!-- Search -->
       <div class="relative mb-6">
@@ -139,7 +140,7 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
           }
         </div>
       }
-    </div>
+    </app-page-content>
   `,
   styles: [`
     .masonry-grid {

@@ -5,14 +5,15 @@ import { Button } from 'primeng/button';
 import { CalendarService } from '../shared/services/calendar.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { PageContentComponent } from '../shared/components/page-content.component';
 
 @Component({
   selector: 'app-settings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, DatePipe],
+  imports: [Button, DatePipe, PageContentComponent],
   template: `
-    <div class="max-w-3xl mx-auto px-6 md:px-8 py-8 md:py-10">
+    <app-page-content maxWidth="narrow">
       <h1 class="sr-only">Settings</h1>
       <!-- Calendar Integration Section -->
       <section class="bg-surface border border-border rounded-xl p-6">
@@ -112,7 +113,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
           </div>
         }
       </section>
-    </div>
+    </app-page-content>
   `,
 })
 export class SettingsPage implements OnInit, OnDestroy {

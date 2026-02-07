@@ -10,14 +10,15 @@ import { CalendarService } from '../shared/services/calendar.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
+import { PageContentComponent } from '../shared/components/page-content.component';
 
 @Component({
   selector: 'app-meetings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ImportDialogComponent, Tooltip],
+  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ImportDialogComponent, Tooltip, PageContentComponent],
   template: `
-    <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
+    <app-page-content>
       <h1 class="sr-only">Meetings</h1>
       <!-- Search + Actions -->
       <div class="flex items-center gap-3 mb-6">
@@ -185,7 +186,7 @@ import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
           }
         </div>
       }
-    </div>
+    </app-page-content>
 
     <app-import-dialog #importDialog (onImported)="meetingService.loadMeetings()" />
   `,

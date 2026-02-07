@@ -16,6 +16,7 @@ import { MergeTagDialogComponent } from './merge-tag-dialog.component';
 import { formatShortDate } from '../shared/date-utils';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
+import { PageContentComponent } from '../shared/components/page-content.component';
 
 interface DateGroup {
   label: string;
@@ -26,9 +27,9 @@ interface DateGroup {
   selector: 'app-tags-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent],
+  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent, PageContentComponent],
   template: `
-    <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
+    <app-page-content>
       <h1 class="sr-only">Tags</h1>
       @if (tagService.loading()) {
         <!-- Loading tags state -->
@@ -275,7 +276,7 @@ interface DateGroup {
           </div>
         }
       }
-    </div>
+    </app-page-content>
 
     <!-- Popup action menu (rendered at body level) -->
     <p-menu #tagActionMenu [model]="tagActionMenuItems()" [popup]="true" appendTo="body" />
