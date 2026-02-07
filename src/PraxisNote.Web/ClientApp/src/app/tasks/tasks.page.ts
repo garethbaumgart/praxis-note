@@ -165,8 +165,6 @@ interface ColumnConfig {
             (onRemoveTag)="removeTagFromTask($event.taskId, $event.tagId)"
             (onCreateTag)="createAndAddTag($event.taskId, $event.name)"
             (onSortModeChange)="col.sortModeSignal.set($event)"
-            [showSortMenu]="activeSortMenu() === col.status"
-            (onSortMenuToggle)="toggleSortMenu(col.status)"
           />
         }
       </div>
@@ -205,8 +203,6 @@ interface ColumnConfig {
             (onRemoveTag)="removeTagFromTask($event.taskId, $event.tagId)"
             (onCreateTag)="createAndAddTag($event.taskId, $event.name)"
             (onSortModeChange)="col.sortModeSignal.set($event)"
-            [showSortMenu]="activeSortMenu() === col.status"
-            (onSortMenuToggle)="toggleSortMenu(col.status)"
           />
         }
       </div>
@@ -235,8 +231,6 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly todoSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly inProgressSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
   readonly doneSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
-  readonly activeSortMenu = signal<'Todo' | 'InProgress' | 'Done' | null>(null);
-
   readonly doneColumnTasks = computed(() =>
     this.showArchive()
       ? this.taskService.archivedTasks()
@@ -402,11 +396,6 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.activeSortMenu.set(null);
-  }
-
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const target = event.target as HTMLElement;
@@ -504,10 +493,6 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
           ? this.taskService.inProgressTasks().length
           : this.taskService.doneTasks().length;
     this.taskService.changeStatus(taskId, status, targetIndex);
-  }
-
-  toggleSortMenu(column: 'Todo' | 'InProgress' | 'Done'): void {
-    this.activeSortMenu.update(current => current === column ? null : column);
   }
 
   drop(event: CdkDragDrop<Task[]>, targetStatus: TaskStatus): void {
