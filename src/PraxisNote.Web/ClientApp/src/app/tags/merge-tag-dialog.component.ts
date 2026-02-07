@@ -15,8 +15,9 @@ import { Tag, MergePreview } from './tag.model';
       [visible]="visible()"
       (visibleChange)="onDialogVisibleChange($event)"
       [modal]="true"
-      [style]="{ width: '26rem' }"
-      [draggable]="false">
+      [style]="{ width: '24rem' }"
+      [draggable]="false"
+      [resizable]="false">
 
       <!-- Stepper indicator -->
       <div class="flex items-center gap-0 mb-5">

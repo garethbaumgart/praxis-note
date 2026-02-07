@@ -17,8 +17,10 @@ import { GOAL_PRESETS, GoalPreset, MetricType, GoalOperator } from './insights.m
       [visible]="visible()"
       (visibleChange)="onDialogVisibleChange($event)"
       [modal]="true"
-      [style]="{ width: '28rem' }"
-      [draggable]="false">
+      [style]="{ width: '30rem' }"
+      [draggable]="false"
+      [resizable]="false"
+      [dismissableMask]="true">
 
       @if (!showCustom()) {
         <!-- Preset selection -->

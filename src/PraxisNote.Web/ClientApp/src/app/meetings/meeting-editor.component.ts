@@ -1,9 +1,7 @@
 import { Component, ChangeDetectionStrategy, signal, output, inject, computed, effect, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
+import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -28,7 +26,7 @@ interface DateOption {
   selector: 'app-meeting-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgClass, DialogModule, ButtonModule, InputTextModule, TextareaModule, DatePickerModule, SelectModule, MenuModule, MeetingAnalysisComponent],
+  imports: [FormsModule, Dialog, InputTextModule, TextareaModule, DatePickerModule, SelectModule, MenuModule, MeetingAnalysisComponent],
   styles: [`
     :host ::ng-deep .p-dialog-content {
       padding: 0 !important;
@@ -36,10 +34,6 @@ interface DateOption {
     :host ::ng-deep .p-dialog-header {
       padding: 0.75rem 1.25rem;
       border-bottom: 1px solid var(--color-border);
-    }
-    :host ::ng-deep .p-dialog-footer {
-      padding: 0.75rem 1.25rem;
-      border-top: 1px solid var(--color-border);
     }
     :host ::ng-deep .p-datepicker {
       border: none;
@@ -70,11 +64,12 @@ interface DateOption {
       [modal]="true"
       [draggable]="false"
       [resizable]="false"
+      [dismissableMask]="true"
       [closable]="true"
-      [style]="{ width: isEditing() ? '580px' : '520px' }"
+      [style]="{ width: '36rem' }"
       [header]="isEditing() ? 'Edit Meeting' : 'New Meeting'"
     >
-      <div class="px-5 py-4 space-y-4" [ngClass]="isEditing() ? ['max-h-[520px]', 'overflow-y-auto'] : []">
+      <div class="px-5 py-4 space-y-4" [class.max-h-[520px]]="isEditing()" [class.overflow-y-auto]="isEditing()">
         <!-- Title -->
         <div class="flex items-center gap-3">
           <i class="pi pi-file-edit text-foreground-muted w-5 text-center" aria-hidden="true"></i>
@@ -342,23 +337,12 @@ interface DateOption {
             </div>
           }
         }
-      </div>
-
-      <ng-template pTemplate="footer">
-        <div class="flex justify-end gap-3">
-          <button
-            type="button"
-            class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground transition-colors"
-            (click)="visible.set(false)"
-          >
-            Cancel
-          </button>
-          <p-button
-            [label]="isEditing() ? 'Save' : 'Create'"
-            (onClick)="save()"
-          />
+        <!-- Inline footer -->
+        <div class="flex justify-end gap-3 mt-5 pt-4 border-t border-border">
+          <button type="button" class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground transition-colors" (click)="visible.set(false)">Cancel</button>
+          <button type="button" class="px-4 py-1.5 text-sm text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity" (click)="save()">{{ isEditing() ? 'Save' : 'Create' }}</button>
         </div>
-      </ng-template>
+      </div>
     </p-dialog>
   `,
 })
