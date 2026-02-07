@@ -113,17 +113,19 @@ readonly items = signal<Item[]>([]);
 ```html
 <!-- Template pattern -->
 @if (loading()) {
-  <app-skeleton />
+  <!-- Use p-skeleton with role="status" — see UX Patterns > Loading States -->
 } @else if (error()) {
-  <p class="text-red-500">{{ error() }}</p>
+  <!-- Use <app-error-state> — see UX Patterns > Error States -->
 } @else if (items().length === 0) {
-  <p class="text-foreground-muted text-center py-8">No items found</p>
+  <!-- Use empty state pattern — see UX Patterns > Empty States -->
 } @else {
   @for (item of items(); track item.id) {
     <app-item-card [item]="item" />
   }
 }
 ```
+
+For detailed examples and rules, see the **UX Patterns (ENFORCED)** section under UX/UI Guidelines.
 
 ## UX/UI Guidelines
 
@@ -148,6 +150,267 @@ readonly items = signal<Item[]>([]);
 (keydown.enter)="action()"
 (keydown.escape)="cancel()"
 ```
+
+### UX Patterns (ENFORCED)
+
+These patterns are established across the codebase. Follow them exactly for consistency.
+
+#### 1. Empty States (Two Tiers)
+
+**Page-level empty state** — used when an entire page has no content:
+
+```html
+<div class="text-center py-16">
+  <i class="pi pi-file-edit text-4xl text-foreground-muted mb-4"></i>
+  <p class="text-lg font-semibold text-foreground mb-2">No notes yet</p>
+  <p class="text-sm text-foreground-muted">Click "New Note" to create your first note</p>
+</div>
+```
+
+**Component-level empty state** — used inside panels, sidebars, or subsections:
+
+```html
+<div class="flex flex-col items-center justify-center py-8 text-foreground-muted">
+  <i class="pi pi-inbox text-2xl mb-2"></i>
+  <p class="text-sm">All caught up!</p>
+</div>
+```
+
+**Rules:**
+- Always include an icon, a heading, and (for page-level) a hint or action
+- Use `text-foreground-muted` for secondary text, `text-foreground` for headings
+- Differentiate between "no data yet" vs "no results for a filter/search" with appropriate messaging
+
+#### 2. Loading States
+
+**Page/section loading** — use PrimeNG `p-skeleton` to mimic the content layout:
+
+```html
+<div role="status" aria-label="Loading daily summary">
+  <span class="sr-only">Loading daily summary...</span>
+  <p-skeleton width="40%" height="28px" styleClass="mb-2" />
+  <p-skeleton width="100%" height="12px" styleClass="mb-2" />
+</div>
+```
+
+**Inline/action loading** — use PrimeNG spinner icon for short operations inside dialogs or buttons:
+
+```html
+<div role="status" aria-label="Analyzing transcript">
+  <i class="pi pi-spin pi-spinner text-sm" aria-hidden="true"></i>
+  <span class="sr-only">Analyzing transcript...</span>
+</div>
+```
+
+**Rules:**
+- Always add `role="status"` and `aria-label` to loading containers
+- Always include a `sr-only` text alternative
+- Prefer skeletons for initial page loads; use spinners for inline/action feedback (e.g., inside dialogs, after button clicks)
+
+#### 3. Error States (Three Tiers)
+
+**Page/section error** — use the shared `ErrorStateComponent`:
+
+```html
+<app-error-state
+  title="Something went wrong"
+  [message]="service.error()!"
+  (retry)="service.reload()"
+/>
+```
+
+The component supports `size` (`'md'` | `'sm'`), optional `showRetry`, and uses semantic tokens (`text-danger`, `bg-danger-bg`). See `src/app/shared/components/error-state.component.ts`.
+
+**Field-level error** — inline validation text below the input:
+
+```html
+<small class="text-danger text-xs">Title is required</small>
+```
+
+**Mutation error** — use `ToastService` for failed API calls:
+
+```typescript
+this.toastService.error('Failed to save', 'Please try again later');
+this.toastService.success({ summary: 'Meeting created', detail: 'Your meeting has been saved' });
+```
+
+**Rules:**
+- Page/section errors must always offer a retry action
+- Mutation errors use toasts; never show a full-page error for a failed save/delete
+- Never hardcode colors — use `text-danger` and `bg-danger-bg` semantic tokens
+
+#### 4. Dialogs
+
+All dialogs use PrimeNG `p-dialog` with an **inline footer** (native buttons inside the template, not PrimeNG's `p-footer`).
+
+**Standard dialog setup:**
+
+```html
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [closable]="true"
+  [style]="{ width: '30rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+  header="Dialog Title"
+>
+  <!-- Content -->
+
+  <!-- Inline footer -->
+  <div class="flex justify-end gap-3 px-5 py-4 border-t border-border">
+    <button type="button"
+      class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground transition-colors"
+      (click)="visible.set(false)">Cancel</button>
+    <button type="button"
+      class="px-4 py-1.5 text-sm text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity"
+      (click)="save()">Save</button>
+  </div>
+</p-dialog>
+```
+
+**Size presets:**
+
+| Size | Width | Use case |
+|------|-------|----------|
+| sm | `24rem` | Confirmations, simple prompts |
+| md | `30rem` | Forms, import dialogs |
+| lg | `36rem` | Multi-section editors |
+| full | `90vw` / `maxWidth: 700px` | Rich editors (notes) |
+
+**Rules:**
+- Always set `[draggable]="false"` and `[resizable]="false"`
+- Set `[dismissableMask]="true"` for read-only or non-destructive dialogs
+- For destructive dialogs (delete confirmations), omit `dismissableMask` or bind it conditionally
+- Use `[breakpoints]="{ '640px': '95vw' }"` for responsive mobile sizing
+- Footer button order: Cancel (left/text-only), Primary action (right/filled)
+
+#### 5. Icon Button Sizes (Three Tiers)
+
+| Size | Classes | Pixels | Use case |
+|------|---------|--------|----------|
+| sm | `w-7 h-7` | 28px | Inline/row actions (kebab menus, tag buttons, checkboxes) |
+| md | `w-9 h-9` | 36px | Toolbar/header buttons (navigation, page-level actions) |
+| lg | `w-11 h-11` | 44px | Reserved for large touch targets (future use) |
+
+**Standard icon button pattern:**
+
+```html
+<button type="button"
+  class="touch-target w-9 h-9 flex items-center justify-center rounded-lg
+         text-foreground-muted hover:bg-surface-muted transition"
+  (click)="action()"
+  aria-label="Action description">
+  <i class="pi pi-icon-name text-sm"></i>
+</button>
+```
+
+**Rules:**
+- Always add `touch-target` class for WCAG 2.5.8 compliance (invisible 44px hit area)
+- Always include `aria-label` on icon-only buttons
+- Use `flex items-center justify-center` for centering
+
+#### 6. Delete Confirmations
+
+**Inline confirm (for list items/cards)** — use `DeleteConfirmButtonComponent`:
+
+```html
+@if (confirmingDelete()) {
+  <app-delete-confirm-button
+    ariaLabel="Confirm delete note"
+    (onConfirm)="confirmDelete()"
+    (click)="$event.stopPropagation()"
+  />
+} @else {
+  <button type="button"
+    class="touch-target p-1.5 text-foreground-muted hover:text-danger rounded transition-colors"
+    (click)="startDeleteConfirm(); $event.stopPropagation()"
+    aria-label="Delete note">
+    <i class="pi pi-trash text-xs"></i>
+  </button>
+}
+```
+
+See `src/app/shared/components/delete-confirm-button.component.ts`. The component shows "Confirm?" with a shrinking progress bar countdown.
+
+**Dialog confirm (for destructive actions with context)** — use a `p-dialog` with `width: '24rem'`:
+
+```html
+<div class="flex justify-end gap-2 mt-4">
+  <button type="button"
+    class="px-4 py-2 text-sm border border-border rounded-lg text-foreground-secondary hover:bg-surface-muted transition"
+    (click)="cancelDelete()">Cancel</button>
+  <button type="button"
+    class="px-4 py-2 text-sm bg-danger text-white rounded-lg font-medium hover:opacity-90 transition"
+    (click)="confirmDelete()">Delete</button>
+</div>
+```
+
+**When to use which:**
+- **Inline confirm**: Card/row items where deletion is quick and context is obvious
+- **Dialog confirm**: When the user needs to see impact details (e.g., "This tag is used by 5 tasks and 3 notes")
+
+#### 7. Hover-Reveal Pattern
+
+Actions that appear on hover (desktop) must always be visible on mobile. Use the dual-element pattern:
+
+```html
+<!-- Parent must have `group` class -->
+<div class="group ...">
+  <!-- Mobile: always visible -->
+  <div class="flex md:hidden items-center gap-1">
+    <button class="touch-target p-1.5 ..." aria-label="Delete">
+      <i class="pi pi-trash text-xs"></i>
+    </button>
+  </div>
+
+  <!-- Desktop: hover/focus reveal -->
+  <div class="hidden md:flex md:opacity-0 md:pointer-events-none
+              md:group-hover:opacity-100 md:group-hover:pointer-events-auto
+              md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto
+              items-center gap-1 transition-opacity">
+    <button class="touch-target p-1.5 ..." aria-label="Delete">
+      <i class="pi pi-trash text-xs"></i>
+    </button>
+  </div>
+</div>
+```
+
+**Rules:**
+- Mobile button: `flex md:hidden` (always visible on mobile, hidden on desktop)
+- Desktop button: `hidden md:flex md:opacity-0 md:group-hover:opacity-100` (hidden on mobile, fade-in on desktop hover)
+- Always include `md:group-focus-within:opacity-100` and `md:group-focus-within:pointer-events-auto` for keyboard accessibility
+- Both elements render the same actions — this is intentional for layout consistency
+
+#### 8. Context Menus
+
+Use PrimeNG `p-menu` with `[popup]="true"` for all context/action menus.
+
+```html
+<!-- Trigger button -->
+<button type="button"
+  class="touch-target w-7 h-7 flex items-center justify-center rounded
+         text-foreground-muted hover:bg-surface-muted transition"
+  (click)="menu.toggle($event)"
+  aria-label="Actions for {{ item.name }}">
+  <i class="pi pi-ellipsis-v text-xs"></i>
+</button>
+
+<!-- Menu (rendered at body level) -->
+<p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+```
+
+**Trigger icon conventions:**
+- `pi-ellipsis-v` (vertical dots) — row/card action menus
+- `pi-ellipsis-h` (horizontal dots) — toolbar overflow menus
+
+**Rules:**
+- Always set `appendTo="body"` to avoid clipping issues
+- Always include `aria-label` on the trigger button describing which item it acts on
+- Menu items use PrimeNG `MenuItem[]` model with `label`, `icon`, and `command`
 
 ### UI Design Resources
 
