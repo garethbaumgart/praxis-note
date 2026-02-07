@@ -58,7 +58,7 @@ interface DateOption {
           }
         </span>
         @if (meetingId()) {
-          <button type="button" class="w-8 h-8 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="deleteMeeting()" aria-label="Delete meeting" title="Delete meeting">
+          <button type="button" class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="deleteMeeting()" aria-label="Delete meeting" title="Delete meeting">
             <i class="pi pi-trash text-sm" aria-hidden="true"></i>
           </button>
         }

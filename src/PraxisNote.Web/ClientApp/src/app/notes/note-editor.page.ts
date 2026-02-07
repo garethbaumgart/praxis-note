@@ -45,13 +45,13 @@ import { Tag } from '../tags/tag.model';
           }
         </span>
         @if (note()) {
-          <button type="button" class="w-8 h-8 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="exportToPdf()" aria-label="Export to PDF" title="Export to PDF">
+          <button type="button" class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="exportToPdf()" aria-label="Export to PDF" title="Export to PDF">
             <i class="pi pi-file-pdf text-sm" aria-hidden="true"></i>
           </button>
           @if (confirmingDelete()) {
             <app-delete-confirm-button ariaLabel="Confirm delete note" (onConfirm)="confirmDelete()" />
           } @else {
-            <button type="button" class="w-8 h-8 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="startDeleteConfirm()" aria-label="Delete note" title="Delete note">
+            <button type="button" class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary" (click)="startDeleteConfirm()" aria-label="Delete note" title="Delete note">
               <i class="pi pi-trash text-sm" aria-hidden="true"></i>
             </button>
           }

@@ -20,7 +20,7 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
         <p class="text-sm text-foreground-muted">{{ formattedDate() }}</p>
         <div class="flex items-center gap-2">
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-surface-subtle text-foreground-muted hover:bg-surface-muted hover:text-foreground-secondary transition cursor-pointer"
+            class="w-9 h-9 flex items-center justify-center rounded-lg border border-border bg-surface-subtle text-foreground-muted hover:bg-surface-muted hover:text-foreground-secondary transition cursor-pointer"
             (click)="summaryService.navigateDate(-1)"
             aria-label="Previous day">
             <i class="pi pi-chevron-left text-xs"></i>
@@ -40,7 +40,7 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
           </button>
 
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-surface-subtle text-foreground-muted hover:bg-surface-muted hover:text-foreground-secondary transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+            class="w-9 h-9 flex items-center justify-center rounded-lg border border-border bg-surface-subtle text-foreground-muted hover:bg-surface-muted hover:text-foreground-secondary transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
             [disabled]="summaryService.isToday()"
             (click)="summaryService.navigateDate(1)"
             aria-label="Next day">
