@@ -490,7 +490,11 @@ export class TagsPage implements OnInit, OnDestroy {
     event.stopPropagation();
     this.actionTag.set(tag);
     this.tagSelect.hide();
-    this.tagActionMenu.toggle(event);
+    // Anchor popup to the persistent p-select element instead of the now-removed dropdown overlay.
+    // PrimeNG Menu.toggle() reads event.currentTarget for positioning.
+    const anchor = new MouseEvent('click');
+    Object.defineProperty(anchor, 'currentTarget', { value: this.tagSelect.el.nativeElement });
+    this.tagActionMenu.toggle(anchor);
   }
 
   // --- Rename ---
