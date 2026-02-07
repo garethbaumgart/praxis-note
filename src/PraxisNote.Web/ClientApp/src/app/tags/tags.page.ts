@@ -27,7 +27,6 @@ interface DateGroup {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent],
-  styles: [],
   template: `
     <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Tags</h1>
@@ -256,10 +255,10 @@ interface DateGroup {
                         >
                           <i class="pi pi-external-link text-xs" aria-hidden="true"></i>
                         </button>
-                        <!-- Open in new tab: desktop (hover-reveal) -->
+                        <!-- Open in new tab: desktop (hover/focus-reveal without layout shift) -->
                         <button
                           type="button"
-                          class="hidden md:group-hover:flex p-1 rounded hover:bg-surface text-foreground-muted transition-colors"
+                          class="hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1 rounded hover:bg-surface text-foreground-muted transition-all"
                           (click)="openInNewTab(item, $event)"
                           aria-label="Open in new tab"
                         >

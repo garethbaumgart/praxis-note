@@ -186,8 +186,8 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
             </button>
           }
         </div>
-        <!-- Delete actions: desktop (hover-reveal) -->
-        <div class="hidden md:group-hover:flex md:group-focus-within:flex items-center gap-1">
+        <!-- Delete actions: desktop (hover/focus-reveal without layout shift) -->
+        <div class="hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto items-center gap-1 transition-opacity">
           @if (confirmingDelete()) {
             <app-delete-confirm-button
               ariaLabel="Confirm delete note"
