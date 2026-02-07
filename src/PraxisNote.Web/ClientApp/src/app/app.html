@@ -10,6 +10,15 @@
 } @else if (auth.isAuthenticated()) {
   <!-- Authenticated: Modern app layout -->
   <div class="h-screen flex overflow-hidden bg-surface">
+    <!-- Skip to main content link (WCAG 2.4.1 — Bypass Blocks) -->
+    <a href="#main-content"
+       class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50
+              focus:px-5 focus:py-2.5 focus:bg-accent-solid focus:text-white
+              focus:rounded-lg focus:shadow-lg focus:font-semibold focus:text-sm
+              focus:outline-3 focus:outline-accent-solid/40 focus:outline-offset-2">
+      Skip to main content
+    </a>
+
     <!-- Sidebar (handles both desktop and mobile) -->
     <app-sidebar
       [user]="auth.user()!"
@@ -79,7 +88,7 @@
       </header>
 
       <!-- Page content -->
-      <main class="flex-1 overflow-y-auto bg-surface-subtle/50">
+      <main id="main-content" tabindex="-1" class="flex-1 overflow-y-auto bg-surface-subtle/50 focus:outline-none">
         <router-outlet />
       </main>
     </div>
