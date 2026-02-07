@@ -639,7 +639,8 @@ interface DateOption {
     .tags-section { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
     .tag-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 9999px; height: 18px; }
-    .tag-badge-remove { all: unset; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--color-tag-text); opacity: .6; transition: opacity .1s; }
+    .tag-badge-remove { all: unset; position: relative; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--color-tag-text); opacity: .6; transition: opacity .1s; }
+    .tag-badge-remove::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; }
     .tag-badge-remove:hover { opacity: 1; }
     .overflow-btn { padding: 2px 6px; border-radius: 9999px; font-size: 10px; background: var(--color-tags-section-bg); color: var(--color-text-muted); border: none; cursor: pointer; transition: all .15s; }
     .overflow-btn:hover { background: var(--color-tags-badge-bg); color: var(--color-tag-text); }

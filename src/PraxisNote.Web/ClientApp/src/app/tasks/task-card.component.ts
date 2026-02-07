@@ -27,7 +27,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
         <!-- Priority flag -->
         <button
           type="button"
-          class="shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors"
+          class="touch-target shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors"
           [class.text-danger]="task().isPriority"
           [class.text-foreground-muted/30]="!task().isPriority"
           [class.hover:text-danger-hover]="!task().isPriority"
@@ -81,7 +81,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                   <!-- Mobile: always visible delete button -->
                   <button
                     type="button"
-                    class="flex md:hidden text-foreground-muted/50 hover:text-danger text-xs transition-colors"
+                    class="touch-target flex md:hidden text-foreground-muted/50 hover:text-danger text-xs transition-colors"
                     (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                     aria-label="Delete task"
                   >
@@ -90,7 +90,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                   <!-- Desktop: hover-reveal delete button (overlays time) -->
                   <button
                     type="button"
-                    class="hidden md:group-hover:flex absolute right-0 text-foreground-muted/50 hover:text-danger text-xs"
+                    class="touch-target hidden md:group-hover:flex absolute right-0 text-foreground-muted/50 hover:text-danger text-xs"
                     (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                     aria-label="Delete task"
                   >
@@ -101,7 +101,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 <!-- No time (Todo): mobile shows always, desktop on hover -->
                 <button
                   type="button"
-                  class="flex text-foreground-muted/50 hover:text-danger text-xs transition-colors md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
+                  class="touch-target flex text-foreground-muted/50 hover:text-danger text-xs transition-colors md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
                   (click)="startTaskDeleteConfirm(); $event.stopPropagation()"
                   aria-label="Delete task"
                 >
@@ -186,7 +186,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 <!-- Add tag button (when not adding) -->
                 <button
                   type="button"
-                  class="w-5 h-5 rounded-full flex items-center justify-center text-foreground-muted/30 hover:text-tag hover:bg-tag/10 transition-colors"
+                  class="touch-target w-5 h-5 rounded-full flex items-center justify-center text-foreground-muted/30 hover:text-tag hover:bg-tag/10 transition-colors"
                   (click)="openInlineTagInput(); $event.stopPropagation()"
                   aria-label="Add tag"
                 >
@@ -457,7 +457,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                         <!-- Mobile: always visible delete button -->
                         <button
                           type="button"
-                          class="flex md:hidden text-foreground-muted hover:text-danger shrink-0 text-xs"
+                          class="touch-target flex md:hidden text-foreground-muted hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                           [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >
@@ -466,7 +466,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                         <!-- Desktop: hover/focus-reveal delete button for keyboard accessibility -->
                         <button
                           type="button"
-                          class="hidden md:group-hover/comment:flex md:group-focus-within/comment:flex text-foreground-muted hover:text-danger shrink-0 text-xs"
+                          class="touch-target hidden md:group-hover/comment:flex md:group-focus-within/comment:flex text-foreground-muted hover:text-danger shrink-0 text-xs"
                           (click)="startCommentDeleteConfirm(comment.id); $event.stopPropagation()"
                           [attr.aria-label]="getDeleteCommentAriaLabel(comment)"
                         >

@@ -178,7 +178,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
           } @else {
             <button
               type="button"
-              class="p-1.5 text-foreground-muted hover:text-danger rounded transition-colors"
+              class="touch-target p-1.5 text-foreground-muted hover:text-danger rounded transition-colors"
               (click)="startDeleteConfirm(); $event.stopPropagation()"
               aria-label="Delete note"
             >
@@ -422,6 +422,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
 
     .tag-badge-remove {
       all: unset;
+      position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -430,6 +431,16 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       opacity: 0;
       transition: opacity 0.15s;
       font-size: 7px;
+    }
+
+    .tag-badge-remove::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
     }
 
     .tag-badge:hover .tag-badge-remove,
@@ -464,6 +475,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
 
     /* Add tag button on card (hidden until card hover) */
     .add-tag-card-btn {
+      position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -476,6 +488,16 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       transition: all 0.15s;
       background: none;
       border: none;
+    }
+
+    .add-tag-card-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
     }
 
     .note-card:hover .add-tag-card-btn,

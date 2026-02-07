@@ -107,7 +107,7 @@ interface DateGroup {
                   <span class="ml-auto text-xs text-foreground-muted mr-2">{{ tag.usageCount }}</span>
                   <button
                     type="button"
-                    class="w-6 h-6 flex items-center justify-center rounded text-foreground-muted opacity-30 group-hover/tag:opacity-100 focus-visible:opacity-100 hover:bg-surface-muted transition-opacity"
+                    class="touch-target w-6 h-6 flex items-center justify-center rounded text-foreground-muted opacity-30 group-hover/tag:opacity-100 focus-visible:opacity-100 hover:bg-surface-muted transition-opacity"
                     (click)="showTagActions($event, tag)"
                     aria-label="Actions for tag {{ tag.name }}">
                     <i class="pi pi-ellipsis-v text-xs"></i>

@@ -53,7 +53,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
           <div class="relative ml-1">
             <button
               type="button"
-              class="w-6 h-6 flex items-center justify-center rounded transition-colors"
+              class="touch-target w-6 h-6 flex items-center justify-center rounded transition-colors"
               [class.bg-interactive]="isSortActive()"
               [class.text-interactive-foreground]="isSortActive()"
               [class.text-foreground-muted]="!isSortActive()"
@@ -107,7 +107,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
         <div class="flex items-center gap-1">
           @if (showAddButton() && !isCreating()) {
             <button
-              class="flex items-center justify-center w-6 h-6 rounded transition-colors"
+              class="touch-target flex items-center justify-center w-6 h-6 rounded transition-colors"
               [class.text-todo-foreground-muted]="isTodo()"
               [class.hover:text-todo-foreground]="isTodo()"
               [class.hover:bg-todo-hover]="isTodo()"

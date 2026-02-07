@@ -49,7 +49,7 @@ import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
         @if (isCalendarConnected()) {
           <button
             type="button"
-            class="w-9 h-9 rounded-lg flex items-center justify-center bg-surface-muted hover:bg-surface-muted/80 transition-colors shrink-0"
+            class="touch-target w-9 h-9 rounded-lg flex items-center justify-center bg-surface-muted hover:bg-surface-muted/80 transition-colors shrink-0"
             [pTooltip]="syncTooltip()"
             tooltipPosition="bottom"
             [disabled]="calendarService.syncing()"
