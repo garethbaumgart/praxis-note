@@ -64,7 +64,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
         <!-- Empty state -->
         <div class="text-center py-16 mb-6">
           <i class="pi pi-chart-line text-4xl text-foreground-muted mb-4"></i>
-          <p class="text-lg font-semibold text-foreground mb-2">No insights yet</p>
+          <h2 class="text-lg font-semibold text-foreground mb-2">No insights yet</h2>
           <p class="text-foreground-muted text-sm max-w-md mx-auto">
             Insights appear after you analyze meetings with behavioral analysis. Record and analyze a few meetings to start seeing your communication trends.
           </p>

@@ -24,7 +24,9 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Consistent empty states';
+                WHERE "Title" = 'Consistent empty states'
+                  AND "Type" = 'Improvement'
+                  AND "CreatedAt" = '2026-02-07T15:00:00Z';
                 """);
         }
     }

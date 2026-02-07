@@ -82,7 +82,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
         <!-- Empty state -->
         <div class="text-center py-16">
           <i class="pi pi-clock text-4xl text-foreground-muted mb-4"></i>
-          <p class="text-lg font-semibold text-foreground mb-2">No activity on this day</p>
+          <h2 class="text-lg font-semibold text-foreground mb-2">No activity on this day</h2>
           <p class="text-foreground-muted text-sm max-w-md mx-auto">
             No meetings, tasks, or notes were recorded for this date.
             Navigate to a different day to see your activity summary.
