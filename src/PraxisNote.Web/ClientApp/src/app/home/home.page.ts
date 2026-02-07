@@ -1,4 +1,4 @@
-import { Component, inject, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, computed, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth';
 import { NoteService } from '../notes/note.service';
@@ -350,11 +350,7 @@ export class HomePage implements OnInit, OnDestroy {
     return name?.split(' ')[0] ?? '';
   });
 
-  readonly greeting = computed(() => {
-    const name = this.firstName();
-    if (!name) return '';
-    return this.greetingService.generateGreeting(name);
-  });
+  readonly greeting = signal('');
 
   readonly todayDate = computed(() => {
     const now = new Date();
@@ -369,6 +365,11 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.headerService.breadcrumb.set([{ label: 'Home' }]);
     this.dashboard.loadAllData();
+
+    const name = this.firstName();
+    if (name) {
+      this.greeting.set(this.greetingService.generateGreeting(name));
+    }
   }
 
   ngOnDestroy(): void {

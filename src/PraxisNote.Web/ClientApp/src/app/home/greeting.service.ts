@@ -97,9 +97,9 @@ export class GreetingService {
     const diffMin = diffMs / 60000;
     const diffDays = diffMs / 86400000;
 
-    if (diffMin < 30) return 'quickReturn';
-
     const sameDay = now.toDateString() === lastVisit.toDateString();
+
+    if (sameDay && diffMin < 30) return 'quickReturn';
     if (diffDays > 3) return 'longAbsence';
     if (!sameDay) return 'firstToday';
 

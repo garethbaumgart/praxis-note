@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GreetingService, GreetingContext, TimeOfDay, SessionGap } from './greeting.service';
+import { GreetingService } from './greeting.service';
 
 describe('GreetingService', () => {
   let service: GreetingService;
@@ -329,6 +329,32 @@ describe('GreetingService', () => {
     expect(hasFirstToday).toBe(true);
   });
 
+  it('should return firstToday (not quickReturn) for cross-midnight visit under 30 min', () => {
+    vi.useFakeTimers();
+    // 12:05am — last visit was 11:55pm the previous day (10 min ago, different calendar day)
+    const now = new Date('2026-02-04T00:05:00');
+    vi.setSystemTime(now);
+
+    const lastVisit = new Date('2026-02-03T23:55:00');
+    mockStorage['praxisnote.greeting.lastVisit'] = lastVisit.toISOString();
+
+    const results = new Set<string>();
+    for (let i = 0; i < 200; i++) {
+      mockStorage['praxisnote.greeting.lastVisit'] = lastVisit.toISOString();
+      delete mockStorage['praxisnote.greeting.lastText'];
+      results.add(service.generateGreeting('Gareth'));
+    }
+
+    // Should NOT get quickReturn greetings since it's a different calendar day
+    expect(results.has('Back already?')).toBe(false);
+    expect(results.has('Miss me?')).toBe(false);
+
+    // Should get firstToday greetings
+    const firstTodayGreetings = ['Gareth returns!', 'Welcome back, Gareth'];
+    const hasFirstToday = firstTodayGreetings.some(g => results.has(g));
+    expect(hasFirstToday).toBe(true);
+  });
+
   // ── Repeat prevention ────────────────────────────────────────
 
   it('should not repeat the same greeting back-to-back', () => {
@@ -375,50 +401,59 @@ describe('GreetingService', () => {
   // ── Greeting count ───────────────────────────────────────────
 
   it('should have at least 25 greeting variants', () => {
-    // Access GREETINGS array length indirectly by collecting unique greetings
-    // across many different contexts
+    // Use deterministic RNG to avoid flakiness from Math.random
     vi.useFakeTimers();
 
-    const allGreetings = new Set<string>();
+    let seed = 42;
+    const randomMock = vi.spyOn(Math, 'random').mockImplementation(() => {
+      seed = (seed * 1664525 + 1013904223) % 0x100000000;
+      return seed / 0x100000000;
+    });
 
-    // Morning on Monday (firstToday)
-    vi.setSystemTime(new Date('2026-02-02T09:00:00'));
-    for (let i = 0; i < 100; i++) {
-      mockStorage = {};
-      allGreetings.add(service.generateGreeting('Test'));
+    try {
+      const allGreetings = new Set<string>();
+
+      // Morning on Monday (firstToday)
+      vi.setSystemTime(new Date('2026-02-02T09:00:00'));
+      for (let i = 0; i < 100; i++) {
+        mockStorage = {};
+        allGreetings.add(service.generateGreeting('Test'));
+      }
+
+      // Afternoon on Friday (firstToday)
+      vi.setSystemTime(new Date('2026-02-06T14:00:00'));
+      for (let i = 0; i < 100; i++) {
+        mockStorage = {};
+        allGreetings.add(service.generateGreeting('Test'));
+      }
+
+      // Evening on Wednesday (firstToday)
+      vi.setSystemTime(new Date('2026-02-04T20:00:00'));
+      for (let i = 0; i < 100; i++) {
+        mockStorage = {};
+        allGreetings.add(service.generateGreeting('Test'));
+      }
+
+      // Late night on Tuesday (quickReturn — same day)
+      vi.setSystemTime(new Date('2026-02-03T23:00:00'));
+      const recent = new Date('2026-02-03T22:55:00');
+      for (let i = 0; i < 100; i++) {
+        mockStorage = { 'praxisnote.greeting.lastVisit': recent.toISOString() };
+        allGreetings.add(service.generateGreeting('Test'));
+      }
+
+      // Long absence
+      vi.setSystemTime(new Date('2026-02-03T10:00:00'));
+      const longAgo = new Date('2026-01-25T10:00:00');
+      for (let i = 0; i < 100; i++) {
+        mockStorage = { 'praxisnote.greeting.lastVisit': longAgo.toISOString() };
+        allGreetings.add(service.generateGreeting('Test'));
+      }
+
+      expect(allGreetings.size).toBeGreaterThanOrEqual(25);
+    } finally {
+      randomMock.mockRestore();
     }
-
-    // Afternoon on Friday (firstToday)
-    vi.setSystemTime(new Date('2026-02-06T14:00:00'));
-    for (let i = 0; i < 100; i++) {
-      mockStorage = {};
-      allGreetings.add(service.generateGreeting('Test'));
-    }
-
-    // Evening on Wednesday (firstToday)
-    vi.setSystemTime(new Date('2026-02-04T20:00:00'));
-    for (let i = 0; i < 100; i++) {
-      mockStorage = {};
-      allGreetings.add(service.generateGreeting('Test'));
-    }
-
-    // Late night on Tuesday (quickReturn)
-    vi.setSystemTime(new Date('2026-02-03T23:00:00'));
-    const recent = new Date(new Date('2026-02-03T23:00:00').getTime() - 5 * 60000);
-    for (let i = 0; i < 100; i++) {
-      mockStorage = { 'praxisnote.greeting.lastVisit': recent.toISOString() };
-      allGreetings.add(service.generateGreeting('Test'));
-    }
-
-    // Long absence
-    vi.setSystemTime(new Date('2026-02-03T10:00:00'));
-    const longAgo = new Date('2026-01-25T10:00:00');
-    for (let i = 0; i < 100; i++) {
-      mockStorage = { 'praxisnote.greeting.lastVisit': longAgo.toISOString() };
-      allGreetings.add(service.generateGreeting('Test'));
-    }
-
-    expect(allGreetings.size).toBeGreaterThanOrEqual(25);
   });
 
   // ── Records visit ────────────────────────────────────────────
