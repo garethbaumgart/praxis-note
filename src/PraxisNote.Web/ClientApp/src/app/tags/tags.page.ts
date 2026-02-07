@@ -55,15 +55,15 @@ interface DateGroup {
         </div>
       } @else if (tagService.error()) {
         <!-- Tags error state -->
-        <div class="flex flex-col items-center justify-center py-24">
+        <div class="flex flex-col items-center justify-center py-16">
           <p class="text-danger">{{ tagService.error() }}</p>
         </div>
       } @else if (tagService.tags().length === 0) {
         <!-- No tags state -->
-        <div class="flex flex-col items-center justify-center py-24">
-          <i class="pi pi-tags text-5xl text-foreground-muted mb-4" aria-hidden="true"></i>
-          <p class="text-foreground-secondary mb-2">No tags yet</p>
-          <p class="text-sm text-foreground-muted text-center max-w-sm">
+        <div class="text-center py-16">
+          <i class="pi pi-tags text-4xl text-foreground-muted mb-4" aria-hidden="true"></i>
+          <p class="text-lg font-semibold text-foreground mb-2">No tags yet</p>
+          <p class="text-sm text-foreground-muted max-w-md mx-auto">
             Tags you create on notes, tasks, and meetings will appear here.
           </p>
         </div>
@@ -145,7 +145,7 @@ interface DateGroup {
 
         @if (!selectedTag()) {
           <!-- No tag selected -->
-          <div class="flex flex-col items-center justify-center py-24">
+          <div class="flex flex-col items-center justify-center py-16">
             <div class="w-12 h-12 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
               <i class="pi pi-tags text-xl text-foreground-muted" aria-hidden="true"></i>
             </div>
@@ -173,7 +173,7 @@ interface DateGroup {
           </div>
         } @else if (hub.error()) {
           <!-- Error state -->
-          <div class="flex flex-col items-center justify-center py-24">
+          <div class="flex flex-col items-center justify-center py-16">
             <div class="w-12 h-12 rounded-xl bg-danger-bg flex items-center justify-center mb-3">
               <i class="pi pi-exclamation-triangle text-xl text-danger" aria-hidden="true"></i>
             </div>
@@ -188,7 +188,7 @@ interface DateGroup {
           </div>
         } @else if (hub.items().length === 0) {
           <!-- Empty state -->
-          <div class="flex flex-col items-center justify-center py-24">
+          <div class="flex flex-col items-center justify-center py-16">
             <div class="w-12 h-12 rounded-xl bg-surface-muted flex items-center justify-center mb-3">
               <i class="pi pi-inbox text-xl text-foreground-muted" aria-hidden="true"></i>
             </div>

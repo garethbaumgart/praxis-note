@@ -81,8 +81,8 @@ import { NotificationService } from './notification.service';
                 : notificationService.historyNotifications();
 
               @if (items.length === 0) {
-                <div class="flex flex-col items-center justify-center h-32 text-foreground-muted">
-                  <i class="pi pi-inbox text-3xl mb-2"></i>
+                <div class="flex flex-col items-center justify-center py-8 text-foreground-muted">
+                  <i class="pi pi-inbox text-2xl mb-2"></i>
                   <p class="text-sm">
                     {{ activeTab() === 'new' ? 'All caught up!' : 'No history yet' }}
                   </p>

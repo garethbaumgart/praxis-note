@@ -104,10 +104,11 @@ import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
         <div class="text-center py-16">
           @if (meetingService.searchQuery()) {
             <i class="pi pi-search text-4xl text-foreground-muted mb-4"></i>
-            <p class="text-foreground-muted">No meetings match your search</p>
+            <p class="text-lg font-semibold text-foreground mb-2">No meetings match your search</p>
+            <p class="text-sm text-foreground-muted">Try adjusting your search terms.</p>
           } @else if (!isCalendarConnected()) {
             <i class="pi pi-comments text-4xl text-foreground-muted mb-4"></i>
-            <p class="text-foreground-secondary mb-2 font-medium">No meetings yet</p>
+            <p class="text-lg font-semibold text-foreground mb-2">No meetings yet</p>
             <p class="text-sm text-foreground-muted mb-6">Get started by connecting your calendar or adding a meeting manually.</p>
             <div class="flex items-center justify-center gap-3">
               <button type="button"
@@ -134,7 +135,7 @@ import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
             </p>
           } @else {
             <i class="pi pi-calendar text-4xl text-foreground-muted mb-4"></i>
-            <p class="text-foreground-secondary mb-2 font-medium">No meetings in the next 7 days</p>
+            <p class="text-lg font-semibold text-foreground mb-2">No meetings in the next 7 days</p>
             <p class="text-sm text-foreground-muted mb-6">Your Google Calendar is connected but no upcoming meetings were found.</p>
             <div class="flex items-center justify-center gap-3">
               <button type="button"

@@ -96,7 +96,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
         <div class="text-center py-16">
           @if (noteService.selectedTagIds().size > 0) {
             <i class="pi pi-tag text-4xl text-foreground-muted mb-4"></i>
-            <p class="text-foreground-muted mb-2">No notes match the selected tags</p>
+            <p class="text-lg font-semibold text-foreground mb-2">No notes match the selected tags</p>
             <button
               type="button"
               class="text-sm text-accent hover:underline"
@@ -106,10 +106,11 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
             </button>
           } @else if (noteService.searchQuery()) {
             <i class="pi pi-search text-4xl text-foreground-muted mb-4"></i>
-            <p class="text-foreground-muted">No notes match your search</p>
+            <p class="text-lg font-semibold text-foreground mb-2">No notes match your search</p>
+            <p class="text-sm text-foreground-muted">Try adjusting your search terms.</p>
           } @else {
             <i class="pi pi-file-edit text-4xl text-foreground-muted mb-4"></i>
-            <p class="text-foreground-secondary mb-2">No notes yet</p>
+            <p class="text-lg font-semibold text-foreground mb-2">No notes yet</p>
             <p class="text-sm text-foreground-muted">Click "New Note" to create your first note</p>
           }
         </div>
