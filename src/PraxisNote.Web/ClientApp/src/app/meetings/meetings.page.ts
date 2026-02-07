@@ -17,7 +17,7 @@ import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ImportDialogComponent, Tooltip],
   template: `
-    <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+    <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Meetings</h1>
       <!-- Search + Actions -->
       <div class="flex items-center gap-3 mb-6">
