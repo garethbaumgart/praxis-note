@@ -287,7 +287,8 @@ interface DateGroup {
       (visibleChange)="$event || cancelDelete()"
       [modal]="true"
       [style]="{ width: '24rem' }"
-      [draggable]="false">
+      [draggable]="false"
+      [resizable]="false">
       @if (deletingTag(); as tag) {
         <div class="flex flex-col gap-3">
           <p class="text-sm text-foreground">

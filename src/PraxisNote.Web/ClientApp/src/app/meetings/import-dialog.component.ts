@@ -19,8 +19,11 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
       [visible]="visible()"
       (visibleChange)="onVisibleChange($event)"
       [modal]="true"
-      [style]="{ width: '480px' }"
+      [style]="{ width: '30rem' }"
       [breakpoints]="{ '640px': '95vw' }"
+      [draggable]="false"
+      [resizable]="false"
+      [dismissableMask]="closable()"
       [closable]="closable()"
     >
       <!-- Tab bar -->
