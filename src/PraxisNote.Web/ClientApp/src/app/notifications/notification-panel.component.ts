@@ -27,7 +27,7 @@ import { NotificationService } from './notification.service';
           <div class="h-14 flex items-center justify-between px-4 border-b border-border">
             <h2 class="font-semibold text-foreground">What's New</h2>
             <button
-              class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg"
+              class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg touch-target"
               (click)="close()"
               aria-label="Close notifications"
             >

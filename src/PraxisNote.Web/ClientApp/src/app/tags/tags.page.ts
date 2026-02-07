@@ -66,14 +66,14 @@ interface DateGroup {
               />
               <button
                 type="button"
-                class="w-7 h-7 flex items-center justify-center rounded-lg bg-accent text-white hover:opacity-90 transition"
+                class="w-7 h-7 flex items-center justify-center rounded-lg bg-accent text-white hover:opacity-90 transition touch-target"
                 (click)="confirmRename()"
                 aria-label="Save rename">
                 <i class="pi pi-check text-xs"></i>
               </button>
               <button
                 type="button"
-                class="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-foreground-muted hover:bg-surface-muted transition"
+                class="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-foreground-muted hover:bg-surface-muted transition touch-target"
                 (click)="cancelRename()"
                 aria-label="Cancel rename">
                 <i class="pi pi-times text-xs"></i>
