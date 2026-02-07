@@ -5,14 +5,15 @@ import { NoteService } from '../notes/note.service';
 import { HomeDashboardService } from './home-dashboard.service';
 import { GreetingService } from './greeting.service';
 import { InsightsWidgetComponent } from './insights-widget.component';
+import { PageContentComponent } from '../shared/components/page-content.component';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [RouterLink, InsightsWidgetComponent],
+  imports: [RouterLink, InsightsWidgetComponent, PageContentComponent],
   template: `
-    <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
+    <app-page-content>
       <h1 class="sr-only">Home</h1>
 
       <!-- 1. Greeting -->
@@ -212,7 +213,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
       <section class="animate-fade-in-delay-5">
         <app-insights-widget />
       </section>
-    </div>
+    </app-page-content>
   `,
   styles: [`
     .priority-banner {

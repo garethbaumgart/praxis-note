@@ -412,6 +412,29 @@ Use PrimeNG `p-menu` with `[popup]="true"` for all context/action menus.
 - Always include `aria-label` on the trigger button describing which item it acts on
 - Menu items use PrimeNG `MenuItem[]` model with `label`, `icon`, and `command`
 
+#### 9. Page Content Layout
+
+All feature pages must use the shared `PageContentComponent` for their outermost content wrapper:
+
+```html
+<!-- Standard page (default max-w-6xl) -->
+<app-page-content>
+  <h1 class="sr-only">Page Title</h1>
+  <!-- page content -->
+</app-page-content>
+
+<!-- Narrow page (max-w-3xl, e.g., Settings) -->
+<app-page-content maxWidth="narrow">
+  <!-- page content -->
+</app-page-content>
+```
+
+**Rules:**
+- Every routed page component must wrap its main layout/content in `<app-page-content>`
+- Root-level overlay components (e.g., dialogs, popup menus) may be declared alongside `<app-page-content>` when they must exist at the page root
+- Never duplicate the container classes manually (`max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10`)
+- Use `maxWidth="narrow"` for focused/form pages like Settings
+
 ### UI Design Resources
 
 - **PrimeNG v21**: https://primeng.org - Components, theming, examples

@@ -9,6 +9,7 @@ import { TaskTag } from '../tags/tag.model';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
+import { PageContentComponent } from '../shared/components/page-content.component';
 
 type SortMode = 'manual' | 'dueDate' | 'priority';
 
@@ -29,9 +30,9 @@ interface ColumnConfig {
   selector: 'app-tasks-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ColumnComponent, ErrorStateComponent],
+  imports: [ColumnComponent, ErrorStateComponent, PageContentComponent],
   template: `
-    <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
+    <app-page-content>
       <h1 class="sr-only">Tasks</h1>
       <!-- Search -->
       <div class="relative mb-6">
@@ -207,7 +208,7 @@ interface ColumnConfig {
         }
       </div>
       }
-    </div>
+    </app-page-content>
   `,
 })
 export class TasksPage implements OnInit, AfterViewInit, OnDestroy {

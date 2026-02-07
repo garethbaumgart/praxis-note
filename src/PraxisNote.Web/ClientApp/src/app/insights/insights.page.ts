@@ -11,14 +11,15 @@ import { JohariWindowComponent } from './johari-window.component';
 import { DateRange } from './insights.model';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
+import { PageContentComponent } from '../shared/components/page-content.component';
 
 @Component({
   selector: 'app-insights-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, CommunicationProfileComponent, JohariWindowComponent, ErrorStateComponent],
+  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, CommunicationProfileComponent, JohariWindowComponent, ErrorStateComponent, PageContentComponent],
   template: `
-    <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
+    <app-page-content>
       <h1 class="sr-only">Insights</h1>
       <!-- Date range selector -->
       <div class="flex items-center justify-end gap-2 mb-6">
@@ -163,7 +164,7 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
             fillColorVar="--color-primary-bg" />
         </div>
       }
-    </div>
+    </app-page-content>
   `,
 })
 export class InsightsPage implements OnInit, OnDestroy {
