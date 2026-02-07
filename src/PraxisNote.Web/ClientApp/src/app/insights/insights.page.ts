@@ -10,12 +10,13 @@ import { CommunicationProfileComponent } from './communication-profile.component
 import { JohariWindowComponent } from './johari-window.component';
 import { DateRange } from './insights.model';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { ErrorStateComponent } from '../shared/components/error-state.component';
 
 @Component({
   selector: 'app-insights-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, CommunicationProfileComponent, JohariWindowComponent],
+  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, CommunicationProfileComponent, JohariWindowComponent, ErrorStateComponent],
   template: `
     <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Insights</h1>
@@ -52,14 +53,11 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
           }
         </div>
       } @else if (insightsService.error()) {
-        <div class="bg-surface-subtle border border-border rounded-xl p-8 text-center">
-          <i class="pi pi-exclamation-triangle text-4xl text-danger mb-3"></i>
-          <p class="text-danger font-medium">{{ insightsService.error() }}</p>
-          <button class="mt-4 px-4 py-2 bg-accent-solid text-white rounded-lg text-sm font-medium hover:opacity-90 transition"
-                  (click)="insightsService.loadTrends()">
-            Try Again
-          </button>
-        </div>
+        <app-error-state
+          title="Something went wrong"
+          [message]="insightsService.error()!"
+          (retry)="insightsService.loadTrends()"
+        />
       } @else if (!insightsService.trends() || insightsService.trends()!.meetingCount === 0) {
         <!-- Empty state -->
         <div class="text-center py-16 mb-6">

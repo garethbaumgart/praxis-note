@@ -8,6 +8,7 @@ import { Task, TaskStatus } from './task.model';
 import { TaskTag } from '../tags/tag.model';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { ErrorStateComponent } from '../shared/components/error-state.component';
 
 type SortMode = 'manual' | 'dueDate' | 'priority';
 
@@ -28,7 +29,7 @@ interface ColumnConfig {
   selector: 'app-tasks-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ColumnComponent],
+  imports: [ColumnComponent, ErrorStateComponent],
   template: `
     <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Tasks</h1>
@@ -68,6 +69,13 @@ interface ColumnConfig {
         }
       </div>
 
+      @if (taskService.error()) {
+        <app-error-state
+          title="Something went wrong"
+          [message]="taskService.error()!"
+          (retry)="taskService.loadTasks()"
+        />
+      } @else {
       <!-- Mobile: Segmented column indicator -->
       <div class="flex md:hidden gap-1 py-1" role="tablist" aria-label="Column navigation">
         <button
@@ -202,6 +210,7 @@ interface ColumnConfig {
           />
         }
       </div>
+      }
     </div>
   `,
 })

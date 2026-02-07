@@ -5,12 +5,13 @@ import { Tooltip } from 'primeng/tooltip';
 import { SummaryService } from './summary.service';
 import { MeetingSummaryItem } from './summary.model';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { ErrorStateComponent } from '../shared/components/error-state.component';
 
 @Component({
   selector: 'app-summary-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Skeleton, Tooltip],
+  imports: [Skeleton, Tooltip, ErrorStateComponent],
   template: `
     <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Daily Summary</h1>
@@ -69,15 +70,11 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
           }
         </div>
       } @else if (summaryService.error()) {
-        <div class="bg-surface-subtle border border-border rounded-xl p-8 text-center">
-          <i class="pi pi-exclamation-triangle text-4xl text-danger mb-3"></i>
-          <p class="text-danger font-medium">{{ summaryService.error() }}</p>
-          <button
-            class="mt-4 px-4 py-2 bg-accent-solid text-white rounded-lg text-sm font-medium hover:opacity-90 transition cursor-pointer"
-            (click)="summaryService.loadSummary()">
-            Try Again
-          </button>
-        </div>
+        <app-error-state
+          title="Something went wrong"
+          [message]="summaryService.error()!"
+          (retry)="summaryService.loadSummary()"
+        />
       } @else if (isEmptyDay()) {
         <!-- Empty state -->
         <div class="text-center py-16">

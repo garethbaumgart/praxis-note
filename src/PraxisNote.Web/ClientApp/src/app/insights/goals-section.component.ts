@@ -4,12 +4,13 @@ import { Tooltip } from 'primeng/tooltip';
 import { GoalsService } from './goals.service';
 import { GoalCardComponent } from './goal-card.component';
 import { AddGoalDialogComponent } from './add-goal-dialog.component';
+import { ErrorStateComponent } from '../shared/components/error-state.component';
 
 @Component({
   selector: 'app-goals-section',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Skeleton, Tooltip, GoalCardComponent, AddGoalDialogComponent],
+  imports: [Skeleton, Tooltip, GoalCardComponent, AddGoalDialogComponent, ErrorStateComponent],
   template: `
     <section class="mb-6">
       <div class="flex items-center justify-between mb-3">
@@ -46,10 +47,12 @@ import { AddGoalDialogComponent } from './add-goal-dialog.component';
           }
         </div>
       } @else if (goalsService.error()) {
-        <div class="bg-surface-subtle border border-border rounded-xl p-6 text-center">
-          <i class="pi pi-exclamation-triangle text-3xl text-danger mb-2"></i>
-          <p class="text-sm text-danger">{{ goalsService.error() }}</p>
-        </div>
+        <app-error-state
+          size="sm"
+          title="Something went wrong"
+          [message]="goalsService.error()!"
+          (retry)="goalsService.loadGoalsAndProgress()"
+        />
       } @else if (goalsService.progress().length === 0) {
         <div class="bg-surface-subtle border border-border rounded-xl p-6 text-center">
           <i class="pi pi-flag text-3xl text-foreground-muted mb-2"></i>
