@@ -60,6 +60,10 @@ export class CalendarService {
     });
   }
 
+  acknowledgeDisconnected(): void {
+    this._lastDisconnected.set(false);
+  }
+
   disconnectCalendar(): void {
     this._loading.set(true);
     this._error.set(null);
