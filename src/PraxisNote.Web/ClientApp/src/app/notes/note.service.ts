@@ -23,6 +23,7 @@ export class NoteService {
   private readonly _notes = signal<Note[]>([]);
   private readonly _loading = signal(false);
   private readonly _initialLoadComplete = signal(false);
+  private readonly _error = signal<string | null>(null);
   private readonly _searchQuery = signal('');
   private readonly _selectedTagIds = signal<Set<string>>(new Set());
 
@@ -43,6 +44,7 @@ export class NoteService {
   readonly notes = this._notes.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly initialLoadComplete = this._initialLoadComplete.asReadonly();
+  readonly error = this._error.asReadonly();
   readonly searchQuery = this._searchQuery.asReadonly();
   readonly selectedTagIds = computed(() => new Set(this._selectedTagIds()));
 
@@ -75,6 +77,7 @@ export class NoteService {
 
   loadNotes(): void {
     this._loading.set(true);
+    this._error.set(null);
     this.http.get<Note[]>('/api/notes').subscribe({
       next: notes => {
         // Filter out notes with pending deletions to avoid restoring them
@@ -87,6 +90,7 @@ export class NoteService {
         this._initialLoadComplete.set(true);
       },
       error: () => {
+        this._error.set('Failed to load notes');
         this._loading.set(false);
         this._initialLoadComplete.set(true);
       },

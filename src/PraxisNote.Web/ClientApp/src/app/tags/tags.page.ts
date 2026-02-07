@@ -15,6 +15,7 @@ import { TagListSkeletonComponent } from './tag-list-skeleton.component';
 import { MergeTagDialogComponent } from './merge-tag-dialog.component';
 import { formatShortDate } from '../shared/date-utils';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { ErrorStateComponent } from '../shared/components/error-state.component';
 
 interface DateGroup {
   label: string;
@@ -25,7 +26,7 @@ interface DateGroup {
   selector: 'app-tags-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent],
+  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent],
   styles: [`
     @media (hover: none) {
       .group button { opacity: 1 !important; }
@@ -38,10 +39,11 @@ interface DateGroup {
         <!-- Loading tags state -->
         <app-tag-list-skeleton />
       } @else if (tagService.error()) {
-        <!-- Tags error state -->
-        <div class="flex flex-col items-center justify-center py-16">
-          <p class="text-danger">{{ tagService.error() }}</p>
-        </div>
+        <app-error-state
+          title="Something went wrong"
+          [message]="tagService.error()!"
+          (retry)="tagService.loadTags()"
+        />
       } @else if (tagService.tags().length === 0) {
         <!-- No tags state -->
         <div class="text-center py-16">
@@ -156,20 +158,11 @@ interface DateGroup {
             }
           </div>
         } @else if (hub.error()) {
-          <!-- Error state -->
-          <div class="flex flex-col items-center justify-center py-16">
-            <div class="w-12 h-12 rounded-xl bg-danger-bg flex items-center justify-center mb-3">
-              <i class="pi pi-exclamation-triangle text-xl text-danger" aria-hidden="true"></i>
-            </div>
-            <p class="text-sm font-medium text-foreground-secondary">Something went wrong</p>
-            <p class="text-xs text-foreground-muted mt-1">We couldn't load the items for this tag</p>
-            <button
-              (click)="retryLoad()"
-              class="mt-3 px-3 py-1.5 border border-border text-foreground-secondary rounded-lg text-xs hover:bg-surface-muted transition-colors"
-            >
-              Try again
-            </button>
-          </div>
+          <app-error-state
+            title="Something went wrong"
+            message="We couldn't load the items for this tag"
+            (retry)="retryLoad()"
+          />
         } @else if (hub.items().length === 0) {
           <!-- Empty state -->
           <div class="flex flex-col items-center justify-center py-16">

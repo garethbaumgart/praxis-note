@@ -7,12 +7,13 @@ import { NoteCardSkeletonComponent } from './note-card-skeleton.component';
 import { ToastService } from '../shared/services/toast.service';
 import { TagService } from '../tags/tag.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { ErrorStateComponent } from '../shared/components/error-state.component';
 
 @Component({
   selector: 'app-notes-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NoteCardComponent, NoteCardSkeletonComponent],
+  imports: [NoteCardComponent, NoteCardSkeletonComponent, ErrorStateComponent],
   template: `
     <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Notes</h1>
@@ -91,6 +92,12 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
             </div>
           }
         </div>
+      } @else if (noteService.error()) {
+        <app-error-state
+          title="Something went wrong"
+          [message]="noteService.error()!"
+          (retry)="noteService.loadNotes()"
+        />
       } @else if (noteService.filteredNotes().length === 0) {
         <!-- Empty state -->
         <div class="text-center py-16">

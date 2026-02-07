@@ -6,12 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { ScreenshotImportService } from './screenshot-import.service';
 import { CalendarService } from '../shared/services/calendar.service';
 import { formatDateTime as sharedFormatDateTime, formatLocaleTime, formatShortDate } from '../shared/date-utils';
+import { ErrorStateComponent } from '../shared/components/error-state.component';
 
 @Component({
   selector: 'app-import-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, Checkbox, ProgressSpinner, FormsModule],
+  imports: [Dialog, Checkbox, ProgressSpinner, FormsModule, ErrorStateComponent],
   template: `
     <p-dialog
       header="Import Meetings"
@@ -227,17 +228,12 @@ import { formatDateTime as sharedFormatDateTime, formatLocaleTime, formatShortDa
             }
 
             @case ('error') {
-              <div class="flex flex-col items-center py-8">
-                <i class="pi pi-exclamation-triangle text-4xl text-danger mb-3"></i>
-                <p class="text-sm text-danger text-center">{{ importService.error() }}</p>
-                <button
-                  type="button"
-                  class="mt-4 px-4 py-2 text-sm font-medium text-white bg-accent-solid rounded-md hover:opacity-90 transition-opacity"
-                  (click)="importService.reset()"
-                >
-                  Try Again
-                </button>
-              </div>
+              <app-error-state
+                size="sm"
+                title="Something went wrong"
+                [message]="importService.error()!"
+                (retry)="importService.reset()"
+              />
             }
           }
         }
