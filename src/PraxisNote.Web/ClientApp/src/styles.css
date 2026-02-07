@@ -842,13 +842,35 @@
 }
 
 /* Toast close button */
-.p-toast-message .p-toast-icon-close {
+.p-toast-message .p-toast-close-button {
   color: var(--color-text-muted) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 4px !important;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  margin: 0 !important;
+  inset-inline-end: 0 !important;
 }
 
-.p-toast-message .p-toast-icon-close:hover {
-  background: transparent !important;
+.p-toast-message .p-toast-close-button:focus-visible {
+  outline: 2px solid var(--color-primary-solid) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+.p-toast-message .p-toast-close-button:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
   color: var(--color-text-primary) !important;
+}
+
+[data-theme="dark"] .p-toast-message .p-toast-close-button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.p-toast-message .p-toast-close-icon {
+  width: 0.75rem !important;
+  height: 0.75rem !important;
 }
 
 /* Toast action button (Undo, etc.) */
