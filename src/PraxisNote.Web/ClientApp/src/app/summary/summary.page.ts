@@ -80,9 +80,9 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
         </div>
       } @else if (isEmptyDay()) {
         <!-- Empty state -->
-        <div class="bg-surface-subtle border border-border rounded-xl p-12 text-center">
-          <i class="pi pi-clock text-5xl text-foreground-muted mb-4"></i>
-          <h2 class="text-lg font-semibold text-foreground mb-2">No activity on this day</h2>
+        <div class="text-center py-16">
+          <i class="pi pi-clock text-4xl text-foreground-muted mb-4"></i>
+          <p class="text-lg font-semibold text-foreground mb-2">No activity on this day</p>
           <p class="text-foreground-muted text-sm max-w-md mx-auto">
             No meetings, tasks, or notes were recorded for this date.
             Navigate to a different day to see your activity summary.

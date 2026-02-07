@@ -62,9 +62,9 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
         </div>
       } @else if (!insightsService.trends() || insightsService.trends()!.meetingCount === 0) {
         <!-- Empty state -->
-        <div class="bg-surface-subtle border border-border rounded-xl p-12 text-center mb-6">
-          <i class="pi pi-chart-line text-5xl text-foreground-muted mb-4"></i>
-          <h2 class="text-lg font-semibold text-foreground mb-2">No insights yet</h2>
+        <div class="text-center py-16 mb-6">
+          <i class="pi pi-chart-line text-4xl text-foreground-muted mb-4"></i>
+          <p class="text-lg font-semibold text-foreground mb-2">No insights yet</p>
           <p class="text-foreground-muted text-sm max-w-md mx-auto">
             Insights appear after you analyze meetings with behavioral analysis. Record and analyze a few meetings to start seeing your communication trends.
           </p>

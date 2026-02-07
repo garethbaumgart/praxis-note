@@ -124,7 +124,8 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
           </div>
 
           @if (dashboard.inProgressTasks().length === 0 && dashboard.upNextTasks().length === 0) {
-            <div class="py-6 text-center">
+            <div class="py-8 text-center">
+              <i class="pi pi-check-square text-2xl text-foreground-muted mb-2"></i>
               <p class="text-sm text-foreground-muted">No tasks yet</p>
               <button
                 type="button"
@@ -174,7 +175,8 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
           </div>
 
           @if (dashboard.recentItems().length === 0) {
-            <div class="py-6 text-center">
+            <div class="py-8 text-center">
+              <i class="pi pi-history text-2xl text-foreground-muted mb-2"></i>
               <p class="text-sm text-foreground-muted">No recent activity</p>
             </div>
           } @else {
