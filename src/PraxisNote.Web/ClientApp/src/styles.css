@@ -851,7 +851,12 @@
   height: 1.75rem !important;
   margin: 0 !important;
   right: 0 !important;
-  outline: none !important;
+}
+
+.p-toast-message .p-toast-close-button:focus-visible {
+  outline: 2px solid currentColor !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
 }
 
 .p-toast-message .p-toast-close-button:hover {
