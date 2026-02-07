@@ -249,7 +249,7 @@ interface DateGroup {
                         <!-- Open in new tab: mobile (always visible) -->
                         <button
                           type="button"
-                          class="flex md:hidden p-1 rounded hover:bg-surface text-foreground-muted transition-colors"
+                          class="touch-target flex md:hidden p-1 rounded hover:bg-surface text-foreground-muted transition-colors"
                           (click)="openInNewTab(item, $event)"
                           aria-label="Open in new tab"
                         >
@@ -258,7 +258,7 @@ interface DateGroup {
                         <!-- Open in new tab: desktop (hover/focus-reveal without layout shift) -->
                         <button
                           type="button"
-                          class="hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1 rounded hover:bg-surface text-foreground-muted transition-all"
+                          class="touch-target hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1 rounded hover:bg-surface text-foreground-muted transition-all"
                           (click)="openInNewTab(item, $event)"
                           aria-label="Open in new tab"
                         >

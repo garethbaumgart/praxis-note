@@ -77,7 +77,7 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
         <!-- Delete button: mobile (always visible) -->
         <button
           type="button"
-          class="flex md:hidden p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
+          class="touch-target flex md:hidden p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
           (click)="handleDelete($event)"
           aria-label="Delete meeting"
         >
@@ -86,7 +86,7 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
         <!-- Delete button: desktop (hover/focus-reveal without layout shift) -->
         <button
           type="button"
-          class="hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
+          class="touch-target hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
           (click)="handleDelete($event)"
           aria-label="Delete meeting"
         >
