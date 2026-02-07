@@ -1,18 +1,21 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, HostListener, ElementRef, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, HostListener, ElementRef, viewChild, computed, effect, untracked } from '@angular/core';
 import { Router } from '@angular/router';
+import { Tooltip } from 'primeng/tooltip';
 import { MeetingService } from './meeting.service';
 import { Meeting } from './meeting.model';
 import { MeetingRowComponent } from './meeting-row.component';
 import { MeetingRowSkeletonComponent } from './meeting-row-skeleton.component';
-import { ScreenshotImportDialogComponent } from './screenshot-import-dialog.component';
+import { ImportDialogComponent } from './import-dialog.component';
+import { CalendarService } from '../shared/services/calendar.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
 
 @Component({
   selector: 'app-meetings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ScreenshotImportDialogComponent],
+  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ImportDialogComponent, Tooltip],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <h1 class="sr-only">Meetings</h1>
@@ -43,13 +46,30 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
             <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
           }
         </div>
+        @if (isCalendarConnected()) {
+          <button
+            type="button"
+            class="w-9 h-9 rounded-lg flex items-center justify-center bg-surface-muted hover:bg-surface-muted/80 transition-colors shrink-0"
+            [pTooltip]="syncTooltip()"
+            tooltipPosition="bottom"
+            [disabled]="calendarService.syncing()"
+            (click)="syncCalendar()"
+            aria-label="Sync Google Calendar"
+          >
+            @if (calendarService.syncing()) {
+              <i class="pi pi-spin pi-spinner text-sm text-foreground-muted"></i>
+            } @else {
+              <i class="pi pi-sync text-sm text-done-foreground"></i>
+            }
+          </button>
+        }
         <button
           type="button"
           class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted text-foreground-secondary rounded-md text-sm font-medium hover:bg-surface-muted/80 transition-colors shrink-0"
           (click)="importDialog.open()"
-          aria-label="Import meetings from screenshot"
+          aria-label="Import meetings"
         >
-          <i class="pi pi-image text-xs"></i>
+          <i class="pi pi-download text-xs"></i>
           <span class="hidden sm:inline">Import</span>
         </button>
         <button
@@ -85,10 +105,55 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
           @if (meetingService.searchQuery()) {
             <i class="pi pi-search text-4xl text-foreground-muted mb-4"></i>
             <p class="text-foreground-muted">No meetings match your search</p>
-          } @else {
+          } @else if (!isCalendarConnected()) {
             <i class="pi pi-comments text-4xl text-foreground-muted mb-4"></i>
-            <p class="text-foreground-secondary mb-2">No meetings yet</p>
-            <p class="text-sm text-foreground-muted">Click "New Meeting" to create your first meeting</p>
+            <p class="text-foreground-secondary mb-2 font-medium">No meetings yet</p>
+            <p class="text-sm text-foreground-muted mb-6">Get started by connecting your calendar or adding a meeting manually.</p>
+            <div class="flex items-center justify-center gap-3">
+              <button type="button"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border text-foreground-secondary bg-surface-subtle hover:bg-surface-muted transition-colors"
+                (click)="connectCalendar()"
+              >
+                <i class="pi pi-google text-xs"></i>
+                Connect Google Calendar
+              </button>
+              <span class="text-xs text-foreground-muted">or</span>
+              <button type="button"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-accent-solid text-white hover:bg-accent-solid/90 transition-colors"
+                (click)="openNewMeeting()"
+              >
+                <i class="pi pi-plus text-xs"></i>
+                New Meeting
+              </button>
+            </div>
+            <p class="text-xs text-foreground-muted mt-4">
+              You can also
+              <button type="button" class="text-accent-foreground hover:underline" (click)="importDialog.open()">
+                import from a screenshot
+              </button>
+            </p>
+          } @else {
+            <i class="pi pi-calendar text-4xl text-foreground-muted mb-4"></i>
+            <p class="text-foreground-secondary mb-2 font-medium">No meetings in the next 7 days</p>
+            <p class="text-sm text-foreground-muted mb-6">Your Google Calendar is connected but no upcoming meetings were found.</p>
+            <div class="flex items-center justify-center gap-3">
+              <button type="button"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border text-foreground-secondary bg-surface-subtle hover:bg-surface-muted transition-colors"
+                [disabled]="calendarService.syncing()"
+                (click)="syncCalendar()"
+              >
+                <i class="pi pi-sync text-xs"></i>
+                Sync Now
+              </button>
+              <span class="text-xs text-foreground-muted">or</span>
+              <button type="button"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-accent-solid text-white hover:bg-accent-solid/90 transition-colors"
+                (click)="openNewMeeting()"
+              >
+                <i class="pi pi-plus text-xs"></i>
+                New Meeting
+              </button>
+            </div>
           }
         </div>
       } @else {
@@ -121,7 +186,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
       }
     </div>
 
-    <app-screenshot-import-dialog #importDialog (onImported)="meetingService.loadMeetings()" />
+    <app-import-dialog #importDialog (onImported)="meetingService.loadMeetings()" />
   `,
   styles: [`
     .day-header {
@@ -135,18 +200,51 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
 })
 export class MeetingsPage implements OnInit, OnDestroy {
   readonly meetingService = inject(MeetingService);
+  readonly calendarService = inject(CalendarService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly headerService = inject(ContextualHeaderService);
 
   private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
-  readonly importDialog = viewChild.required<ScreenshotImportDialogComponent>('importDialog');
+  readonly importDialog = viewChild.required<ImportDialogComponent>('importDialog');
 
   readonly skeletonArray = Array.from({ length: 4 }, (_, i) => i);
+
+  readonly isCalendarConnected = computed(() => this.calendarService.status()?.isConnected ?? false);
+
+  readonly syncTooltip = computed(() => {
+    const status = this.calendarService.status();
+    if (!status?.isConnected) return '';
+    const lastSync = formatTimeAgo(status.lastSyncedAt);
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 7);
+    const endDateStr = formatShortDate(endDate);
+    return `Google Calendar connected\nLast synced: ${lastSync}\nSync window: Today \u2013 ${endDateStr}`;
+  });
+
+  constructor() {
+    effect(() => {
+      const result = this.calendarService.lastSyncResult();
+      if (result) {
+        untracked(() => {
+          let msg = result.importedCount > 0
+            ? `Imported ${result.importedCount} meeting${result.importedCount !== 1 ? 's' : ''} for the next 7 days`
+            : 'No new meetings found';
+          if (result.skippedCount > 0) {
+            msg += `, ${result.skippedCount} already existed`;
+          }
+          this.toast.success({ summary: 'Calendar synced', detail: msg });
+          this.meetingService.loadMeetings();
+          this.calendarService.clearLastSyncResult();
+        });
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.headerService.breadcrumb.set([{ label: 'Meetings' }]);
     this.meetingService.loadMeetings();
+    this.calendarService.loadConnectionStatus();
   }
 
   ngOnDestroy(): void {
@@ -188,6 +286,14 @@ export class MeetingsPage implements OnInit, OnDestroy {
 
   openMeeting(meeting: Meeting): void {
     this.router.navigate(['/meetings', meeting.id]);
+  }
+
+  syncCalendar(): void {
+    this.calendarService.syncEvents();
+  }
+
+  connectCalendar(): void {
+    this.calendarService.connectGoogleCalendar();
   }
 
   deleteMeeting(meeting: Meeting): void {

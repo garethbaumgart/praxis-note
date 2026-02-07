@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CalendarConnectionStatus, SyncResult } from './calendar-connection.model';
+import { CalendarConnectionStatus, SyncResult } from '../models/calendar-connection.model';
 
 @Injectable({ providedIn: 'root' })
 export class CalendarService {
@@ -62,6 +62,10 @@ export class CalendarService {
 
   acknowledgeDisconnected(): void {
     this._lastDisconnected.set(false);
+  }
+
+  clearLastSyncResult(): void {
+    this._lastSyncResult.set(null);
   }
 
   disconnectCalendar(): void {
