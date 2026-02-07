@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, effect, untracked } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
@@ -126,6 +126,16 @@ export class SettingsPage implements OnInit, OnDestroy {
       const result = this.calendarService.lastSyncResult();
       if (result) {
         this.toast.success({ summary: 'Calendar synced!' });
+      }
+    });
+
+    // Show toast when calendar is disconnected successfully
+    effect(() => {
+      if (this.calendarService.lastDisconnected()) {
+        untracked(() => {
+          this.toast.success({ summary: 'Google Calendar disconnected.' });
+          this.calendarService.acknowledgeDisconnected();
+        });
       }
     });
   }

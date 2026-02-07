@@ -11,12 +11,14 @@ export class CalendarService {
   private readonly _syncing = signal(false);
   private readonly _error = signal<string | null>(null);
   private readonly _lastSyncResult = signal<SyncResult | null>(null);
+  private readonly _lastDisconnected = signal(false);
 
   readonly status = this._status.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly syncing = this._syncing.asReadonly();
   readonly error = this._error.asReadonly();
   readonly lastSyncResult = this._lastSyncResult.asReadonly();
+  readonly lastDisconnected = this._lastDisconnected.asReadonly();
 
   loadConnectionStatus(): void {
     this._loading.set(true);
@@ -58,13 +60,19 @@ export class CalendarService {
     });
   }
 
+  acknowledgeDisconnected(): void {
+    this._lastDisconnected.set(false);
+  }
+
   disconnectCalendar(): void {
     this._loading.set(true);
     this._error.set(null);
+    this._lastDisconnected.set(false);
 
     this.http.post('/api/calendar/disconnect', {}).subscribe({
       next: () => {
         this._status.set({ isConnected: false, provider: null, connectedAt: null, lastSyncedAt: null });
+        this._lastDisconnected.set(true);
         this._loading.set(false);
       },
       error: () => {
