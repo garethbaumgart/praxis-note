@@ -812,21 +812,23 @@
 }
 
 /* ========================================
-   Touch Target - WCAG 2.5.8 (44x44px minimum)
-   Invisible pseudo-element expands touch area
-   without changing visual size.
+   Touch Target - WCAG 2.5.8 (Target Size Minimum 24x24 CSS px)
+   Using 44x44px here to align with common guidance / WCAG 2.5.5 AAA.
+   Invisible pseudo-element expands touch area without changing visual size.
    ======================================== */
-.touch-target {
-  position: relative;
-}
-.touch-target::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 44px;
-  height: 44px;
+@layer components {
+  .touch-target {
+    position: relative;
+  }
+  .touch-target::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+  }
 }
 
 /* Search highlight - underline style */
