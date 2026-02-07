@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, computed, HostListener, ElementRef, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, computed, HostListener, ElementRef, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NoteService } from './note.service';
 import { Note, NoteTag } from './note.model';
@@ -6,6 +6,7 @@ import { NoteCardComponent } from './note-card.component';
 import { NoteCardSkeletonComponent } from './note-card-skeleton.component';
 import { ToastService } from '../shared/services/toast.service';
 import { TagService } from '../tags/tag.service';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 @Component({
   selector: 'app-notes-page',
@@ -14,18 +15,6 @@ import { TagService } from '../tags/tag.service';
   imports: [NoteCardComponent, NoteCardSkeletonComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-      <!-- Header -->
-      <div class="flex items-center gap-3 mb-6">
-        <h1 class="text-lg font-semibold text-foreground">Notes</h1>
-        <span class="text-sm text-foreground-muted">
-          @if (isFiltered()) {
-            {{ noteService.filteredNotes().length }} of {{ noteCount() }} notes
-          } @else {
-            {{ noteCount() }} notes
-          }
-        </span>
-      </div>
-
       <!-- Search -->
       <div class="relative mb-6">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-foreground-secondary"></i>
@@ -200,11 +189,12 @@ import { TagService } from '../tags/tag.service';
     }
   `],
 })
-export class NotesPage implements OnInit {
+export class NotesPage implements OnInit, OnDestroy {
   readonly noteService = inject(NoteService);
   readonly tagService = inject(TagService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly headerService = inject(ContextualHeaderService);
 
   private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
@@ -237,8 +227,13 @@ export class NotesPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.headerService.breadcrumb.set([{ label: 'Notes' }]);
     this.noteService.loadNotes();
     this.tagService.loadTags();
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clearContext();
   }
 
   @HostListener('document:keydown', ['$event'])

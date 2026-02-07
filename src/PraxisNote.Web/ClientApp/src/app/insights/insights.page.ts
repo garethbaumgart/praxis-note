@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SelectButton } from 'primeng/selectbutton';
 import { Skeleton } from 'primeng/skeleton';
@@ -9,6 +9,7 @@ import { GoalsSectionComponent } from './goals-section.component';
 import { CommunicationProfileComponent } from './communication-profile.component';
 import { JohariWindowComponent } from './johari-window.component';
 import { DateRange } from './insights.model';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 @Component({
   selector: 'app-insights-page',
@@ -16,15 +17,10 @@ import { DateRange } from './insights.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, CommunicationProfileComponent, JohariWindowComponent],
   template: `
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-      <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-foreground">Insights</h1>
-          <p class="text-sm text-foreground-muted mt-0.5">Behavioral trends across your meetings</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <p-selectButton
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <!-- Date range selector -->
+      <div class="flex items-center justify-end gap-2 mb-6">
+        <p-selectButton
             [options]="dateRangeOptions"
             [ngModel]="insightsService.dateRange()"
             (ngModelChange)="onDateRangeChange($event)"
@@ -32,7 +28,6 @@ import { DateRange } from './insights.model';
             optionValue="value"
             [allowEmpty]="false"
             size="small" />
-        </div>
       </div>
 
       @if (insightsService.loading()) {
@@ -169,8 +164,9 @@ import { DateRange } from './insights.model';
     </div>
   `,
 })
-export class InsightsPage implements OnInit {
+export class InsightsPage implements OnInit, OnDestroy {
   protected readonly insightsService = inject(InsightsService);
+  private readonly headerService = inject(ContextualHeaderService);
 
   protected readonly dateRangeOptions = [
     { label: '7d', value: '7d' },
@@ -183,7 +179,12 @@ export class InsightsPage implements OnInit {
   protected readonly skeletonCharts = [0, 1, 2, 3, 4, 5];
 
   ngOnInit(): void {
+    this.headerService.breadcrumb.set([{ label: 'Insights' }]);
     this.insightsService.loadTrends();
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clearContext();
   }
 
   protected onDateRangeChange(range: DateRange): void {

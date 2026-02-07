@@ -1,9 +1,10 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, effect } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { CalendarService } from './calendar.service';
 import { ToastService } from '../shared/services/toast.service';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 @Component({
   selector: 'app-settings-page',
@@ -12,12 +13,6 @@ import { ToastService } from '../shared/services/toast.service';
   imports: [Button, DatePipe],
   template: `
     <div class="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8">
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold text-foreground">Settings</h1>
-        <p class="text-foreground-secondary mt-1">Manage your integrations and preferences.</p>
-      </div>
-
       <!-- Calendar Integration Section -->
       <section class="bg-surface border border-border rounded-xl p-6">
         <div class="flex items-center gap-3 mb-4">
@@ -118,10 +113,11 @@ import { ToastService } from '../shared/services/toast.service';
     </div>
   `,
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage implements OnInit, OnDestroy {
   readonly calendarService = inject(CalendarService);
   private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  private readonly headerService = inject(ContextualHeaderService);
 
   constructor() {
     // Show toast when sync completes successfully
@@ -134,6 +130,7 @@ export class SettingsPage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.headerService.breadcrumb.set([{ label: 'Settings' }]);
     this.calendarService.loadConnectionStatus();
 
     // Check for OAuth redirect success
@@ -153,6 +150,10 @@ export class SettingsPage implements OnInit {
         errorMessages[params['error']] ?? 'An error occurred connecting your calendar.',
       );
     }
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clearContext();
   }
 
   connectGoogleCalendar(): void {

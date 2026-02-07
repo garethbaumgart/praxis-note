@@ -7,6 +7,7 @@ import { ColumnComponent } from './column.component';
 import { Task, TaskStatus } from './task.model';
 import { TaskTag } from '../tags/tag.model';
 import { ToastService } from '../shared/services/toast.service';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 type SortMode = 'manual' | 'dueDate' | 'priority';
 
@@ -208,6 +209,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly tagService = inject(TagService);
   private readonly toastService = inject(ToastService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly headerService = inject(ContextualHeaderService);
 
   // Desktop column refs for drag-drop connectedTo and keyboard shortcuts
   readonly desktopColumns = viewChildren<ColumnComponent>('desktopColumn');
@@ -311,6 +313,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.headerService.breadcrumb.set([{ label: 'Tasks' }]);
     this.taskService.loadTasks();
     this.taskService.loadArchivedCount();
     this.tagService.loadTags();
@@ -323,6 +326,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.headerService.clearContext();
     if (this.scrollListener) {
       const container = this.mobileScrollContainer()?.nativeElement;
       container?.removeEventListener('scroll', this.scrollListener);

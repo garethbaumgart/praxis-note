@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
@@ -12,6 +12,7 @@ import { Tag } from './tag.model';
 import { TagItemDto } from './tag-hub.model';
 import { MergeTagDialogComponent } from './merge-tag-dialog.component';
 import { formatShortDate } from '../shared/date-utils';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 interface DateGroup {
   label: string;
@@ -45,15 +46,6 @@ interface DateGroup {
   `],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-      <!-- Header -->
-      <div class="flex items-center gap-3 mb-6">
-        <i class="pi pi-tags text-lg text-foreground-secondary" aria-hidden="true"></i>
-        <h1 class="text-lg font-semibold text-foreground">Tag Hub</h1>
-        @if (!tagService.loading() && !tagService.error()) {
-          <span class="text-sm text-foreground-muted">{{ tagCount() }} tags</span>
-        }
-      </div>
-
       @if (tagService.loading()) {
         <!-- Loading tags state -->
         <div class="flex items-center justify-center py-16" role="status" aria-label="Loading tags">
@@ -350,11 +342,12 @@ interface DateGroup {
     />
   `,
 })
-export class TagsPage implements OnInit {
+export class TagsPage implements OnInit, OnDestroy {
   readonly tagService = inject(TagService);
   readonly hub = inject(TagHubService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly headerService = inject(ContextualHeaderService);
 
   @ViewChild('tagActionMenu') tagActionMenu!: Menu;
   @ViewChild('tagSelect') tagSelect!: Select;
@@ -468,12 +461,17 @@ export class TagsPage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.headerService.breadcrumb.set([{ label: 'Tag Hub' }]);
     this.tagService.loadTags();
 
     const selectedId = this.route.snapshot.queryParamMap.get('selected');
     if (selectedId) {
       this.pendingSelectedId.set(selectedId);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clearContext();
   }
 
   onTagSelected(tag: Tag | null): void {
