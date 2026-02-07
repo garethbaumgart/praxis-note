@@ -1,5 +1,7 @@
 import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
+import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
 import { TaskCardComponent } from './task-card.component';
 import { TaskCardSkeletonComponent } from './task-card-skeleton.component';
 import { Task, TaskStatus } from './task.model';
@@ -12,7 +14,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective],
+  imports: [TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, Menu],
   host: { class: 'block' },
   template: `
     <div
@@ -50,59 +52,21 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
             [class.text-done-foreground-muted]="isDoneNotArchive()"
           >{{ tasks().length }}</span>
           <!-- Sort dropdown -->
-          <div class="relative ml-1">
-            <button
-              type="button"
-              class="touch-target w-6 h-6 flex items-center justify-center rounded transition-colors"
-              [class.bg-interactive]="isSortActive()"
-              [class.text-interactive-foreground]="isSortActive()"
-              [class.text-foreground-muted]="!isSortActive()"
-              [class.hover:text-foreground]="!isSortActive()"
-              [class.hover:bg-surface-hover]="!isSortActive()"
-              (click)="toggleSortMenu(); $event.stopPropagation()"
-              [attr.aria-label]="'Sort options'"
-              [attr.aria-expanded]="showSortMenu()"
-            >
-              <i class="pi pi-sort-alt text-xs"></i>
-            </button>
-            @if (showSortMenu()) {
-              <div class="absolute left-0 top-full mt-1 w-36 bg-surface rounded-lg shadow-lg border border-border py-1 z-50">
-                <button
-                  type="button"
-                  class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-surface-muted transition-colors"
-                  (click)="setSortMode('manual'); $event.stopPropagation()"
-                >
-                  <i class="pi pi-bars text-foreground-muted"></i>
-                  <span>Manual order</span>
-                  @if (sortMode() === 'manual') {
-                    <i class="pi pi-check text-interactive-foreground ml-auto"></i>
-                  }
-                </button>
-                <button
-                  type="button"
-                  class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-surface-muted transition-colors"
-                  (click)="setSortMode('dueDate'); $event.stopPropagation()"
-                >
-                  <i class="pi pi-calendar text-foreground-muted"></i>
-                  <span>Due date</span>
-                  @if (sortMode() === 'dueDate') {
-                    <i class="pi pi-check text-interactive-foreground ml-auto"></i>
-                  }
-                </button>
-                <button
-                  type="button"
-                  class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-surface-muted transition-colors"
-                  (click)="setSortMode('priority'); $event.stopPropagation()"
-                >
-                  <i class="pi pi-flag text-foreground-muted"></i>
-                  <span>Priority</span>
-                  @if (sortMode() === 'priority') {
-                    <i class="pi pi-check text-interactive-foreground ml-auto"></i>
-                  }
-                </button>
-              </div>
-            }
-          </div>
+          <button
+            type="button"
+            class="touch-target w-6 h-6 flex items-center justify-center rounded transition-colors ml-1"
+            [class.bg-interactive]="isSortActive()"
+            [class.text-interactive-foreground]="isSortActive()"
+            [class.text-foreground-muted]="!isSortActive()"
+            [class.hover:text-foreground]="!isSortActive()"
+            [class.hover:bg-surface-hover]="!isSortActive()"
+            (click)="sortMenu.toggle($event)"
+            aria-label="Sort options"
+            aria-haspopup="true"
+          >
+            <i class="pi pi-sort-alt text-xs"></i>
+          </button>
+          <p-menu #sortMenu [model]="sortMenuItems()" [popup]="true" appendTo="body" />
         </div>
         <div class="flex items-center gap-1">
           @if (showAddButton() && !isCreating()) {
@@ -268,7 +232,6 @@ export class ColumnComponent {
   readonly archiveCount = input(0);
   readonly doneCount = input(0);
   readonly showArchive = input(false);
-  readonly showSortMenu = input(false);
   readonly showSkeleton = input(false);
   readonly searchQuery = input('');
   readonly allTags = input<Tag[]>([]);
@@ -289,7 +252,6 @@ export class ColumnComponent {
   readonly onRemoveTag = output<{ taskId: string; tagId: string }>();
   readonly onCreateTag = output<{ taskId: string; name: string }>();
   readonly onSortModeChange = output<SortMode>();
-  readonly onSortMenuToggle = output<void>();
 
   readonly isCreating = signal(false);
   readonly inlineTitle = signal('');
@@ -301,6 +263,27 @@ export class ColumnComponent {
   readonly isDone = computed(() => this.status() === 'Done');
   readonly isDoneNotArchive = computed(() => this.status() === 'Done' && !this.showArchive());
   readonly isSortActive = computed(() => this.sortMode() !== 'manual');
+
+  readonly sortMenuItems = computed<MenuItem[]>(() => {
+    const current = this.sortMode();
+    return [
+      {
+        label: 'Manual order',
+        icon: current === 'manual' ? 'pi pi-check' : 'pi pi-bars',
+        command: () => this.setSortMode('manual'),
+      },
+      {
+        label: 'Due date',
+        icon: current === 'dueDate' ? 'pi pi-check' : 'pi pi-calendar',
+        command: () => this.setSortMode('dueDate'),
+      },
+      {
+        label: 'Priority',
+        icon: current === 'priority' ? 'pi pi-check' : 'pi pi-flag',
+        command: () => this.setSortMode('priority'),
+      },
+    ];
+  });
 
   readonly sortedTasks = computed(() => {
     const tasks = this.tasks();
@@ -399,13 +382,8 @@ export class ColumnComponent {
     }
   }
 
-  toggleSortMenu(): void {
-    this.onSortMenuToggle.emit();
-  }
-
   setSortMode(mode: SortMode): void {
     this.sortMode.set(mode);
-    this.onSortMenuToggle.emit(); // Close menu
     this.onSortModeChange.emit(mode);
   }
 }
