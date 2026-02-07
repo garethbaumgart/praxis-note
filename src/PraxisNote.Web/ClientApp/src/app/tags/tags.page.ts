@@ -6,10 +6,12 @@ import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { Dialog } from 'primeng/dialog';
 import { Select } from 'primeng/select';
+import { Skeleton } from 'primeng/skeleton';
 import { TagService } from './tag.service';
 import { TagHubService } from './tag-hub.service';
 import { Tag } from './tag.model';
 import { TagItemDto } from './tag-hub.model';
+import { TagListSkeletonComponent } from './tag-list-skeleton.component';
 import { MergeTagDialogComponent } from './merge-tag-dialog.component';
 import { formatShortDate } from '../shared/date-utils';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
@@ -23,23 +25,8 @@ interface DateGroup {
   selector: 'app-tags-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectModule, Menu, Dialog, MergeTagDialogComponent],
+  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent],
   styles: [`
-    @keyframes shimmer {
-      0% { background-position: -800px 0; }
-      100% { background-position: 800px 0; }
-    }
-    .skeleton {
-      background: linear-gradient(
-        90deg,
-        var(--color-bg-muted) 25%,
-        var(--color-bg-subtle) 50%,
-        var(--color-bg-muted) 75%
-      );
-      background-size: 800px 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 4px;
-    }
     @media (hover: none) {
       .group button { opacity: 1 !important; }
     }
@@ -49,10 +36,7 @@ interface DateGroup {
       <h1 class="sr-only">Tags</h1>
       @if (tagService.loading()) {
         <!-- Loading tags state -->
-        <div class="flex items-center justify-center py-16" role="status" aria-label="Loading tags">
-          <i class="pi pi-spin pi-spinner text-2xl text-foreground-muted" aria-hidden="true"></i>
-          <span class="sr-only">Loading tags...</span>
-        </div>
+        <app-tag-list-skeleton />
       } @else if (tagService.error()) {
         <!-- Tags error state -->
         <div class="flex flex-col items-center justify-center py-16">
@@ -138,7 +122,7 @@ interface DateGroup {
               </span>
             }
             @if (selectedTag() && hub.loading()) {
-              <span class="skeleton inline-block w-48 h-4"></span>
+              <p-skeleton width="12rem" height="1rem" styleClass="inline-block" />
             }
           }
         </div>
@@ -154,22 +138,22 @@ interface DateGroup {
           </div>
         } @else if (hub.loading()) {
           <!-- Skeleton loading -->
-          <div class="space-y-4" role="status" aria-label="Loading items">
+          <div class="space-y-4" role="status" aria-label="Loading tag items">
+            <span class="sr-only">Loading tag items...</span>
             <div class="flex items-center gap-2 mb-3">
-              <span class="skeleton w-20 h-6 rounded-full"></span>
+              <p-skeleton width="5rem" height="1.5rem" styleClass="rounded-full" />
               <div class="flex-1 h-px bg-border-muted"></div>
             </div>
             @for (i of skeletonRows; track i) {
               <div class="flex items-center gap-3 px-3 py-2.5">
-                <div class="skeleton w-7 h-7 rounded-md shrink-0"></div>
+                <p-skeleton width="1.75rem" height="1.75rem" styleClass="rounded-md" />
                 <div class="flex-1 min-w-0 space-y-1.5">
-                  <div class="skeleton h-3.5 w-[55%]"></div>
-                  <div class="skeleton h-3 w-[30%]"></div>
+                  <p-skeleton width="55%" height="0.875rem" />
+                  <p-skeleton width="30%" height="0.75rem" />
                 </div>
-                <div class="skeleton h-3 w-12 shrink-0"></div>
+                <p-skeleton width="3rem" height="0.75rem" />
               </div>
             }
-            <span class="sr-only">Loading items...</span>
           </div>
         } @else if (hub.error()) {
           <!-- Error state -->

@@ -63,7 +63,7 @@ import { ActionItem, ActionItemStatus } from './meeting.model';
                       aria-label="Promote to task"
                     >
                       @if (promotingIds().has(item.id)) {
-                        <i class="pi pi-spin pi-spinner text-xs"></i>
+                        <i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i>
                       } @else {
                         <i class="pi pi-arrow-right text-xs"></i>
                       }
