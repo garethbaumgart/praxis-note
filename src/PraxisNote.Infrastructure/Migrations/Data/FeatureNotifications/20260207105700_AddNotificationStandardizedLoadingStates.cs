@@ -24,7 +24,9 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Polished loading states';
+                WHERE "Title" = 'Polished loading states'
+                  AND "IssueUrl" = 'https://github.com/garethbaumgart/praxis-note/issues/414'
+                  AND "CreatedAt" = '2026-02-07T10:57:00Z';
                 """);
         }
     }
