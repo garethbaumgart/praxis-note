@@ -1,8 +1,9 @@
-import { Component, inject, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, computed, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth';
 import { NoteService } from '../notes/note.service';
 import { HomeDashboardService } from './home-dashboard.service';
+import { GreetingService } from './greeting.service';
 import { InsightsWidgetComponent } from './insights-widget.component';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
@@ -17,7 +18,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
       <!-- 1. Greeting -->
       <section class="mb-6 animate-fade-in">
         <p class="text-lg font-semibold text-foreground">
-          {{ greeting() }}, {{ firstName() }}
+          {{ greeting() }}
         </p>
         <p class="text-foreground-muted text-sm mt-1">{{ todayDate() }}</p>
       </section>
@@ -342,18 +343,14 @@ export class HomePage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly noteService = inject(NoteService);
   private readonly headerService = inject(ContextualHeaderService);
+  private readonly greetingService = inject(GreetingService);
 
   readonly firstName = computed(() => {
     const name = this.auth.user()?.name;
     return name?.split(' ')[0] ?? '';
   });
 
-  readonly greeting = computed(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  });
+  readonly greeting = signal('');
 
   readonly todayDate = computed(() => {
     const now = new Date();
@@ -368,6 +365,11 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.headerService.breadcrumb.set([{ label: 'Home' }]);
     this.dashboard.loadAllData();
+
+    const name = this.firstName();
+    if (name) {
+      this.greeting.set(this.greetingService.generateGreeting(name));
+    }
   }
 
   ngOnDestroy(): void {
