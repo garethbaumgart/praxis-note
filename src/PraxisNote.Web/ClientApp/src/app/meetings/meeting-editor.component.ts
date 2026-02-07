@@ -337,11 +337,11 @@ interface DateOption {
             </div>
           }
         }
-        <!-- Inline footer -->
-        <div class="flex justify-end gap-3 mt-5 pt-4 border-t border-border">
-          <button type="button" class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground transition-colors" (click)="visible.set(false)">Cancel</button>
-          <button type="button" class="px-4 py-1.5 text-sm text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity" (click)="save()">{{ isEditing() ? 'Save' : 'Create' }}</button>
-        </div>
+      </div>
+      <!-- Inline footer (outside scrollable area so it stays visible) -->
+      <div class="flex justify-end gap-3 px-5 py-4 border-t border-border">
+        <button type="button" class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground transition-colors" (click)="visible.set(false)">Cancel</button>
+        <button type="button" class="px-4 py-1.5 text-sm text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity" (click)="save()">{{ isEditing() ? 'Save' : 'Create' }}</button>
       </div>
     </p-dialog>
   `,
