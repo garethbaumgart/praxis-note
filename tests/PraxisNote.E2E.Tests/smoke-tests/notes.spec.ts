@@ -125,10 +125,11 @@ test.describe('Notes', () => {
     await noteCard.hover();
 
     // Click the delete button to start confirmation
-    await noteCard.getByLabel('Delete note').click();
+    // Uses .first() because dual-button pattern renders mobile + desktop buttons
+    await noteCard.getByLabel('Delete note').first().click();
 
     // Click confirm to actually delete
-    await noteCard.getByLabel('Confirm delete note').click();
+    await noteCard.getByLabel('Confirm delete note').first().click();
 
     // Verify the note is no longer visible in the main content area
     await expect(main.getByText('Delete me')).not.toBeVisible();
