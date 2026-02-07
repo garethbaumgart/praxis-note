@@ -34,23 +34,26 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
 
       @if (insightsService.loading()) {
         <!-- Skeleton loading state -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-          @for (i of skeletonCards; track i) {
-            <div class="bg-surface-subtle border border-border rounded-xl p-4">
-              <p-skeleton width="60%" height="12px" styleClass="mb-3" />
-              <p-skeleton width="40%" height="28px" styleClass="mb-2" />
-              <p-skeleton width="80%" height="10px" />
-            </div>
-          }
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          @for (i of skeletonCharts; track i) {
-            <div class="bg-surface-subtle border border-border rounded-xl p-4">
-              <p-skeleton width="50%" height="12px" styleClass="mb-2" />
-              <p-skeleton width="30%" height="24px" styleClass="mb-3" />
-              <p-skeleton width="100%" height="64px" />
-            </div>
-          }
+        <div role="status" aria-label="Loading insights">
+          <span class="sr-only">Loading insights...</span>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+            @for (i of skeletonCards; track i) {
+              <div class="bg-surface-subtle border border-border rounded-xl p-4">
+                <p-skeleton width="60%" height="12px" styleClass="mb-3" />
+                <p-skeleton width="40%" height="28px" styleClass="mb-2" />
+                <p-skeleton width="80%" height="10px" />
+              </div>
+            }
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            @for (i of skeletonCharts; track i) {
+              <div class="bg-surface-subtle border border-border rounded-xl p-4">
+                <p-skeleton width="50%" height="12px" styleClass="mb-2" />
+                <p-skeleton width="30%" height="24px" styleClass="mb-3" />
+                <p-skeleton width="100%" height="64px" />
+              </div>
+            }
+          </div>
         </div>
       } @else if (insightsService.error()) {
         <app-error-state
