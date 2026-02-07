@@ -490,7 +490,7 @@ export class TagsPage implements OnInit, OnDestroy {
     event.stopPropagation();
     this.actionTag.set(tag);
     this.tagSelect.hide();
-    this.tagActionMenu.toggle(event);
+    this.tagActionMenu.toggle({ currentTarget: this.tagSelect.el.nativeElement } as any);
   }
 
   // --- Rename ---
