@@ -54,7 +54,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
           <!-- Sort dropdown -->
           <button
             type="button"
-            class="touch-target w-6 h-6 flex items-center justify-center rounded transition-colors ml-1"
+            class="touch-target w-7 h-7 flex items-center justify-center rounded transition-colors ml-1"
             [class.bg-interactive]="isSortActive()"
             [class.text-interactive-foreground]="isSortActive()"
             [class.text-foreground-muted]="!isSortActive()"
@@ -71,7 +71,7 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
         <div class="flex items-center gap-1">
           @if (showAddButton() && !isCreating()) {
             <button
-              class="touch-target flex items-center justify-center w-6 h-6 rounded transition-colors"
+              class="touch-target flex items-center justify-center w-7 h-7 rounded transition-colors"
               [class.text-todo-foreground-muted]="isTodo()"
               [class.hover:text-todo-foreground]="isTodo()"
               [class.hover:bg-todo-hover]="isTodo()"

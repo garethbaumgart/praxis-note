@@ -31,7 +31,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
         <button
           type="button"
           (click)="togglePicker(); $event.stopPropagation()"
-          class="flex items-center justify-center w-6 h-6 rounded hover:bg-surface-hover text-foreground-muted/40 hover:text-foreground-muted transition-colors"
+          class="flex items-center justify-center w-7 h-7 rounded hover:bg-surface-hover text-foreground-muted/40 hover:text-foreground-muted transition-colors touch-target"
           aria-label="Set due date"
         >
           <i class="pi pi-calendar"></i>

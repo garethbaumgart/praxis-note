@@ -27,7 +27,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
         <!-- Priority flag -->
         <button
           type="button"
-          class="touch-target shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors"
+          class="touch-target shrink-0 w-7 h-7 flex items-center justify-center rounded transition-colors"
           [class.text-danger]="task().isPriority"
           [class.text-foreground-muted/30]="!task().isPriority"
           [class.hover:text-danger-hover]="!task().isPriority"
@@ -186,11 +186,11 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
                 <!-- Add tag button (when not adding) -->
                 <button
                   type="button"
-                  class="touch-target w-5 h-5 rounded-full flex items-center justify-center text-foreground-muted/30 hover:text-tag hover:bg-tag/10 transition-colors"
+                  class="touch-target w-7 h-7 rounded-full flex items-center justify-center text-foreground-muted/30 hover:text-tag hover:bg-tag/10 transition-colors"
                   (click)="openInlineTagInput(); $event.stopPropagation()"
                   aria-label="Add tag"
                 >
-                  <i class="pi pi-plus text-[9px]"></i>
+                  <i class="pi pi-plus text-xs"></i>
                 </button>
               }
               <!-- Collapse/"Less" button (only when expanded and has overflow) -->
