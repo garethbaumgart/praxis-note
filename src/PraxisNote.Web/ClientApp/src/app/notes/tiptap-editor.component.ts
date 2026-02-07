@@ -356,6 +356,7 @@ interface BlockType {
     }
 
     .toolbar-btn {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -367,6 +368,16 @@ interface BlockType {
       background: transparent;
       border: none;
       cursor: pointer;
+    }
+
+    .toolbar-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
     }
 
     .toolbar-btn:hover {
@@ -427,7 +438,7 @@ interface BlockType {
       border-radius: 0 0 6px 6px;
     }
 
-    /* Overlay for promote buttons and status badges (outside TipTap's control) */
+    /* Overlay for promote buttons and status badges */
     .checkbox-overlay {
       position: absolute;
       top: 0;

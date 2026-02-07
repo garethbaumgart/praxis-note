@@ -272,6 +272,7 @@ import { Tag } from '../tags/tag.model';
 
     .tag-badge-remove {
       all: unset;
+      position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -279,6 +280,16 @@ import { Tag } from '../tags/tag.model';
       color: var(--color-tag-text);
       opacity: 0.6;
       transition: opacity 0.15s;
+    }
+
+    .tag-badge-remove::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
     }
 
     .tag-badge-remove:hover {

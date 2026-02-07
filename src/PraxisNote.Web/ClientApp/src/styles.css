@@ -787,6 +787,7 @@
 }
 
 .tag-badge-remove {
+  position: relative;
   font-size: 10px;
   color: var(--color-tag-text);
   opacity: 0.5;
@@ -795,9 +796,37 @@
   align-items: center;
 }
 
+.tag-badge-remove::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+}
+
 .tag-badge-remove:hover {
   color: var(--color-danger-text);
   opacity: 1;
+}
+
+/* ========================================
+   Touch Target - WCAG 2.5.8 (44x44px minimum)
+   Invisible pseudo-element expands touch area
+   without changing visual size.
+   ======================================== */
+.touch-target {
+  position: relative;
+}
+.touch-target::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
 }
 
 /* Search highlight - underline style */

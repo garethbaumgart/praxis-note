@@ -34,7 +34,7 @@
         <div class="max-w-6xl mx-auto px-6 md:px-8 w-full flex items-center justify-between">
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <!-- Mobile hamburger (shown only on mobile) -->
-            <button class="lg:hidden w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg shrink-0" (click)="toggleSidebar()" aria-label="Open navigation menu">
+            <button class="touch-target lg:hidden w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg shrink-0" (click)="toggleSidebar()" aria-label="Open navigation menu">
               <i class="pi pi-bars text-foreground-secondary" aria-hidden="true"></i>
             </button>
             <!-- Contextual breadcrumb from child routes -->
@@ -64,7 +64,7 @@
             }
             <!-- Global actions (always present) -->
             <button
-              class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg relative"
+              class="touch-target w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg relative"
               [attr.aria-label]="notificationService.unseenCount() === 0 ? 'Notifications' : 'Notifications (' + (notificationService.unseenCount() > 99 ? '99+' : notificationService.unseenCount()) + ' unread)'"
               (click)="toggleNotificationPanel()"
             >
@@ -80,7 +80,7 @@
                 </span>
               }
             </button>
-            <button class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg" aria-label="Settings" (click)="goToSettings()">
+            <button class="touch-target w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg" aria-label="Settings" (click)="goToSettings()">
               <i class="pi pi-cog text-foreground-muted" aria-hidden="true"></i>
             </button>
           </div>
