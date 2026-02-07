@@ -7,7 +7,7 @@ import { Component, ChangeDetectionStrategy, input, output } from '@angular/core
   template: `
     <div class="flex flex-col items-center justify-center py-8" role="alert">
       <div
-        class="rounded-xl flex items-center justify-center mb-3"
+        class="flex items-center justify-center mb-3"
         [class.w-11]="size() === 'md'"
         [class.h-11]="size() === 'md'"
         [class.w-9]="size() === 'sm'"
