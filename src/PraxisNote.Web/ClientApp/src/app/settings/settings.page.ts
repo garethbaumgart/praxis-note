@@ -128,6 +128,13 @@ export class SettingsPage implements OnInit, OnDestroy {
         this.toast.success({ summary: 'Calendar synced!' });
       }
     });
+
+    // Show toast when calendar is disconnected successfully
+    effect(() => {
+      if (this.calendarService.lastDisconnected()) {
+        this.toast.success({ summary: 'Google Calendar disconnected.' });
+      }
+    });
   }
 
   ngOnInit(): void {
