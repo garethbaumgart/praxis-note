@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, effect, 
 import { ActivatedRoute } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
-import { CalendarService } from './calendar.service';
+import { CalendarService } from '../shared/services/calendar.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
@@ -125,7 +125,14 @@ export class SettingsPage implements OnInit, OnDestroy {
     effect(() => {
       const result = this.calendarService.lastSyncResult();
       if (result) {
-        this.toast.success({ summary: 'Calendar synced!' });
+        untracked(() => {
+          const imported = result.importedCount;
+          const skipped = result.skippedCount;
+          const detail = imported > 0
+            ? `Imported ${imported} meeting${imported !== 1 ? 's' : ''} for the next 7 days${skipped > 0 ? `, ${skipped} already existed` : ''}`
+            : `No new meetings found${skipped > 0 ? ` (${skipped} already existed)` : ''}`;
+          this.toast.success({ summary: 'Calendar synced', detail });
+        });
       }
     });
 
