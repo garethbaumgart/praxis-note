@@ -51,23 +51,26 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
 
       @if (summaryService.loading()) {
         <!-- Skeleton loading state -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          @for (i of skeletonCards; track i) {
-            <div class="bg-surface-subtle border border-border rounded-xl p-4 text-center">
-              <p-skeleton width="40%" height="28px" styleClass="mb-2 mx-auto" />
-              <p-skeleton width="60%" height="10px" styleClass="mx-auto" />
-            </div>
-          }
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          @for (i of skeletonSections; track i) {
-            <div class="bg-surface-subtle border border-border rounded-xl p-4">
-              <p-skeleton width="40%" height="14px" styleClass="mb-3" />
-              <p-skeleton width="100%" height="12px" styleClass="mb-2" />
-              <p-skeleton width="90%" height="12px" styleClass="mb-2" />
-              <p-skeleton width="80%" height="12px" />
-            </div>
-          }
+        <div role="status" aria-label="Loading daily summary">
+          <span class="sr-only">Loading daily summary...</span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            @for (i of skeletonCards; track i) {
+              <div class="bg-surface-subtle border border-border rounded-xl p-4 text-center">
+                <p-skeleton width="40%" height="28px" styleClass="mb-2 mx-auto" />
+                <p-skeleton width="60%" height="10px" styleClass="mx-auto" />
+              </div>
+            }
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            @for (i of skeletonSections; track i) {
+              <div class="bg-surface-subtle border border-border rounded-xl p-4">
+                <p-skeleton width="40%" height="14px" styleClass="mb-3" />
+                <p-skeleton width="100%" height="12px" styleClass="mb-2" />
+                <p-skeleton width="90%" height="12px" styleClass="mb-2" />
+                <p-skeleton width="80%" height="12px" />
+              </div>
+            }
+          </div>
         </div>
       } @else if (summaryService.error()) {
         <app-error-state

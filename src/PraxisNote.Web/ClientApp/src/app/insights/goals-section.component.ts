@@ -32,7 +32,8 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
       </div>
 
       @if (goalsService.loading()) {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="status" aria-label="Loading goals">
+          <span class="sr-only">Loading goals...</span>
           @for (i of skeletonItems; track i) {
             <div class="bg-surface-subtle border border-border rounded-xl p-4">
               <div class="flex items-center gap-3">
