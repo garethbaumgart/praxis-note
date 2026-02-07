@@ -28,8 +28,8 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
 
         @if (calendarService.loading()) {
           <!-- Loading state -->
-          <div class="flex items-center gap-3 py-4">
-            <i class="pi pi-spin pi-spinner text-foreground-muted" aria-hidden="true"></i>
+          <div class="flex items-center gap-3 py-4" role="status" aria-label="Loading calendar connection status">
+            <i class="pi pi-spin pi-spinner text-sm text-foreground-muted" aria-hidden="true"></i>
             <span class="text-sm text-foreground-muted">Loading connection status...</span>
           </div>
         } @else if (calendarService.status()?.isConnected) {

@@ -28,9 +28,10 @@ import { MeetingActionItemsComponent } from './meeting-action-items.component';
 
       <!-- Processing state -->
       @if (isProcessing()) {
-        <div class="flex items-center gap-3 text-foreground-muted">
-          <i class="pi pi-spin pi-spinner"></i>
+        <div class="flex items-center gap-3 text-foreground-muted" role="status" aria-label="Analyzing transcript">
+          <i class="pi pi-spin pi-spinner text-sm" aria-hidden="true"></i>
           <span class="text-sm">Analyzing transcript...</span>
+          <span class="sr-only">Analyzing transcript...</span>
         </div>
       }
 

@@ -72,8 +72,9 @@ import { NotificationService } from './notification.service';
           <!-- Content -->
           <div class="flex-1 overflow-y-auto">
             @if (notificationService.loading()) {
-              <div class="flex items-center justify-center h-32">
-                <i class="pi pi-spin pi-spinner text-2xl text-foreground-muted"></i>
+              <div class="flex items-center justify-center h-32" role="status" aria-label="Loading notifications">
+                <i class="pi pi-spin pi-spinner text-2xl text-foreground-muted" aria-hidden="true"></i>
+                <span class="sr-only">Loading notifications...</span>
               </div>
             } @else {
               @let items = activeTab() === 'new'

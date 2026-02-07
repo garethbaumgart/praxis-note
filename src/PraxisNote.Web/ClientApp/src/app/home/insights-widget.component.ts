@@ -11,7 +11,8 @@ import { InsightsSummaryService } from './insights-summary.service';
   template: `
     @if (service.loading()) {
       <!-- Loading skeleton -->
-      <div class="p-5 bg-surface border border-border rounded-xl">
+      <div class="p-5 bg-surface border border-border rounded-xl" role="status" aria-label="Loading insights">
+        <span class="sr-only">Loading insights...</span>
         <div class="flex items-center gap-2 mb-4">
           <p-skeleton width="32px" height="32px" shape="square" styleClass="rounded-lg" />
           <p-skeleton width="120px" height="18px" />

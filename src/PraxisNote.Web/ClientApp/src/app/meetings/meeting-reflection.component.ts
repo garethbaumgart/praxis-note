@@ -132,9 +132,10 @@ import { MeetingService } from './meeting.service';
     } @else {
       <!-- Loading / empty -->
       @if (loadingPrompts()) {
-        <div class="text-center py-4">
-          <i class="pi pi-spin pi-spinner text-foreground-muted"></i>
+        <div class="text-center py-4" role="status" aria-label="Loading reflection prompts">
+          <i class="pi pi-spin pi-spinner text-sm text-foreground-muted" aria-hidden="true"></i>
           <p class="text-xs text-foreground-muted mt-2">Loading reflection prompts...</p>
+          <span class="sr-only">Loading reflection prompts...</span>
         </div>
       } @else {
         <div class="text-center py-4">
