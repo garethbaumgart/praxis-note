@@ -27,11 +27,6 @@ interface DateGroup {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent],
-  styles: [`
-    @media (hover: none) {
-      .group button { opacity: 1 !important; }
-    }
-  `],
   template: `
     <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Tags</h1>
@@ -251,10 +246,22 @@ interface DateGroup {
                       <!-- Relative date + open-in-new-tab button -->
                       <div class="flex items-center gap-2 shrink-0">
                         <span class="text-xs text-foreground-muted">{{ relativeDate(item.date) }}</span>
+                        <!-- Open in new tab: mobile (always visible) -->
                         <button
                           type="button"
-                          class="p-1 rounded hover:bg-surface text-foreground-muted opacity-0 group-hover:opacity-100 transition-opacity"
+                          class="touch-target flex md:hidden p-1 rounded hover:bg-surface text-foreground-muted transition-colors"
                           (click)="openInNewTab(item, $event)"
+                          (keydown.enter)="$event.stopPropagation()"
+                          aria-label="Open in new tab"
+                        >
+                          <i class="pi pi-external-link text-xs" aria-hidden="true"></i>
+                        </button>
+                        <!-- Open in new tab: desktop (hover/focus-reveal without layout shift) -->
+                        <button
+                          type="button"
+                          class="touch-target hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1 rounded hover:bg-surface text-foreground-muted transition-all"
+                          (click)="openInNewTab(item, $event)"
+                          (keydown.enter)="$event.stopPropagation()"
                           aria-label="Open in new tab"
                         >
                           <i class="pi pi-external-link text-xs" aria-hidden="true"></i>

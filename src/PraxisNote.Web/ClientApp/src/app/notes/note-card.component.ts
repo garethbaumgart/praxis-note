@@ -167,8 +167,27 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
           {{ formatRelativeTime(note().updatedAt) }}
         </span>
 
-        <!-- Hover actions -->
-        <div class="card-actions flex items-center gap-1">
+        <!-- Delete actions: mobile (always visible) -->
+        <div class="flex md:hidden items-center gap-1">
+          @if (confirmingDelete()) {
+            <app-delete-confirm-button
+              ariaLabel="Confirm delete note"
+              (onConfirm)="confirmDelete()"
+              (click)="$event.stopPropagation()"
+            />
+          } @else {
+            <button
+              type="button"
+              class="touch-target p-1.5 text-foreground-muted hover:text-danger rounded transition-colors"
+              (click)="startDeleteConfirm(); $event.stopPropagation()"
+              aria-label="Delete note"
+            >
+              <i class="pi pi-trash text-xs"></i>
+            </button>
+          }
+        </div>
+        <!-- Delete actions: desktop (hover/focus-reveal without layout shift) -->
+        <div class="hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto items-center gap-1 transition-opacity">
           @if (confirmingDelete()) {
             <app-delete-confirm-button
               ariaLabel="Confirm delete note"
@@ -190,15 +209,6 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
     </div>
   `,
   styles: [`
-    .note-card:hover .card-actions,
-    .note-card:focus-within .card-actions {
-      opacity: 1;
-    }
-    .card-actions {
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-
     /* Title */
     .card-title {
       font-size: 0.875rem;

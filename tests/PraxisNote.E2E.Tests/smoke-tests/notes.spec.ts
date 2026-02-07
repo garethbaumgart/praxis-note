@@ -124,11 +124,12 @@ test.describe('Notes', () => {
     const noteCard = page.locator('.note-card').filter({ hasText: 'Delete me' });
     await noteCard.hover();
 
-    // Click the delete button to start confirmation
-    await noteCard.getByLabel('Delete note').click();
+    // Click the visible delete button — dual-button pattern renders mobile (hidden on desktop)
+    // and desktop (visible on hover) variants; filter to the visible one
+    await noteCard.locator('button[aria-label="Delete note"]:visible').click();
 
-    // Click confirm to actually delete
-    await noteCard.getByLabel('Confirm delete note').click();
+    // Click the visible confirm button
+    await noteCard.locator('[aria-label="Confirm delete note"]:visible').click();
 
     // Verify the note is no longer visible in the main content area
     await expect(main.getByText('Delete me')).not.toBeVisible();
