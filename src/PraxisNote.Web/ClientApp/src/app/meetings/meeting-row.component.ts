@@ -74,10 +74,19 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
           {{ getStatusLabel() }}
         </span>
 
-        <!-- Delete button (hover reveal) -->
+        <!-- Delete button: mobile (always visible) -->
         <button
           type="button"
-          class="opacity-0 group-hover:opacity-100 p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
+          class="flex md:hidden p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
+          (click)="handleDelete($event)"
+          aria-label="Delete meeting"
+        >
+          <i class="pi pi-trash text-sm"></i>
+        </button>
+        <!-- Delete button: desktop (hover-reveal) -->
+        <button
+          type="button"
+          class="hidden md:group-hover:flex p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
           (click)="handleDelete($event)"
           aria-label="Delete meeting"
         >

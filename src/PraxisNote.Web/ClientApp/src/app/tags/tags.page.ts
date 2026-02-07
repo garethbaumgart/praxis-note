@@ -27,11 +27,7 @@ interface DateGroup {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent],
-  styles: [`
-    @media (hover: none) {
-      .group button { opacity: 1 !important; }
-    }
-  `],
+  styles: [],
   template: `
     <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Tags</h1>
@@ -251,9 +247,19 @@ interface DateGroup {
                       <!-- Relative date + open-in-new-tab button -->
                       <div class="flex items-center gap-2 shrink-0">
                         <span class="text-xs text-foreground-muted">{{ relativeDate(item.date) }}</span>
+                        <!-- Open in new tab: mobile (always visible) -->
                         <button
                           type="button"
-                          class="p-1 rounded hover:bg-surface text-foreground-muted opacity-0 group-hover:opacity-100 transition-opacity"
+                          class="flex md:hidden p-1 rounded hover:bg-surface text-foreground-muted transition-colors"
+                          (click)="openInNewTab(item, $event)"
+                          aria-label="Open in new tab"
+                        >
+                          <i class="pi pi-external-link text-xs" aria-hidden="true"></i>
+                        </button>
+                        <!-- Open in new tab: desktop (hover-reveal) -->
+                        <button
+                          type="button"
+                          class="hidden md:group-hover:flex p-1 rounded hover:bg-surface text-foreground-muted transition-colors"
                           (click)="openInNewTab(item, $event)"
                           aria-label="Open in new tab"
                         >
