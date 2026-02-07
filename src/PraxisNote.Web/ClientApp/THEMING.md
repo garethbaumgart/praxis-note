@@ -28,6 +28,7 @@ This approach provides:
 | `text-foreground-secondary` | gray-600 | gray-400 | Secondary text |
 | `text-foreground-muted` | gray-400 | gray-500 | Muted/hint text |
 | `border-border` | gray-200 | gray-700 | Default borders |
+| `bg-overlay` | Polar Night 1 @ 60% | Black @ 70% | Modal/drawer backdrop overlay |
 
 ### Status Columns (Kanban)
 

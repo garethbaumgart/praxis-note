@@ -12,7 +12,7 @@ import { NotificationService } from './notification.service';
       <div class="fixed inset-0 z-50">
         <!-- Overlay -->
         <div
-          class="absolute inset-0 bg-gray-900/60"
+          class="absolute inset-0 bg-overlay"
           (click)="close()"
           aria-hidden="true"
         ></div>
