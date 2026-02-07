@@ -251,6 +251,7 @@ interface DateGroup {
                           type="button"
                           class="touch-target flex md:hidden p-1 rounded hover:bg-surface text-foreground-muted transition-colors"
                           (click)="openInNewTab(item, $event)"
+                          (keydown.enter)="$event.stopPropagation()"
                           aria-label="Open in new tab"
                         >
                           <i class="pi pi-external-link text-xs" aria-hidden="true"></i>
@@ -260,6 +261,7 @@ interface DateGroup {
                           type="button"
                           class="touch-target hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1 rounded hover:bg-surface text-foreground-muted transition-all"
                           (click)="openInNewTab(item, $event)"
+                          (keydown.enter)="$event.stopPropagation()"
                           aria-label="Open in new tab"
                         >
                           <i class="pi pi-external-link text-xs" aria-hidden="true"></i>
