@@ -13,6 +13,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
   imports: [Skeleton, Tooltip],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Daily Summary</h1>
       <!-- Date navigation -->
       <div class="flex items-center justify-between gap-4 mb-6">
         <p class="text-sm text-foreground-muted">{{ formattedDate() }}</p>

@@ -31,6 +31,7 @@ interface ColumnConfig {
   imports: [ColumnComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Tasks</h1>
       <!-- Search -->
       <div class="relative mb-6">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-foreground-secondary"></i>

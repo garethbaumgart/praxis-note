@@ -13,6 +13,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
   imports: [Button, DatePipe],
   template: `
     <div class="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Settings</h1>
       <!-- Calendar Integration Section -->
       <section class="bg-surface border border-border rounded-xl p-6">
         <div class="flex items-center gap-3 mb-4">

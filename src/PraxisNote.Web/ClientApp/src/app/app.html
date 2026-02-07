@@ -30,14 +30,14 @@
             <!-- Contextual breadcrumb from child routes -->
             @if (headerService.breadcrumb(); as crumbs) {
               <nav class="flex items-center gap-2 text-sm min-w-0" aria-label="Breadcrumb">
-                @for (item of crumbs; track item.label; let last = $last) {
+                @for (item of crumbs; track $index; let last = $last) {
                   @if (item.route) {
                     <button type="button" class="flex items-center gap-1.5 text-accent-foreground hover:bg-surface-muted px-2 py-1 rounded-md transition-colors shrink-0" (click)="navigateTo(item.route!)">
                       @if (item.icon) { <i class="pi {{ item.icon }} text-xs" aria-hidden="true"></i> }
                       <span>{{ item.label }}</span>
                     </button>
                   } @else {
-                    <span class="text-foreground-secondary truncate max-w-[250px]">{{ item.label }}</span>
+                    <span class="text-foreground-secondary truncate max-w-[250px]" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>
                   }
                   @if (!last) {
                     <span class="text-foreground-muted shrink-0">/</span>

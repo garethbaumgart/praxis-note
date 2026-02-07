@@ -46,6 +46,7 @@ interface DateGroup {
   `],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Tags</h1>
       @if (tagService.loading()) {
         <!-- Loading tags state -->
         <div class="flex items-center justify-center py-16" role="status" aria-label="Loading tags">

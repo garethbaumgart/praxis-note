@@ -15,6 +15,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
   imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ScreenshotImportDialogComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Meetings</h1>
       <!-- Search + Actions -->
       <div class="flex items-center gap-3 mb-6">
         <div class="relative flex-1">
@@ -55,6 +56,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
           type="button"
           class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium hover:bg-accent-solid/90 transition-colors shrink-0"
           (click)="openNewMeeting()"
+          aria-label="New meeting"
         >
           <i class="pi pi-plus text-xs"></i>
           <span class="hidden sm:inline">New Meeting</span>

@@ -12,6 +12,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
   imports: [RouterLink, InsightsWidgetComponent],
   template: `
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Home</h1>
 
       <!-- 1. Greeting -->
       <section class="mb-6 animate-fade-in">
