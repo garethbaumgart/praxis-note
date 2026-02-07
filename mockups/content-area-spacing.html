@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Area Spacing — 6 Design Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)', 'surface-subtle': 'var(--color-bg-subtle)', 'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)', 'foreground-secondary': 'var(--color-text-secondary)', 'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)', 'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)', 'accent-solid': 'var(--color-primary-solid)', 'accent-foreground': 'var(--color-primary-text)',
+            done: 'var(--color-done-bg)', 'done-foreground': 'var(--color-done-text)',
+            todo: 'var(--color-todo-bg)', 'todo-foreground': 'var(--color-todo-text)',
+            inprogress: 'var(--color-inprogress-bg)', 'inprogress-foreground': 'var(--color-inprogress-text)',
+            archive: 'var(--color-archive-bg)', 'archive-foreground': 'var(--color-archive-text)',
+            danger: 'var(--color-danger-base)',
+            overdue: 'var(--color-overdue-bg)', 'overdue-foreground': 'var(--color-overdue-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8; --color-bg-subtle: #ffffff; --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440; --color-text-secondary: #4c566a; --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0; --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15); --color-primary-text: #5e81ac; --color-primary-solid: #5e81ac;
+      --color-done-bg: rgba(163, 190, 140, 0.1); --color-done-text: #a3be8c;
+      --color-todo-bg: rgba(94, 129, 172, 0.1); --color-todo-text: #5e81ac;
+      --color-inprogress-bg: rgba(235, 203, 139, 0.1); --color-inprogress-text: #d08770;
+      --color-archive-bg: rgba(136, 192, 208, 0.1); --color-archive-text: #88c0d0;
+      --color-overdue-bg: rgba(191, 97, 106, 0.1); --color-overdue-text: #bf616a;
+      --color-danger-base: #bf616a;
+      --color-sidebar-bg: #2e3440; --color-sidebar-text: #d8dee9; --color-sidebar-muted: #4c566a;
+      --color-sidebar-active-bg: rgba(136, 192, 208, 0.15); --color-sidebar-active-text: #88c0d0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f0f0; }
+
+    .option-label {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #1e293b;
+      color: white;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-bottom: 3px solid #3b82f6;
+    }
+    .option-label.recommended {
+      border-bottom-color: #22c55e;
+    }
+    .option-label .badge {
+      display: inline-block;
+      background: #22c55e;
+      color: white;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .option-label .specs {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 400;
+      margin-top: 4px;
+    }
+    .pros-cons {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 16px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .pros-cons h4 { font-weight: 600; margin-bottom: 6px; }
+    .pros-cons .pro { color: #16a34a; }
+    .pros-cons .con { color: #dc2626; }
+    .pros-cons ul { list-style: none; padding: 0; }
+    .pros-cons li { padding: 2px 0; }
+    .pros-cons li::before { margin-right: 6px; }
+    .pros-cons .pro li::before { content: '✓'; color: #16a34a; font-weight: bold; }
+    .pros-cons .con li::before { content: '✗'; color: #dc2626; font-weight: bold; }
+
+    /* Spacing indicator overlay */
+    .spacing-indicator {
+      position: absolute;
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px dashed rgba(59, 130, 246, 0.3);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .spacing-label {
+      position: absolute;
+      font-size: 10px;
+      color: #3b82f6;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- OPTION 1: CURRENT (Baseline) -->
+<!-- ============================================================ -->
+<div class="option-label">
+  Option 1: Current Spacing (Baseline)
+  <div class="specs">Container: max-w-7xl (1280px) &bull; Padding: px-4/px-6 &bull; Vertical: py-6/py-8 (24px/32px)</div>
+</div>
+<div class="pros-cons">
+  <div class="pro"><h4>Pros</h4><ul><li>No changes needed</li><li>Content-dense for power users</li><li>More items visible at once</li></ul></div>
+  <div class="con"><h4>Cons</h4><ul><li>Feels cramped — content pushed to edges</li><li>Busy visual appearance, hard to focus</li><li>Little breathing room between sidebar and content</li></ul></div>
+</div>
+<div style="height: 700px; display: flex; background: var(--color-bg-base);">
+  <!-- Sidebar -->
+  <aside style="width: 240px; background: var(--color-sidebar-bg); flex-shrink: 0; padding: 16px 12px;">
+    <div style="color: var(--color-sidebar-text); font-weight: 700; font-size: 15px; padding: 8px 12px; margin-bottom: 12px;">PraxisNote</div>
+    <div style="padding: 8px 12px; border-radius: 8px; background: var(--color-sidebar-active-bg); color: var(--color-sidebar-active-text); font-size: 13px; font-weight: 500; margin-bottom: 4px;"><i class="pi pi-home" style="margin-right: 8px;"></i>Home</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-check-square" style="margin-right: 8px;"></i>Tasks</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-file" style="margin-right: 8px;"></i>Notes</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-calendar" style="margin-right: 8px;"></i>Meetings</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-tags" style="margin-right: 8px;"></i>Tag Hub</div>
+  </aside>
+  <!-- Main -->
+  <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+    <!-- Header -->
+    <header style="height: 56px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-default); background: rgba(255,255,255,0.8); padding: 0 24px;">
+      <span style="font-size: 14px; color: var(--color-text-secondary);">Home</span>
+    </header>
+    <!-- Content -->
+    <main style="flex: 1; overflow-y: auto; background: rgba(236,239,244,0.3);">
+      <!-- CURRENT: px-6 py-8 max-w-7xl -->
+      <div style="max-width: 1280px; margin: 0 auto; padding: 32px 24px;">
+        <p style="font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px;">Good morning, Gareth</p>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Friday, 7 February 2026</p>
+
+        <!-- Priority Banner -->
+        <div style="background: var(--color-overdue-bg); border: 1px solid rgba(191,97,106,0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(191,97,106,0.15); display: flex; align-items: center; justify-content: center;"><i class="pi pi-exclamation-triangle" style="color: var(--color-overdue-text); font-size: 13px;"></i></div>
+          <div style="flex: 1;"><p style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">2 tasks overdue</p><p style="font-size: 12px; color: var(--color-text-secondary);">Review quarterly report, Update team wiki</p></div>
+          <span style="font-size: 13px; color: var(--color-overdue-text); font-weight: 500;">View <i class="pi pi-arrow-right" style="font-size: 11px;"></i></span>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Task</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-file-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Note</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-calendar-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Meeting</span></button>
+        </div>
+
+        <!-- Widgets Row -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+          <!-- Today's Tasks -->
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Today's Tasks</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-todo-text);"></span>
+                <span style="font-size: 13px; color: var(--color-text-primary);">Review quarterly report</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--color-overdue-text);">Overdue</span>
+              </div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-inprogress-text);"></span>
+                <span style="font-size: 13px; color: var(--color-text-primary);">Update design system docs</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--color-inprogress-text);">In Progress</span>
+              </div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-done-text);"></span>
+                <span style="font-size: 13px; color: var(--color-text-muted); text-decoration: line-through;">Send meeting notes</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--color-done-text);">Done</span>
+              </div>
+            </div>
+          </div>
+          <!-- Upcoming Meetings -->
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Upcoming Meetings</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+                <i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i>
+                <span style="font-size: 13px; color: var(--color-text-primary);">Team standup</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">10:00 AM</span>
+              </div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+                <i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i>
+                <span style="font-size: 13px; color: var(--color-text-primary);">Product review</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">2:00 PM</span>
+              </div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+                <i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i>
+                <span style="font-size: 13px; color: var(--color-text-primary);">Sprint retro</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">4:30 PM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Notes -->
+        <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Recent Notes</h3>
+            <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;">
+              <p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Sprint planning notes</p>
+              <p style="font-size: 12px; color: var(--color-text-muted);">Updated 2h ago</p>
+            </div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;">
+              <p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">API design brainstorm</p>
+              <p style="font-size: 12px; color: var(--color-text-muted);">Updated yesterday</p>
+            </div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;">
+              <p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Tech debt review</p>
+              <p style="font-size: 12px; color: var(--color-text-muted);">Updated 3d ago</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPTION 2: More Horizontal Padding (px-8/px-12) -->
+<!-- ============================================================ -->
+<div class="option-label">
+  Option 2: Increased Horizontal Padding
+  <div class="specs">Container: max-w-7xl (1280px) &bull; Padding: px-6/px-12 (24px/48px) &bull; Vertical: py-6/py-8 (unchanged)</div>
+</div>
+<div class="pros-cons">
+  <div class="pro"><h4>Pros</h4><ul><li>Content pulled away from edges — less cramped</li><li>Better visual separation from sidebar</li><li>Minimal change to vertical density</li></ul></div>
+  <div class="con"><h4>Cons</h4><ul><li>Doesn't address vertical busyness</li><li>48px padding may feel excessive on narrower screens</li><li>Content area gets noticeably narrower</li></ul></div>
+</div>
+<div style="height: 700px; display: flex; background: var(--color-bg-base);">
+  <aside style="width: 240px; background: var(--color-sidebar-bg); flex-shrink: 0; padding: 16px 12px;">
+    <div style="color: var(--color-sidebar-text); font-weight: 700; font-size: 15px; padding: 8px 12px; margin-bottom: 12px;">PraxisNote</div>
+    <div style="padding: 8px 12px; border-radius: 8px; background: var(--color-sidebar-active-bg); color: var(--color-sidebar-active-text); font-size: 13px; font-weight: 500; margin-bottom: 4px;"><i class="pi pi-home" style="margin-right: 8px;"></i>Home</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-check-square" style="margin-right: 8px;"></i>Tasks</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-file" style="margin-right: 8px;"></i>Notes</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-calendar" style="margin-right: 8px;"></i>Meetings</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-tags" style="margin-right: 8px;"></i>Tag Hub</div>
+  </aside>
+  <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+    <header style="height: 56px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-default); background: rgba(255,255,255,0.8); padding: 0 48px;">
+      <span style="font-size: 14px; color: var(--color-text-secondary);">Home</span>
+    </header>
+    <main style="flex: 1; overflow-y: auto; background: rgba(236,239,244,0.3);">
+      <!-- CHANGED: px-12 (48px horizontal) -->
+      <div style="max-width: 1280px; margin: 0 auto; padding: 32px 48px;">
+        <p style="font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px;">Good morning, Gareth</p>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Friday, 7 February 2026</p>
+        <div style="background: var(--color-overdue-bg); border: 1px solid rgba(191,97,106,0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(191,97,106,0.15); display: flex; align-items: center; justify-content: center;"><i class="pi pi-exclamation-triangle" style="color: var(--color-overdue-text); font-size: 13px;"></i></div>
+          <div style="flex: 1;"><p style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">2 tasks overdue</p><p style="font-size: 12px; color: var(--color-text-secondary);">Review quarterly report, Update team wiki</p></div>
+          <span style="font-size: 13px; color: var(--color-overdue-text); font-weight: 500;">View <i class="pi pi-arrow-right" style="font-size: 11px;"></i></span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Task</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-file-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Note</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-calendar-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Meeting</span></button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Today's Tasks</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-todo-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Review quarterly report</span><span style="margin-left: auto; font-size: 11px; color: var(--color-overdue-text);">Overdue</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-inprogress-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Update design system docs</span><span style="margin-left: auto; font-size: 11px; color: var(--color-inprogress-text);">In Progress</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-done-text);"></span><span style="font-size: 13px; color: var(--color-text-muted); text-decoration: line-through;">Send meeting notes</span><span style="margin-left: auto; font-size: 11px; color: var(--color-done-text);">Done</span></div>
+            </div>
+          </div>
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Upcoming Meetings</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Team standup</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">10:00 AM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Product review</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">2:00 PM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Sprint retro</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">4:30 PM</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Recent Notes</h3>
+            <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Sprint planning notes</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 2h ago</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">API design brainstorm</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated yesterday</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Tech debt review</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 3d ago</p></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPTION 3: More Vertical Padding (py-10/py-12) -->
+<!-- ============================================================ -->
+<div class="option-label">
+  Option 3: Increased Vertical Padding
+  <div class="specs">Container: max-w-7xl (1280px) &bull; Padding: px-4/px-6 (unchanged) &bull; Vertical: py-8/py-12 (32px/48px)</div>
+</div>
+<div class="pros-cons">
+  <div class="pro"><h4>Pros</h4><ul><li>More breathing room above first content</li><li>Pushes content down from the header bar</li><li>Feels less "packed" at the top</li></ul></div>
+  <div class="con"><h4>Cons</h4><ul><li>Doesn't help horizontal crowding</li><li>Wastes vertical space — less content above fold</li><li>Bottom padding on scroll can feel empty</li></ul></div>
+</div>
+<div style="height: 700px; display: flex; background: var(--color-bg-base);">
+  <aside style="width: 240px; background: var(--color-sidebar-bg); flex-shrink: 0; padding: 16px 12px;">
+    <div style="color: var(--color-sidebar-text); font-weight: 700; font-size: 15px; padding: 8px 12px; margin-bottom: 12px;">PraxisNote</div>
+    <div style="padding: 8px 12px; border-radius: 8px; background: var(--color-sidebar-active-bg); color: var(--color-sidebar-active-text); font-size: 13px; font-weight: 500; margin-bottom: 4px;"><i class="pi pi-home" style="margin-right: 8px;"></i>Home</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-check-square" style="margin-right: 8px;"></i>Tasks</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-file" style="margin-right: 8px;"></i>Notes</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-calendar" style="margin-right: 8px;"></i>Meetings</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-tags" style="margin-right: 8px;"></i>Tag Hub</div>
+  </aside>
+  <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+    <header style="height: 56px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-default); background: rgba(255,255,255,0.8); padding: 0 24px;">
+      <span style="font-size: 14px; color: var(--color-text-secondary);">Home</span>
+    </header>
+    <main style="flex: 1; overflow-y: auto; background: rgba(236,239,244,0.3);">
+      <!-- CHANGED: py-12 (48px vertical) -->
+      <div style="max-width: 1280px; margin: 0 auto; padding: 48px 24px;">
+        <p style="font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px;">Good morning, Gareth</p>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Friday, 7 February 2026</p>
+        <div style="background: var(--color-overdue-bg); border: 1px solid rgba(191,97,106,0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(191,97,106,0.15); display: flex; align-items: center; justify-content: center;"><i class="pi pi-exclamation-triangle" style="color: var(--color-overdue-text); font-size: 13px;"></i></div>
+          <div style="flex: 1;"><p style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">2 tasks overdue</p><p style="font-size: 12px; color: var(--color-text-secondary);">Review quarterly report, Update team wiki</p></div>
+          <span style="font-size: 13px; color: var(--color-overdue-text); font-weight: 500;">View <i class="pi pi-arrow-right" style="font-size: 11px;"></i></span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Task</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-file-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Note</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-calendar-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Meeting</span></button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Today's Tasks</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-todo-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Review quarterly report</span><span style="margin-left: auto; font-size: 11px; color: var(--color-overdue-text);">Overdue</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-inprogress-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Update design system docs</span><span style="margin-left: auto; font-size: 11px; color: var(--color-inprogress-text);">In Progress</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-done-text);"></span><span style="font-size: 13px; color: var(--color-text-muted); text-decoration: line-through;">Send meeting notes</span><span style="margin-left: auto; font-size: 11px; color: var(--color-done-text);">Done</span></div>
+            </div>
+          </div>
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Upcoming Meetings</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Team standup</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">10:00 AM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Product review</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">2:00 PM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Sprint retro</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">4:30 PM</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Recent Notes</h3>
+            <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Sprint planning notes</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 2h ago</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">API design brainstorm</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated yesterday</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Tech debt review</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 3d ago</p></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPTION 4: Both Increased + Wider Section Gaps (RECOMMENDED) -->
+<!-- ============================================================ -->
+<div class="option-label recommended">
+  Option 4: Balanced Increase — Both Axes + Wider Section Gaps <span class="badge">Recommended</span>
+  <div class="specs">Container: max-w-7xl (1280px) &bull; Padding: px-6/px-10 (24px/40px) &bull; Vertical: py-8/py-10 (32px/40px) &bull; Section gaps: mb-6→mb-8</div>
+</div>
+<div class="pros-cons">
+  <div class="pro"><h4>Pros</h4><ul><li>Balanced breathing room on all sides — less busy</li><li>Section gaps increased too, reducing visual noise</li><li>Still keeps enough content density to be useful</li><li>Moderate change — not dramatically different</li></ul></div>
+  <div class="con"><h4>Cons</h4><ul><li>Slightly less content visible above fold</li><li>Requires updating all page containers consistently</li></ul></div>
+</div>
+<div style="height: 700px; display: flex; background: var(--color-bg-base);">
+  <aside style="width: 240px; background: var(--color-sidebar-bg); flex-shrink: 0; padding: 16px 12px;">
+    <div style="color: var(--color-sidebar-text); font-weight: 700; font-size: 15px; padding: 8px 12px; margin-bottom: 12px;">PraxisNote</div>
+    <div style="padding: 8px 12px; border-radius: 8px; background: var(--color-sidebar-active-bg); color: var(--color-sidebar-active-text); font-size: 13px; font-weight: 500; margin-bottom: 4px;"><i class="pi pi-home" style="margin-right: 8px;"></i>Home</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-check-square" style="margin-right: 8px;"></i>Tasks</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-file" style="margin-right: 8px;"></i>Notes</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-calendar" style="margin-right: 8px;"></i>Meetings</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-tags" style="margin-right: 8px;"></i>Tag Hub</div>
+  </aside>
+  <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+    <header style="height: 56px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-default); background: rgba(255,255,255,0.8); padding: 0 40px;">
+      <span style="font-size: 14px; color: var(--color-text-secondary);">Home</span>
+    </header>
+    <main style="flex: 1; overflow-y: auto; background: rgba(236,239,244,0.3);">
+      <!-- CHANGED: px-10 (40px horizontal), py-10 (40px vertical), mb-8 section gaps -->
+      <div style="max-width: 1280px; margin: 0 auto; padding: 40px 40px;">
+        <p style="font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px;">Good morning, Gareth</p>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 32px;">Friday, 7 February 2026</p>
+        <div style="background: var(--color-overdue-bg); border: 1px solid rgba(191,97,106,0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 28px; display: flex; align-items: center; gap: 12px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(191,97,106,0.15); display: flex; align-items: center; justify-content: center;"><i class="pi pi-exclamation-triangle" style="color: var(--color-overdue-text); font-size: 13px;"></i></div>
+          <div style="flex: 1;"><p style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">2 tasks overdue</p><p style="font-size: 12px; color: var(--color-text-secondary);">Review quarterly report, Update team wiki</p></div>
+          <span style="font-size: 13px; color: var(--color-overdue-text); font-weight: 500;">View <i class="pi pi-arrow-right" style="font-size: 11px;"></i></span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 28px;">
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Task</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-file-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Note</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-calendar-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Meeting</span></button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px;">
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Today's Tasks</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-todo-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Review quarterly report</span><span style="margin-left: auto; font-size: 11px; color: var(--color-overdue-text);">Overdue</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-inprogress-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Update design system docs</span><span style="margin-left: auto; font-size: 11px; color: var(--color-inprogress-text);">In Progress</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-done-text);"></span><span style="font-size: 13px; color: var(--color-text-muted); text-decoration: line-through;">Send meeting notes</span><span style="margin-left: auto; font-size: 11px; color: var(--color-done-text);">Done</span></div>
+            </div>
+          </div>
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Upcoming Meetings</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Team standup</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">10:00 AM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Product review</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">2:00 PM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Sprint retro</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">4:30 PM</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Recent Notes</h3>
+            <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Sprint planning notes</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 2h ago</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">API design brainstorm</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated yesterday</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Tech debt review</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 3d ago</p></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPTION 5: Narrower Container (max-w-6xl) -->
+<!-- ============================================================ -->
+<div class="option-label">
+  Option 5: Narrower Container Width
+  <div class="specs">Container: max-w-6xl (1152px, was 1280px) &bull; Padding: px-6/px-8 (24px/32px) &bull; Vertical: py-8/py-10 (32px/40px)</div>
+</div>
+<div class="pros-cons">
+  <div class="pro"><h4>Pros</h4><ul><li>Content naturally centered with generous margins</li><li>Wide screens get clear "breathing room" on both sides</li><li>Feels more focused and editorial</li></ul></div>
+  <div class="con"><h4>Cons</h4><ul><li>Wasted space on ultra-wide monitors</li><li>Tasks kanban columns may feel cramped</li><li>Grid layouts (notes, meetings) lose usable width</li></ul></div>
+</div>
+<div style="height: 700px; display: flex; background: var(--color-bg-base);">
+  <aside style="width: 240px; background: var(--color-sidebar-bg); flex-shrink: 0; padding: 16px 12px;">
+    <div style="color: var(--color-sidebar-text); font-weight: 700; font-size: 15px; padding: 8px 12px; margin-bottom: 12px;">PraxisNote</div>
+    <div style="padding: 8px 12px; border-radius: 8px; background: var(--color-sidebar-active-bg); color: var(--color-sidebar-active-text); font-size: 13px; font-weight: 500; margin-bottom: 4px;"><i class="pi pi-home" style="margin-right: 8px;"></i>Home</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-check-square" style="margin-right: 8px;"></i>Tasks</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-file" style="margin-right: 8px;"></i>Notes</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-calendar" style="margin-right: 8px;"></i>Meetings</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-tags" style="margin-right: 8px;"></i>Tag Hub</div>
+  </aside>
+  <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+    <header style="height: 56px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-default); background: rgba(255,255,255,0.8); padding: 0 32px;">
+      <span style="font-size: 14px; color: var(--color-text-secondary);">Home</span>
+    </header>
+    <main style="flex: 1; overflow-y: auto; background: rgba(236,239,244,0.3);">
+      <!-- CHANGED: max-w-6xl (1152px), px-8 (32px), py-10 (40px) -->
+      <div style="max-width: 1152px; margin: 0 auto; padding: 40px 32px;">
+        <p style="font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px;">Good morning, Gareth</p>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 28px;">Friday, 7 February 2026</p>
+        <div style="background: var(--color-overdue-bg); border: 1px solid rgba(191,97,106,0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(191,97,106,0.15); display: flex; align-items: center; justify-content: center;"><i class="pi pi-exclamation-triangle" style="color: var(--color-overdue-text); font-size: 13px;"></i></div>
+          <div style="flex: 1;"><p style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">2 tasks overdue</p><p style="font-size: 12px; color: var(--color-text-secondary);">Review quarterly report, Update team wiki</p></div>
+          <span style="font-size: 13px; color: var(--color-overdue-text); font-weight: 500;">View <i class="pi pi-arrow-right" style="font-size: 11px;"></i></span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Task</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-file-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Note</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-calendar-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Meeting</span></button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Today's Tasks</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-todo-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Review quarterly report</span><span style="margin-left: auto; font-size: 11px; color: var(--color-overdue-text);">Overdue</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-inprogress-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Update design system docs</span><span style="margin-left: auto; font-size: 11px; color: var(--color-inprogress-text);">In Progress</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-done-text);"></span><span style="font-size: 13px; color: var(--color-text-muted); text-decoration: line-through;">Send meeting notes</span><span style="margin-left: auto; font-size: 11px; color: var(--color-done-text);">Done</span></div>
+            </div>
+          </div>
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Upcoming Meetings</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Team standup</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">10:00 AM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Product review</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">2:00 PM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Sprint retro</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">4:30 PM</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Recent Notes</h3>
+            <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Sprint planning notes</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 2h ago</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">API design brainstorm</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated yesterday</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Tech debt review</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 3d ago</p></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPTION 6: Spacious — Large Padding + Wider Gaps -->
+<!-- ============================================================ -->
+<div class="option-label">
+  Option 6: Spacious — Maximum Breathing Room
+  <div class="specs">Container: max-w-7xl (1280px) &bull; Padding: px-8/px-16 (32px/64px) &bull; Vertical: py-10/py-14 (40px/56px) &bull; Section gaps: mb-8→mb-10</div>
+</div>
+<div class="pros-cons">
+  <div class="pro"><h4>Pros</h4><ul><li>Very clean, airy feel — lots of white space</li><li>Content feels premium and unhurried</li><li>Easy on the eyes, great for focused work</li></ul></div>
+  <div class="con"><h4>Cons</h4><ul><li>Significant loss of above-fold content</li><li>May feel too sparse for power users</li><li>Requires more scrolling to reach bottom sections</li><li>64px horizontal padding is aggressive</li></ul></div>
+</div>
+<div style="height: 700px; display: flex; background: var(--color-bg-base);">
+  <aside style="width: 240px; background: var(--color-sidebar-bg); flex-shrink: 0; padding: 16px 12px;">
+    <div style="color: var(--color-sidebar-text); font-weight: 700; font-size: 15px; padding: 8px 12px; margin-bottom: 12px;">PraxisNote</div>
+    <div style="padding: 8px 12px; border-radius: 8px; background: var(--color-sidebar-active-bg); color: var(--color-sidebar-active-text); font-size: 13px; font-weight: 500; margin-bottom: 4px;"><i class="pi pi-home" style="margin-right: 8px;"></i>Home</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-check-square" style="margin-right: 8px;"></i>Tasks</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-file" style="margin-right: 8px;"></i>Notes</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-calendar" style="margin-right: 8px;"></i>Meetings</div>
+    <div style="padding: 8px 12px; color: var(--color-sidebar-text); font-size: 13px; margin-bottom: 4px;"><i class="pi pi-tags" style="margin-right: 8px;"></i>Tag Hub</div>
+  </aside>
+  <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+    <header style="height: 56px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-default); background: rgba(255,255,255,0.8); padding: 0 64px;">
+      <span style="font-size: 14px; color: var(--color-text-secondary);">Home</span>
+    </header>
+    <main style="flex: 1; overflow-y: auto; background: rgba(236,239,244,0.3);">
+      <!-- CHANGED: px-16 (64px horizontal), py-14 (56px vertical), mb-10 section gaps -->
+      <div style="max-width: 1280px; margin: 0 auto; padding: 56px 64px;">
+        <p style="font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px;">Good morning, Gareth</p>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 40px;">Friday, 7 February 2026</p>
+        <div style="background: var(--color-overdue-bg); border: 1px solid rgba(191,97,106,0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 36px; display: flex; align-items: center; gap: 12px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(191,97,106,0.15); display: flex; align-items: center; justify-content: center;"><i class="pi pi-exclamation-triangle" style="color: var(--color-overdue-text); font-size: 13px;"></i></div>
+          <div style="flex: 1;"><p style="font-size: 13px; font-weight: 600; color: var(--color-text-primary);">2 tasks overdue</p><p style="font-size: 12px; color: var(--color-text-secondary);">Review quarterly report, Update team wiki</p></div>
+          <span style="font-size: 13px; color: var(--color-overdue-text); font-weight: 500;">View <i class="pi pi-arrow-right" style="font-size: 11px;"></i></span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 36px;">
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Task</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-file-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Note</span></button>
+          <button style="padding: 12px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; cursor: pointer; text-align: center;"><i class="pi pi-calendar-plus" style="color: var(--color-primary-text); font-size: 16px; display: block; margin-bottom: 4px;"></i><span style="font-size: 12px; color: var(--color-text-secondary);">New Meeting</span></button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 36px;">
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Today's Tasks</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-todo-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Review quarterly report</span><span style="margin-left: auto; font-size: 11px; color: var(--color-overdue-text);">Overdue</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-inprogress-text);"></span><span style="font-size: 13px; color: var(--color-text-primary);">Update design system docs</span><span style="margin-left: auto; font-size: 11px; color: var(--color-inprogress-text);">In Progress</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-done-text);"></span><span style="font-size: 13px; color: var(--color-text-muted); text-decoration: line-through;">Send meeting notes</span><span style="margin-left: auto; font-size: 11px; color: var(--color-done-text);">Done</span></div>
+            </div>
+          </div>
+          <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Upcoming Meetings</h3>
+              <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Team standup</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">10:00 AM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Product review</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">2:00 PM</span></div>
+              <div style="padding: 8px 6px; border-radius: 6px; display: flex; align-items: center; gap: 8px;"><i class="pi pi-calendar" style="color: var(--color-primary-text); font-size: 12px;"></i><span style="font-size: 13px; color: var(--color-text-primary);">Sprint retro</span><span style="margin-left: auto; font-size: 11px; color: var(--color-text-muted);">4:30 PM</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border-default); border-radius: 12px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Recent Notes</h3>
+            <span style="font-size: 12px; color: var(--color-primary-text); font-weight: 500;">View all <i class="pi pi-arrow-right" style="font-size: 10px;"></i></span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Sprint planning notes</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 2h ago</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">API design brainstorm</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated yesterday</p></div>
+            <div style="padding: 12px; border: 1px solid var(--color-border-default); border-radius: 8px;"><p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Tech debt review</p><p style="font-size: 12px; color: var(--color-text-muted);">Updated 3d ago</p></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Summary Table -->
+<div style="background: #1e293b; color: white; padding: 32px; margin-top: 0;">
+  <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">Spacing Comparison Summary</h2>
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <thead>
+      <tr style="border-bottom: 2px solid #475569;">
+        <th style="text-align: left; padding: 8px;">Option</th>
+        <th style="text-align: left; padding: 8px;">Max Width</th>
+        <th style="text-align: left; padding: 8px;">Horizontal Padding</th>
+        <th style="text-align: left; padding: 8px;">Vertical Padding</th>
+        <th style="text-align: left; padding: 8px;">Section Gaps</th>
+        <th style="text-align: left; padding: 8px;">Feel</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 8px;">1. Current</td>
+        <td style="padding: 8px;">1280px</td>
+        <td style="padding: 8px;">24px</td>
+        <td style="padding: 8px;">32px</td>
+        <td style="padding: 8px;">20-24px</td>
+        <td style="padding: 8px; color: #fbbf24;">Compact / Busy</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 8px;">2. Horiz Only</td>
+        <td style="padding: 8px;">1280px</td>
+        <td style="padding: 8px; color: #60a5fa;">48px (+100%)</td>
+        <td style="padding: 8px;">32px</td>
+        <td style="padding: 8px;">20-24px</td>
+        <td style="padding: 8px;">Wider margins</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 8px;">3. Vert Only</td>
+        <td style="padding: 8px;">1280px</td>
+        <td style="padding: 8px;">24px</td>
+        <td style="padding: 8px; color: #60a5fa;">48px (+50%)</td>
+        <td style="padding: 8px;">20-24px</td>
+        <td style="padding: 8px;">Taller header gap</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155; background: rgba(34, 197, 94, 0.1);">
+        <td style="padding: 8px; font-weight: 600;">4. Balanced ★</td>
+        <td style="padding: 8px;">1280px</td>
+        <td style="padding: 8px; color: #60a5fa;">40px (+67%)</td>
+        <td style="padding: 8px; color: #60a5fa;">40px (+25%)</td>
+        <td style="padding: 8px; color: #60a5fa;">28px (+40%)</td>
+        <td style="padding: 8px; color: #22c55e;">Comfortable</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 8px;">5. Narrow</td>
+        <td style="padding: 8px; color: #60a5fa;">1152px (-10%)</td>
+        <td style="padding: 8px; color: #60a5fa;">32px (+33%)</td>
+        <td style="padding: 8px; color: #60a5fa;">40px (+25%)</td>
+        <td style="padding: 8px;">24px</td>
+        <td style="padding: 8px;">Focused / Editorial</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px;">6. Spacious</td>
+        <td style="padding: 8px;">1280px</td>
+        <td style="padding: 8px; color: #60a5fa;">64px (+167%)</td>
+        <td style="padding: 8px; color: #60a5fa;">56px (+75%)</td>
+        <td style="padding: 8px; color: #60a5fa;">36px (+80%)</td>
+        <td style="padding: 8px;">Airy / Premium</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

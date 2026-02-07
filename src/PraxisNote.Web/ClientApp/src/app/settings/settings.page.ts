@@ -12,7 +12,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Button, DatePipe],
   template: `
-    <div class="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8">
+    <div class="max-w-3xl mx-auto px-6 md:px-8 py-8 md:py-10">
       <h1 class="sr-only">Settings</h1>
       <!-- Calendar Integration Section -->
       <section class="bg-surface border border-border rounded-xl p-6">
