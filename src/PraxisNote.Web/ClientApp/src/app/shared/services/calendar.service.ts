@@ -64,6 +64,10 @@ export class CalendarService {
     this._lastDisconnected.set(false);
   }
 
+  clearLastSyncResult(): void {
+    this._lastSyncResult.set(null);
+  }
+
   disconnectCalendar(): void {
     this._loading.set(true);
     this._error.set(null);

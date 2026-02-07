@@ -214,7 +214,7 @@ import { formatDateTime as sharedFormatDateTime, formatLocaleTime, formatShortDa
 
             @case ('done') {
               <div class="flex flex-col items-center py-8">
-                <i class="pi pi-check-circle text-4xl text-done-text mb-3"></i>
+                <i class="pi pi-check-circle text-4xl text-done-foreground mb-3"></i>
                 <p class="text-sm font-medium text-foreground">{{ importService.importedCount() }} meetings imported</p>
                 <button
                   type="button"
@@ -292,9 +292,10 @@ export class ImportDialogComponent {
   }
 
   onVisibleChange(visible: boolean): void {
-    this.visible.set(visible);
     if (!visible) {
-      this.importService.reset();
+      this.close();
+    } else {
+      this.visible.set(visible);
     }
   }
 
@@ -368,9 +369,7 @@ export class ImportDialogComponent {
   }
 
   importSelected(): void {
-    this.importService.importSelected(() => {
-      // Each meeting created triggers a reload
-    });
+    this.importService.importSelected(() => {});
   }
 
   formatDateTime(iso: string): string {

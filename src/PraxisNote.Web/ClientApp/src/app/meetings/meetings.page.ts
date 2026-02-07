@@ -51,7 +51,7 @@ import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
             type="button"
             class="w-9 h-9 rounded-lg flex items-center justify-center bg-surface-muted hover:bg-surface-muted/80 transition-colors shrink-0"
             [pTooltip]="syncTooltip()"
-            pTooltipPosition="bottom"
+            tooltipPosition="bottom"
             [disabled]="calendarService.syncing()"
             (click)="syncCalendar()"
             aria-label="Sync Google Calendar"
@@ -235,6 +235,7 @@ export class MeetingsPage implements OnInit, OnDestroy {
           }
           this.toast.success({ summary: 'Calendar synced', detail: msg });
           this.meetingService.loadMeetings();
+          this.calendarService.clearLastSyncResult();
         });
       }
     });

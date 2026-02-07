@@ -132,6 +132,7 @@ export class SettingsPage implements OnInit, OnDestroy {
             ? `Imported ${imported} meeting${imported !== 1 ? 's' : ''} for the next 7 days${skipped > 0 ? `, ${skipped} already existed` : ''}`
             : `No new meetings found${skipped > 0 ? ` (${skipped} already existed)` : ''}`;
           this.toast.success({ summary: 'Calendar synced', detail });
+          this.calendarService.clearLastSyncResult();
         });
       }
     });

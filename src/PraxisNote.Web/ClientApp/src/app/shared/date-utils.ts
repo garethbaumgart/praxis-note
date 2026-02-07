@@ -117,5 +117,5 @@ export function formatTimeAgo(isoDate: string | null): string {
   if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
-  return new Date(isoDate).toLocaleDateString();
+  return formatShortDate(new Date(isoDate));
 }
