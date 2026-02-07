@@ -430,7 +430,8 @@ All feature pages must use the shared `PageContentComponent` for their outermost
 ```
 
 **Rules:**
-- Every routed page component must use `<app-page-content>` as its root element
+- Every routed page component must wrap its main layout/content in `<app-page-content>`
+- Root-level overlay components (e.g., dialogs, popup menus) may be declared alongside `<app-page-content>` when they must exist at the page root
 - Never duplicate the container classes manually (`max-w-6xl mx-auto px-6 md:px-8 py-8 md:py-10`)
 - Use `maxWidth="narrow"` for focused/form pages like Settings
 
