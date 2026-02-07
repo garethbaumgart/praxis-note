@@ -1,22 +1,24 @@
-import { Component, inject, computed, OnInit } from '@angular/core';
+import { Component, inject, computed, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth';
 import { NoteService } from '../notes/note.service';
 import { HomeDashboardService } from './home-dashboard.service';
 import { InsightsWidgetComponent } from './insights-widget.component';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
   imports: [RouterLink, InsightsWidgetComponent],
   template: `
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 lg:py-10">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Home</h1>
 
       <!-- 1. Greeting -->
       <section class="mb-6 animate-fade-in">
-        <h1 class="text-2xl lg:text-3xl font-bold text-foreground">
+        <p class="text-lg font-semibold text-foreground">
           {{ greeting() }}, {{ firstName() }}
-        </h1>
+        </p>
         <p class="text-foreground-muted text-sm mt-1">{{ todayDate() }}</p>
       </section>
 
@@ -332,11 +334,12 @@ import { InsightsWidgetComponent } from './insights-widget.component';
     }
   `],
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   protected readonly dashboard = inject(HomeDashboardService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly noteService = inject(NoteService);
+  private readonly headerService = inject(ContextualHeaderService);
 
   readonly firstName = computed(() => {
     const name = this.auth.user()?.name;
@@ -361,7 +364,12 @@ export class HomePage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.headerService.breadcrumb.set([{ label: 'Home' }]);
     this.dashboard.loadAllData();
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clearContext();
   }
 
   newNote(): void {

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, HostListener, ElementRef, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, HostListener, ElementRef, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MeetingService } from './meeting.service';
 import { Meeting } from './meeting.model';
@@ -6,6 +6,7 @@ import { MeetingRowComponent } from './meeting-row.component';
 import { MeetingRowSkeletonComponent } from './meeting-row-skeleton.component';
 import { ScreenshotImportDialogComponent } from './screenshot-import-dialog.component';
 import { ToastService } from '../shared/services/toast.service';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 @Component({
   selector: 'app-meetings-page',
@@ -13,59 +14,53 @@ import { ToastService } from '../shared/services/toast.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ScreenshotImportDialogComponent],
   template: `
-    <div class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-3">
-          <h1 class="text-lg font-semibold text-foreground">Meetings</h1>
-          <span class="text-sm text-foreground-muted">{{ meetingService.meetingCount() }} meetings</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted text-foreground-secondary rounded-md text-sm font-medium hover:bg-surface-muted/80 transition-colors"
-            (click)="importDialog.open()"
-            aria-label="Import meetings from screenshot"
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Meetings</h1>
+      <!-- Search + Actions -->
+      <div class="flex items-center gap-3 mb-6">
+        <div class="relative flex-1">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-foreground-secondary"></i>
+          <input
+            #searchInput
+            type="text"
+            placeholder="Search meetings..."
+            [value]="meetingService.searchQuery()"
+            (input)="meetingService.setSearchQuery(asInput($event).value)"
+            (keydown.escape)="clearSearch()"
+            class="w-full h-9 pl-9 pr-16 text-sm text-foreground-secondary placeholder-foreground-secondary bg-surface-muted hover:bg-surface-muted/80 focus:bg-surface-muted/80 rounded-lg focus:outline-none transition-colors duration-150"
+            aria-label="Search meetings"
           >
-            <i class="pi pi-image text-xs"></i>
-            Import
-          </button>
-          <button
-            type="button"
-            class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium hover:bg-accent-solid/90 transition-colors"
-            (click)="openNewMeeting()"
-          >
-            <i class="pi pi-plus text-xs"></i>
-            New Meeting
-          </button>
+          @if (meetingService.searchQuery()) {
+            <button
+              type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
+              (click)="clearSearch()"
+              aria-label="Clear search"
+            >
+              <i class="pi pi-times text-xs"></i>
+            </button>
+          } @else {
+            <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
+          }
         </div>
-      </div>
-
-      <!-- Search -->
-      <div class="relative mb-6">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-foreground-secondary"></i>
-        <input
-          #searchInput
-          type="text"
-          placeholder="Search meetings..."
-          [value]="meetingService.searchQuery()"
-          (input)="meetingService.setSearchQuery(asInput($event).value)"
-          (keydown.escape)="clearSearch()"
-          class="w-full h-9 pl-9 pr-16 text-sm text-foreground-secondary placeholder-foreground-secondary bg-surface-muted hover:bg-surface-muted/80 focus:bg-surface-muted/80 rounded-lg focus:outline-none transition-colors duration-150"
-          aria-label="Search meetings"
+        <button
+          type="button"
+          class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted text-foreground-secondary rounded-md text-sm font-medium hover:bg-surface-muted/80 transition-colors shrink-0"
+          (click)="importDialog.open()"
+          aria-label="Import meetings from screenshot"
         >
-        @if (meetingService.searchQuery()) {
-          <button
-            type="button"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
-            (click)="clearSearch()"
-            aria-label="Clear search"
-          >
-            <i class="pi pi-times text-xs"></i>
-          </button>
-        } @else {
-          <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
-        }
+          <i class="pi pi-image text-xs"></i>
+          <span class="hidden sm:inline">Import</span>
+        </button>
+        <button
+          type="button"
+          class="flex items-center gap-2 px-3 py-1.5 bg-accent-solid text-white rounded-md text-sm font-medium hover:bg-accent-solid/90 transition-colors shrink-0"
+          (click)="openNewMeeting()"
+          aria-label="New meeting"
+        >
+          <i class="pi pi-plus text-xs"></i>
+          <span class="hidden sm:inline">New Meeting</span>
+        </button>
       </div>
 
       <!-- Loading skeletons -->
@@ -138,10 +133,11 @@ import { ToastService } from '../shared/services/toast.service';
     }
   `],
 })
-export class MeetingsPage implements OnInit {
+export class MeetingsPage implements OnInit, OnDestroy {
   readonly meetingService = inject(MeetingService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly headerService = inject(ContextualHeaderService);
 
   private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   readonly importDialog = viewChild.required<ScreenshotImportDialogComponent>('importDialog');
@@ -149,7 +145,12 @@ export class MeetingsPage implements OnInit {
   readonly skeletonArray = Array.from({ length: 4 }, (_, i) => i);
 
   ngOnInit(): void {
+    this.headerService.breadcrumb.set([{ label: 'Meetings' }]);
     this.meetingService.loadMeetings();
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clearContext();
   }
 
   @HostListener('document:keydown', ['$event'])

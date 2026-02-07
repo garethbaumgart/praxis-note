@@ -1,9 +1,10 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectionStrategy, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { Skeleton } from 'primeng/skeleton';
 import { Tooltip } from 'primeng/tooltip';
 import { SummaryService } from './summary.service';
 import { MeetingSummaryItem } from './summary.model';
+import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 
 @Component({
   selector: 'app-summary-page',
@@ -11,13 +12,11 @@ import { MeetingSummaryItem } from './summary.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Skeleton, Tooltip],
   template: `
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-      <!-- Header with date navigation -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-foreground">Daily Summary</h1>
-          <p class="text-sm text-foreground-muted mt-0.5">{{ formattedDate() }}</p>
-        </div>
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <h1 class="sr-only">Daily Summary</h1>
+      <!-- Date navigation -->
+      <div class="flex items-center justify-between gap-4 mb-6">
+        <p class="text-sm text-foreground-muted">{{ formattedDate() }}</p>
         <div class="flex items-center gap-2">
           <button
             class="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-surface-subtle text-foreground-muted hover:bg-surface-muted hover:text-foreground-secondary transition cursor-pointer"
@@ -280,9 +279,10 @@ import { MeetingSummaryItem } from './summary.model';
     </div>
   `,
 })
-export class SummaryPage implements OnInit {
+export class SummaryPage implements OnInit, OnDestroy {
   protected readonly summaryService = inject(SummaryService);
   private readonly router = inject(Router);
+  private readonly headerService = inject(ContextualHeaderService);
 
   protected readonly skeletonCards = [0, 1, 2, 3];
   protected readonly skeletonSections = [0, 1];
@@ -310,7 +310,12 @@ export class SummaryPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.headerService.breadcrumb.set([{ label: 'Daily Summary' }]);
     this.summaryService.loadSummary();
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clearContext();
   }
 
   protected formatMeetingTime(dateStr: string | null): string {

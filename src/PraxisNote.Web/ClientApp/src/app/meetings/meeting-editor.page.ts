@@ -542,7 +542,7 @@ interface DateOption {
 
     .editor-container { flex: 1; overflow: auto; }
     .loading, .not-found { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
-    .editor-wrapper { max-width: 800px; margin: 0 auto; width: 100%; padding: 1.5rem; box-sizing: border-box; }
+    .editor-wrapper { max-width: 80rem; margin: 0 auto; width: 100%; padding: 1.5rem; box-sizing: border-box; }
     @media (max-width: 768px) { .editor-wrapper { padding: 1rem; } }
 
     .title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
