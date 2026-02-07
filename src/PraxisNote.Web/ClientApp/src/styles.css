@@ -189,7 +189,7 @@
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
 
   /* Overlay backdrop */
-  --color-overlay: rgba(46, 52, 64, 0.6);          /* Polar Night 1 with opacity */
+  --color-overlay-base: rgba(46, 52, 64, 0.6);     /* Polar Night 1 with opacity */
 }
 
   /* Dark Mode - Option 3: Darker base + tinted columns */
@@ -364,7 +364,7 @@
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #88c0d0);
 
   /* Overlay backdrop */
-  --color-overlay: rgba(0, 0, 0, 0.7);             /* Darker for dark theme */
+  --color-overlay-base: rgba(0, 0, 0, 0.7);        /* Darker for dark theme */
   }
 }
 
@@ -530,7 +530,7 @@
   --color-source-note-hover: var(--color-source-note-hover-base);
 
   /* Overlay */
-  --color-overlay: var(--color-overlay);
+  --color-overlay: var(--color-overlay-base);
 }
 
 /* Brand gradient utility class */
