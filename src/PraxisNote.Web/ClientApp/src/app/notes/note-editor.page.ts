@@ -246,7 +246,7 @@ import { Tag } from '../tags/tag.model';
     .footer {
       display: flex;
       align-items: center;
-      padding: 0.5rem 1.5rem;
+      padding: 0.75rem 1.5rem;
       border-top: 1px solid var(--color-border-default);
       background: var(--color-bg-base);
     }

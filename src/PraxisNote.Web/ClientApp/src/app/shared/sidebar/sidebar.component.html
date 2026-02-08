@@ -198,14 +198,13 @@
   </nav>
 
   <!-- User section -->
-  <div class="border-t border-border"
-    [class.p-3]="!collapsed()"
-    [class.py-3]="collapsed()"
+  <div class="border-t border-border py-1.5"
+    [class.px-3]="!collapsed()"
     [class.px-1]="collapsed()"
   >
     @if (collapsed()) {
       <!-- Collapsed: avatar only with tooltip, clickable to sign out -->
-      <div class="flex justify-center">
+      <div class="flex justify-center items-center h-9">
         <button
           type="button"
           class="rounded-full hover:ring-accent-foreground transition-all duration-150"
@@ -226,7 +225,7 @@
     } @else {
       <!-- Expanded: full user section -->
       <button
-        class="w-full flex items-center gap-3 h-10 px-2 hover:bg-surface-muted rounded-lg transition-colors duration-150"
+        class="w-full flex items-center gap-3 h-9 px-2 hover:bg-surface-muted rounded-lg transition-colors duration-150"
         (click)="logout()"
         aria-label="Sign out"
       >
@@ -393,9 +392,9 @@
       </nav>
 
       <!-- Mobile user section -->
-      <div class="p-3 border-t border-border">
+      <div class="py-1.5 px-3 border-t border-border">
         <!-- User -->
-        <button class="w-full flex items-center gap-3 h-12 px-3 hover:bg-surface-muted rounded-lg" (click)="logout()" aria-label="Sign out">
+        <button class="w-full flex items-center gap-3 h-9 px-3 hover:bg-surface-muted rounded-lg touch-target" (click)="logout()" aria-label="Sign out">
           @if (user().avatarUrl) {
             <img [src]="user().avatarUrl!" class="w-8 h-8 rounded-full" [alt]="user().name" />
           } @else {
