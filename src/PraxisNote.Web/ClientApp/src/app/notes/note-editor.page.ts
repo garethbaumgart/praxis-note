@@ -228,8 +228,9 @@ import { Tag } from '../tags/tag.model';
     }
 
     .editor-wrapper {
-      max-width: 100%;
-      padding: 1.5rem 2rem;
+      max-width: 72rem;       /* max-w-6xl — matches all other pages */
+      margin: 0 auto;         /* center within scroll container */
+      padding: 2rem 2rem;     /* py-8 px-8 — matches md:px-8 py-8 */
       min-height: 100%;
       background: var(--color-bg-default);
       display: flex;
@@ -238,7 +239,7 @@ import { Tag } from '../tags/tag.model';
 
     @media (max-width: 768px) {
       .editor-wrapper {
-        padding: 1rem;
+        padding: 1.5rem;      /* px-6 — matches mobile px-6 */
       }
     }
 
