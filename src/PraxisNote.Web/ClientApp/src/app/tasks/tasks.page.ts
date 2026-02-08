@@ -227,9 +227,9 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly columnLabels = ['Todo', 'In Progress', 'Done'] as const;
 
   private scrollListener: (() => void) | null = null;
-  readonly todoSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
-  readonly inProgressSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
-  readonly doneSortMode = signal<'manual' | 'dueDate' | 'priority'>('manual');
+  readonly todoSortMode = signal<SortMode>('manual');
+  readonly inProgressSortMode = signal<SortMode>('manual');
+  readonly doneSortMode = signal<SortMode>('manual');
   readonly doneColumnTasks = computed(() =>
     this.showArchive()
       ? this.taskService.archivedTasks()
