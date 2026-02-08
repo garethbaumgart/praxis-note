@@ -2,6 +2,8 @@ import { TaskTag } from '../tags/tag.model';
 
 export type TaskStatus = 'Todo' | 'InProgress' | 'Done';
 
+export type SortMode = 'manual' | 'dueDate' | 'priority';
+
 export interface Comment {
   id: string;
   content: string;
