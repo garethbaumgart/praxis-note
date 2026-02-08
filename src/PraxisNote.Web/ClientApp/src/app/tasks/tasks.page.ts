@@ -4,14 +4,12 @@ import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
 import { TagService } from '../tags/tag.service';
 import { ColumnComponent } from './column.component';
-import { Task, TaskStatus } from './task.model';
+import { Task, TaskStatus, SortMode } from './task.model';
 import { TaskTag } from '../tags/tag.model';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
-
-type SortMode = 'manual' | 'dueDate' | 'priority';
 
 interface ColumnConfig {
   status: TaskStatus;

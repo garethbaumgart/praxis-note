@@ -1,20 +1,17 @@
 import { Component, input, output, signal, viewChild, ElementRef, ChangeDetectionStrategy, inject, Injector, afterNextRender, computed } from '@angular/core';
 import { CdkDragDrop, CdkDrag, CdkDropList, CdkDragPlaceholder } from '@angular/cdk/drag-drop';
-import { MenuItem } from 'primeng/api';
-import { Menu } from 'primeng/menu';
 import { TaskCardComponent } from './task-card.component';
+import { SortMenuDropdownComponent } from './sort-menu-dropdown.component';
 import { TaskCardSkeletonComponent } from './task-card-skeleton.component';
-import { Task, TaskStatus } from './task.model';
+import { Task, TaskStatus, SortMode } from './task.model';
 import { Tag, TaskTag } from '../tags/tag.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
-
-type SortMode = 'manual' | 'dueDate' | 'priority';
 
 @Component({
   selector: 'app-column',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, Menu],
+  imports: [TaskCardComponent, TaskCardSkeletonComponent, CdkDropList, CdkDrag, CdkDragPlaceholder, AutoResizeDirective, SortMenuDropdownComponent],
   host: { class: 'block' },
   template: `
     <div
@@ -52,21 +49,10 @@ type SortMode = 'manual' | 'dueDate' | 'priority';
             [class.text-done-foreground-muted]="isDoneNotArchive()"
           >{{ tasks().length }}</span>
           <!-- Sort dropdown -->
-          <button
-            type="button"
-            class="touch-target w-7 h-7 flex items-center justify-center rounded transition-colors ml-1"
-            [class.bg-interactive]="isSortActive()"
-            [class.text-interactive-foreground]="isSortActive()"
-            [class.text-foreground-muted]="!isSortActive()"
-            [class.hover:text-foreground]="!isSortActive()"
-            [class.hover:bg-surface-hover]="!isSortActive()"
-            (click)="sortMenu.toggle($event)"
-            aria-label="Sort options"
-            aria-haspopup="true"
-          >
-            <i class="pi pi-sort-alt text-xs"></i>
-          </button>
-          <p-menu #sortMenu [model]="sortMenuItems()" [popup]="true" appendTo="body" />
+          <app-sort-menu-dropdown
+            [sortMode]="sortMode()"
+            (onModeChange)="setSortMode($event)"
+          />
         </div>
         <div class="flex items-center gap-1">
           @if (showAddButton() && !isCreating()) {
@@ -262,29 +248,6 @@ export class ColumnComponent {
   readonly isInProgress = computed(() => this.status() === 'InProgress');
   readonly isDone = computed(() => this.status() === 'Done');
   readonly isDoneNotArchive = computed(() => this.status() === 'Done' && !this.showArchive());
-  readonly isSortActive = computed(() => this.sortMode() !== 'manual');
-
-  readonly sortMenuItems = computed<MenuItem[]>(() => {
-    const current = this.sortMode();
-    return [
-      {
-        label: 'Manual order',
-        icon: current === 'manual' ? 'pi pi-check' : 'pi pi-bars',
-        command: () => this.setSortMode('manual'),
-      },
-      {
-        label: 'Due date',
-        icon: current === 'dueDate' ? 'pi pi-check' : 'pi pi-calendar',
-        command: () => this.setSortMode('dueDate'),
-      },
-      {
-        label: 'Priority',
-        icon: current === 'priority' ? 'pi pi-check' : 'pi pi-flag',
-        command: () => this.setSortMode('priority'),
-      },
-    ];
-  });
-
   readonly sortedTasks = computed(() => {
     const tasks = this.tasks();
     const mode = this.sortMode();
