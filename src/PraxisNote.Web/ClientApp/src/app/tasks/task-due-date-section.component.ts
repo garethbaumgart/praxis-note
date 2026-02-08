@@ -1,4 +1,4 @@
-import { Component, computed, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, effect, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TaskStatus } from './task.model';
 import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
@@ -119,6 +119,16 @@ export class TaskDueDateSectionComponent {
 
   // Internal state
   readonly showDatePicker = signal(false);
+
+  constructor() {
+    // Reset date picker when the section collapses (matches previous behavior
+    // where toggleTab/closeExpanded cleared showDatePicker)
+    effect(() => {
+      if (!this.expanded()) {
+        this.showDatePicker.set(false);
+      }
+    });
+  }
 
   // Due date display calculations
   private readonly daysDiff = computed(() => {
