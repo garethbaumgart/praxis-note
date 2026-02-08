@@ -1,4 +1,4 @@
-import { Component, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
 import { Comment } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
@@ -47,7 +47,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
                 <span class="text-foreground flex-1 min-w-0 break-words" [innerHTML]="comment.content | linkify"></span>
                 @if (confirmingCommentDeleteId() === comment.id) {
                   <app-delete-confirm-button
-                    [ariaLabel]="'Confirm delete comment: ' + comment.content"
+                    [ariaLabel]="getDeleteCommentAriaLabel(comment)"
                     [shrink]="true"
                     (onConfirm)="confirmCommentDelete(comment.id)"
                   />
@@ -100,7 +100,6 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
 })
 export class TaskCommentsSectionComponent {
   private readonly injector = inject(Injector);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly deleteConfirmation = inject(DeleteConfirmationService);
 
   // Inputs
@@ -120,12 +119,6 @@ export class TaskCommentsSectionComponent {
   // ViewChild refs
   readonly commentEditInput = viewChild<ElementRef<HTMLTextAreaElement>>('commentEditInput');
   readonly newCommentInput = viewChild<ElementRef<HTMLTextAreaElement>>('newCommentInput');
-
-  constructor() {
-    this.destroyRef.onDestroy(() => {
-      this.deleteConfirmation.cleanup();
-    });
-  }
 
   /** Focus the new comment input - called by parent after expanding */
   focusNewCommentInput(): void {
@@ -158,7 +151,7 @@ export class TaskCommentsSectionComponent {
     if (content.length <= maxLength) {
       return `Delete comment: ${content}`;
     }
-    return `Delete comment: ${content.slice(0, maxLength).trimEnd()}...`;
+    return `Delete comment: ${content.slice(0, maxLength).trimEnd()}\u2026`;
   }
 
   onCommentClick(event: MouseEvent, comment: Comment): void {
