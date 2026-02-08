@@ -19,7 +19,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
       [class.text-due-done-foreground]="isDueDateExpandedDone() || isDueDateCollapsedDone()"
       [class.line-through]="isDueDateExpandedDone() || isDueDateCollapsedDone()"
       [class.bg-danger]="isDueDateExpandedOverdue()"
-      [class.text-overdue-foreground]="isDueDateExpandedOverdue()"
+      [class.text-white]="isDueDateExpandedOverdue()"
       [class.font-medium]="isDueDateExpandedOverdue() || isDueDateExpandedNormal() || isDueDateCollapsedOverdue()"
       [class.bg-duedate-expanded]="isDueDateExpandedNormal()"
       [class.text-duedate-expanded-foreground]="isDueDateExpandedNormal()"
