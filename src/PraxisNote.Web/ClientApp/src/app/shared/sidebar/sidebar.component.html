@@ -204,7 +204,7 @@
   >
     @if (collapsed()) {
       <!-- Collapsed: avatar only with tooltip, clickable to sign out -->
-      <div class="flex justify-center">
+      <div class="flex justify-center items-center h-9">
         <button
           type="button"
           class="rounded-full hover:ring-accent-foreground transition-all duration-150"
@@ -394,7 +394,7 @@
       <!-- Mobile user section -->
       <div class="py-1.5 px-3 border-t border-border">
         <!-- User -->
-        <button class="w-full flex items-center gap-3 h-9 px-3 hover:bg-surface-muted rounded-lg" (click)="logout()" aria-label="Sign out">
+        <button class="w-full flex items-center gap-3 h-9 px-3 hover:bg-surface-muted rounded-lg touch-target" (click)="logout()" aria-label="Sign out">
           @if (user().avatarUrl) {
             <img [src]="user().avatarUrl!" class="w-8 h-8 rounded-full" [alt]="user().name" />
           } @else {
