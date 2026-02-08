@@ -230,16 +230,16 @@ import { Tag } from '../tags/tag.model';
     .editor-wrapper {
       max-width: 72rem;       /* max-w-6xl — matches all other pages */
       margin: 0 auto;         /* center within scroll container */
-      padding: 2rem 2rem;     /* py-8 px-8 — matches md:px-8 py-8 */
+      padding: 2rem 1.5rem;   /* py-8 px-6 — matches mobile-first base */
       min-height: 100%;
       background: var(--color-bg-default);
       display: flex;
       flex-direction: column;
     }
 
-    @media (max-width: 768px) {
+    @media (min-width: 768px) {
       .editor-wrapper {
-        padding: 1.5rem;      /* px-6 — matches mobile px-6 */
+        padding: 2.5rem 2rem;  /* md:py-10 md:px-8 — matches desktop spacing */
       }
     }
 
