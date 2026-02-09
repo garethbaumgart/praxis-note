@@ -858,6 +858,7 @@
 .p-toast-message-content {
   border: none !important;
   padding: 0 !important;
+  gap: 0 !important;
 }
 
 /* Severity backgrounds */
@@ -891,6 +892,10 @@
   height: 1.75rem !important;
   margin: 0 !important;
   inset-inline-end: 0 !important;
+  right: auto !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+  align-self: flex-start !important;
 }
 
 .p-toast-message .p-toast-close-button:focus-visible {
