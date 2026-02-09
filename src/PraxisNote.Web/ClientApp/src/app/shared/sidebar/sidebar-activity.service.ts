@@ -15,6 +15,7 @@ export interface ActivityItem {
   icon: string;
   type: 'note' | 'task' | 'meeting';
   route: string[];
+  queryParams?: Record<string, string>;
   meta: string;
   metaUrgent?: boolean;
 }
@@ -114,7 +115,7 @@ export class SidebarActivityService {
         else { meta = `${diffDays}d`; }
         return {
           id: t.id, title: t.title, icon: 'pi-check-square',
-          type: 'task' as const, route: ['/tasks'], meta, metaUrgent,
+          type: 'task' as const, route: ['/tasks'], queryParams: { highlight: t.id }, meta, metaUrgent,
         };
       });
   });
@@ -151,7 +152,7 @@ export class SidebarActivityService {
       .slice(0, 3)
       .map(t => ({
         id: t.id, title: t.title, icon: 'pi-check-square',
-        type: 'task' as const, route: ['/tasks'],
+        type: 'task' as const, route: ['/tasks'], queryParams: { highlight: t.id },
         meta: this.timeAgo(t.createdAt), _ts: new Date(t.createdAt).getTime(),
       }));
     const meetings: (ActivityItem & { _ts: number })[] = this.meetingService.meetings()

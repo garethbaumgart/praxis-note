@@ -139,8 +139,13 @@ export class SidebarComponent implements OnInit {
     this.closeMobile.emit();
   }
 
-  protected navigateTo(route: string[]): void {
-    this.router.navigate(route);
+  protected navigateTo(route: string[], queryParams?: Record<string, string>): void {
+    this.router.navigate(route, queryParams ? { queryParams } : undefined);
+    this.closeMobile.emit();
+  }
+
+  protected navigateToTask(taskId: string): void {
+    this.router.navigate(['/tasks'], { queryParams: { highlight: taskId } });
     this.closeMobile.emit();
   }
 

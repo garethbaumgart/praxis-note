@@ -188,6 +188,10 @@
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #81a1c1);
 
+  /* Task highlight glow - Frost blue */
+  --color-task-highlight-ring: rgba(94, 129, 172, 0.5);
+  --color-task-highlight-glow: rgba(94, 129, 172, 0.15);
+
   /* Overlay backdrop */
   --color-overlay-base: rgba(46, 52, 64, 0.6);     /* Polar Night 1 with opacity */
 }
@@ -362,6 +366,10 @@
 
   /* Brand gradient - Frost blue */
   --gradient-brand: linear-gradient(to bottom right, #5e81ac, #88c0d0);
+
+  /* Task highlight glow - Frost cyan */
+  --color-task-highlight-ring: rgba(136, 192, 208, 0.5);
+  --color-task-highlight-glow: rgba(136, 192, 208, 0.2);
 
   /* Overlay backdrop */
   --color-overlay-base: rgba(0, 0, 0, 0.7);        /* Darker for dark theme */
@@ -967,5 +975,27 @@
   .toast-progress-bar {
     animation: none;
     width: 50%;
+  }
+}
+
+/* ========================================
+   Task Highlight Glow
+   Applied when navigating to a task from the sidebar.
+   Uses transition-property (not shorthand transition) to avoid
+   clobbering Tailwind's transition-colors on the same element.
+   ======================================== */
+.task-highlight-target {
+  transition-property: box-shadow;
+  transition-duration: 0.5s;
+  transition-timing-function: ease-out;
+}
+
+.task-highlight-glow {
+  box-shadow: 0 0 0 2px var(--color-task-highlight-ring), 0 0 12px var(--color-task-highlight-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-highlight-target {
+    transition-property: none;
   }
 }
