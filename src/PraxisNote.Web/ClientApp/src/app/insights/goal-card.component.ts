@@ -21,7 +21,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
           <!-- Mobile: always visible -->
           <button
             type="button"
-            class="flex md:hidden text-foreground-muted hover:text-danger p-1 transition-colors"
+            class="touch-target flex md:hidden text-foreground-muted hover:text-danger p-1 transition-colors"
             (click)="startDeleteConfirm()"
             aria-label="Delete goal">
             <i class="pi pi-trash text-xs"></i>
@@ -29,7 +29,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
           <!-- Desktop: hover-reveal -->
           <button
             type="button"
-            class="hidden md:flex md:opacity-0 md:group-hover:opacity-100 transition-opacity text-foreground-muted hover:text-danger p-1"
+            class="touch-target hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto transition-opacity text-foreground-muted hover:text-danger p-1"
             (click)="startDeleteConfirm()"
             aria-label="Delete goal">
             <i class="pi pi-trash text-xs"></i>
