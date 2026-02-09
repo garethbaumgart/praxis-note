@@ -1,11 +1,14 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, inject, DestroyRef } from '@angular/core';
 import { Meeting, MeetingStatus } from './meeting.model';
 import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '../shared/date-utils';
+import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
+import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 
 @Component({
   selector: 'app-meeting-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DeleteConfirmButtonComponent],
   template: `
     <div
       class="meeting-row group cursor-pointer flex items-center gap-4 p-3 bg-surface-subtle border border-border rounded-lg hover:shadow-md active:scale-[0.995] active:bg-surface-muted/50 transition-all"
@@ -74,24 +77,31 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
           {{ getStatusLabel() }}
         </span>
 
-        <!-- Delete button: mobile (always visible) -->
-        <button
-          type="button"
-          class="touch-target flex md:hidden p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
-          (click)="handleDelete($event)"
-          aria-label="Delete meeting"
-        >
-          <i class="pi pi-trash text-sm"></i>
-        </button>
-        <!-- Delete button: desktop (hover/focus-reveal without layout shift) -->
-        <button
-          type="button"
-          class="touch-target hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
-          (click)="handleDelete($event)"
-          aria-label="Delete meeting"
-        >
-          <i class="pi pi-trash text-sm"></i>
-        </button>
+        @if (confirmingDelete()) {
+          <app-delete-confirm-button
+            ariaLabel="Confirm delete meeting"
+            (onConfirm)="confirmDelete()"
+          />
+        } @else {
+          <!-- Delete button: mobile (always visible) -->
+          <button
+            type="button"
+            class="touch-target flex md:hidden p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
+            (click)="startDeleteConfirm($event)"
+            aria-label="Delete meeting"
+          >
+            <i class="pi pi-trash text-sm"></i>
+          </button>
+          <!-- Delete button: desktop (hover/focus-reveal without layout shift) -->
+          <button
+            type="button"
+            class="touch-target hidden md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto p-1.5 text-foreground-muted hover:text-danger hover:bg-danger/10 rounded transition-all"
+            (click)="startDeleteConfirm($event)"
+            aria-label="Delete meeting"
+          >
+            <i class="pi pi-trash text-sm"></i>
+          </button>
+        }
       </div>
     </div>
   `,
@@ -142,9 +152,33 @@ import { formatTime as sharedFormatTime, formatAmPm as sharedFormatAmPm } from '
   `],
 })
 export class MeetingRowComponent {
+  private readonly deleteConfirmation = inject(DeleteConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly meeting = input.required<Meeting>();
   readonly onOpen = output<void>();
   readonly onDelete = output<void>();
+
+  readonly confirmingDelete = signal(false);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => this.deleteConfirmation.cleanup());
+  }
+
+  startDeleteConfirm(event: Event): void {
+    event.stopPropagation();
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(true);
+    this.deleteConfirmation.start(() => {
+      this.confirmingDelete.set(false);
+    });
+  }
+
+  confirmDelete(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(false);
+    this.onDelete.emit();
+  }
 
   formatTime(dateStr: string | null): string {
     return sharedFormatTime(dateStr);
@@ -219,8 +253,4 @@ export class MeetingRowComponent {
     return `Created ${date.toLocaleDateString()}`;
   }
 
-  handleDelete(event: Event): void {
-    event.stopPropagation();
-    this.onDelete.emit();
-  }
 }

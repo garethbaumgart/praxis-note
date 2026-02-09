@@ -14,6 +14,7 @@ import {
   viewChild,
   afterNextRender,
   Injector,
+  DestroyRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +36,8 @@ import { Tag } from '../tags/tag.model';
 import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
 import { toLocalISOString, formatShortDate } from '../shared/date-utils';
 import { AuthService } from '../auth/auth.service';
+import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
+import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 
 interface DateOption {
   label: string;
@@ -45,7 +48,7 @@ interface DateOption {
   selector: 'app-meeting-editor-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DatePickerModule, SelectModule, MenuModule, MeetingAnalysisComponent, MeetingReflectionComponent],
+  imports: [FormsModule, DatePickerModule, SelectModule, MenuModule, MeetingAnalysisComponent, MeetingReflectionComponent, DeleteConfirmButtonComponent],
   template: `
     <div class="meeting-editor-page">
       <!-- Actions template (rendered by app shell top bar) -->
@@ -58,9 +61,16 @@ interface DateOption {
           }
         </span>
         @if (meetingId()) {
-          <button type="button" class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary touch-target" (click)="deleteMeeting()" aria-label="Delete meeting" title="Delete meeting">
-            <i class="pi pi-trash text-sm" aria-hidden="true"></i>
-          </button>
+          @if (confirmingDelete()) {
+            <app-delete-confirm-button
+              ariaLabel="Confirm delete meeting"
+              (onConfirm)="confirmDelete()"
+            />
+          } @else {
+            <button type="button" class="w-9 h-9 flex items-center justify-center hover:bg-surface-muted rounded-lg text-foreground-secondary touch-target" (click)="startDeleteConfirm()" aria-label="Delete meeting" title="Delete meeting">
+              <i class="pi pi-trash text-sm" aria-hidden="true"></i>
+            </button>
+          }
         }
       </ng-template>
 
@@ -682,6 +692,8 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly headerService = inject(ContextualHeaderService);
   private readonly auth = inject(AuthService);
   private readonly injector = inject(Injector);
+  private readonly deleteConfirmation = inject(DeleteConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly recorder = inject(AudioRecorderService);
   readonly transcription = inject(DeepgramTranscriptionService);
 
@@ -699,6 +711,9 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   readonly isSaving = signal(false);
   readonly lastSaved = signal(false);
   readonly meetingId = signal<string | null>(null);
+
+  // Delete confirmation state
+  readonly confirmingDelete = signal(false);
 
   // Form state
   readonly title = signal('');
@@ -838,6 +853,8 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   );
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.deleteConfirmation.cleanup());
+
     // Capture navigation state for dynamic breadcrumb (must be read during construction)
     const nav = this.router.getCurrentNavigation();
     const state = nav?.extras?.state as { breadcrumbSource?: BreadcrumbItem } | undefined;
@@ -1467,7 +1484,18 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate([this.sourceBreadcrumb().route ?? '/meetings']);
   }
 
-  deleteMeeting(): void {
+  startDeleteConfirm(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(true);
+    this.deleteConfirmation.start(() => {
+      this.confirmingDelete.set(false);
+    });
+  }
+
+  confirmDelete(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(false);
+
     const id = this.meetingId();
     if (!id) return;
 
