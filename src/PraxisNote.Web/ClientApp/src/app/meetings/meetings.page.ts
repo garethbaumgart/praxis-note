@@ -282,12 +282,14 @@ export class MeetingsPage implements OnInit, OnDestroy {
     this.searchInputRef()?.nativeElement.blur();
   }
 
+  private readonly meetingsBreadcrumbSource = { breadcrumbSource: { label: 'Meetings', route: '/meetings' } };
+
   openNewMeeting(): void {
-    this.router.navigate(['/meetings', 'new']);
+    this.router.navigate(['/meetings', 'new'], { state: this.meetingsBreadcrumbSource });
   }
 
   openMeeting(meeting: Meeting): void {
-    this.router.navigate(['/meetings', meeting.id]);
+    this.router.navigate(['/meetings', meeting.id], { state: this.meetingsBreadcrumbSource });
   }
 
   syncCalendar(): void {

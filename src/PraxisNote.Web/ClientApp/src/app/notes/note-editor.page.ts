@@ -16,6 +16,7 @@ import {
   Injector,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BreadcrumbItem } from '../shared/services/contextual-header.service';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { Note, CheckboxStatus, NoteTag } from './note.model';
 import { NoteService } from './note.service';
@@ -511,12 +512,26 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
     return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
   });
 
+  private readonly sourceBreadcrumb = signal<BreadcrumbItem>(
+    { label: 'Notes', icon: 'pi-arrow-left', route: '/notes' }
+  );
+
   constructor() {
+    // Capture navigation state for dynamic breadcrumb (must be read during construction)
+    const nav = this.router.getCurrentNavigation();
+    const state = nav?.extras?.state as { breadcrumbSource?: BreadcrumbItem } | undefined;
+    if (state?.breadcrumbSource) {
+      this.sourceBreadcrumb.set({
+        ...state.breadcrumbSource,
+        icon: 'pi-arrow-left',
+      });
+    }
+
     // Update breadcrumb when note title changes
     effect(() => {
       const title = this.noteTitle();
       this.headerService.breadcrumb.set([
-        { label: 'Notes', icon: 'pi-arrow-left', route: '/notes' },
+        this.sourceBreadcrumb(),
         { label: title || 'Untitled' },
       ]);
     });
@@ -723,7 +738,7 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.currentContent && !this.lastSaved()) {
       this.saveNow();
     }
-    this.router.navigate(['/notes']);
+    this.router.navigate([this.sourceBreadcrumb().route ?? '/notes']);
   }
 
   exportToPdf(): void {

@@ -16,6 +16,7 @@ import {
   Injector,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BreadcrumbItem } from '../shared/services/contextual-header.service';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -833,7 +834,21 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
   });
 
+  private readonly sourceBreadcrumb = signal<BreadcrumbItem>(
+    { label: 'Meetings', icon: 'pi-arrow-left', route: '/meetings' }
+  );
+
   constructor() {
+    // Capture navigation state for dynamic breadcrumb (must be read during construction)
+    const nav = this.router.getCurrentNavigation();
+    const state = nav?.extras?.state as { breadcrumbSource?: BreadcrumbItem } | undefined;
+    if (state?.breadcrumbSource) {
+      this.sourceBreadcrumb.set({
+        ...state.breadcrumbSource,
+        icon: 'pi-arrow-left',
+      });
+    }
+
     // Reload action item statuses when action items count changes
     let lastActionItemCount = -1;
     effect(() => {
@@ -875,7 +890,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     effect(() => {
       const title = this.displayTitle();
       this.headerService.breadcrumb.set([
-        { label: 'Meetings', icon: 'pi-arrow-left', route: '/meetings' },
+        this.sourceBreadcrumb(),
         { label: title },
       ]);
     });
@@ -1450,7 +1465,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       this.saveMetadata();
       this.saveTranscript();
     }
-    this.router.navigate(['/meetings']);
+    this.router.navigate([this.sourceBreadcrumb().route ?? '/meetings']);
   }
 
   deleteMeeting(): void {
