@@ -16,7 +16,6 @@ import {
   Injector,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BreadcrumbItem } from '../shared/services/contextual-header.service';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { Note, CheckboxStatus, NoteTag } from './note.model';
 import { NoteService } from './note.service';
@@ -25,7 +24,7 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
 import { ToastService } from '../shared/services/toast.service';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
-import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { BreadcrumbItem, ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
 

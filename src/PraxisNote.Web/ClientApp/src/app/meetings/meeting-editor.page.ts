@@ -16,7 +16,6 @@ import {
   Injector,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BreadcrumbItem } from '../shared/services/contextual-header.service';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -30,7 +29,7 @@ import { MeetingReflectionComponent } from './meeting-reflection.component';
 import { AudioRecorderService } from './audio-recorder.service';
 import { DeepgramTranscriptionService } from './deepgram-transcription.service';
 import { ToastService } from '../shared/services/toast.service';
-import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { BreadcrumbItem, ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
 import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
