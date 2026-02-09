@@ -103,8 +103,8 @@ export class SidebarComponent implements OnInit {
 
   protected readonly navItems: NavItem[] = [
     { path: '/home', label: 'Home', icon: 'pi-home', enabled: true },
-    { path: '/notes', label: 'Notes', icon: 'pi-file-edit', enabled: true },
     { path: '/tasks', label: 'Tasks', icon: 'pi-check-square', enabled: true },
+    { path: '/notes', label: 'Notes', icon: 'pi-file-edit', enabled: true },
     { path: '/meetings', label: 'Meetings', icon: 'pi-comments', enabled: true },
     { path: '/tags', label: 'Tag Hub', icon: 'pi-tags', enabled: true },
     { path: '/summary', label: 'Summary', icon: 'pi-clock', enabled: true },
