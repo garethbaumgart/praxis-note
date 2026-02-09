@@ -1,5 +1,7 @@
-import { Component, HostListener, inject, OnInit, AfterViewInit, OnDestroy, viewChild, viewChildren, ChangeDetectionStrategy, computed, signal, ElementRef, PLATFORM_ID, WritableSignal } from '@angular/core';
+import { Component, HostListener, inject, OnInit, AfterViewInit, OnDestroy, viewChild, viewChildren, ChangeDetectionStrategy, computed, signal, ElementRef, PLATFORM_ID, WritableSignal, DestroyRef, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { TaskService } from './task.service';
 import { TagService } from '../tags/tag.service';
@@ -143,6 +145,7 @@ interface ColumnConfig {
             [showAddButton]="col.showAddButton"
             [showKbdHint]="false"
             [searchQuery]="searchQuery()"
+            [highlightedTaskId]="highlightedTaskId()"
             [emptyMessage]="col.mobileEmptyMessage"
             [archiveCount]="col.archiveCount ?? 0"
             [doneCount]="col.doneCount ?? 0"
@@ -181,6 +184,7 @@ interface ColumnConfig {
             [showAddButton]="col.showAddButton"
             [showKbdHint]="col.status === 'Todo' && !searchQuery()"
             [searchQuery]="searchQuery()"
+            [highlightedTaskId]="highlightedTaskId()"
             [emptyMessage]="col.emptyMessage"
             [archiveCount]="col.archiveCount ?? 0"
             [doneCount]="col.doneCount ?? 0"
@@ -215,6 +219,9 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly toastService = inject(ToastService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly headerService = inject(ContextualHeaderService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Desktop column refs for drag-drop connectedTo and keyboard shortcuts
   readonly desktopColumns = viewChildren<ColumnComponent>('desktopColumn');
@@ -225,6 +232,8 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly searchQuery = signal('');
   readonly activeColumn = signal(0);
   readonly columnLabels = ['Todo', 'In Progress', 'Done'] as const;
+  readonly highlightedTaskId = signal('');
+  private highlightTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private scrollListener: (() => void) | null = null;
   readonly todoSortMode = signal<SortMode>('manual');
@@ -315,11 +324,49 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
       .filter((list): list is CdkDropList => !!list);
   }
 
+  /** Pending highlight task ID from query param, waiting for data to load */
+  private pendingHighlightId = '';
+
+  constructor() {
+    // Watch for initial load to complete, then trigger pending highlight
+    effect(() => {
+      const loaded = this.taskService.initialLoadComplete();
+      if (loaded && this.pendingHighlightId) {
+        const taskId = this.pendingHighlightId;
+        this.pendingHighlightId = '';
+        // Use setTimeout to let the DOM render the task cards first
+        setTimeout(() => this.scrollAndHighlight(taskId), 100);
+      }
+    });
+
+    this.destroyRef.onDestroy(() => {
+      if (this.highlightTimeout) {
+        clearTimeout(this.highlightTimeout);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.headerService.breadcrumb.set([{ label: 'Tasks' }]);
     this.taskService.loadTasks();
     this.taskService.loadArchivedCount();
     this.tagService.loadTags();
+
+    // Read highlight query param
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const highlightId = params['highlight'];
+        if (highlightId) {
+          if (this.taskService.initialLoadComplete()) {
+            // Data already loaded, highlight immediately
+            setTimeout(() => this.scrollAndHighlight(highlightId), 100);
+          } else {
+            // Store pending highlight for when data loads
+            this.pendingHighlightId = highlightId;
+          }
+        }
+      });
   }
 
   ngAfterViewInit(): void {
@@ -335,6 +382,78 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
       container?.removeEventListener('scroll', this.scrollListener);
       this.scrollListener = null;
     }
+  }
+
+  /**
+   * Scroll to a task card and apply the highlight glow effect.
+   * Handles both desktop and mobile layouts.
+   */
+  private scrollAndHighlight(taskId: string): void {
+    // Clear any existing highlight
+    if (this.highlightTimeout) {
+      clearTimeout(this.highlightTimeout);
+      this.highlightTimeout = null;
+    }
+
+    // Determine which column the task is in
+    const columnIndex = this.getColumnIndexForTask(taskId);
+    if (columnIndex === -1) {
+      // Task not found - clean up query param and bail
+      this.cleanupQueryParam();
+      return;
+    }
+
+    const isMobile = !isPlatformBrowser(this.platformId) ? false :
+      window.matchMedia('(max-width: 767px)').matches;
+
+    if (isMobile) {
+      // Mobile: scroll to the correct column first, then scroll to the task card
+      this.scrollToColumn(columnIndex);
+      // Wait for column scroll to settle, then scroll to card
+      setTimeout(() => {
+        this.applyHighlightAndScroll(taskId);
+      }, 350);
+    } else {
+      // Desktop: scroll to the card directly
+      this.applyHighlightAndScroll(taskId);
+    }
+  }
+
+  /** Apply highlight signal and scroll the task card into view */
+  private applyHighlightAndScroll(taskId: string): void {
+    this.highlightedTaskId.set(taskId);
+
+    // Find the task card element in the DOM
+    const cardEl = document.querySelector(`[data-task-id="${taskId}"]`);
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Remove highlight after 2.5s (CSS transition handles fade-out)
+    this.highlightTimeout = setTimeout(() => {
+      this.highlightedTaskId.set('');
+      this.highlightTimeout = null;
+    }, 2500);
+
+    // Clean up the query param from the URL
+    this.cleanupQueryParam();
+  }
+
+  /** Determine which column (0=Todo, 1=InProgress, 2=Done) a task belongs to */
+  private getColumnIndexForTask(taskId: string): number {
+    if (this.taskService.todoTasks().some(t => t.id === taskId)) return 0;
+    if (this.taskService.inProgressTasks().some(t => t.id === taskId)) return 1;
+    if (this.taskService.doneTasks().some(t => t.id === taskId)) return 2;
+    return -1;
+  }
+
+  /** Remove the highlight query parameter from the URL without triggering navigation */
+  private cleanupQueryParam(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true,
+    });
   }
 
   private setupScrollObserver(): void {

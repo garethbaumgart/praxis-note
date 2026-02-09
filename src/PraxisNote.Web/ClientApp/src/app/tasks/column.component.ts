@@ -168,6 +168,7 @@ import { AutoResizeDirective } from '../shared/directives/auto-resize.directive'
                 [task]="task"
                 [searchQuery]="searchQuery()"
                 [isArchive]="showArchive()"
+                [highlighted]="highlightedTaskId() === task.id"
                 [allTags]="allTags()"
                 (onEdit)="onEditTask.emit({ id: task.id, title: $event })"
                 (onDelete)="onDeleteTask.emit(task.id)"
@@ -220,6 +221,7 @@ export class ColumnComponent {
   readonly showArchive = input(false);
   readonly showSkeleton = input(false);
   readonly searchQuery = input('');
+  readonly highlightedTaskId = input('');
   readonly allTags = input<Tag[]>([]);
 
   readonly onDrop = output<CdkDragDrop<Task[]>>();
