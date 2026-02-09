@@ -331,40 +331,6 @@ interface DateOption {
             </div>
 
             @if (!isNewMeeting()) {
-              <!-- AI Analysis Section - Green border -->
-              <div class="section-card analysis-card">
-                <div class="section-header analysis-header">
-                  <span><i class="pi pi-sparkles"></i> AI Analysis</span>
-                </div>
-                @if (currentMeeting()) {
-                  <app-meeting-analysis
-                    [meeting]="currentMeeting()!"
-                    [actionItemStatuses]="actionItemStatuses()"
-                    [promotingIds]="promotingIds()"
-                    (onAnalyze)="analyze()"
-                    (onToggleActionItem)="toggleActionItem($event)"
-                    (onPromoteActionItem)="promoteActionItem($event)"
-                    (onNavigateToTask)="navigateToTask($event)"
-                  />
-                } @else {
-                  <div class="empty-analysis">
-                    Click "Generate" to create an AI summary of this meeting
-                  </div>
-                }
-              </div>
-
-              <!-- Reflection Section - Purple border -->
-              @if (currentMeeting()?.behavioralAnalysis) {
-                <div class="section-card reflection-card">
-                  <div class="section-header reflection-header">
-                    <span><i class="pi pi-comments"></i> Self-Reflection</span>
-                  </div>
-                  <app-meeting-reflection
-                    [meeting]="currentMeeting()!"
-                  />
-                </div>
-              }
-
               <!-- Transcript Section - Blue border -->
               <div class="section-card transcript-card">
                 <div class="section-header transcript-header">
@@ -513,6 +479,40 @@ interface DateOption {
                   <span class="text-xs text-foreground-muted">{{ transcript().length }} characters</span>
                 </div>
               </div>
+
+              <!-- AI Analysis Section - Green border -->
+              <div class="section-card analysis-card">
+                <div class="section-header analysis-header">
+                  <span><i class="pi pi-sparkles"></i> AI Analysis</span>
+                </div>
+                @if (currentMeeting()) {
+                  <app-meeting-analysis
+                    [meeting]="currentMeeting()!"
+                    [actionItemStatuses]="actionItemStatuses()"
+                    [promotingIds]="promotingIds()"
+                    (onAnalyze)="analyze()"
+                    (onToggleActionItem)="toggleActionItem($event)"
+                    (onPromoteActionItem)="promoteActionItem($event)"
+                    (onNavigateToTask)="navigateToTask($event)"
+                  />
+                } @else {
+                  <div class="empty-analysis">
+                    Click "Generate" to create an AI summary of this meeting
+                  </div>
+                }
+              </div>
+
+              <!-- Reflection Section - Purple border -->
+              @if (currentMeeting()?.behavioralAnalysis) {
+                <div class="section-card reflection-card">
+                  <div class="section-header reflection-header">
+                    <span><i class="pi pi-comments"></i> Self-Reflection</span>
+                  </div>
+                  <app-meeting-reflection
+                    [meeting]="currentMeeting()!"
+                  />
+                </div>
+              }
             }
           </div>
         }
