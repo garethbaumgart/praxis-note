@@ -24,7 +24,7 @@ import { TiptapEditorComponent } from './tiptap-editor.component';
 import { ToastService } from '../shared/services/toast.service';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
-import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { BreadcrumbItem, ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
 
@@ -73,7 +73,7 @@ import { Tag } from '../tags/tag.model';
               class="mt-4 px-4 py-2 text-sm bg-accent-solid text-white rounded-md"
               (click)="navigateBack()"
             >
-              Back to Notes
+              Back to {{ sourceBreadcrumb().label }}
             </button>
           </div>
         } @else {
@@ -511,12 +511,26 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
     return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
   });
 
+  protected readonly sourceBreadcrumb = signal<BreadcrumbItem>(
+    { label: 'Notes', icon: 'pi-arrow-left', route: '/notes' }
+  );
+
   constructor() {
+    // Capture navigation state for dynamic breadcrumb (must be read during construction)
+    const nav = this.router.getCurrentNavigation();
+    const state = nav?.extras?.state as { breadcrumbSource?: BreadcrumbItem } | undefined;
+    if (state?.breadcrumbSource) {
+      this.sourceBreadcrumb.set({
+        ...state.breadcrumbSource,
+        icon: 'pi-arrow-left',
+      });
+    }
+
     // Update breadcrumb when note title changes
     effect(() => {
       const title = this.noteTitle();
       this.headerService.breadcrumb.set([
-        { label: 'Notes', icon: 'pi-arrow-left', route: '/notes' },
+        this.sourceBreadcrumb(),
         { label: title || 'Untitled' },
       ]);
     });
@@ -723,7 +737,7 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.currentContent && !this.lastSaved()) {
       this.saveNow();
     }
-    this.router.navigate(['/notes']);
+    this.router.navigate([this.sourceBreadcrumb().route ?? '/notes']);
   }
 
   exportToPdf(): void {
@@ -762,7 +776,7 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
           callback: () => this.noteService.undoDelete(id),
         },
       });
-      this.router.navigate(['/notes']);
+      this.router.navigate([this.sourceBreadcrumb().route ?? '/notes']);
     }
   }
 

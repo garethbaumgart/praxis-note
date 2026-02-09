@@ -377,9 +377,11 @@ export class HomePage implements OnInit, OnDestroy {
     this.headerService.clearContext();
   }
 
+  private readonly homeBreadcrumbSource = { breadcrumbSource: { label: 'Home', route: '/home' } };
+
   newNote(): void {
     this.noteService.createNote(undefined, (id) => {
-      this.router.navigate(['/notes', id]);
+      this.router.navigate(['/notes', id], { state: this.homeBreadcrumbSource });
     });
   }
 
@@ -388,18 +390,18 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   startRecording(): void {
-    this.router.navigate(['/meetings', 'new']);
+    this.router.navigate(['/meetings', 'new'], { state: this.homeBreadcrumbSource });
   }
 
   goToMeeting(id: string): void {
-    this.router.navigate(['/meetings', id]);
+    this.router.navigate(['/meetings', id], { state: this.homeBreadcrumbSource });
   }
 
   goToRecentItem(item: { id: string; type: 'note' | 'meeting' }): void {
     if (item.type === 'note') {
-      this.router.navigate(['/notes', item.id]);
+      this.router.navigate(['/notes', item.id], { state: this.homeBreadcrumbSource });
     } else {
-      this.router.navigate(['/meetings', item.id]);
+      this.router.navigate(['/meetings', item.id], { state: this.homeBreadcrumbSource });
     }
   }
 }

@@ -275,12 +275,14 @@ export class NotesPage implements OnInit, OnDestroy {
     this.searchInputRef()?.nativeElement.blur();
   }
 
+  private readonly notesBreadcrumbSource = { breadcrumbSource: { label: 'Notes', route: '/notes' } };
+
   openNewNote(): void {
-    this.router.navigate(['/notes', 'new']);
+    this.router.navigate(['/notes', 'new'], { state: this.notesBreadcrumbSource });
   }
 
   openNote(note: Note): void {
-    this.router.navigate(['/notes', note.id]);
+    this.router.navigate(['/notes', note.id], { state: this.notesBreadcrumbSource });
   }
 
   deleteNote(note: Note): void {
