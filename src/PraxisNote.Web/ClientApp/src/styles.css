@@ -892,7 +892,7 @@
   height: 1.75rem !important;
   margin: 0 !important;
   inset-inline-end: 0 !important;
-  right: 0 !important;
+  right: auto !important;
   position: relative !important;
   flex-shrink: 0 !important;
   align-self: flex-start !important;
