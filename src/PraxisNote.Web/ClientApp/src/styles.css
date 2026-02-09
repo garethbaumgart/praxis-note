@@ -537,10 +537,6 @@
   --color-source-note-foreground: var(--color-source-note-text);
   --color-source-note-hover: var(--color-source-note-hover-base);
 
-  /* Task highlight glow */
-  --color-task-highlight-ring: var(--color-task-highlight-ring);
-  --color-task-highlight-glow: var(--color-task-highlight-glow);
-
   /* Overlay */
   --color-overlay: var(--color-overlay-base);
 }
@@ -985,20 +981,21 @@
 /* ========================================
    Task Highlight Glow
    Applied when navigating to a task from the sidebar.
+   Uses transition-property (not shorthand transition) to avoid
+   clobbering Tailwind's transition-colors on the same element.
    ======================================== */
-.task-highlight-glow {
-  box-shadow: 0 0 0 2px var(--color-task-highlight-ring), 0 0 12px var(--color-task-highlight-glow);
-  transition: box-shadow 0.5s ease-out;
+.task-highlight-target {
+  transition-property: box-shadow;
+  transition-duration: 0.5s;
+  transition-timing-function: ease-out;
 }
 
-.task-highlight-glow-off {
-  box-shadow: none;
-  transition: box-shadow 0.5s ease-out;
+.task-highlight-glow {
+  box-shadow: 0 0 0 2px var(--color-task-highlight-ring), 0 0 12px var(--color-task-highlight-glow);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .task-highlight-glow,
-  .task-highlight-glow-off {
-    transition: none;
+  .task-highlight-target {
+    transition-property: none;
   }
 }

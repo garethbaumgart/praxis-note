@@ -16,14 +16,13 @@ import { TaskCommentsSectionComponent } from './task-comments-section.component'
   imports: [AutoResizeDirective, HighlightPipe, DeleteConfirmButtonComponent, TaskDueDateSectionComponent, TaskCommentsSectionComponent],
   template: `
     <div
-      class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors group"
+      class="bg-surface-subtle rounded-md py-2 px-3 border transition-colors task-highlight-target group"
       [attr.data-task-id]="task().id"
       [class.border-todo-border]="task().status === 'Todo'"
       [class.border-inprogress-border]="task().status === 'InProgress'"
       [class.border-done-border]="task().status === 'Done' && !isArchive()"
       [class.border-archive-border]="task().status === 'Done' && isArchive()"
       [class.task-highlight-glow]="highlighted()"
-      [class.task-highlight-glow-off]="!highlighted()"
     >
       <!-- Task content -->
       <div class="flex items-start gap-2">

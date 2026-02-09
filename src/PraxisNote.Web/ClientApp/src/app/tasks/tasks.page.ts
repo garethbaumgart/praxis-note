@@ -234,6 +234,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly columnLabels = ['Todo', 'In Progress', 'Done'] as const;
   readonly highlightedTaskId = signal('');
   private highlightTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pendingTimeouts: ReturnType<typeof setTimeout>[] = [];
 
   private scrollListener: (() => void) | null = null;
   readonly todoSortMode = signal<SortMode>('manual');
@@ -335,7 +336,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
         const taskId = this.pendingHighlightId;
         this.pendingHighlightId = '';
         // Use setTimeout to let the DOM render the task cards first
-        setTimeout(() => this.scrollAndHighlight(taskId), 100);
+        this.scheduleTimeout(() => this.scrollAndHighlight(taskId), 100);
       }
     });
 
@@ -343,6 +344,8 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
       if (this.highlightTimeout) {
         clearTimeout(this.highlightTimeout);
       }
+      this.pendingTimeouts.forEach(t => clearTimeout(t));
+      this.pendingTimeouts = [];
     });
   }
 
@@ -360,7 +363,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
         if (highlightId) {
           if (this.taskService.initialLoadComplete()) {
             // Data already loaded, highlight immediately
-            setTimeout(() => this.scrollAndHighlight(highlightId), 100);
+            this.scheduleTimeout(() => this.scrollAndHighlight(highlightId), 100);
           } else {
             // Store pending highlight for when data loads
             this.pendingHighlightId = highlightId;
@@ -389,28 +392,35 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
    * Handles both desktop and mobile layouts.
    */
   private scrollAndHighlight(taskId: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     // Clear any existing highlight
     if (this.highlightTimeout) {
       clearTimeout(this.highlightTimeout);
       this.highlightTimeout = null;
     }
 
+    // Clear search filter so the task is visible
+    if (this.searchQuery()) {
+      this.searchQuery.set('');
+    }
+
     // Determine which column the task is in
     const columnIndex = this.getColumnIndexForTask(taskId);
     if (columnIndex === -1) {
-      // Task not found - clean up query param and bail
+      // Task not found - clear highlight state, clean up query param and bail
+      this.highlightedTaskId.set('');
       this.cleanupQueryParam();
       return;
     }
 
-    const isMobile = !isPlatformBrowser(this.platformId) ? false :
-      window.matchMedia('(max-width: 767px)').matches;
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
     if (isMobile) {
       // Mobile: scroll to the correct column first, then scroll to the task card
       this.scrollToColumn(columnIndex);
       // Wait for column scroll to settle, then scroll to card
-      setTimeout(() => {
+      this.scheduleTimeout(() => {
         this.applyHighlightAndScroll(taskId);
       }, 350);
     } else {
@@ -426,7 +436,9 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     // Find the task card element in the DOM
     const cardEl = document.querySelector(`[data-task-id="${taskId}"]`);
     if (cardEl) {
-      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
+      const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+      cardEl.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
     }
 
     // Remove highlight after 2.5s (CSS transition handles fade-out)
@@ -447,13 +459,23 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     return -1;
   }
 
-  /** Remove the highlight query parameter from the URL without triggering navigation */
+  /** Remove only the highlight query parameter from the URL */
   private cleanupQueryParam(): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: {},
+      queryParams: { highlight: undefined },
+      queryParamsHandling: 'merge',
       replaceUrl: true,
     });
+  }
+
+  /** Schedule a timeout that gets cleaned up on destroy */
+  private scheduleTimeout(callback: () => void, delay: number): void {
+    const id = setTimeout(() => {
+      this.pendingTimeouts = this.pendingTimeouts.filter(t => t !== id);
+      callback();
+    }, delay);
+    this.pendingTimeouts.push(id);
   }
 
   private setupScrollObserver(): void {
