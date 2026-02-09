@@ -73,7 +73,7 @@ import { Tag } from '../tags/tag.model';
               class="mt-4 px-4 py-2 text-sm bg-accent-solid text-white rounded-md"
               (click)="navigateBack()"
             >
-              Back to Notes
+              Back to {{ sourceBreadcrumb().label }}
             </button>
           </div>
         } @else {
@@ -511,7 +511,7 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
     return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
   });
 
-  private readonly sourceBreadcrumb = signal<BreadcrumbItem>(
+  protected readonly sourceBreadcrumb = signal<BreadcrumbItem>(
     { label: 'Notes', icon: 'pi-arrow-left', route: '/notes' }
   );
 
@@ -776,7 +776,7 @@ export class NoteEditorPage implements OnInit, AfterViewInit, OnDestroy {
           callback: () => this.noteService.undoDelete(id),
         },
       });
-      this.router.navigate(['/notes']);
+      this.router.navigate([this.sourceBreadcrumb().route ?? '/notes']);
     }
   }
 

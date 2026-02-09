@@ -80,7 +80,7 @@ interface DateOption {
               class="mt-4 px-4 py-2 text-sm bg-accent-solid text-white rounded-md"
               (click)="navigateBack()"
             >
-              Back to Meetings
+              Back to {{ sourceBreadcrumb().label }}
             </button>
           </div>
         } @else {
@@ -833,7 +833,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
   });
 
-  private readonly sourceBreadcrumb = signal<BreadcrumbItem>(
+  protected readonly sourceBreadcrumb = signal<BreadcrumbItem>(
     { label: 'Meetings', icon: 'pi-arrow-left', route: '/meetings' }
   );
 
@@ -1480,7 +1480,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
           callback: () => this.meetingService.undoDelete(id),
         },
       });
-      this.router.navigate(['/meetings']);
+      this.router.navigate([this.sourceBreadcrumb().route ?? '/meetings']);
     }
   }
 
