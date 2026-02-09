@@ -1,20 +1,41 @@
-import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, inject, DestroyRef } from '@angular/core';
 import { GoalProgress } from './insights.model';
+import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
+import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
 
 @Component({
   selector: 'app-goal-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DeleteConfirmButtonComponent],
   template: `
     <div class="bg-surface-subtle border border-border rounded-xl p-4 flex flex-col gap-3 relative group">
       <!-- Delete button -->
-      <button
-        type="button"
-        class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-foreground-muted hover:text-danger p-1"
-        (click)="onDelete.emit(goal().goalId)"
-        aria-label="Delete goal">
-        <i class="pi pi-trash text-xs"></i>
-      </button>
+      <div class="absolute top-2 right-2">
+        @if (confirmingDelete()) {
+          <app-delete-confirm-button
+            ariaLabel="Confirm delete goal"
+            (onConfirm)="confirmDelete()"
+          />
+        } @else {
+          <!-- Mobile: always visible -->
+          <button
+            type="button"
+            class="flex md:hidden text-foreground-muted hover:text-danger p-1 transition-colors"
+            (click)="startDeleteConfirm()"
+            aria-label="Delete goal">
+            <i class="pi pi-trash text-xs"></i>
+          </button>
+          <!-- Desktop: hover-reveal -->
+          <button
+            type="button"
+            class="hidden md:flex md:opacity-0 md:group-hover:opacity-100 transition-opacity text-foreground-muted hover:text-danger p-1"
+            (click)="startDeleteConfirm()"
+            aria-label="Delete goal">
+            <i class="pi pi-trash text-xs"></i>
+          </button>
+        }
+      </div>
 
       <!-- Ring + Value -->
       <div class="flex items-center gap-3">
@@ -78,8 +99,31 @@ import { GoalProgress } from './insights.model';
   `,
 })
 export class GoalCardComponent {
+  private readonly deleteConfirmation = inject(DeleteConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly goal = input.required<GoalProgress>();
   readonly onDelete = output<string>();
+
+  readonly confirmingDelete = signal(false);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => this.deleteConfirmation.cleanup());
+  }
+
+  startDeleteConfirm(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(true);
+    this.deleteConfirmation.start(() => {
+      this.confirmingDelete.set(false);
+    });
+  }
+
+  confirmDelete(): void {
+    this.deleteConfirmation.cleanup();
+    this.confirmingDelete.set(false);
+    this.onDelete.emit(this.goal().goalId);
+  }
 
   protected readonly circumference = 2 * Math.PI * 16;
 
