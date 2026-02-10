@@ -32,6 +32,7 @@ import { Tag } from '../tags/tag.model';
   selector: 'app-note-editor-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DeleteConfirmationService],
   imports: [TiptapEditorComponent, DeleteConfirmButtonComponent],
   template: `
     <div class="note-editor-page">

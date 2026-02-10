@@ -7,6 +7,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
   selector: 'app-goal-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DeleteConfirmationService],
   imports: [DeleteConfirmButtonComponent],
   template: `
     <div class="bg-surface-subtle border border-border rounded-xl p-4 flex flex-col gap-3 relative group">

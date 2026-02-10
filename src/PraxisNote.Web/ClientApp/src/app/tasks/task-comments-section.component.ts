@@ -9,6 +9,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
   selector: 'app-task-comments-section',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DeleteConfirmationService],
   imports: [AutoResizeDirective, LinkifyPipe, DeleteConfirmButtonComponent],
   template: `
     <div class="mt-2 p-2 bg-comments-section rounded-lg border border-comments-section-border">
