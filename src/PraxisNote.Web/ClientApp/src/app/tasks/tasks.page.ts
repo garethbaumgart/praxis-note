@@ -172,7 +172,7 @@ interface ColumnConfig {
       </div>
 
       <!-- Desktop: Grid layout -->
-      <div class="hidden md:grid md:grid-cols-3 gap-6">
+      <div #desktopGrid class="hidden md:grid md:grid-cols-3 gap-6">
         @for (col of columnConfigs(); track col.status) {
           <app-column
             #desktopColumn
@@ -227,6 +227,7 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   readonly desktopColumns = viewChildren<ColumnComponent>('desktopColumn');
   readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   readonly mobileScrollContainer = viewChild<ElementRef<HTMLElement>>('mobileScrollContainer');
+  readonly desktopGrid = viewChild<ElementRef<HTMLElement>>('desktopGrid');
 
   readonly showArchive = signal(false);
   readonly searchQuery = signal('');
@@ -421,24 +422,23 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
       this.scrollToColumn(columnIndex);
       // Wait for column scroll to settle, then scroll to card
       this.scheduleTimeout(() => {
-        this.applyHighlightAndScroll(taskId);
+        this.applyHighlightAndScroll(taskId, isMobile);
       }, 350);
     } else {
       // Desktop: scroll to the card directly
-      this.applyHighlightAndScroll(taskId);
+      this.applyHighlightAndScroll(taskId, isMobile);
     }
   }
 
   /** Apply highlight signal and scroll the task card into view */
-  private applyHighlightAndScroll(taskId: string): void {
+  private applyHighlightAndScroll(taskId: string, isMobile: boolean): void {
     this.highlightedTaskId.set(taskId);
 
     // Find the task card in the correct layout (mobile or desktop)
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
     const container = isMobile
       ? this.mobileScrollContainer()?.nativeElement
-      : document.querySelector('.md\\:grid');
-    const cardEl = container?.querySelector(`[data-task-id="${taskId}"]`);
+      : this.desktopGrid()?.nativeElement;
+    const cardEl = container?.querySelector(`[data-task-id="${CSS.escape(taskId)}"]`);
 
     if (cardEl) {
       const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
