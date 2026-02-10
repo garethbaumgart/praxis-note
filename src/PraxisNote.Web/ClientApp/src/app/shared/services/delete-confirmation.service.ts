@@ -2,12 +2,10 @@ import { Injectable } from '@angular/core';
 
 /**
  * Service to manage delete confirmation state with auto-cancel behavior.
- * Intentionally handles one confirmation at a time - starting a new confirmation
- * automatically cancels any existing one via cleanup().
+ * Each component that uses delete confirmations should provide its own instance
+ * via `providers: [DeleteConfirmationService]` to ensure independent timers.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class DeleteConfirmationService {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private clickHandler: (() => void) | null = null;

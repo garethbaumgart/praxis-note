@@ -8,6 +8,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
   selector: 'app-meeting-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DeleteConfirmationService],
   imports: [DeleteConfirmButtonComponent],
   template: `
     <div

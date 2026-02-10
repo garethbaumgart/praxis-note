@@ -48,6 +48,7 @@ interface DateOption {
   selector: 'app-meeting-editor-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DeleteConfirmationService],
   imports: [FormsModule, DatePickerModule, SelectModule, MenuModule, MeetingAnalysisComponent, MeetingReflectionComponent, DeleteConfirmButtonComponent],
   template: `
     <div class="meeting-editor-page">

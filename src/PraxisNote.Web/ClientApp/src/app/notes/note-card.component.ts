@@ -10,6 +10,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
   selector: 'app-note-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DeleteConfirmationService],
   imports: [DeleteConfirmButtonComponent],
   template: `
     <div

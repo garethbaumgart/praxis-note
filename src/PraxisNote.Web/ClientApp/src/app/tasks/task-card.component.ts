@@ -13,6 +13,7 @@ import { TaskCommentsSectionComponent } from './task-comments-section.component'
   selector: 'app-task-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DeleteConfirmationService],
   imports: [AutoResizeDirective, HighlightPipe, DeleteConfirmButtonComponent, TaskDueDateSectionComponent, TaskCommentsSectionComponent],
   template: `
     <div

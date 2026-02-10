@@ -1,4 +1,4 @@
-import { Component, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ElementRef, input, output, signal, viewChild, inject, Injector, afterNextRender, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { Comment } from './task.model';
 import { AutoResizeDirective } from '../shared/directives/auto-resize.directive';
 import { LinkifyPipe } from '../shared/pipes/linkify.pipe';
@@ -9,6 +9,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
   selector: 'app-task-comments-section',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DeleteConfirmationService],
   imports: [AutoResizeDirective, LinkifyPipe, DeleteConfirmButtonComponent],
   template: `
     <div class="mt-2 p-2 bg-comments-section rounded-lg border border-comments-section-border">
@@ -100,7 +101,12 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
 })
 export class TaskCommentsSectionComponent {
   private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly deleteConfirmation = inject(DeleteConfirmationService);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => this.deleteConfirmation.cleanup());
+  }
 
   // Inputs
   readonly comments = input.required<Comment[]>();
