@@ -506,8 +506,10 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
     const container = this.mobileScrollContainer()?.nativeElement;
     if (!container) return;
 
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
+    const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     const column = container.children[index] as HTMLElement;
-    column?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    column?.scrollIntoView({ behavior: scrollBehavior, inline: 'center', block: 'nearest' });
   }
 
   /** Type-safe helper for accessing input value from events */
