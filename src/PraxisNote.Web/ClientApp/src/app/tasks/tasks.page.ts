@@ -433,19 +433,24 @@ export class TasksPage implements OnInit, AfterViewInit, OnDestroy {
   private applyHighlightAndScroll(taskId: string): void {
     this.highlightedTaskId.set(taskId);
 
-    // Find the task card element in the DOM
-    const cardEl = document.querySelector(`[data-task-id="${taskId}"]`);
+    // Find the task card in the correct layout (mobile or desktop)
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    const container = isMobile
+      ? this.mobileScrollContainer()?.nativeElement
+      : document.querySelector('.md\\:grid');
+    const cardEl = container?.querySelector(`[data-task-id="${taskId}"]`);
+
     if (cardEl) {
       const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
       const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
       cardEl.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
     }
 
-    // Remove highlight after 2.5s (CSS transition handles fade-out)
+    // Remove highlight after 5s (CSS transition handles fade-out)
     this.highlightTimeout = setTimeout(() => {
       this.highlightedTaskId.set('');
       this.highlightTimeout = null;
-    }, 2500);
+    }, 5000);
 
     // Clean up the query param from the URL
     this.cleanupQueryParam();
