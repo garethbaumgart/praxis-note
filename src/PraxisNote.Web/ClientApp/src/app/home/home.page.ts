@@ -145,7 +145,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
                   <button
                     type="button"
                     class="task-row"
-                    [attr.aria-label]="'Go to task: ' + task.title"
+                    [attr.aria-label]="'Go to task: ' + task.title + (task.isPriority ? ' (priority)' : '')"
                     (click)="navigateToTask(task.id)">
                     <span class="task-status-dot bg-inprogress-foreground" aria-hidden="true"></span>
                     <span class="flex-1 text-sm text-foreground truncate">{{ task.title }}</span>
@@ -164,7 +164,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
                   <button
                     type="button"
                     class="task-row"
-                    [attr.aria-label]="'Go to task: ' + task.title"
+                    [attr.aria-label]="'Go to task: ' + task.title + (task.isPriority ? ' (priority)' : '')"
                     (click)="navigateToTask(task.id)">
                     <span class="task-status-dot bg-todo-foreground" aria-hidden="true"></span>
                     <span class="flex-1 text-sm text-foreground truncate">{{ task.title }}</span>
@@ -320,6 +320,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
       text-align: left;
       border: none;
       background: none;
+      font: inherit;
       transition: background 0.1s;
     }
     .task-row:hover {
@@ -344,6 +345,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
       text-align: left;
       border: none;
       background: none;
+      font: inherit;
       transition: background 0.1s;
     }
     .recent-row:hover {
