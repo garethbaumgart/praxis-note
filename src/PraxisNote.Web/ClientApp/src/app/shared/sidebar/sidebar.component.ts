@@ -1,10 +1,13 @@
-import { Component, inject, input, output, ChangeDetectionStrategy, signal, OnInit, DestroyRef } from '@angular/core';
+import { Component, inject, input, output, computed, ChangeDetectionStrategy, signal, OnInit, DestroyRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { Tooltip } from 'primeng/tooltip';
+import { Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 import { SidebarActivityService } from './sidebar-activity.service';
 import { SidebarService } from './sidebar.service';
+import { ProfileService } from '../../profiles/profile.service';
 
 interface NavItem {
   path: string;
@@ -21,7 +24,7 @@ interface User {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [Tooltip],
+  imports: [Tooltip, Menu],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar.component.html',
   host: { class: 'contents' },
@@ -89,8 +92,36 @@ export class SidebarComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly activity = inject(SidebarActivityService);
   private readonly sidebarService = inject(SidebarService);
+  protected readonly profileService = inject(ProfileService);
 
   readonly collapsed = this.sidebarService.collapsed;
+
+  protected readonly activeProfile = this.profileService.activeProfile;
+
+  protected readonly profileMenuItems = computed<MenuItem[]>(() => {
+    const profiles = this.profileService.profiles();
+    const activeId = this.profileService.activeProfileId();
+    const items: MenuItem[] = profiles.map(p => ({
+      label: p.name,
+      icon: p.id === activeId ? 'pi pi-check' : (p.icon ? `pi ${p.icon}` : 'pi pi-user'),
+      command: () => this.profileService.switchProfile(p.id),
+      styleClass: p.id === activeId ? 'font-semibold' : '',
+    }));
+
+    items.push(
+      { separator: true },
+      {
+        label: 'Manage profiles',
+        icon: 'pi pi-cog',
+        command: () => {
+          this.router.navigate(['/settings']);
+          this.closeMobile.emit();
+        },
+      }
+    );
+
+    return items;
+  });
 
   readonly user = input.required<User>();
   readonly mobileOpen = input(false);

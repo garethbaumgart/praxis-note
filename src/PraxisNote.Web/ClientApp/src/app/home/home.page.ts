@@ -7,6 +7,7 @@ import { GreetingService } from './greeting.service';
 import { InsightsWidgetComponent } from './insights-widget.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
+import { ProfileService } from '../profiles/profile.service';
 
 @Component({
   selector: 'app-home-page',
@@ -23,6 +24,15 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
         </p>
         <p class="text-foreground-muted text-sm mt-1">{{ todayDate() }}</p>
       </section>
+
+      <!-- Fresh start empty state for new profiles -->
+      @if (dashboard.isProfileEmpty() && profileService.hasMultipleProfiles()) {
+        <div class="text-center py-16 animate-fade-in-delay-1">
+          <i class="pi pi-inbox text-4xl text-foreground-muted mb-4" aria-hidden="true"></i>
+          <p class="text-lg font-semibold text-foreground mb-2">Fresh start!</p>
+          <p class="text-sm text-foreground-muted">This profile is empty. Start by creating a note or task.</p>
+        </div>
+      }
 
       <!-- 2. Priority / Overdue Banner -->
       @if (dashboard.hasPriorityBanner()) {
@@ -355,6 +365,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
 })
 export class HomePage implements OnInit, OnDestroy {
   protected readonly dashboard = inject(HomeDashboardService);
+  protected readonly profileService = inject(ProfileService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly noteService = inject(NoteService);

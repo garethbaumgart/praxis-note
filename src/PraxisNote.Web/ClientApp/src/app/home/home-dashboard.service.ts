@@ -145,6 +145,17 @@ export class HomeDashboardService {
       .slice(0, 5);
   });
 
+  // --- Empty profile detection ---
+
+  readonly isProfileEmpty = computed(() =>
+    this.taskService.initialLoadComplete() &&
+    this.noteService.initialLoadComplete() &&
+    this.meetingService.initialLoadComplete() &&
+    this.taskService.tasks().length === 0 &&
+    this.noteService.notes().length === 0 &&
+    this.meetingService.meetings().length === 0
+  );
+
   // --- Data loading ---
 
   loadAllData(forceRefresh: boolean = false): void {
