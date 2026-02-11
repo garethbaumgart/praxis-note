@@ -9,6 +9,7 @@ using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Application.Features.Goals;
 using PraxisNote.Application.Features.Insights;
 using PraxisNote.Application.Features.Summary;
+using PraxisNote.Application.Features.AccountLinking;
 using PraxisNote.Application.Features.Profiles;
 using PraxisNote.Application.Features.Users;
 
@@ -52,6 +53,13 @@ public static class DependencyInjection
 
         // User use cases
         services.AddScoped<LoginOrRegisterUser>();
+
+        // Account linking use cases
+        services.AddScoped<GenerateLinkCode>();
+        services.AddScoped<RedeemLinkCode>();
+        services.AddScoped<GetLinkedIdentities>();
+        services.AddScoped<UnlinkIdentity>();
+        services.AddScoped<SetIdentityDefaultProfile>();
 
         // Profile use cases
         services.AddScoped<GetUserProfiles>();

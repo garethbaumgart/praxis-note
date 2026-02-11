@@ -24,6 +24,8 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
     public DbSet<FeatureNotification> FeatureNotifications => Set<FeatureNotification>();
     public DbSet<BehavioralGoal> BehavioralGoals => Set<BehavioralGoal>();
+    public DbSet<LinkedIdentity> LinkedIdentities => Set<LinkedIdentity>();
+    public DbSet<AccountLinkCode> AccountLinkCodes => Set<AccountLinkCode>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public PraxisNoteDbContext(DbContextOptions<PraxisNoteDbContext> options)

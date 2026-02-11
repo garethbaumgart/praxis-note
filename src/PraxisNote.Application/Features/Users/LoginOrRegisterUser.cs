@@ -16,6 +16,7 @@ public record LoginOrRegisterResult(Guid UserId, bool IsNewUser);
 
 public sealed class LoginOrRegisterUser(
     IUserRepository userRepository,
+    ILinkedIdentityRepository linkedIdentityRepository,
     IProfileRepository profileRepository,
     IUnitOfWork unitOfWork)
 {
@@ -25,6 +26,7 @@ public sealed class LoginOrRegisterUser(
     {
         var externalIdentity = new ExternalIdentity(command.Provider, command.ProviderId);
 
+        // Step 1: Look up by ExternalIdentity (existing flow)
         var existingUser = await userRepository.GetByExternalIdentityAsync(
             externalIdentity, cancellationToken);
 
@@ -40,6 +42,26 @@ public sealed class LoginOrRegisterUser(
             return new LoginOrRegisterResult(existingUser.Id, IsNewUser: false);
         }
 
+        // Step 2: Check LinkedIdentity table for a linked account
+        var linkedIdentity = await linkedIdentityRepository.GetByProviderAsync(
+            externalIdentity.Provider, externalIdentity.ProviderId, cancellationToken);
+
+        if (linkedIdentity is not null)
+        {
+            var linkedUser = await userRepository.GetByIdAsync(linkedIdentity.UserId, cancellationToken);
+            if (linkedUser is not null)
+            {
+                linkedUser.RecordLogin(command.AvatarUrl);
+                userRepository.Update(linkedUser);
+
+                await EnsureDefaultProfileAsync(linkedUser.Id, cancellationToken);
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+                return new LoginOrRegisterResult(linkedUser.Id, IsNewUser: false);
+            }
+        }
+
+        // Step 3: No match found — create new user + default profile
         var email = new Email(command.Email);
         var newUser = User.Register(externalIdentity, email, command.Name, command.AvatarUrl);
 
