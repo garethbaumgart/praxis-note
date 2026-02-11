@@ -62,19 +62,18 @@ export class ProfileCardComponent {
     ];
 
     if (!p.isDefault) {
-      items.push({
-        label: 'Set as default',
-        icon: 'pi pi-star',
-        command: () => this.profileService.setDefaultProfile(p.id),
-      });
-    }
-
-    if (!p.isDefault) {
-      items.push({
-        label: 'Delete',
-        icon: 'pi pi-trash',
-        command: () => this.onDelete.emit(p),
-      });
+      items.push(
+        {
+          label: 'Set as default',
+          icon: 'pi pi-star',
+          command: () => this.profileService.setDefaultProfile(p.id),
+        },
+        {
+          label: 'Delete',
+          icon: 'pi pi-trash',
+          command: () => this.onDelete.emit(p),
+        },
+      );
     }
 
     return items;

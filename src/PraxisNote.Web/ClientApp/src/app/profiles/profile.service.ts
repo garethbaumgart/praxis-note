@@ -116,7 +116,7 @@ export class ProfileService {
   /**
    * Delete a profile. Profile must be empty (no data) and not the default.
    */
-  deleteProfile(id: string, onSuccess?: () => void): void {
+  deleteProfile(id: string, onSuccess?: () => void, onError?: (message: string) => void): void {
     this.http.delete(`/api/profiles/${id}`).subscribe({
       next: () => {
         this._profiles.update(profiles => profiles.filter(p => p.id !== id));
@@ -132,7 +132,11 @@ export class ProfileService {
       },
       error: (err) => {
         const message = err.error?.error ?? 'Failed to delete profile';
-        this.toast.error(message);
+        if (onError) {
+          onError(message);
+        } else {
+          this.toast.error(message);
+        }
       },
     });
   }

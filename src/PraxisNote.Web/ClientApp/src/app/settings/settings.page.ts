@@ -397,10 +397,16 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (!profile) return;
 
     this.deleteError.set(null);
-    this.profileService.deleteProfile(profile.id, () => {
-      this.showDeleteDialog.set(false);
-      this.profileToDelete.set(null);
-    });
+    this.profileService.deleteProfile(
+      profile.id,
+      () => {
+        this.showDeleteDialog.set(false);
+        this.profileToDelete.set(null);
+      },
+      (message) => {
+        this.deleteError.set(message);
+      },
+    );
   }
 
   // --- Linked Accounts actions ---
