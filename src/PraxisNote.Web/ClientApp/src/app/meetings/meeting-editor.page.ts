@@ -1358,6 +1358,13 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
 
     this.transcription.reset();
 
+    // Pre-flight check: verify transcription service is available before starting
+    const available = await this.transcription.checkAvailability();
+    if (!available) {
+      this.toast.error('Transcription service is unavailable. Recording was not started.');
+      return;
+    }
+
     if (mode === 'both') {
       // Start with system audio capture for online meetings
       await this.recorder.startWithSystemAudio();
@@ -1373,7 +1380,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       // Auto-label channel 0 with the authenticated user's first name
       const firstName = this.auth.user()?.name?.trim().split(' ')[0];
       const userName = firstName || 'You';
-      this.transcription.start(this.recorder.channelCount(), userName);
+      this.transcription.start(this.recorder.channelCount(), userName, this.recorder.mimeType());
       this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
       this.showTabWarning.set(true);
     }

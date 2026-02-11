@@ -62,6 +62,7 @@ public static class TranscriptionEndpoints
 
         if (user.Identity?.IsAuthenticated != true)
         {
+            logger.LogWarning("Transcription WebSocket rejected: user not authenticated");
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return;
         }
@@ -75,6 +76,7 @@ public static class TranscriptionEndpoints
         var deepgramSettings = settings.Value;
         if (string.IsNullOrWhiteSpace(deepgramSettings.ApiKey))
         {
+            logger.LogWarning("Transcription WebSocket rejected: Deepgram API key not configured");
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             await context.Response.WriteAsync("Transcription service not configured.");
             return;
@@ -86,7 +88,28 @@ public static class TranscriptionEndpoints
 
         // Build Deepgram streaming URL
         var channels = context.Request.Query["channels"].FirstOrDefault();
+        var encoding = context.Request.Query["encoding"].FirstOrDefault();
         var isMultichannel = int.TryParse(channels, out var channelCount) && channelCount > 1;
+
+        // Deepgram's multichannel mode requires raw audio with explicit encoding params.
+        // Container formats (WebM/Opus, OGG) include their own framing and can only be
+        // auto-detected in single-channel mode. When the browser sends a container format
+        // (which is always the case with MediaRecorder), we must disable multichannel and
+        // fall back to single-channel with diarization for speaker separation.
+        var isContainerFormat = string.IsNullOrEmpty(encoding)
+            || encoding.Contains("webm", StringComparison.OrdinalIgnoreCase)
+            || encoding.Contains("opus", StringComparison.OrdinalIgnoreCase)
+            || encoding.Contains("ogg", StringComparison.OrdinalIgnoreCase)
+            || encoding.Contains("mp4", StringComparison.OrdinalIgnoreCase);
+
+        if (isMultichannel && isContainerFormat)
+        {
+            logger.LogInformation(
+                "Multichannel requested with container format (encoding={Encoding}), " +
+                "falling back to single-channel with diarization",
+                encoding ?? "auto-detect");
+            isMultichannel = false;
+        }
 
         var queryParams = new List<string>
         {
@@ -102,6 +125,12 @@ public static class TranscriptionEndpoints
         {
             queryParams.Add("multichannel=true");
             queryParams.Add($"channels={channelCount}");
+        }
+
+        // Pass explicit encoding to Deepgram when provided and it's a raw format
+        if (!string.IsNullOrEmpty(encoding) && !isContainerFormat)
+        {
+            queryParams.Add($"encoding={Uri.EscapeDataString(encoding)}");
         }
 
         var deepgramUrl = $"wss://api.deepgram.com/v1/listen?{string.Join("&", queryParams)}";
@@ -217,6 +246,22 @@ public static class TranscriptionEndpoints
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
+                    logger.LogWarning(
+                        "Deepgram closed connection: {CloseStatus} - {CloseDescription}",
+                        deepgramWs.CloseStatus,
+                        deepgramWs.CloseStatusDescription);
+
+                    // Forward the close reason to the browser client so the frontend
+                    // can surface a meaningful error instead of silently retrying.
+                    if (clientWs.State == WebSocketState.Open)
+                    {
+                        var reason = deepgramWs.CloseStatusDescription ?? "Transcription service closed the connection";
+                        var closeCode = deepgramWs.CloseStatus == WebSocketCloseStatus.NormalClosure
+                            ? WebSocketCloseStatus.NormalClosure
+                            : WebSocketCloseStatus.InternalServerError;
+                        await clientWs.CloseAsync(closeCode, reason, CancellationToken.None);
+                    }
+
                     break;
                 }
 

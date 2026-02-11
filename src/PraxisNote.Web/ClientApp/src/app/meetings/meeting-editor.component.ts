@@ -584,6 +584,13 @@ export class MeetingEditorComponent {
   async startRecording(mode: 'microphone' | 'both' = 'microphone'): Promise<void> {
     this.transcription.reset();
 
+    // Pre-flight check: verify transcription service is available before starting
+    const available = await this.transcription.checkAvailability();
+    if (!available) {
+      this.toast.error('Transcription service is unavailable. Recording was not started.');
+      return;
+    }
+
     if (mode === 'both') {
       await this.recorder.startWithSystemAudio();
     } else {
@@ -591,7 +598,7 @@ export class MeetingEditorComponent {
     }
 
     if (this.recorder.isActive()) {
-      this.transcription.start();
+      this.transcription.start(this.recorder.channelCount(), 'You', this.recorder.mimeType());
       this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
       this.showTabWarning.set(true);
     }
