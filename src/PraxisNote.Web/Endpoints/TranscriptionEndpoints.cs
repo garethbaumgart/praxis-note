@@ -88,7 +88,7 @@ public static class TranscriptionEndpoints
 
         // Build Deepgram streaming URL
         var channels = context.Request.Query["channels"].FirstOrDefault();
-        var encoding = context.Request.Query["encoding"].FirstOrDefault();
+        var mimeType = context.Request.Query["mimeType"].FirstOrDefault();
         var isMultichannel = int.TryParse(channels, out var channelCount) && channelCount > 1;
 
         // Deepgram's multichannel mode requires raw audio with explicit encoding params.
@@ -96,18 +96,18 @@ public static class TranscriptionEndpoints
         // auto-detected in single-channel mode. When the browser sends a container format
         // (which is always the case with MediaRecorder), we must disable multichannel and
         // fall back to single-channel with diarization for speaker separation.
-        var isContainerFormat = string.IsNullOrEmpty(encoding)
-            || encoding.Contains("webm", StringComparison.OrdinalIgnoreCase)
-            || encoding.Contains("opus", StringComparison.OrdinalIgnoreCase)
-            || encoding.Contains("ogg", StringComparison.OrdinalIgnoreCase)
-            || encoding.Contains("mp4", StringComparison.OrdinalIgnoreCase);
+        var isContainerFormat = string.IsNullOrEmpty(mimeType)
+            || mimeType.Contains("webm", StringComparison.OrdinalIgnoreCase)
+            || mimeType.Contains("opus", StringComparison.OrdinalIgnoreCase)
+            || mimeType.Contains("ogg", StringComparison.OrdinalIgnoreCase)
+            || mimeType.Contains("mp4", StringComparison.OrdinalIgnoreCase);
 
         if (isMultichannel && isContainerFormat)
         {
             logger.LogInformation(
-                "Multichannel requested with container format (encoding={Encoding}), " +
+                "Multichannel requested with container format (mimeType={MimeType}), " +
                 "falling back to single-channel with diarization",
-                encoding ?? "auto-detect");
+                mimeType ?? "auto-detect");
             isMultichannel = false;
         }
 
@@ -128,9 +128,9 @@ public static class TranscriptionEndpoints
         }
 
         // Pass explicit encoding to Deepgram when provided and it's a raw format
-        if (!string.IsNullOrEmpty(encoding) && !isContainerFormat)
+        if (!string.IsNullOrEmpty(mimeType) && !isContainerFormat)
         {
-            queryParams.Add($"encoding={Uri.EscapeDataString(encoding)}");
+            queryParams.Add($"encoding={Uri.EscapeDataString(mimeType)}");
         }
 
         var deepgramUrl = $"wss://api.deepgram.com/v1/listen?{string.Join("&", queryParams)}";
@@ -256,9 +256,16 @@ public static class TranscriptionEndpoints
                     if (clientWs.State == WebSocketState.Open)
                     {
                         var reason = deepgramWs.CloseStatusDescription ?? "Transcription service closed the connection";
-                        var closeCode = deepgramWs.CloseStatus == WebSocketCloseStatus.NormalClosure
-                            ? WebSocketCloseStatus.NormalClosure
-                            : WebSocketCloseStatus.InternalServerError;
+
+                        // RFC 6455: close reason must be <= 123 bytes UTF-8
+                        while (System.Text.Encoding.UTF8.GetByteCount(reason) > 123)
+                        {
+                            reason = reason[..^4] + "...";
+                        }
+
+                        // Use non-1000 close code when Deepgram closes unexpectedly
+                        // so the frontend's onclose handler triggers error handling.
+                        var closeCode = WebSocketCloseStatus.InternalServerError;
                         await clientWs.CloseAsync(closeCode, reason, CancellationToken.None);
                     }
 

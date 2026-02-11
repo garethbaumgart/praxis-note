@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject, OnDestroy, isDevMode } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { MockAuthService } from '../auth/mock-auth.service';
 
@@ -64,8 +64,12 @@ export class DeepgramTranscriptionService implements OnDestroy {
         return false;
       }
       return true;
-    } catch {
-      this.error.set('Transcription service is unreachable. Please check your connection and try again.');
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) {
+        this.error.set('Session expired. Please refresh the page and try again.');
+      } else {
+        this.error.set('Transcription service is unreachable. Please check your connection and try again.');
+      }
       return false;
     }
   }
@@ -112,7 +116,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
     }
 
     if (this.encoding) {
-      params.set('encoding', this.encoding);
+      params.set('mimeType', this.encoding);
     }
 
     const qs = params.toString();
