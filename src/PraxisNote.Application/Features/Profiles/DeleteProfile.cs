@@ -38,39 +38,13 @@ public sealed class DeleteProfile(
             throw new InvalidOperationException(CannotDeleteDefaultError);
         }
 
-        // Check if profile has any data across all entity types
-        var tasks = await taskRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
-        if (tasks.Count > 0)
-        {
-            throw new InvalidOperationException(HasDataError);
-        }
-
-        var notes = await noteRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
-        if (notes.Count > 0)
-        {
-            throw new InvalidOperationException(HasDataError);
-        }
-
-        var meetings = await meetingRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
-        if (meetings.Count > 0)
-        {
-            throw new InvalidOperationException(HasDataError);
-        }
-
-        var tags = await tagRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
-        if (tags.Count > 0)
-        {
-            throw new InvalidOperationException(HasDataError);
-        }
-
-        var goals = await goalRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
-        if (goals.Count > 0)
-        {
-            throw new InvalidOperationException(HasDataError);
-        }
-
-        var hasConnections = await calendarConnectionRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken);
-        if (hasConnections)
+        // Check if profile has any data across all entity types (lightweight existence checks)
+        if (await taskRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
+            || await noteRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
+            || await meetingRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
+            || await tagRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
+            || await goalRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
+            || await calendarConnectionRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken))
         {
             throw new InvalidOperationException(HasDataError);
         }

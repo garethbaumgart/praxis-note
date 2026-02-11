@@ -42,6 +42,12 @@ public sealed class NoteRepository(PraxisNoteDbContext context) : INoteRepositor
             .ToDictionary(g => g.Key, g => g.Count());
     }
 
+    public async Task<bool> ExistsByProfileAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
+    {
+        return await context.Notes
+            .AnyAsync(n => n.UserId == userId && n.ProfileId == profileId, cancellationToken);
+    }
+
     public async Task AddAsync(Note note, CancellationToken cancellationToken = default)
     {
         await context.Notes.AddAsync(note, cancellationToken);

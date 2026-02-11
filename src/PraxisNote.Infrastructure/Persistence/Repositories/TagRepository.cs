@@ -25,6 +25,12 @@ public sealed class TagRepository(PraxisNoteDbContext context) : ITagRepository
             .FirstOrDefaultAsync(t => t.UserId == userId && t.ProfileId == profileId && t.Name == normalizedName, cancellationToken);
     }
 
+    public async Task<bool> ExistsByProfileAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
+    {
+        return await context.Tags
+            .AnyAsync(t => t.UserId == userId && t.ProfileId == profileId, cancellationToken);
+    }
+
     public async Task AddAsync(Tag tag, CancellationToken cancellationToken = default)
     {
         await context.Tags.AddAsync(tag, cancellationToken);

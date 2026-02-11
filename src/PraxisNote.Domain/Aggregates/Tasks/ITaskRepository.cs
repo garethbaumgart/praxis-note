@@ -6,6 +6,7 @@ public interface ITaskRepository
     Task<IReadOnlyList<TaskItem>> GetByUserIdAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<TaskItem>> GetTasksWithTagAsync(Guid userId, Guid profileId, Guid tagId, CancellationToken cancellationToken = default);
     Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default);
+    Task<bool> ExistsByProfileAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default);
     Task AddAsync(TaskItem task, CancellationToken cancellationToken = default);
     void Remove(TaskItem task);
 }

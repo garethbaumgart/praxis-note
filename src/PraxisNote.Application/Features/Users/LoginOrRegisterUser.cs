@@ -60,11 +60,11 @@ public sealed class LoginOrRegisterUser(
     /// </summary>
     private async Task EnsureDefaultProfileAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var profiles = await profileRepository.GetByUserIdAsync(userId, cancellationToken);
-        if (profiles.Count == 0)
+        var defaultProfile = await profileRepository.GetDefaultByUserIdAsync(userId, cancellationToken);
+        if (defaultProfile is null)
         {
-            var defaultProfile = Profile.CreateDefault(userId);
-            await profileRepository.AddAsync(defaultProfile, cancellationToken);
+            var newDefault = Profile.CreateDefault(userId);
+            await profileRepository.AddAsync(newDefault, cancellationToken);
         }
     }
 }

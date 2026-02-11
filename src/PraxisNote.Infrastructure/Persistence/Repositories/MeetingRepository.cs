@@ -42,6 +42,12 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
             .ToDictionary(g => g.Key, g => g.Count());
     }
 
+    public async Task<bool> ExistsByProfileAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
+    {
+        return await context.Meetings
+            .AnyAsync(m => m.UserId == userId && m.ProfileId == profileId, cancellationToken);
+    }
+
     public async Task AddAsync(Meeting meeting, CancellationToken cancellationToken = default)
     {
         await context.Meetings.AddAsync(meeting, cancellationToken);

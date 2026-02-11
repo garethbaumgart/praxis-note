@@ -31,6 +31,7 @@ public sealed class ProfileValidationMiddleware(RequestDelegate next)
 
         // Resolve the profile repository from DI
         var profileRepository = context.RequestServices.GetRequiredService<IProfileRepository>();
+        var cancellationToken = context.RequestAborted;
 
         Guid profileId;
 
@@ -42,12 +43,12 @@ public sealed class ProfileValidationMiddleware(RequestDelegate next)
             {
                 // Header present but not a valid GUID — return 400
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync(new { error = "Invalid X-Profile-Id header format" });
+                await context.Response.WriteAsJsonAsync(new { error = "Invalid X-Profile-Id header format" }, cancellationToken);
                 return;
             }
 
             // Validate the requested profile belongs to this user
-            var profile = await profileRepository.GetByIdAsync(requestedProfileId);
+            var profile = await profileRepository.GetByIdAsync(requestedProfileId, cancellationToken);
             if (profile is not null && profile.UserId == userId.Value)
             {
                 profileId = profile.Id;
@@ -56,20 +57,20 @@ public sealed class ProfileValidationMiddleware(RequestDelegate next)
             {
                 // Invalid profile ID — return 403
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsJsonAsync(new { error = "Profile not found or access denied" });
+                await context.Response.WriteAsJsonAsync(new { error = "Profile not found or access denied" }, cancellationToken);
                 return;
             }
         }
         else
         {
             // No header — fall back to default profile
-            var defaultProfile = await profileRepository.GetDefaultByUserIdAsync(userId.Value);
+            var defaultProfile = await profileRepository.GetDefaultByUserIdAsync(userId.Value, cancellationToken);
             if (defaultProfile is null)
             {
                 // No default profile exists (should not happen after login creates one)
                 // Return 400 to signal client needs to create a profile
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync(new { error = "No default profile found" });
+                await context.Response.WriteAsJsonAsync(new { error = "No default profile found" }, cancellationToken);
                 return;
             }
 
