@@ -221,6 +221,7 @@ app.UseMiddleware<ProfileValidationMiddleware>();
 // Minimal API endpoints
 app.MapGet("/api/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
 app.MapAuthEndpoints();
+app.MapAccountLinkEndpoints();
 app.MapProfileEndpoints();
 app.MapTaskEndpoints();
 app.MapCommentEndpoints();

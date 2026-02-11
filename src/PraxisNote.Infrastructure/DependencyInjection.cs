@@ -50,6 +50,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IProfileRepository, ProfileRepository>();
         services.AddScoped<IBehavioralGoalRepository, BehavioralGoalRepository>();
+        services.AddScoped<ILinkedIdentityRepository, LinkedIdentityRepository>();
+        services.AddScoped<IAccountLinkCodeRepository, AccountLinkCodeRepository>();
 
         // External services
         services.Configure<GoogleCalendarSettings>(configuration.GetSection(GoogleCalendarSettings.SectionName));

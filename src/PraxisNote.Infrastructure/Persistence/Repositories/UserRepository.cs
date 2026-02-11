@@ -31,4 +31,9 @@ public sealed class UserRepository(PraxisNoteDbContext context) : IUserRepositor
     {
         context.Users.Update(user);
     }
+
+    public void Remove(User user)
+    {
+        context.Users.Remove(user);
+    }
 }

@@ -45,6 +45,12 @@ public sealed class User : AggregateRoot
     public int? LastSeenNotificationId { get; private set; }
 
     /// <summary>
+    /// External identities linked to this user account (e.g., additional Google accounts).
+    /// </summary>
+    private readonly List<LinkedIdentity> _linkedIdentities = [];
+    public IReadOnlyCollection<LinkedIdentity> LinkedIdentities => _linkedIdentities.AsReadOnly();
+
+    /// <summary>
     /// Required for EF Core.
     /// </summary>
     private User() { }
