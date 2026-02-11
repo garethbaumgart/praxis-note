@@ -32,12 +32,23 @@ namespace PraxisNote.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_LinkedIdentities", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_LinkedIdentities_Profiles_DefaultProfileId",
+                        column: x => x.DefaultProfileId,
+                        principalTable: "Profiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
                         name: "FK_LinkedIdentities_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LinkedIdentities_DefaultProfileId",
+                table: "LinkedIdentities",
+                column: "DefaultProfileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LinkedIdentities_Provider_ProviderId",
@@ -74,6 +85,11 @@ namespace PraxisNote.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountLinkCodes_CodeHash",
+                table: "AccountLinkCodes",
+                column: "CodeHash");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountLinkCodes_UserId",

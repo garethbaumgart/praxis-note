@@ -457,6 +457,9 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CodeHash")
+                        .HasDatabaseName("IX_AccountLinkCodes_CodeHash");
+
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_AccountLinkCodes_UserId");
 
@@ -503,6 +506,9 @@ namespace PraxisNote.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DefaultProfileId")
+                        .HasDatabaseName("IX_LinkedIdentities_DefaultProfileId");
 
                     b.HasIndex("Provider", "ProviderId")
                         .IsUnique()
@@ -579,6 +585,11 @@ namespace PraxisNote.Infrastructure.Migrations
 
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.Users.LinkedIdentity", b =>
                 {
+                    b.HasOne("PraxisNote.Domain.Aggregates.Profiles.Profile", null)
+                        .WithMany()
+                        .HasForeignKey("DefaultProfileId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("PraxisNote.Domain.Aggregates.Users.User", null)
                         .WithMany("LinkedIdentities")
                         .HasForeignKey("UserId")

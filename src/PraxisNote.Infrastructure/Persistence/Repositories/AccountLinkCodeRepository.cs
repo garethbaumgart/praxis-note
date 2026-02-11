@@ -15,12 +15,14 @@ public sealed class AccountLinkCodeRepository(PraxisNoteDbContext context) : IAc
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<AccountLinkCode>> GetAllActiveAsync(
+    public async Task<AccountLinkCode?> GetByHashAsync(
+        string codeHash,
         CancellationToken cancellationToken = default)
     {
         return await context.AccountLinkCodes
-            .Where(c => !c.IsRedeemed)
-            .ToListAsync(cancellationToken);
+            .Where(c => c.CodeHash == codeHash && !c.IsRedeemed)
+            .OrderByDescending(c => c.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task AddAsync(AccountLinkCode code, CancellationToken cancellationToken = default)

@@ -88,14 +88,13 @@ public class AccountLinkCodeTests
     public void IsExpired_WhenCreatedWithVeryShortExpiry_ReturnsTrue()
     {
         // Arrange - use a very short expiry that will have passed by assertion time
-        // We test this indirectly through IsValid with MarkRedeemed
         var code = AccountLinkCode.Create(_validUserId, ValidCodeHash, TimeSpan.FromMilliseconds(1));
 
-        // Allow the code to expire
-        Thread.Sleep(10);
+        // Wait until the code reports as expired, with a reasonable timeout
+        var expired = SpinWait.SpinUntil(() => code.IsExpired(), TimeSpan.FromSeconds(1));
 
         // Act & Assert
-        Assert.True(code.IsExpired());
+        Assert.True(expired);
     }
 
     #endregion
@@ -129,8 +128,8 @@ public class AccountLinkCodeTests
         // Arrange
         var code = AccountLinkCode.Create(_validUserId, ValidCodeHash, TimeSpan.FromMilliseconds(1));
 
-        // Allow the code to expire
-        Thread.Sleep(10);
+        // Wait until the code has expired, with a reasonable timeout
+        SpinWait.SpinUntil(() => code.IsExpired(), TimeSpan.FromSeconds(1));
 
         // Act & Assert
         Assert.False(code.IsValid());

@@ -59,6 +59,10 @@ public sealed class LoginOrRegisterUser(
                 await unitOfWork.SaveChangesAsync(cancellationToken);
                 return new LoginOrRegisterResult(linkedUser.Id, IsNewUser: false);
             }
+
+            // Orphaned linked identity — the referenced user no longer exists.
+            // Remove the stale record so it doesn't block future linking.
+            linkedIdentityRepository.Remove(linkedIdentity);
         }
 
         // Step 3: No match found — create new user + default profile

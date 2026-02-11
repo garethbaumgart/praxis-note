@@ -32,6 +32,10 @@ public sealed class AccountLinkCodeConfiguration : IEntityTypeConfiguration<Acco
         builder.HasIndex(c => c.UserId)
             .HasDatabaseName("IX_AccountLinkCodes_UserId");
 
+        // Index for targeted hash lookup during code redemption
+        builder.HasIndex(c => c.CodeHash)
+            .HasDatabaseName("IX_AccountLinkCodes_CodeHash");
+
         // FK to User
         builder.HasOne<User>()
             .WithMany()

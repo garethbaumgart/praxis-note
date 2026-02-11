@@ -38,13 +38,12 @@ public sealed class RedeemLinkCode(
             return new Result(command.RedeemingUserId, false, CancelledError);
         }
 
-        // Hash the provided code and search for a match
+        // Hash the provided code and do a targeted DB lookup
         var codeHash = LinkCodeService.HashCode(command.Code);
 
-        var allActiveCodes = await accountLinkCodeRepository.GetAllActiveAsync(cancellationToken);
-        var matchingCode = allActiveCodes.FirstOrDefault(c => c.CodeHash == codeHash && c.IsValid());
+        var matchingCode = await accountLinkCodeRepository.GetByHashAsync(codeHash, cancellationToken);
 
-        if (matchingCode is null)
+        if (matchingCode is null || !matchingCode.IsValid())
         {
             return new Result(command.RedeemingUserId, false, InvalidCodeError);
         }
@@ -149,10 +148,12 @@ public sealed class RedeemLinkCode(
 
         await linkedIdentityRepository.AddAsync(linkedIdentity, cancellationToken);
 
-        // Note: Data migration (moving tasks, notes, etc.) from User B to the target profile
-        // is left for a future enhancement. For now, User B's data remains orphaned.
-        // The redeeming user (User B) is NOT deleted at this stage to preserve data integrity.
-        // A cleanup process can be implemented later once data migration tooling is built.
+        // Delete User B (the redeeming user) so their ExternalIdentity no longer
+        // matches in Step 1 of login. Without this, logging in with the linked
+        // Google account would still resolve to the old User B instead of
+        // reaching Step 2 (LinkedIdentity lookup) which resolves to User A.
+        // Cascade delete will clean up User B's profiles and other owned data.
+        userRepository.Remove(redeemingUser);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

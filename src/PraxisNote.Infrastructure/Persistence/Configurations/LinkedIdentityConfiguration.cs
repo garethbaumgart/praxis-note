@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PraxisNote.Domain.Aggregates.Profiles;
 using PraxisNote.Domain.Aggregates.Users;
 
 namespace PraxisNote.Infrastructure.Persistence.Configurations;
@@ -53,5 +54,11 @@ public sealed class LinkedIdentityConfiguration : IEntityTypeConfiguration<Linke
             .WithMany(u => u.LinkedIdentities)
             .HasForeignKey(li => li.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Optional FK to Profile for DefaultProfileId — SET NULL on profile deletion
+        builder.HasOne<Profile>()
+            .WithMany()
+            .HasForeignKey(li => li.DefaultProfileId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

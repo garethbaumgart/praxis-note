@@ -8,4 +8,5 @@ public interface IUserRepository
     Task<User?> GetByExternalIdentityAsync(ExternalIdentity externalIdentity, CancellationToken cancellationToken = default);
     Task AddAsync(User user, CancellationToken cancellationToken = default);
     void Update(User user);
+    void Remove(User user);
 }

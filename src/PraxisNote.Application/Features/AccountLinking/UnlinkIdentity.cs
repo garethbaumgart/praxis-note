@@ -22,13 +22,12 @@ public sealed class UnlinkIdentity(
             throw new InvalidOperationException(NotFoundError);
         }
 
-        // The user always has an ExternalIdentity on the User entity itself,
-        // so linked identities can all be removed as long as the primary identity exists.
-        // However, if we ever remove ExternalIdentity from User, we'd need to check
-        // that at least one LinkedIdentity remains. For safety, we still enforce
-        // that you can't remove the last linked identity if it matches the primary identity.
-        // For now, any linked identity can be removed since the User.ExternalIdentity
-        // always serves as the primary login method.
+        // Prevent removing the last linked identity — every user must retain at least one
+        // so that login can resolve to this account via the LinkedIdentity table.
+        if (identities.Count <= 1)
+        {
+            throw new InvalidOperationException(LastIdentityError);
+        }
 
         linkedIdentityRepository.Remove(identity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
