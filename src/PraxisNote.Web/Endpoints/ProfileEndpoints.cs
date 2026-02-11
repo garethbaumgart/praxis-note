@@ -90,6 +90,10 @@ public static class ProfileEndpoints
         {
             return Results.NotFound();
         }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     private static async Task<IResult> HandleDeleteProfile(

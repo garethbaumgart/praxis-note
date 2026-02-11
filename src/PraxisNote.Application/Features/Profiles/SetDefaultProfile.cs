@@ -22,12 +22,9 @@ public sealed class SetDefaultProfile(
         }
 
         // Clear default from all profiles
-        foreach (var profile in profiles)
+        foreach (var profile in profiles.Where(p => p.IsDefault))
         {
-            if (profile.IsDefault)
-            {
-                profile.ClearDefault();
-            }
+            profile.ClearDefault();
         }
 
         // Set new default
