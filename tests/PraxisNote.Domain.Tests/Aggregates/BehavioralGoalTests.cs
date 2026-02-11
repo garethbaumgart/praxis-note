@@ -5,6 +5,7 @@ namespace PraxisNote.Domain.Tests.Aggregates;
 public class BehavioralGoalTests
 {
     private readonly Guid _validUserId = Guid.NewGuid();
+    private readonly Guid _validProfileId = Guid.NewGuid();
 
     #region Create
 
@@ -12,7 +13,7 @@ public class BehavioralGoalTests
     public void Create_WithValidInputs_ReturnsGoalWithCorrectProperties()
     {
         var goal = BehavioralGoal.Create(
-            _validUserId, MetricType.TalkTimePercentage, GoalOperator.LessThan,
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan,
             50, null, "Keep talk time under 50%");
 
         Assert.NotEqual(Guid.Empty, goal.Id);
@@ -31,14 +32,14 @@ public class BehavioralGoalTests
     public void Create_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            BehavioralGoal.Create(Guid.Empty, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test"));
+            BehavioralGoal.Create(Guid.Empty, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test"));
     }
 
     [Fact]
     public void Create_WithNullTitle_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            BehavioralGoal.Create(_validUserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, null!));
+            BehavioralGoal.Create(_validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, null!));
     }
 
     [Theory]
@@ -47,28 +48,28 @@ public class BehavioralGoalTests
     public void Create_WithEmptyOrWhitespaceTitle_ThrowsArgumentException(string invalidTitle)
     {
         Assert.Throws<ArgumentException>(() =>
-            BehavioralGoal.Create(_validUserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, invalidTitle));
+            BehavioralGoal.Create(_validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, invalidTitle));
     }
 
     [Fact]
     public void Create_BetweenOperatorWithoutUpperValue_ThrowsArgumentException()
     {
         Assert.Throws<ArgumentException>(() =>
-            BehavioralGoal.Create(_validUserId, MetricType.TalkTimePercentage, GoalOperator.Between, 30, null, "Test"));
+            BehavioralGoal.Create(_validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.Between, 30, null, "Test"));
     }
 
     [Fact]
     public void Create_BetweenOperatorWithUpperLessThanLower_ThrowsArgumentException()
     {
         Assert.Throws<ArgumentException>(() =>
-            BehavioralGoal.Create(_validUserId, MetricType.TalkTimePercentage, GoalOperator.Between, 50, 30, "Test"));
+            BehavioralGoal.Create(_validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.Between, 50, 30, "Test"));
     }
 
     [Fact]
     public void Create_BetweenOperatorWithValidRange_Succeeds()
     {
         var goal = BehavioralGoal.Create(
-            _validUserId, MetricType.TalkTimePercentage, GoalOperator.Between,
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.Between,
             30, 50, "Talk time between 30-50%");
 
         Assert.Equal(GoalOperator.Between, goal.Operator);
@@ -84,7 +85,7 @@ public class BehavioralGoalTests
     public void Update_WithValidInputs_UpdatesProperties()
     {
         var goal = BehavioralGoal.Create(
-            _validUserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Old title");
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Old title");
 
         goal.Update(MetricType.QuestionRatio, GoalOperator.GreaterThanOrEqual, 0.3, null, "New title");
 
@@ -99,7 +100,7 @@ public class BehavioralGoalTests
     public void Update_WithEmptyTitle_ThrowsArgumentException()
     {
         var goal = BehavioralGoal.Create(
-            _validUserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Valid title");
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Valid title");
 
         Assert.Throws<ArgumentException>(() =>
             goal.Update(MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, ""));
@@ -113,7 +114,7 @@ public class BehavioralGoalTests
     public void Deactivate_SetsIsActiveToFalse()
     {
         var goal = BehavioralGoal.Create(
-            _validUserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test");
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test");
 
         goal.Deactivate();
 
@@ -124,7 +125,7 @@ public class BehavioralGoalTests
     public void Activate_AfterDeactivate_SetsIsActiveToTrue()
     {
         var goal = BehavioralGoal.Create(
-            _validUserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test");
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test");
 
         goal.Deactivate();
         goal.Activate();
@@ -150,7 +151,7 @@ public class BehavioralGoalTests
         GoalOperator op, double target, double actual, bool expected)
     {
         var goal = BehavioralGoal.Create(
-            _validUserId, MetricType.TalkTimePercentage, op, target, null, "Test");
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, op, target, null, "Test");
 
         Assert.Equal(expected, goal.Evaluate(actual));
     }
@@ -165,7 +166,7 @@ public class BehavioralGoalTests
         double lower, double upper, double actual, bool expected)
     {
         var goal = BehavioralGoal.Create(
-            _validUserId, MetricType.TalkTimePercentage, GoalOperator.Between,
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.Between,
             lower, upper, "Test");
 
         Assert.Equal(expected, goal.Evaluate(actual));

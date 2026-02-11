@@ -34,21 +34,21 @@ public sealed class MergeTags(
             throw new InvalidOperationException(TargetNotFoundError);
 
         // Sequential — EF Core DbContext is not thread-safe
-        var tasks = await taskRepository.GetTasksWithTagAsync(command.UserId, command.SourceTagId, cancellationToken);
+        var tasks = await taskRepository.GetTasksWithTagAsync(command.UserId, sourceTag.ProfileId, command.SourceTagId, cancellationToken);
         foreach (var task in tasks)
         {
             task.AddTag(command.TargetTagId);
             task.RemoveTag(command.SourceTagId);
         }
 
-        var notes = await noteRepository.GetByTagIdAsync(command.UserId, command.SourceTagId, cancellationToken);
+        var notes = await noteRepository.GetByTagIdAsync(command.UserId, sourceTag.ProfileId, command.SourceTagId, cancellationToken);
         foreach (var note in notes)
         {
             note.AddTag(command.TargetTagId);
             note.RemoveTag(command.SourceTagId);
         }
 
-        var meetings = await meetingRepository.GetByTagIdAsync(command.UserId, command.SourceTagId, cancellationToken);
+        var meetings = await meetingRepository.GetByTagIdAsync(command.UserId, sourceTag.ProfileId, command.SourceTagId, cancellationToken);
         foreach (var meeting in meetings)
         {
             meeting.AddTag(command.TargetTagId);

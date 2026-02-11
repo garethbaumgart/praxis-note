@@ -18,6 +18,7 @@ public class SyncCalendarEventsTests
 
     private readonly SyncCalendarEvents _sut;
     private readonly Guid _userId = Guid.NewGuid();
+    private readonly Guid _profileId = Guid.NewGuid();
 
     public SyncCalendarEventsTests()
     {
@@ -30,7 +31,7 @@ public class SyncCalendarEventsTests
             ? DateTimeOffset.UtcNow.AddMinutes(-10)
             : DateTimeOffset.UtcNow.AddHours(1);
 
-        return CalendarConnection.Create(_userId, "Google", "access-token", "refresh-token", expiresAt);
+        return CalendarConnection.Create(_userId, _profileId, "Google", "access-token", "refresh-token", expiresAt);
     }
 
     #region No Connection
@@ -38,10 +39,10 @@ public class SyncCalendarEventsTests
     [Fact]
     public async Task ExecuteAsync_WithNoConnection_ThrowsInvalidOperationException()
     {
-        _connectionRepo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _connectionRepo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns((CalendarConnection?)null);
 
-        var command = new SyncCalendarEvents.Command(_userId);
+        var command = new SyncCalendarEvents.Command(_userId, _profileId);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExecuteAsync(command));
     }
@@ -54,12 +55,12 @@ public class SyncCalendarEventsTests
     public async Task ExecuteAsync_WithNoEvents_ReturnsZeroCounts()
     {
         var connection = CreateConnection();
-        _connectionRepo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _connectionRepo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns(connection);
         _calendarService.GetUpcomingEventsAsync("access-token", 7, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<CalendarEvent>());
 
-        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId));
+        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId, _profileId));
 
         Assert.Equal(0, result.ImportedCount);
         Assert.Equal(0, result.SkippedCount);
@@ -74,7 +75,7 @@ public class SyncCalendarEventsTests
     public async Task ExecuteAsync_WithNewEvents_ImportsAll()
     {
         var connection = CreateConnection();
-        _connectionRepo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _connectionRepo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns(connection);
 
         var events = new List<CalendarEvent>
@@ -84,10 +85,10 @@ public class SyncCalendarEventsTests
         };
         _calendarService.GetUpcomingEventsAsync("access-token", 7, Arg.Any<CancellationToken>())
             .Returns(events);
-        _meetingRepo.GetExistingCalendarEventIdsAsync(_userId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+        _meetingRepo.GetExistingCalendarEventIdsAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
             .Returns(new HashSet<string>());
 
-        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId));
+        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId, _profileId));
 
         Assert.Equal(2, result.ImportedCount);
         Assert.Equal(0, result.SkippedCount);
@@ -104,7 +105,7 @@ public class SyncCalendarEventsTests
     public async Task ExecuteAsync_WithExistingEvents_SkipsDuplicates()
     {
         var connection = CreateConnection();
-        _connectionRepo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _connectionRepo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns(connection);
 
         var events = new List<CalendarEvent>
@@ -115,10 +116,10 @@ public class SyncCalendarEventsTests
         };
         _calendarService.GetUpcomingEventsAsync("access-token", 7, Arg.Any<CancellationToken>())
             .Returns(events);
-        _meetingRepo.GetExistingCalendarEventIdsAsync(_userId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+        _meetingRepo.GetExistingCalendarEventIdsAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
             .Returns(new HashSet<string> { "evt-1", "evt-3" });
 
-        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId));
+        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId, _profileId));
 
         Assert.Equal(1, result.ImportedCount);
         Assert.Equal(2, result.SkippedCount);
@@ -129,7 +130,7 @@ public class SyncCalendarEventsTests
     public async Task ExecuteAsync_WithAllExistingEvents_SkipsAll()
     {
         var connection = CreateConnection();
-        _connectionRepo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _connectionRepo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns(connection);
 
         var events = new List<CalendarEvent>
@@ -138,10 +139,10 @@ public class SyncCalendarEventsTests
         };
         _calendarService.GetUpcomingEventsAsync("access-token", 7, Arg.Any<CancellationToken>())
             .Returns(events);
-        _meetingRepo.GetExistingCalendarEventIdsAsync(_userId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+        _meetingRepo.GetExistingCalendarEventIdsAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
             .Returns(new HashSet<string> { "evt-1" });
 
-        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId));
+        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId, _profileId));
 
         Assert.Equal(0, result.ImportedCount);
         Assert.Equal(1, result.SkippedCount);
@@ -156,7 +157,7 @@ public class SyncCalendarEventsTests
     public async Task ExecuteAsync_WithExpiredToken_RefreshesBeforeFetching()
     {
         var connection = CreateConnection(expired: true);
-        _connectionRepo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _connectionRepo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns(connection);
 
         var newExpiry = DateTimeOffset.UtcNow.AddHours(1);
@@ -165,7 +166,7 @@ public class SyncCalendarEventsTests
         _calendarService.GetUpcomingEventsAsync("new-access-token", 7, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<CalendarEvent>());
 
-        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId));
+        var result = await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId, _profileId));
 
         await _calendarService.Received(1).RefreshAccessTokenAsync("refresh-token", Arg.Any<CancellationToken>());
         Assert.Equal(0, result.ImportedCount);
@@ -175,12 +176,12 @@ public class SyncCalendarEventsTests
     public async Task ExecuteAsync_WithValidToken_DoesNotRefresh()
     {
         var connection = CreateConnection(expired: false);
-        _connectionRepo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _connectionRepo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns(connection);
         _calendarService.GetUpcomingEventsAsync("access-token", 7, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<CalendarEvent>());
 
-        await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId));
+        await _sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId, _profileId));
 
         await _calendarService.DidNotReceive().RefreshAccessTokenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
@@ -196,12 +197,12 @@ public class SyncCalendarEventsTests
         var sut = new SyncCalendarEvents(_connectionRepo, _meetingRepo, _calendarService, _unitOfWork, customSettings);
 
         var connection = CreateConnection();
-        _connectionRepo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _connectionRepo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns(connection);
         _calendarService.GetUpcomingEventsAsync("access-token", 14, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<CalendarEvent>());
 
-        await sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId));
+        await sut.ExecuteAsync(new SyncCalendarEvents.Command(_userId, _profileId));
 
         await _calendarService.Received(1).GetUpcomingEventsAsync("access-token", 14, Arg.Any<CancellationToken>());
     }

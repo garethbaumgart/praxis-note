@@ -16,6 +16,7 @@ public static class SummaryEndpoints
     }
 
     private static async Task<IResult> HandleGetDailySummary(
+        HttpContext context,
         ClaimsPrincipal user,
         [FromQuery] string? date,
         [FromServices] GetDailySummary getDailySummary,
@@ -35,7 +36,8 @@ public static class SummaryEndpoints
             return Results.BadRequest(new { error = "Invalid date format. Use YYYY-MM-DD." });
         }
 
-        var query = new GetDailySummary.Query(userId.Value, targetDate);
+        var profileId = context.GetProfileId();
+        var query = new GetDailySummary.Query(userId.Value, profileId, targetDate);
         var result = await getDailySummary.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);

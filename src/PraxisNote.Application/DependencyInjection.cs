@@ -9,6 +9,7 @@ using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Application.Features.Goals;
 using PraxisNote.Application.Features.Insights;
 using PraxisNote.Application.Features.Summary;
+using PraxisNote.Application.Features.Profiles;
 using PraxisNote.Application.Features.Users;
 
 namespace PraxisNote.Application;
@@ -51,6 +52,13 @@ public static class DependencyInjection
 
         // User use cases
         services.AddScoped<LoginOrRegisterUser>();
+
+        // Profile use cases
+        services.AddScoped<GetUserProfiles>();
+        services.AddScoped<CreateProfile>();
+        services.AddScoped<UpdateProfile>();
+        services.AddScoped<DeleteProfile>();
+        services.AddScoped<SetDefaultProfile>();
 
         // Note use cases
         services.AddScoped<GetUserNotes>();

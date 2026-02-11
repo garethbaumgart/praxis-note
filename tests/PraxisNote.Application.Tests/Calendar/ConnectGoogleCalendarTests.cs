@@ -11,6 +11,7 @@ public class ConnectGoogleCalendarTests
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ConnectGoogleCalendar _sut;
     private readonly Guid _userId = Guid.NewGuid();
+    private readonly Guid _profileId = Guid.NewGuid();
 
     public ConnectGoogleCalendarTests()
     {
@@ -20,11 +21,11 @@ public class ConnectGoogleCalendarTests
     [Fact]
     public async Task ExecuteAsync_WithNoExistingConnection_CreatesNew()
     {
-        _repo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        _repo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns((CalendarConnection?)null);
 
         var command = new ConnectGoogleCalendar.Command(
-            _userId, "access-token", "refresh-token", DateTimeOffset.UtcNow.AddHours(1));
+            _userId, _profileId, "access-token", "refresh-token", DateTimeOffset.UtcNow.AddHours(1));
 
         await _sut.ExecuteAsync(command);
 
@@ -35,12 +36,12 @@ public class ConnectGoogleCalendarTests
     [Fact]
     public async Task ExecuteAsync_WithExistingConnection_RemovesOldAndCreatesNew()
     {
-        var existing = CalendarConnection.Create(_userId, "Google", "old-access", "old-refresh", DateTimeOffset.UtcNow.AddHours(1));
-        _repo.GetByUserIdAndProviderAsync(_userId, "Google", Arg.Any<CancellationToken>())
+        var existing = CalendarConnection.Create(_userId, _profileId, "Google", "old-access", "old-refresh", DateTimeOffset.UtcNow.AddHours(1));
+        _repo.GetByUserIdAndProviderAsync(_userId, _profileId, "Google", Arg.Any<CancellationToken>())
             .Returns(existing);
 
         var command = new ConnectGoogleCalendar.Command(
-            _userId, "new-access", "new-refresh", DateTimeOffset.UtcNow.AddHours(1));
+            _userId, _profileId, "new-access", "new-refresh", DateTimeOffset.UtcNow.AddHours(1));
 
         await _sut.ExecuteAsync(command);
 

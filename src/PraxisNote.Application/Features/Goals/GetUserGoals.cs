@@ -4,11 +4,11 @@ namespace PraxisNote.Application.Features.Goals;
 
 public sealed class GetUserGoals(IBehavioralGoalRepository goalRepository)
 {
-    public record Query(Guid UserId);
+    public record Query(Guid UserId, Guid ProfileId);
 
     public async Task<IReadOnlyList<BehavioralGoalDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        var goals = await goalRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var goals = await goalRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
 
         return goals
             .Select(g => new BehavioralGoalDto(

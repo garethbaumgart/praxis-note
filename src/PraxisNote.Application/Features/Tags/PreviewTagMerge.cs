@@ -45,14 +45,14 @@ public sealed class PreviewTagMerge(
             throw new InvalidOperationException(TargetNotFoundError);
 
         // Sequential — DbContext is not thread-safe
-        var sourceTasks = await taskRepository.GetTasksWithTagAsync(query.UserId, query.SourceTagId, cancellationToken);
-        var targetTasks = await taskRepository.GetTasksWithTagAsync(query.UserId, query.TargetTagId, cancellationToken);
+        var sourceTasks = await taskRepository.GetTasksWithTagAsync(query.UserId, sourceTag.ProfileId, query.SourceTagId, cancellationToken);
+        var targetTasks = await taskRepository.GetTasksWithTagAsync(query.UserId, sourceTag.ProfileId, query.TargetTagId, cancellationToken);
 
-        var sourceNotes = await noteRepository.GetByTagIdAsync(query.UserId, query.SourceTagId, cancellationToken);
-        var targetNotes = await noteRepository.GetByTagIdAsync(query.UserId, query.TargetTagId, cancellationToken);
+        var sourceNotes = await noteRepository.GetByTagIdAsync(query.UserId, sourceTag.ProfileId, query.SourceTagId, cancellationToken);
+        var targetNotes = await noteRepository.GetByTagIdAsync(query.UserId, sourceTag.ProfileId, query.TargetTagId, cancellationToken);
 
-        var sourceMeetings = await meetingRepository.GetByTagIdAsync(query.UserId, query.SourceTagId, cancellationToken);
-        var targetMeetings = await meetingRepository.GetByTagIdAsync(query.UserId, query.TargetTagId, cancellationToken);
+        var sourceMeetings = await meetingRepository.GetByTagIdAsync(query.UserId, sourceTag.ProfileId, query.SourceTagId, cancellationToken);
+        var targetMeetings = await meetingRepository.GetByTagIdAsync(query.UserId, sourceTag.ProfileId, query.TargetTagId, cancellationToken);
 
         // Calculate overlaps (items that have BOTH tags)
         var targetTaskIds = new HashSet<Guid>(targetTasks.Select(t => t.Id));

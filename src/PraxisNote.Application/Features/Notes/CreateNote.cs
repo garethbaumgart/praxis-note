@@ -9,12 +9,12 @@ public sealed class CreateNote(
     ICheckboxExtractor checkboxExtractor,
     IUnitOfWork unitOfWork)
 {
-    public record Command(Guid UserId, string? Content = null);
+    public record Command(Guid UserId, Guid ProfileId, string? Content = null);
     public record Result(Guid NoteId);
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
-        var note = Note.Create(command.UserId, command.Content ?? string.Empty);
+        var note = Note.Create(command.UserId, command.ProfileId, command.Content ?? string.Empty);
 
         // Extract and add checkboxes from content
         if (!string.IsNullOrEmpty(command.Content))

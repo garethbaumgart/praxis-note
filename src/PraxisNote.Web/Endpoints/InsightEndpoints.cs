@@ -27,6 +27,7 @@ public static class InsightEndpoints
     }
 
     private static async Task<IResult> HandleGetBehavioralTrends(
+        HttpContext context,
         ClaimsPrincipal user,
         [FromQuery] string? range,
         [FromQuery] string? participant,
@@ -45,14 +46,16 @@ public static class InsightEndpoints
             return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
         }
 
+        var profileId = context.GetProfileId();
         var effectiveParticipant = participant ?? user.GetUserName();
-        var query = new GetBehavioralTrends.Query(userId.Value, effectiveRange, effectiveParticipant);
+        var query = new GetBehavioralTrends.Query(userId.Value, profileId, effectiveRange, effectiveParticipant);
         var result = await getBehavioralTrends.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
     }
 
     private static async Task<IResult> HandleGetInsightsSummary(
+        HttpContext context,
         ClaimsPrincipal user,
         [FromServices] GetInsightsSummary getInsightsSummary,
         CancellationToken cancellationToken)
@@ -63,13 +66,15 @@ public static class InsightEndpoints
             return Results.Unauthorized();
         }
 
-        var query = new GetInsightsSummary.Query(userId.Value);
+        var profileId = context.GetProfileId();
+        var query = new GetInsightsSummary.Query(userId.Value, profileId);
         var result = await getInsightsSummary.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
     }
 
     private static async Task<IResult> HandleGetCommunicationProfile(
+        HttpContext context,
         ClaimsPrincipal user,
         [FromQuery] string? range,
         [FromServices] GetCommunicationProfile getCommunicationProfile,
@@ -87,13 +92,15 @@ public static class InsightEndpoints
             return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
         }
 
-        var query = new GetCommunicationProfile.Query(userId.Value, effectiveRange);
+        var profileId = context.GetProfileId();
+        var query = new GetCommunicationProfile.Query(userId.Value, profileId, effectiveRange);
         var result = await getCommunicationProfile.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
     }
 
     private static async Task<IResult> HandleGetJohariWindow(
+        HttpContext context,
         ClaimsPrincipal user,
         [FromQuery] string? range,
         [FromServices] GetJohariWindow getJohariWindow,
@@ -111,13 +118,15 @@ public static class InsightEndpoints
             return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
         }
 
-        var query = new GetJohariWindow.Query(userId.Value, effectiveRange);
+        var profileId = context.GetProfileId();
+        var query = new GetJohariWindow.Query(userId.Value, profileId, effectiveRange);
         var result = await getJohariWindow.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
     }
 
     private static async Task<IResult> HandleGetGoals(
+        HttpContext context,
         ClaimsPrincipal user,
         [FromServices] GetUserGoals getUserGoals,
         CancellationToken cancellationToken)
@@ -126,13 +135,15 @@ public static class InsightEndpoints
         if (userId is null)
             return Results.Unauthorized();
 
-        var query = new GetUserGoals.Query(userId.Value);
+        var profileId = context.GetProfileId();
+        var query = new GetUserGoals.Query(userId.Value, profileId);
         var goals = await getUserGoals.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(goals);
     }
 
     private static async Task<IResult> HandleGetGoalProgress(
+        HttpContext context,
         ClaimsPrincipal user,
         [FromServices] EvaluateGoalProgress evaluateGoalProgress,
         CancellationToken cancellationToken)
@@ -141,13 +152,15 @@ public static class InsightEndpoints
         if (userId is null)
             return Results.Unauthorized();
 
-        var query = new EvaluateGoalProgress.Query(userId.Value);
+        var profileId = context.GetProfileId();
+        var query = new EvaluateGoalProgress.Query(userId.Value, profileId);
         var progress = await evaluateGoalProgress.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(progress);
     }
 
     private static async Task<IResult> HandleCreateGoal(
+        HttpContext context,
         ClaimsPrincipal user,
         CreateGoalRequest request,
         [FromServices] CreateBehavioralGoal createGoal,
@@ -172,8 +185,9 @@ public static class InsightEndpoints
 
         try
         {
+            var profileId = context.GetProfileId();
             var command = new CreateBehavioralGoal.Command(
-                userId.Value, metricType, goalOperator,
+                userId.Value, profileId, metricType, goalOperator,
                 request.TargetValue, request.TargetValueUpper, request.Title);
             var result = await createGoal.ExecuteAsync(command, cancellationToken);
 

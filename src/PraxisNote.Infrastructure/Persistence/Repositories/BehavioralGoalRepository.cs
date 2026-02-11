@@ -10,12 +10,18 @@ public sealed class BehavioralGoalRepository(PraxisNoteDbContext context) : IBeh
         return await context.BehavioralGoals.FindAsync([id], cancellationToken);
     }
 
-    public async Task<IReadOnlyList<BehavioralGoal>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<BehavioralGoal>> GetByUserIdAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
     {
         return await context.BehavioralGoals
-            .Where(g => g.UserId == userId)
+            .Where(g => g.UserId == userId && g.ProfileId == profileId)
             .OrderByDescending(g => g.CreatedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> ExistsByProfileAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
+    {
+        return await context.BehavioralGoals
+            .AnyAsync(g => g.UserId == userId && g.ProfileId == profileId, cancellationToken);
     }
 
     public async Task AddAsync(BehavioralGoal goal, CancellationToken cancellationToken = default)

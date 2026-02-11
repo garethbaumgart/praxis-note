@@ -14,7 +14,7 @@ public sealed class GetNoteById(INoteRepository noteRepository, ITagRepository t
         if (note is null || note.UserId != query.UserId)
             return null;
 
-        var tags = await tagRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var tags = await tagRepository.GetByUserIdAsync(query.UserId, note.ProfileId, cancellationToken);
         var tagLookup = tags.ToDictionary(t => t.Id);
 
         return new NoteDto(

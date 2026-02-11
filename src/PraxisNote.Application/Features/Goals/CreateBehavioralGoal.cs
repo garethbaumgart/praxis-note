@@ -7,6 +7,7 @@ public sealed class CreateBehavioralGoal(IBehavioralGoalRepository goalRepositor
 {
     public record Command(
         Guid UserId,
+        Guid ProfileId,
         MetricType MetricType,
         GoalOperator Operator,
         double TargetValue,
@@ -19,6 +20,7 @@ public sealed class CreateBehavioralGoal(IBehavioralGoalRepository goalRepositor
     {
         var goal = BehavioralGoal.Create(
             command.UserId,
+            command.ProfileId,
             command.MetricType,
             command.Operator,
             command.TargetValue,

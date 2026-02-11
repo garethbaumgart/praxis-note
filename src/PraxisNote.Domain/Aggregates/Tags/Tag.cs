@@ -14,6 +14,11 @@ public sealed class Tag : AggregateRoot
     public Guid UserId { get; private init; }
 
     /// <summary>
+    /// The profile this tag belongs to (data silo boundary).
+    /// </summary>
+    public Guid ProfileId { get; private init; }
+
+    /// <summary>
     /// The display name of the tag. Must be unique per user.
     /// </summary>
     public string Name { get; private set; } = string.Empty;
@@ -28,12 +33,14 @@ public sealed class Tag : AggregateRoot
     /// </summary>
     private Tag() { }
 
-    private Tag(Guid id, Guid userId, string name) : base(id)
+    private Tag(Guid id, Guid userId, Guid profileId, string name) : base(id)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
+        ArgumentOutOfRangeException.ThrowIfEqual(profileId, Guid.Empty, nameof(profileId));
         ValidateName(name);
 
         UserId = userId;
+        ProfileId = profileId;
         Name = name.ToLowerInvariant();
         CreatedAt = DateTimeOffset.UtcNow;
     }
@@ -42,11 +49,12 @@ public sealed class Tag : AggregateRoot
     /// Creates a new tag for the specified user.
     /// </summary>
     /// <param name="userId">The user who owns this tag.</param>
-    /// <param name="name">The display name. Automatically normalized to lowercase. Must be unique per user.</param>
+    /// <param name="profileId">The profile this tag belongs to.</param>
+    /// <param name="name">The display name. Automatically normalized to lowercase. Must be unique per user and profile.</param>
     /// <returns>A new Tag instance.</returns>
-    public static Tag Create(Guid userId, string name)
+    public static Tag Create(Guid userId, Guid profileId, string name)
     {
-        return new Tag(Guid.NewGuid(), userId, name);
+        return new Tag(Guid.NewGuid(), userId, profileId, name);
     }
 
     /// <summary>

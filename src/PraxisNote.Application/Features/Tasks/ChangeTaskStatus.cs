@@ -29,7 +29,7 @@ public sealed class ChangeTaskStatus(
             return false;
         }
 
-        var allTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
+        var allTasks = await taskRepository.GetByUserIdAsync(command.UserId, task.ProfileId, cancellationToken);
         var tasksInTargetColumn = allTasks
             .Where(t => t.Status == targetStatus && t.Id != task.Id)
             .OrderBy(t => t.Position)

@@ -18,16 +18,16 @@ public sealed class GetUserTasks(
 {
     private readonly TaskSettings _settings = settings.Value;
 
-    public record Query(Guid UserId, bool IncludeArchived = false);
+    public record Query(Guid UserId, Guid ProfileId, bool IncludeArchived = false);
 
     public async Task<IReadOnlyList<TaskDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        var tasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
-        var tags = await tagRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var tasks = await taskRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
+        var tags = await tagRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
         var tagLookup = tags.ToDictionary(t => t.Id);
 
         // Build source title lookups for linked tasks
-        var sourceLookup = await BuildSourceLookupAsync(tasks, query.UserId, cancellationToken);
+        var sourceLookup = await BuildSourceLookupAsync(tasks, query.UserId, query.ProfileId, cancellationToken);
 
         var archiveThreshold = DateTimeOffset.UtcNow.AddDays(-_settings.ArchiveThresholdDays);
 
@@ -74,6 +74,7 @@ public sealed class GetUserTasks(
     private async Task<Dictionary<Guid, TaskSourceDto>> BuildSourceLookupAsync(
         IReadOnlyList<TaskItem> tasks,
         Guid userId,
+        Guid profileId,
         CancellationToken cancellationToken)
     {
         var result = new Dictionary<Guid, TaskSourceDto>();
@@ -87,7 +88,7 @@ public sealed class GetUserTasks(
         // Fetch all user meetings/notes in one query each (already loaded by user)
         if (meetingLinkedTasks.Count > 0)
         {
-            var meetings = await meetingRepository.GetByUserIdAsync(userId, cancellationToken);
+            var meetings = await meetingRepository.GetByUserIdAsync(userId, profileId, cancellationToken);
             var meetingLookup = meetings.ToDictionary(m => m.Id);
 
             foreach (var task in meetingLinkedTasks)
@@ -103,7 +104,7 @@ public sealed class GetUserTasks(
 
         if (noteLinkedTasks.Count > 0)
         {
-            var notes = await noteRepository.GetByUserIdAsync(userId, cancellationToken);
+            var notes = await noteRepository.GetByUserIdAsync(userId, profileId, cancellationToken);
             var noteLookup = notes.ToDictionary(n => n.Id);
 
             foreach (var task in noteLinkedTasks)

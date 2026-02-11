@@ -11,11 +11,11 @@ public sealed class GetInsightsSummary(IMeetingRepository meetingRepository)
         PropertyNameCaseInsensitive = true
     };
 
-    public record Query(Guid UserId);
+    public record Query(Guid UserId, Guid ProfileId);
 
     public async Task<InsightsSummaryDto?> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
 
         var cutoff = DateTimeOffset.UtcNow.AddDays(-30);
 

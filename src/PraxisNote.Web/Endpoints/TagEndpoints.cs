@@ -21,6 +21,7 @@ public static class TagEndpoints
     }
 
     private static async Task<IResult> HandleGetTags(
+        HttpContext context,
         ClaimsPrincipal user,
         GetUserTags getUserTags,
         CancellationToken cancellationToken)
@@ -31,7 +32,8 @@ public static class TagEndpoints
             return Results.Unauthorized();
         }
 
-        var query = new GetUserTags.Query(userId.Value);
+        var profileId = context.GetProfileId();
+        var query = new GetUserTags.Query(userId.Value, profileId);
         var tags = await getUserTags.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(tags);
@@ -63,6 +65,7 @@ public static class TagEndpoints
     }
 
     private static async Task<IResult> HandleCreateTag(
+        HttpContext context,
         ClaimsPrincipal user,
         CreateTagRequest request,
         CreateTag createTag,
@@ -81,7 +84,8 @@ public static class TagEndpoints
 
         try
         {
-            var command = new CreateTag.Command(userId.Value, request.Name);
+            var profileId = context.GetProfileId();
+            var command = new CreateTag.Command(userId.Value, profileId, request.Name);
             var result = await createTag.ExecuteAsync(command, cancellationToken);
 
             return Results.Created($"/api/tags/{result.TagId}", new { id = result.TagId });

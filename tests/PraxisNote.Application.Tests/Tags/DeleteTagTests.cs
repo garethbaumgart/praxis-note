@@ -17,6 +17,7 @@ public class DeleteTagTests
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly DeleteTag _sut;
     private readonly Guid _userId = Guid.NewGuid();
+    private readonly Guid _profileId = Guid.NewGuid();
     private readonly Guid _tagId = Guid.NewGuid();
 
     public DeleteTagTests()
@@ -41,7 +42,7 @@ public class DeleteTagTests
     public async Task ExecuteAsync_TagBelongsToDifferentUser_ThrowsNotFoundError()
     {
         var otherUserId = Guid.NewGuid();
-        var tag = Tag.Create(otherUserId, "other-tag");
+        var tag = Tag.Create(otherUserId, _profileId, "other-tag");
         _tagRepo.GetByIdAsync(_tagId, Arg.Any<CancellationToken>()).Returns(tag);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -60,12 +61,12 @@ public class DeleteTagTests
         SetupValidTag();
         SetupEmptyNotesAndMeetings();
 
-        var task1 = TaskItem.CreateStandalone(_userId, "Task 1");
+        var task1 = TaskItem.CreateStandalone(_userId, _profileId, "Task 1");
         task1.AddTag(_tagId);
-        var task2 = TaskItem.CreateStandalone(_userId, "Task 2");
+        var task2 = TaskItem.CreateStandalone(_userId, _profileId, "Task 2");
         task2.AddTag(_tagId);
 
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task1, task2 });
 
         await _sut.ExecuteAsync(new DeleteTag.Command(_userId, _tagId));
@@ -80,12 +81,12 @@ public class DeleteTagTests
         SetupValidTag();
         SetupEmptyTasksAndMeetings();
 
-        var note1 = Note.Create(_userId);
+        var note1 = Note.Create(_userId, _profileId);
         note1.AddTag(_tagId);
-        var note2 = Note.Create(_userId);
+        var note2 = Note.Create(_userId, _profileId);
         note2.AddTag(_tagId);
 
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note1, note2 });
 
         await _sut.ExecuteAsync(new DeleteTag.Command(_userId, _tagId));
@@ -100,12 +101,12 @@ public class DeleteTagTests
         SetupValidTag();
         SetupEmptyTasksAndNotes();
 
-        var meeting1 = Meeting.Create(_userId, "Meeting 1", attendees: "");
+        var meeting1 = Meeting.Create(_userId, _profileId, "Meeting 1", attendees: "");
         meeting1.AddTag(_tagId);
-        var meeting2 = Meeting.Create(_userId, "Meeting 2", attendees: "");
+        var meeting2 = Meeting.Create(_userId, _profileId, "Meeting 2", attendees: "");
         meeting2.AddTag(_tagId);
 
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { meeting1, meeting2 });
 
         await _sut.ExecuteAsync(new DeleteTag.Command(_userId, _tagId));
@@ -119,19 +120,19 @@ public class DeleteTagTests
     {
         var tag = SetupValidTag();
 
-        var task = TaskItem.CreateStandalone(_userId, "Task");
+        var task = TaskItem.CreateStandalone(_userId, _profileId, "Task");
         task.AddTag(_tagId);
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task });
 
-        var note = Note.Create(_userId);
+        var note = Note.Create(_userId, _profileId);
         note.AddTag(_tagId);
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
 
-        var meeting = Meeting.Create(_userId, "Meeting", attendees: "");
+        var meeting = Meeting.Create(_userId, _profileId, "Meeting", attendees: "");
         meeting.AddTag(_tagId);
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { meeting });
 
         await _sut.ExecuteAsync(new DeleteTag.Command(_userId, _tagId));
@@ -185,42 +186,42 @@ public class DeleteTagTests
 
     private Tag SetupValidTag()
     {
-        var tag = Tag.Create(_userId, "test-tag");
+        var tag = Tag.Create(_userId, _profileId, "test-tag");
         _tagRepo.GetByIdAsync(_tagId, Arg.Any<CancellationToken>()).Returns(tag);
         return tag;
     }
 
     private void SetupEmptyRepositories()
     {
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
     }
 
     private void SetupEmptyTasksAndNotes()
     {
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
     }
 
     private void SetupEmptyTasksAndMeetings()
     {
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
     }
 
     private void SetupEmptyNotesAndMeetings()
     {
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
     }
 

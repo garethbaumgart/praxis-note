@@ -5,12 +5,12 @@ namespace PraxisNote.Application.Features.Notes;
 
 public sealed class GetUserNotes(INoteRepository noteRepository, ITagRepository tagRepository)
 {
-    public record Query(Guid UserId);
+    public record Query(Guid UserId, Guid ProfileId);
 
     public async Task<IReadOnlyList<NoteDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        var notes = await noteRepository.GetByUserIdAsync(query.UserId, cancellationToken);
-        var tags = await tagRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var notes = await noteRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
+        var tags = await tagRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
         var tagLookup = tags.ToDictionary(t => t.Id);
 
         return notes

@@ -26,7 +26,7 @@ public sealed class GetCheckboxStatus(
 
         // Get all tasks linked to this note
         // Use GroupBy to handle potential duplicate links gracefully (take first)
-        var userTasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var userTasks = await taskRepository.GetByUserIdAsync(query.UserId, note.ProfileId, cancellationToken);
         var linkedTasks = userTasks
             .Where(t => t.CheckboxRef?.NoteId == query.NoteId)
             .GroupBy(t => t.CheckboxRef!.CheckboxId)

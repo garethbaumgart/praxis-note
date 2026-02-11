@@ -14,7 +14,7 @@ public sealed class GetMeetingById(IMeetingRepository meetingRepository, ITagRep
         if (meeting is null || meeting.UserId != query.UserId)
             return null;
 
-        var tags = await tagRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var tags = await tagRepository.GetByUserIdAsync(query.UserId, meeting.ProfileId, cancellationToken);
         var tagLookup = tags.ToDictionary(t => t.Id);
 
         return MapToDto(meeting, tagLookup);

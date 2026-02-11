@@ -10,7 +10,7 @@ public sealed class GetDailySummary(
     ITaskRepository taskRepository,
     INoteRepository noteRepository)
 {
-    public record Query(Guid UserId, DateOnly Date);
+    public record Query(Guid UserId, Guid ProfileId, DateOnly Date);
 
     public async Task<DailySummaryDto> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
@@ -19,9 +19,9 @@ public sealed class GetDailySummary(
         var dayEnd = dayStart.AddDays(1);
 
         // Load all data for the user (sequential — EF Core DbContext is not thread-safe)
-        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, cancellationToken);
-        var allTasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
-        var allNotes = await noteRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
+        var allTasks = await taskRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
+        var allNotes = await noteRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
 
         // Meetings for the target date (by MeetingDate)
         var meetingsToday = allMeetings

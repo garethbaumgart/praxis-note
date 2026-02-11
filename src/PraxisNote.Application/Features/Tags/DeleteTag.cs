@@ -26,15 +26,15 @@ public sealed class DeleteTag(
         }
 
         // Sequential — EF Core DbContext is not thread-safe
-        var tasksWithTag = await taskRepository.GetTasksWithTagAsync(command.UserId, command.TagId, cancellationToken);
+        var tasksWithTag = await taskRepository.GetTasksWithTagAsync(command.UserId, tag.ProfileId, command.TagId, cancellationToken);
         foreach (var task in tasksWithTag)
             task.RemoveTag(command.TagId);
 
-        var notesWithTag = await noteRepository.GetByTagIdAsync(command.UserId, command.TagId, cancellationToken);
+        var notesWithTag = await noteRepository.GetByTagIdAsync(command.UserId, tag.ProfileId, command.TagId, cancellationToken);
         foreach (var note in notesWithTag)
             note.RemoveTag(command.TagId);
 
-        var meetingsWithTag = await meetingRepository.GetByTagIdAsync(command.UserId, command.TagId, cancellationToken);
+        var meetingsWithTag = await meetingRepository.GetByTagIdAsync(command.UserId, tag.ProfileId, command.TagId, cancellationToken);
         foreach (var meeting in meetingsWithTag)
             meeting.RemoveTag(command.TagId);
 

@@ -15,6 +15,9 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.UserId)
             .IsRequired();
 
+        builder.Property(m => m.ProfileId)
+            .IsRequired();
+
         builder.Property(m => m.Title)
             .HasMaxLength(500);
 
@@ -103,14 +106,14 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
 
         builder.Ignore(m => m.ActionItems);
 
-        // Index for querying user's meetings
-        builder.HasIndex(m => m.UserId);
+        // Index for querying user's meetings by profile
+        builder.HasIndex(m => new { m.UserId, m.ProfileId });
 
         // Index for querying by date (for daily grouped list)
         builder.HasIndex(m => m.MeetingDate);
 
-        // Unique filtered index for calendar event deduplication
-        builder.HasIndex(m => new { m.UserId, m.CalendarEventId })
+        // Unique filtered index for calendar event deduplication (profile-scoped)
+        builder.HasIndex(m => new { m.UserId, m.ProfileId, m.CalendarEventId })
             .IsUnique()
             .HasFilter("\"CalendarEventId\" IS NOT NULL");
 
