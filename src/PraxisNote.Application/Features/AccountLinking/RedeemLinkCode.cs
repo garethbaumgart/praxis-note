@@ -56,6 +56,13 @@ public sealed class RedeemLinkCode(
             return new Result(command.RedeemingUserId, false, SameUserError);
         }
 
+        // Verify the code owner still exists (they could have been deleted since code generation)
+        var codeOwner = await userRepository.GetByIdAsync(codeOwnerUserId, cancellationToken);
+        if (codeOwner is null)
+        {
+            return new Result(command.RedeemingUserId, false, InvalidCodeError);
+        }
+
         // Check if the redeeming user's identity is already linked elsewhere
         var redeemingUser = await userRepository.GetByIdAsync(command.RedeemingUserId, cancellationToken);
         if (redeemingUser is null)
