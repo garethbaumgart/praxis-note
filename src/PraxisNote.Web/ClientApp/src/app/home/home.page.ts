@@ -142,13 +142,17 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
               <div class="mb-3">
                 <p class="text-xs font-medium text-inprogress-foreground uppercase tracking-wide mb-1.5">In Progress</p>
                 @for (task of dashboard.inProgressTasks(); track task.id) {
-                  <div class="task-row">
+                  <button
+                    type="button"
+                    class="task-row"
+                    [attr.aria-label]="'Go to task: ' + task.title + (task.isPriority ? ' (priority)' : '')"
+                    (click)="navigateToTask(task.id)">
                     <span class="task-status-dot bg-inprogress-foreground" aria-hidden="true"></span>
                     <span class="flex-1 text-sm text-foreground truncate">{{ task.title }}</span>
                     @if (task.isPriority) {
-                      <i class="pi pi-bolt text-inprogress-foreground text-xs flex-shrink-0" aria-label="Priority task"></i>
+                      <i class="pi pi-bolt text-inprogress-foreground text-xs flex-shrink-0" aria-hidden="true"></i>
                     }
-                  </div>
+                  </button>
                 }
               </div>
             }
@@ -157,13 +161,17 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
               <div>
                 <p class="text-xs font-medium text-todo-foreground uppercase tracking-wide mb-1.5">Up Next</p>
                 @for (task of dashboard.upNextTasks(); track task.id) {
-                  <div class="task-row">
+                  <button
+                    type="button"
+                    class="task-row"
+                    [attr.aria-label]="'Go to task: ' + task.title + (task.isPriority ? ' (priority)' : '')"
+                    (click)="navigateToTask(task.id)">
                     <span class="task-status-dot bg-todo-foreground" aria-hidden="true"></span>
                     <span class="flex-1 text-sm text-foreground truncate">{{ task.title }}</span>
                     @if (task.isPriority) {
-                      <i class="pi pi-bolt text-todo-foreground text-xs flex-shrink-0" aria-label="Priority task"></i>
+                      <i class="pi pi-bolt text-todo-foreground text-xs flex-shrink-0" aria-hidden="true"></i>
                     }
-                  </div>
+                  </button>
                 }
               </div>
             }
@@ -307,6 +315,12 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
       gap: 0.5rem;
       padding: 0.375rem 0.25rem;
       border-radius: 0.375rem;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: none;
+      font: inherit;
       transition: background 0.1s;
     }
     .task-row:hover {
@@ -331,6 +345,7 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
       text-align: left;
       border: none;
       background: none;
+      font: inherit;
       transition: background 0.1s;
     }
     .recent-row:hover {
@@ -395,6 +410,10 @@ export class HomePage implements OnInit, OnDestroy {
 
   goToMeeting(id: string): void {
     this.router.navigate(['/meetings', id], { state: this.homeBreadcrumbSource });
+  }
+
+  navigateToTask(taskId: string): void {
+    this.router.navigate(['/tasks'], { queryParams: { highlight: taskId } });
   }
 
   goToRecentItem(item: { id: string; type: 'note' | 'meeting' }): void {
