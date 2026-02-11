@@ -36,6 +36,14 @@ namespace PraxisNote.Infrastructure.Migrations
                 table: "Profiles",
                 column: "UserId");
 
+            // Unique partial index: at most one default profile per user
+            migrationBuilder.CreateIndex(
+                name: "IX_Profiles_UserId_IsDefault_Unique",
+                table: "Profiles",
+                column: "UserId",
+                unique: true,
+                filter: "\"IsDefault\" = true");
+
             // ============================================================
             // Phase 2: Add ProfileId as NULLABLE to all entity tables
             // ============================================================
@@ -116,6 +124,7 @@ namespace PraxisNote.Infrastructure.Migrations
             migrationBuilder.DropIndex(name: "IX_Meetings_UserId", table: "Meetings");
             migrationBuilder.DropIndex(name: "IX_CalendarConnections_UserId_Provider", table: "CalendarConnections");
             migrationBuilder.DropIndex(name: "IX_BehavioralGoals_UserId", table: "BehavioralGoals");
+            migrationBuilder.DropIndex(name: "IX_Meetings_UserId_CalendarEventId", table: "Meetings");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tasks_UserId_ProfileId",
@@ -148,6 +157,14 @@ namespace PraxisNote.Infrastructure.Migrations
                 name: "IX_BehavioralGoals_UserId_ProfileId",
                 table: "BehavioralGoals",
                 columns: new[] { "UserId", "ProfileId" });
+
+            // Profile-scoped calendar event deduplication
+            migrationBuilder.CreateIndex(
+                name: "IX_Meetings_UserId_ProfileId_CalendarEventId",
+                table: "Meetings",
+                columns: new[] { "UserId", "ProfileId", "CalendarEventId" },
+                unique: true,
+                filter: "\"CalendarEventId\" IS NOT NULL");
         }
 
         /// <inheritdoc />
@@ -160,6 +177,7 @@ namespace PraxisNote.Infrastructure.Migrations
             migrationBuilder.DropIndex(name: "IX_Tags_UserId_ProfileId_Name", table: "Tags");
             migrationBuilder.DropIndex(name: "IX_Notes_UserId_ProfileId", table: "Notes");
             migrationBuilder.DropIndex(name: "IX_Meetings_UserId_ProfileId", table: "Meetings");
+            migrationBuilder.DropIndex(name: "IX_Meetings_UserId_ProfileId_CalendarEventId", table: "Meetings");
             migrationBuilder.DropIndex(name: "IX_CalendarConnections_UserId_ProfileId_Provider", table: "CalendarConnections");
             migrationBuilder.DropIndex(name: "IX_BehavioralGoals_UserId_ProfileId", table: "BehavioralGoals");
 
@@ -176,6 +194,12 @@ namespace PraxisNote.Infrastructure.Migrations
             migrationBuilder.CreateIndex(name: "IX_Meetings_UserId", table: "Meetings", column: "UserId");
             migrationBuilder.CreateIndex(name: "IX_CalendarConnections_UserId_Provider", table: "CalendarConnections", columns: new[] { "UserId", "Provider" }, unique: true);
             migrationBuilder.CreateIndex(name: "IX_BehavioralGoals_UserId", table: "BehavioralGoals", column: "UserId");
+            migrationBuilder.CreateIndex(
+                name: "IX_Meetings_UserId_CalendarEventId",
+                table: "Meetings",
+                columns: new[] { "UserId", "CalendarEventId" },
+                unique: true,
+                filter: "\"CalendarEventId\" IS NOT NULL");
         }
     }
 }

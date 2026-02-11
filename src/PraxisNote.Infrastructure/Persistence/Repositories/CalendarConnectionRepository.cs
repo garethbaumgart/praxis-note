@@ -11,6 +11,12 @@ public sealed class CalendarConnectionRepository(PraxisNoteDbContext context) : 
             .FirstOrDefaultAsync(c => c.UserId == userId && c.ProfileId == profileId && c.Provider == provider, cancellationToken);
     }
 
+    public async Task<bool> ExistsByProfileAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
+    {
+        return await context.CalendarConnections
+            .AnyAsync(c => c.UserId == userId && c.ProfileId == profileId, cancellationToken);
+    }
+
     public async Task AddAsync(CalendarConnection connection, CancellationToken cancellationToken = default)
     {
         await context.CalendarConnections.AddAsync(connection, cancellationToken);

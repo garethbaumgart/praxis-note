@@ -112,8 +112,8 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         // Index for querying by date (for daily grouped list)
         builder.HasIndex(m => m.MeetingDate);
 
-        // Unique filtered index for calendar event deduplication
-        builder.HasIndex(m => new { m.UserId, m.CalendarEventId })
+        // Unique filtered index for calendar event deduplication (profile-scoped)
+        builder.HasIndex(m => new { m.UserId, m.ProfileId, m.CalendarEventId })
             .IsUnique()
             .HasFilter("\"CalendarEventId\" IS NOT NULL");
 

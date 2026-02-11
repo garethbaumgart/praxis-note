@@ -58,6 +58,10 @@ public static class ProfileEndpoints
         {
             return Results.Conflict(new { error = ex.Message });
         }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     private static async Task<IResult> HandleUpdateProfile(

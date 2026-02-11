@@ -221,7 +221,7 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.HasIndex("MeetingDate");
 
-                    b.HasIndex("UserId", "CalendarEventId")
+                    b.HasIndex("UserId", "ProfileId", "CalendarEventId")
                         .IsUnique()
                         .HasFilter("\"CalendarEventId\" IS NOT NULL");
 
@@ -336,6 +336,11 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("\"IsDefault\" = true")
+                        .HasDatabaseName("IX_Profiles_UserId_IsDefault_Unique");
 
                     b.ToTable("Profiles", (string)null);
                 });

@@ -1,7 +1,10 @@
 using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.BehavioralGoals;
+using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Profiles;
+using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
 
 namespace PraxisNote.Application.Features.Profiles;
@@ -11,6 +14,9 @@ public sealed class DeleteProfile(
     ITaskRepository taskRepository,
     INoteRepository noteRepository,
     IMeetingRepository meetingRepository,
+    ITagRepository tagRepository,
+    IBehavioralGoalRepository goalRepository,
+    ICalendarConnectionRepository calendarConnectionRepository,
     IUnitOfWork unitOfWork)
 {
     public const string NotFoundError = "Profile not found";
@@ -32,7 +38,7 @@ public sealed class DeleteProfile(
             throw new InvalidOperationException(CannotDeleteDefaultError);
         }
 
-        // Check if profile has any data
+        // Check if profile has any data across all entity types
         var tasks = await taskRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
         if (tasks.Count > 0)
         {
@@ -47,6 +53,24 @@ public sealed class DeleteProfile(
 
         var meetings = await meetingRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
         if (meetings.Count > 0)
+        {
+            throw new InvalidOperationException(HasDataError);
+        }
+
+        var tags = await tagRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
+        if (tags.Count > 0)
+        {
+            throw new InvalidOperationException(HasDataError);
+        }
+
+        var goals = await goalRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
+        if (goals.Count > 0)
+        {
+            throw new InvalidOperationException(HasDataError);
+        }
+
+        var hasConnections = await calendarConnectionRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken);
+        if (hasConnections)
         {
             throw new InvalidOperationException(HasDataError);
         }

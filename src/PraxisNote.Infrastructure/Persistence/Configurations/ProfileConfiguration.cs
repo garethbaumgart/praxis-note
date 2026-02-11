@@ -34,6 +34,12 @@ public sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
         // Index for efficient lookup by user
         builder.HasIndex(p => p.UserId);
 
+        // Unique partial index: at most one default profile per user
+        builder.HasIndex(p => p.UserId)
+            .IsUnique()
+            .HasFilter("\"IsDefault\" = true")
+            .HasDatabaseName("IX_Profiles_UserId_IsDefault_Unique");
+
         builder.Ignore(p => p.DomainEvents);
     }
 }

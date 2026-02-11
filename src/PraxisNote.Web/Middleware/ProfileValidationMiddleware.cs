@@ -35,9 +35,17 @@ public sealed class ProfileValidationMiddleware(RequestDelegate next)
         Guid profileId;
 
         // Try to read X-Profile-Id header
-        if (context.Request.Headers.TryGetValue(ProfileIdHeader, out var headerValue)
-            && Guid.TryParse(headerValue.ToString(), out var requestedProfileId))
+        var hasHeader = context.Request.Headers.TryGetValue(ProfileIdHeader, out var headerValue);
+        if (hasHeader)
         {
+            if (!Guid.TryParse(headerValue.ToString(), out var requestedProfileId))
+            {
+                // Header present but not a valid GUID — return 400
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsJsonAsync(new { error = "Invalid X-Profile-Id header format" });
+                return;
+            }
+
             // Validate the requested profile belongs to this user
             var profile = await profileRepository.GetByIdAsync(requestedProfileId);
             if (profile is not null && profile.UserId == userId.Value)
