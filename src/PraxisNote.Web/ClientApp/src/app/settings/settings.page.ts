@@ -41,7 +41,7 @@ const MAX_PROFILES = 5;
           @if (profileService.loading()) {
             <div class="flex items-center gap-3 py-4" role="status" aria-label="Loading profiles">
               <i class="pi pi-spin pi-spinner text-sm text-foreground-muted" aria-hidden="true"></i>
-              <span class="text-sm text-foreground-muted">Loading profiles...</span>
+              <span class="text-sm text-foreground-muted" aria-hidden="true">Loading profiles...</span>
               <span class="sr-only">Loading profiles...</span>
             </div>
           } @else {
@@ -87,7 +87,7 @@ const MAX_PROFILES = 5;
           @if (linkedAccountsService.loading()) {
             <div class="flex items-center gap-3 py-4" role="status" aria-label="Loading linked accounts">
               <i class="pi pi-spin pi-spinner text-sm text-foreground-muted" aria-hidden="true"></i>
-              <span class="text-sm text-foreground-muted">Loading linked accounts...</span>
+              <span class="text-sm text-foreground-muted" aria-hidden="true">Loading linked accounts...</span>
               <span class="sr-only">Loading linked accounts...</span>
             </div>
           } @else {
@@ -114,7 +114,7 @@ const MAX_PROFILES = 5;
                     <button
                       type="button"
                       class="px-3 py-1 text-xs text-danger hover:text-white hover:bg-danger border border-danger rounded transition-colors"
-                      (click)="unlinkIdentity(identity.id)"
+                      (click)="startUnlinkIdentity(identity.id, identity.email)"
                       [attr.aria-label]="'Unlink ' + identity.email"
                     >
                       Unlink
@@ -290,6 +290,41 @@ const MAX_PROFILES = 5;
         </button>
       </div>
     </p-dialog>
+
+    <!-- Unlink Account Confirmation Dialog -->
+    <p-dialog
+      [visible]="showUnlinkDialog()"
+      (visibleChange)="showUnlinkDialog.set($event)"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [dismissableMask]="true"
+      [closable]="true"
+      [style]="{ width: '24rem' }"
+      [breakpoints]="{ '640px': '95vw' }"
+      header="Unlink Account"
+    >
+      <p class="text-sm text-foreground-secondary">
+        Are you sure you want to unlink <strong class="text-foreground">{{ unlinkEmail() }}</strong>?
+        You will no longer be able to sign in with this account.
+      </p>
+      <div class="flex justify-end gap-3 px-5 py-4 border-t border-border mt-4 -mx-5 -mb-5">
+        <button
+          type="button"
+          class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground transition-colors"
+          (click)="showUnlinkDialog.set(false)"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 text-sm bg-danger text-white rounded-lg font-medium hover:opacity-90 transition"
+          (click)="confirmUnlinkIdentity()"
+        >
+          Unlink
+        </button>
+      </div>
+    </p-dialog>
   `,
 })
 export class SettingsPage implements OnInit, OnDestroy {
@@ -310,6 +345,10 @@ export class SettingsPage implements OnInit, OnDestroy {
   readonly deleteError = signal<string | null>(null);
 
   readonly showLinkPanel = signal(false);
+
+  readonly showUnlinkDialog = signal(false);
+  readonly unlinkIdentityId = signal<string | null>(null);
+  readonly unlinkEmail = signal('');
 
   constructor() {
     // Show toast when sync completes successfully
@@ -415,8 +454,17 @@ export class SettingsPage implements OnInit, OnDestroy {
     return this.profileService.profiles().find(p => p.id === profileId)?.name ?? 'Unknown';
   }
 
-  unlinkIdentity(identityId: string): void {
-    this.linkedAccountsService.unlinkIdentity(identityId);
+  startUnlinkIdentity(identityId: string, email: string): void {
+    this.unlinkIdentityId.set(identityId);
+    this.unlinkEmail.set(email);
+    this.showUnlinkDialog.set(true);
+  }
+
+  confirmUnlinkIdentity(): void {
+    const id = this.unlinkIdentityId();
+    if (!id) return;
+    this.linkedAccountsService.unlinkIdentity(id);
+    this.showUnlinkDialog.set(false);
   }
 
   onAccountLinked(): void {
