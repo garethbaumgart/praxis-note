@@ -130,6 +130,7 @@ export class AudioRecorderService implements OnDestroy {
 
       // Determine best supported mime type
       const mimeType = this.getSupportedMimeType();
+      this.mimeType.set(mimeType ?? '');
       this.chunks = [];
 
       this.initMediaRecorder(recordingStream, mimeType);
@@ -415,6 +416,9 @@ export class AudioRecorderService implements OnDestroy {
   /** Number of audio channels in the current recording stream (1 = mono, 2 = stereo multichannel) */
   readonly channelCount = signal(1);
 
+  /** The MIME type of the current recording (e.g. 'audio/webm;codecs=opus') */
+  readonly mimeType = signal('');
+
   private createRecordingStream(): MediaStream | null {
     // If we only have mic, return it directly (single channel with diarization)
     if (!this.systemStream) {
@@ -652,6 +656,7 @@ export class AudioRecorderService implements OnDestroy {
     this.audioLevels.set(new Array(16).fill(0));
     this.captureMode.set('microphone');
     this.channelCount.set(1);
+    this.mimeType.set('');
     this.activeMeetingId.set(null);
     this.recoveryAttempts = 0;
     this.isRecovering = false;

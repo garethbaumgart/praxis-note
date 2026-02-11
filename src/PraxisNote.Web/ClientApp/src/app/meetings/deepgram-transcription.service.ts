@@ -1,4 +1,6 @@
 import { Injectable, signal, computed, inject, OnDestroy, isDevMode } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { MockAuthService } from '../auth/mock-auth.service';
 
 export interface TranscriptSegment {
@@ -9,16 +11,21 @@ export interface TranscriptSegment {
 @Injectable({ providedIn: 'root' })
 export class DeepgramTranscriptionService implements OnDestroy {
   private readonly mockAuth = inject(MockAuthService);
+  private readonly http = inject(HttpClient);
   private ws: WebSocket | null = null;
   private channels = 1;
   private localUserName = 'You';
+  private encoding = '';
 
   // Reconnection state
   private intentionallyStopped = false;
+  private hasEverConnected = false;
   private reconnectAttempts = 0;
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private pendingAudioChunks: ArrayBuffer[] = [];
+  private droppedAudioChunks = 0;
   private static readonly MAX_RECONNECT_ATTEMPTS = 10;
+  private static readonly MAX_DROPPED_CHUNKS_BEFORE_ERROR = 10;
   private static readonly INITIAL_RECONNECT_DELAY_MS = 500;
   private static readonly MAX_RECONNECT_DELAY_MS = 15000;
   private static readonly MAX_PENDING_CHUNKS = 30;
@@ -43,7 +50,31 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.stop();
   }
 
-  start(channelCount = 1, userName = 'You'): void {
+  /**
+   * Pre-flight check: verifies the transcription service is configured and reachable.
+   * Returns true if available, false otherwise (and sets the error signal).
+   */
+  async checkAvailability(): Promise<boolean> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ available: boolean }>('/api/transcription/status')
+      );
+      if (!response.available) {
+        this.error.set('Transcription service is not configured. Please contact your administrator.');
+        return false;
+      }
+      return true;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) {
+        this.error.set('Session expired. Please refresh the page and try again.');
+      } else {
+        this.error.set('Transcription service is unreachable. Please check your connection and try again.');
+      }
+      return false;
+    }
+  }
+
+  start(channelCount = 1, userName = 'You', mimeType = ''): void {
     this.transcript.set('');
     this.segments.set([]);
     this.interimText.set('');
@@ -51,10 +82,13 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.error.set(null);
     this.channels = channelCount;
     this.localUserName = userName;
+    this.encoding = mimeType;
     this.intentionallyStopped = false;
+    this.hasEverConnected = false;
     this.reconnectAttempts = 0;
     this.isReconnecting.set(false);
     this.pendingAudioChunks = [];
+    this.droppedAudioChunks = 0;
     if (this.reconnectTimeoutId !== null) {
       clearTimeout(this.reconnectTimeoutId);
       this.reconnectTimeoutId = null;
@@ -79,6 +113,10 @@ export class DeepgramTranscriptionService implements OnDestroy {
 
     if (this.channels > 1) {
       params.set('channels', String(this.channels));
+    }
+
+    if (this.encoding) {
+      params.set('mimeType', this.encoding);
     }
 
     const qs = params.toString();
@@ -110,7 +148,9 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.ws.onopen = () => {
       this.isListening.set(true);
       this.error.set(null);
+      this.hasEverConnected = true;
       this.reconnectTimeoutId = null;
+      this.droppedAudioChunks = 0;
 
       // If reconnecting, flush buffered audio and reset state
       if (this.isReconnecting()) {
@@ -139,15 +179,28 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.ws.onclose = (event: CloseEvent) => {
       this.isListening.set(false);
       if (event.code !== 1000 && !this.intentionallyStopped) {
-        this.attemptReconnect();
+        this.attemptReconnect(event.reason);
       }
     };
   }
 
-  private attemptReconnect(): void {
+  private attemptReconnect(closeReason?: string): void {
     if (this.intentionallyStopped) return;
     // Guard against duplicate calls (onerror + onclose can both fire for the same failure)
     if (this.isReconnecting() && this.reconnectTimeoutId !== null) return;
+
+    // Fail immediately if the connection was never successfully established.
+    // No point retrying with exponential backoff if the initial connection failed.
+    if (!this.hasEverConnected) {
+      this.isReconnecting.set(false);
+      this.pendingAudioChunks = [];
+      const reason = closeReason
+        ? `Transcription service unavailable: ${closeReason}`
+        : 'Could not connect to transcription service. Please try again.';
+      this.error.set(reason);
+      return;
+    }
+
     if (this.reconnectAttempts >= DeepgramTranscriptionService.MAX_RECONNECT_ATTEMPTS) {
       this.isReconnecting.set(false);
       this.pendingAudioChunks = [];
@@ -273,6 +326,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
 
   sendAudio(blob: Blob): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
+      this.droppedAudioChunks = 0;
       blob.arrayBuffer().then(buffer => {
         this.ws?.send(buffer);
       }).catch(() => {
@@ -292,6 +346,13 @@ export class DeepgramTranscriptionService implements OnDestroy {
       }).catch(() => {
         // Non-fatal
       });
+    } else if (!this.intentionallyStopped) {
+      // WebSocket is not open and not reconnecting — audio is being silently dropped.
+      // Surface an error after a threshold of dropped chunks so the user knows.
+      this.droppedAudioChunks++;
+      if (this.droppedAudioChunks >= DeepgramTranscriptionService.MAX_DROPPED_CHUNKS_BEFORE_ERROR && !this.error()) {
+        this.error.set('Transcription connection lost. Audio is not being transcribed.');
+      }
     }
   }
 
