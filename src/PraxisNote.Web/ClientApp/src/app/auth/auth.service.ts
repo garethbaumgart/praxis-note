@@ -2,10 +2,12 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, of, Subscription, tap } from 'rxjs';
 import { User } from './user.model';
+import { ProfileService } from '../profiles/profile.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly profileService = inject(ProfileService);
 
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(true);
@@ -59,6 +61,19 @@ export class AuthService {
           this._user.set(user);
           this._loading.set(false);
           this._initialized.set(true);
+
+          // Initialize profiles from the auth response
+          if (user.profiles?.length) {
+            this.profileService.initFromUser(
+              user.profiles.map(p => ({
+                id: p.id,
+                name: p.name,
+                icon: p.icon,
+                isDefault: p.isDefault,
+                createdAt: '',
+              }))
+            );
+          }
         }),
         catchError((error: HttpErrorResponse) => {
           if (error.status === 401) {

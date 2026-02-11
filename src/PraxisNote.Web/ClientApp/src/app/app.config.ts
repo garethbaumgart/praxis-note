@@ -8,6 +8,7 @@ import { MessageService } from 'primeng/api';
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import { routes } from './app.routes';
+import { profileInterceptor } from './profiles/profile.interceptor';
 import { mockAuthInterceptor } from './auth/mock-auth.interceptor';
 import { authInterceptor } from './auth/auth.interceptor';
 
@@ -61,7 +62,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([mockAuthInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([profileInterceptor, mockAuthInterceptor, authInterceptor])),
     provideAnimationsAsync(),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

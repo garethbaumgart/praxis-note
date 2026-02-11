@@ -35,6 +35,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Behavioral Insights Dashboard** - Compact 2-column sparkline grid with trend indicators for meeting behavioral metrics
 - ✅ **Tag Hub** - Unified view of all notes, meetings, and tasks for a selected tag with date-grouped timeline, searchable tag selector, direct navigation to items, inline rename/delete with cascading removal, and two-step tag merge with overlap detection
 - ✅ **Daily Summary** - Dedicated /summary page with date navigation aggregating meetings, completed/in-progress tasks, notes updated, and outstanding action items from the last 30 days
+- ✅ **Multi-Profile Support** - Separate data contexts (e.g., Work, Personal) with sidebar profile switcher, per-profile data isolation, and account linking via temporary codes
 
 ✅ = Implemented | 🚧 = Planned
 

@@ -241,6 +241,21 @@
         </div>
         <i class="pi pi-sign-out text-foreground-muted text-sm" aria-hidden="true"></i>
       </button>
+
+      <!-- Profile switcher (only when 2+ profiles) -->
+      @if (profileService.hasMultipleProfiles()) {
+        <button
+          type="button"
+          class="w-full flex items-center gap-1.5 h-7 px-2 mt-0.5 text-xs text-foreground-muted hover:text-foreground hover:bg-surface-muted rounded-md transition-colors"
+          (click)="desktopProfileMenu.toggle($event); $event.stopPropagation()"
+          aria-label="Switch profile"
+        >
+          <i class="pi {{ activeProfile()?.icon ?? 'pi-user' }} text-[10px]" aria-hidden="true"></i>
+          <span class="truncate flex-1 text-left">{{ activeProfile()?.name }}</span>
+          <i class="pi pi-chevron-down text-[8px]" aria-hidden="true"></i>
+        </button>
+        <p-menu #desktopProfileMenu [model]="profileMenuItems()" [popup]="true" appendTo="body" />
+      }
     }
   </div>
 </aside>
@@ -407,6 +422,21 @@
             <p class="text-xs text-foreground-secondary">Sign out</p>
           </div>
         </button>
+
+        <!-- Mobile profile switcher (only when 2+ profiles) -->
+        @if (profileService.hasMultipleProfiles()) {
+          <button
+            type="button"
+            class="w-full flex items-center gap-1.5 h-8 px-3 mt-0.5 text-xs text-foreground-muted hover:text-foreground hover:bg-surface-muted rounded-md transition-colors touch-target"
+            (click)="mobileProfileMenu.toggle($event); $event.stopPropagation()"
+            aria-label="Switch profile"
+          >
+            <i class="pi {{ activeProfile()?.icon ?? 'pi-user' }} text-[10px]" aria-hidden="true"></i>
+            <span class="truncate flex-1 text-left">{{ activeProfile()?.name }}</span>
+            <i class="pi pi-chevron-down text-[8px]" aria-hidden="true"></i>
+          </button>
+          <p-menu #mobileProfileMenu [model]="profileMenuItems()" [popup]="true" appendTo="body" />
+        }
       </div>
     </aside>
   </div>
