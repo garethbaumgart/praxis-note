@@ -13,12 +13,12 @@ public sealed class SyncCalendarEvents(
     IUnitOfWork unitOfWork,
     IOptions<GoogleCalendarSettings> settings)
 {
-    public record Command(Guid UserId);
+    public record Command(Guid UserId, Guid ProfileId);
     public record Result(int ImportedCount, int SkippedCount);
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
-        var connection = await connectionRepository.GetByUserIdAndProviderAsync(command.UserId, "Google", cancellationToken)
+        var connection = await connectionRepository.GetByUserIdAndProviderAsync(command.UserId, command.ProfileId, "Google", cancellationToken)
             ?? throw new InvalidOperationException("No Google Calendar connection found. Please connect your calendar first.");
 
         // Refresh token if expired
@@ -41,7 +41,7 @@ public sealed class SyncCalendarEvents(
 
         // Deduplicate against existing meetings
         var eventIds = events.Select(e => e.EventId).ToList();
-        var existingIds = await meetingRepository.GetExistingCalendarEventIdsAsync(command.UserId, eventIds, cancellationToken);
+        var existingIds = await meetingRepository.GetExistingCalendarEventIdsAsync(command.UserId, command.ProfileId, eventIds, cancellationToken);
 
         var imported = 0;
         var skipped = 0;
@@ -56,6 +56,7 @@ public sealed class SyncCalendarEvents(
 
             var meeting = Meeting.CreateFromCalendar(
                 command.UserId,
+                command.ProfileId,
                 calendarEvent.Title,
                 calendarEvent.StartTime,
                 calendarEvent.Attendees,

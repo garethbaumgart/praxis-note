@@ -5,6 +5,7 @@ namespace PraxisNote.Domain.Tests.Aggregates;
 public class CalendarConnectionTests
 {
     private readonly Guid _validUserId = Guid.NewGuid();
+    private readonly Guid _validProfileId = Guid.NewGuid();
     private const string ValidProvider = "Google";
     private const string ValidAccessToken = "ya29.access-token";
     private const string ValidRefreshToken = "1//refresh-token";
@@ -17,7 +18,7 @@ public class CalendarConnectionTests
     {
         // Act
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
 
         // Assert
         Assert.NotEqual(Guid.Empty, connection.Id);
@@ -33,7 +34,7 @@ public class CalendarConnectionTests
     public void Create_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            CalendarConnection.Create(Guid.Empty, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt));
+            CalendarConnection.Create(Guid.Empty, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt));
     }
 
     [Theory]
@@ -43,7 +44,7 @@ public class CalendarConnectionTests
     public void Create_WithInvalidProvider_ThrowsArgumentException(string? provider)
     {
         Assert.ThrowsAny<ArgumentException>(() =>
-            CalendarConnection.Create(_validUserId, provider!, ValidAccessToken, ValidRefreshToken, _validExpiresAt));
+            CalendarConnection.Create(_validUserId, _validProfileId, provider!, ValidAccessToken, ValidRefreshToken, _validExpiresAt));
     }
 
     [Theory]
@@ -53,7 +54,7 @@ public class CalendarConnectionTests
     public void Create_WithInvalidAccessToken_ThrowsArgumentException(string? accessToken)
     {
         Assert.ThrowsAny<ArgumentException>(() =>
-            CalendarConnection.Create(_validUserId, ValidProvider, accessToken!, ValidRefreshToken, _validExpiresAt));
+            CalendarConnection.Create(_validUserId, _validProfileId, ValidProvider, accessToken!, ValidRefreshToken, _validExpiresAt));
     }
 
     [Theory]
@@ -63,14 +64,14 @@ public class CalendarConnectionTests
     public void Create_WithInvalidRefreshToken_ThrowsArgumentException(string? refreshToken)
     {
         Assert.ThrowsAny<ArgumentException>(() =>
-            CalendarConnection.Create(_validUserId, ValidProvider, ValidAccessToken, refreshToken!, _validExpiresAt));
+            CalendarConnection.Create(_validUserId, _validProfileId, ValidProvider, ValidAccessToken, refreshToken!, _validExpiresAt));
     }
 
     [Fact]
     public void Create_TrimsProvider()
     {
         var connection = CalendarConnection.Create(
-            _validUserId, "  Google  ", ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+            _validUserId, _validProfileId, "  Google  ", ValidAccessToken, ValidRefreshToken, _validExpiresAt);
 
         Assert.Equal("Google", connection.Provider);
     }
@@ -83,7 +84,7 @@ public class CalendarConnectionTests
     public void UpdateTokens_WithNewAccessToken_UpdatesAccessTokenAndExpiry()
     {
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
 
         var newExpiry = DateTimeOffset.UtcNow.AddHours(2);
 
@@ -100,7 +101,7 @@ public class CalendarConnectionTests
     public void UpdateTokens_WithNewRefreshToken_UpdatesAllTokens()
     {
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
 
         var newExpiry = DateTimeOffset.UtcNow.AddHours(2);
 
@@ -117,7 +118,7 @@ public class CalendarConnectionTests
     public void UpdateTokens_WithNullRefreshToken_PreservesExistingRefreshToken()
     {
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
 
         connection.UpdateTokens("new-access", DateTimeOffset.UtcNow.AddHours(2), null);
 
@@ -131,7 +132,7 @@ public class CalendarConnectionTests
     public void UpdateTokens_WithInvalidAccessToken_ThrowsArgumentException(string? accessToken)
     {
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
 
         Assert.ThrowsAny<ArgumentException>(() =>
             connection.UpdateTokens(accessToken!, DateTimeOffset.UtcNow.AddHours(1)));
@@ -145,7 +146,7 @@ public class CalendarConnectionTests
     public void RecordSync_SetsLastSyncedAt()
     {
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
 
         Assert.Null(connection.LastSyncedAt);
 
@@ -164,7 +165,7 @@ public class CalendarConnectionTests
     public void IsTokenExpired_WhenTokenIsFresh_ReturnsFalse()
     {
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken,
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken,
             DateTimeOffset.UtcNow.AddHours(1));
 
         Assert.False(connection.IsTokenExpired());
@@ -174,7 +175,7 @@ public class CalendarConnectionTests
     public void IsTokenExpired_WhenTokenExpired_ReturnsTrue()
     {
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken,
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken,
             DateTimeOffset.UtcNow.AddMinutes(-1));
 
         Assert.True(connection.IsTokenExpired());
@@ -185,7 +186,7 @@ public class CalendarConnectionTests
     {
         // Token expires in 3 minutes, but buffer is 5 minutes
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken,
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken,
             DateTimeOffset.UtcNow.AddMinutes(3));
 
         Assert.True(connection.IsTokenExpired(bufferMinutes: 5));
@@ -196,7 +197,7 @@ public class CalendarConnectionTests
     {
         // Token expires in 3 minutes, buffer is 1 minute
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken,
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken,
             DateTimeOffset.UtcNow.AddMinutes(3));
 
         Assert.False(connection.IsTokenExpired(bufferMinutes: 1));
@@ -206,7 +207,7 @@ public class CalendarConnectionTests
     public void IsTokenExpired_WithNegativeBuffer_ThrowsArgumentOutOfRangeException()
     {
         var connection = CalendarConnection.Create(
-            _validUserId, ValidProvider, ValidAccessToken, ValidRefreshToken,
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken,
             DateTimeOffset.UtcNow.AddHours(1));
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>

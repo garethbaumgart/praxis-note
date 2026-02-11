@@ -23,6 +23,7 @@ public static class NoteEndpoints
     }
 
     private static async Task<IResult> HandleGetNotes(
+        HttpContext context,
         ClaimsPrincipal user,
         GetUserNotes getUserNotes,
         CancellationToken cancellationToken)
@@ -33,7 +34,8 @@ public static class NoteEndpoints
             return Results.Unauthorized();
         }
 
-        var query = new GetUserNotes.Query(userId.Value);
+        var profileId = context.GetProfileId();
+        var query = new GetUserNotes.Query(userId.Value, profileId);
         var notes = await getUserNotes.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(notes);
@@ -58,6 +60,7 @@ public static class NoteEndpoints
     }
 
     private static async Task<IResult> HandleCreateNote(
+        HttpContext context,
         ClaimsPrincipal user,
         CreateNoteRequest request,
         CreateNote createNote,
@@ -69,7 +72,8 @@ public static class NoteEndpoints
             return Results.Unauthorized();
         }
 
-        var command = new CreateNote.Command(userId.Value, request.Content);
+        var profileId = context.GetProfileId();
+        var command = new CreateNote.Command(userId.Value, profileId, request.Content);
         var result = await createNote.ExecuteAsync(command, cancellationToken);
 
         return Results.Created($"/api/notes/{result.NoteId}", new { id = result.NoteId });

@@ -12,6 +12,7 @@ using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Notifications;
+using PraxisNote.Domain.Aggregates.Profiles;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.Users;
@@ -47,6 +48,7 @@ public static class DependencyInjection
         services.AddScoped<IMeetingRepository, MeetingRepository>();
         services.AddScoped<ICalendarConnectionRepository, CalendarConnectionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IProfileRepository, ProfileRepository>();
         services.AddScoped<IBehavioralGoalRepository, BehavioralGoalRepository>();
 
         // External services

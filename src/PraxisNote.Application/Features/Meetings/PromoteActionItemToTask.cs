@@ -40,7 +40,7 @@ public sealed class PromoteActionItemToTask(
             return null;
 
         // 3. Check if a task already exists for this action item (idempotency)
-        var existingTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
+        var existingTasks = await taskRepository.GetByUserIdAsync(command.UserId, meeting.ProfileId, cancellationToken);
         var existingTask = existingTasks.FirstOrDefault(t =>
             t.ActionItemRef is { } actionItemRef &&
             actionItemRef.MeetingId == command.MeetingId &&
@@ -67,7 +67,7 @@ public sealed class PromoteActionItemToTask(
 
         // 6. Create task from action item
         var actionItemRef = new ActionItemRef(command.MeetingId, command.ActionItemId);
-        var task = TaskItem.CreateFromActionItem(command.UserId, actionItem.Description, actionItemRef);
+        var task = TaskItem.CreateFromActionItem(command.UserId, meeting.ProfileId, actionItem.Description, actionItemRef);
 
         // 7. Set initial status based on action item state
         if (actionItem.IsCompleted)

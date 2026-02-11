@@ -8,11 +8,11 @@ public sealed class GetArchivedCount(ITaskRepository taskRepository, IOptions<Ta
 {
     private readonly TaskSettings _settings = settings.Value;
 
-    public record Query(Guid UserId);
+    public record Query(Guid UserId, Guid ProfileId);
 
     public async Task<int> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        var tasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var tasks = await taskRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
         var archiveThreshold = DateTimeOffset.UtcNow.AddDays(-_settings.ArchiveThresholdDays);
 
         return tasks.Count(t =>

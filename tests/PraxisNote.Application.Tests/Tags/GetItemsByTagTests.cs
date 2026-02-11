@@ -15,6 +15,7 @@ public class GetItemsByTagTests
     private readonly ITaskRepository _taskRepo = Substitute.For<ITaskRepository>();
     private readonly GetItemsByTag _sut;
     private readonly Guid _userId = Guid.NewGuid();
+    private readonly Guid _profileId = Guid.NewGuid();
     private readonly Guid _tagId = Guid.NewGuid();
 
     public GetItemsByTagTests()
@@ -39,7 +40,7 @@ public class GetItemsByTagTests
     public async Task ExecuteAsync_TagBelongsToDifferentUser_ThrowsNotFoundError()
     {
         var otherUserId = Guid.NewGuid();
-        var tag = Tag.Create(otherUserId, "other-tag");
+        var tag = Tag.Create(otherUserId, _profileId, "other-tag");
         _tagRepo.GetByIdAsync(_tagId, Arg.Any<CancellationToken>()).Returns(tag);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -72,16 +73,16 @@ public class GetItemsByTagTests
     {
         SetupValidTag();
 
-        var meeting = Meeting.Create(_userId, "Sprint Planning", attendees: "Alice, Bob");
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        var meeting = Meeting.Create(_userId, _profileId, "Sprint Planning", attendees: "Alice, Bob");
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { meeting });
 
-        var note = Note.Create(_userId);
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        var note = Note.Create(_userId, _profileId);
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
 
-        var task = TaskItem.CreateStandalone(_userId, "Fix bug");
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        var task = TaskItem.CreateStandalone(_userId, _profileId, "Fix bug");
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task });
 
         var result = await _sut.ExecuteAsync(new GetItemsByTag.Query(_userId, _tagId));
@@ -100,14 +101,14 @@ public class GetItemsByTagTests
     {
         SetupValidTag();
 
-        var olderMeeting = Meeting.Create(_userId, "Old Meeting", null);
-        var newerNote = Note.Create(_userId);
+        var olderMeeting = Meeting.Create(_userId, _profileId, "Old Meeting", null);
+        var newerNote = Note.Create(_userId, _profileId);
 
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { olderMeeting });
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { newerNote });
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
 
         var result = await _sut.ExecuteAsync(new GetItemsByTag.Query(_userId, _tagId));
@@ -124,8 +125,8 @@ public class GetItemsByTagTests
     public async Task ExecuteAsync_MeetingWithNullTitle_UsesUntitledMeeting()
     {
         SetupValidTag();
-        var meeting = Meeting.Create(_userId, null, null);
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        var meeting = Meeting.Create(_userId, _profileId, null, null);
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { meeting });
         SetupEmptyNotesAndTasks();
 
@@ -138,8 +139,8 @@ public class GetItemsByTagTests
     public async Task ExecuteAsync_MeetingWithAttendees_CountsCorrectly()
     {
         SetupValidTag();
-        var meeting = Meeting.Create(_userId, "Standup", attendees: "Alice, Bob, Charlie");
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        var meeting = Meeting.Create(_userId, _profileId, "Standup", attendees: "Alice, Bob, Charlie");
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { meeting });
         SetupEmptyNotesAndTasks();
 
@@ -156,8 +157,8 @@ public class GetItemsByTagTests
     public async Task ExecuteAsync_NoteWithEmptyContent_ReturnsUntitled()
     {
         SetupValidTag();
-        var note = Note.Create(_userId);
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        var note = Note.Create(_userId, _profileId);
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
         SetupEmptyMeetingsAndTasks();
 
@@ -170,9 +171,9 @@ public class GetItemsByTagTests
     public async Task ExecuteAsync_NoteWithHeading_ExtractsTitle()
     {
         SetupValidTag();
-        var note = Note.Create(_userId);
+        var note = Note.Create(_userId, _profileId);
         note.UpdateContent("{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":1},\"content\":[{\"type\":\"text\",\"text\":\"My Heading\"}]}]}");
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
         SetupEmptyMeetingsAndTasks();
 
@@ -185,10 +186,10 @@ public class GetItemsByTagTests
     public async Task ExecuteAsync_NoteWithLongTitle_TruncatesTo50Chars()
     {
         SetupValidTag();
-        var note = Note.Create(_userId);
+        var note = Note.Create(_userId, _profileId);
         var longTitle = new string('A', 60);
         note.UpdateContent($"{{\"type\":\"doc\",\"content\":[{{\"type\":\"heading\",\"attrs\":{{\"level\":1}},\"content\":[{{\"type\":\"text\",\"text\":\"{longTitle}\"}}]}}]}}");
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
         SetupEmptyMeetingsAndTasks();
 
@@ -206,9 +207,9 @@ public class GetItemsByTagTests
     public async Task ExecuteAsync_TaskMapsStatusAndPriority()
     {
         SetupValidTag();
-        var task = TaskItem.CreateStandalone(_userId, "Important task");
+        var task = TaskItem.CreateStandalone(_userId, _profileId, "Important task");
         task.TogglePriority();
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task });
         SetupEmptyNotesAndMeetings();
 
@@ -225,41 +226,41 @@ public class GetItemsByTagTests
 
     private void SetupValidTag()
     {
-        var tag = Tag.Create(_userId, "test-tag");
+        var tag = Tag.Create(_userId, _profileId, "test-tag");
         _tagRepo.GetByIdAsync(_tagId, Arg.Any<CancellationToken>()).Returns(tag);
     }
 
     private void SetupEmptyRepositories()
     {
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
     }
 
     private void SetupEmptyNotesAndTasks()
     {
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
     }
 
     private void SetupEmptyMeetingsAndTasks()
     {
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
-        _taskRepo.GetTasksWithTagAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
     }
 
     private void SetupEmptyNotesAndMeetings()
     {
-        _noteRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
-        _meetingRepo.GetByTagIdAsync(_userId, _tagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _tagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
     }
 

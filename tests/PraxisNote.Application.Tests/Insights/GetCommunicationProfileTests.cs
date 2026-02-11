@@ -9,6 +9,7 @@ namespace PraxisNote.Application.Tests.Insights;
 public sealed class GetCommunicationProfileTests
 {
     private static readonly Guid UserId = Guid.NewGuid();
+    private static readonly Guid ProfileId = Guid.NewGuid();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -28,10 +29,10 @@ public sealed class GetCommunicationProfileTests
     [Fact]
     public async Task ExecuteAsync_NoMeetings_ReturnsHasEnoughDataFalse()
     {
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Meeting>());
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
         Assert.Equal(0, result.MeetingCount);
@@ -43,10 +44,10 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_FourMeetings_ReturnsHasEnoughDataFalse()
     {
         var meetings = CreateMeetings(4);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
         Assert.Equal(4, result.MeetingCount);
@@ -56,13 +57,13 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_OnlyDraftMeetings_ReturnsHasEnoughDataFalse()
     {
         var meetings = Enumerable.Range(0, 6)
-            .Select(_ => Meeting.Create(UserId, "Draft"))
+            .Select(_ => Meeting.Create(UserId, ProfileId, "Draft"))
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
         Assert.Equal(0, result.MeetingCount);
@@ -77,10 +78,10 @@ public sealed class GetCommunicationProfileTests
             .Select(i => CreateAnalyzedMeeting("not valid json", DateTimeOffset.UtcNow.AddDays(-10 + i)))
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(validMeetings.Concat(invalidMeetings).ToArray());
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
     }
@@ -93,10 +94,10 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_FiveMeetings_ReturnsHasEnoughDataTrue()
     {
         var meetings = CreateMeetings(5);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.True(result.HasEnoughData);
         Assert.Equal(5, result.MeetingCount);
@@ -108,10 +109,10 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_WithData_ReturnsSixArchetypeScores()
     {
         var meetings = CreateMeetings(5);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.Equal(6, result.Scores.Count);
         var names = result.Scores.Select(s => s.Name).ToHashSet();
@@ -127,10 +128,10 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_ScoresAreSortedDescending()
     {
         var meetings = CreateMeetings(5);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         for (var i = 1; i < result.Scores.Count; i++)
         {
@@ -143,10 +144,10 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_PrimaryArchetype_IsHighestScoring()
     {
         var meetings = CreateMeetings(5);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.Equal(result.Scores[0].Name, result.PrimaryArchetype);
     }
@@ -155,10 +156,10 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_AllScoresAreInRange0To100()
     {
         var meetings = CreateMeetings(5);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         foreach (var score in result.Scores)
         {
@@ -170,10 +171,10 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_StyleConsistencyIsInRange0To100()
     {
         var meetings = CreateMeetings(5);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.InRange(result.StyleConsistency, 0, 100);
     }
@@ -182,10 +183,10 @@ public sealed class GetCommunicationProfileTests
     public async Task ExecuteAsync_StrengthsAndGrowthAreas_ArePopulated()
     {
         var meetings = CreateMeetings(5);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.NotEmpty(result.Strengths);
         Assert.NotEmpty(result.GrowthAreas);
@@ -207,10 +208,10 @@ public sealed class GetCommunicationProfileTests
             })
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "90d"));
 
         Assert.True(result.HasEnoughData);
         var secondScore = result.Scores[1].Score;
@@ -228,10 +229,10 @@ public sealed class GetCommunicationProfileTests
         var recentMeetings = CreateMeetings(5, DateTimeOffset.UtcNow.AddDays(-3));
         var oldMeetings = CreateMeetings(5, DateTimeOffset.UtcNow.AddDays(-30));
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(recentMeetings.Concat(oldMeetings).ToArray());
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "7d"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "7d"));
 
         Assert.Equal(5, result.MeetingCount);
     }
@@ -242,10 +243,10 @@ public sealed class GetCommunicationProfileTests
         var recentMeetings = CreateMeetings(3, DateTimeOffset.UtcNow.AddDays(-5));
         var oldMeetings = CreateMeetings(3, DateTimeOffset.UtcNow.AddDays(-200));
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(recentMeetings.Concat(oldMeetings).ToArray());
 
-        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, "all"));
+        var result = await _sut.ExecuteAsync(new GetCommunicationProfile.Query(UserId, ProfileId, "all"));
 
         Assert.True(result.HasEnoughData);
         Assert.Equal(6, result.MeetingCount);
@@ -482,7 +483,7 @@ public sealed class GetCommunicationProfileTests
 
     private static Meeting CreateAnalyzedMeeting(string behavioralAnalysisJson, DateTimeOffset? date = null, string? attendees = null)
     {
-        var meeting = Meeting.Create(UserId, "Test Meeting", date ?? DateTimeOffset.UtcNow.AddDays(-1), attendees);
+        var meeting = Meeting.Create(UserId, ProfileId, "Test Meeting", date ?? DateTimeOffset.UtcNow.AddDays(-1), attendees);
         meeting.SubmitTranscript("Test transcript content for analysis.");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Test summary", "[]", "[]", behavioralAnalysisJson);

@@ -10,6 +10,7 @@ namespace PraxisNote.Application.Tests.Goals;
 public sealed class EvaluateGoalProgressTests
 {
     private static readonly Guid UserId = Guid.NewGuid();
+    private static readonly Guid ProfileId = Guid.NewGuid();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -28,10 +29,10 @@ public sealed class EvaluateGoalProgressTests
     [Fact]
     public async Task ExecuteAsync_NoGoals_ReturnsEmptyList()
     {
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<BehavioralGoal>());
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Empty(result);
     }
@@ -39,16 +40,16 @@ public sealed class EvaluateGoalProgressTests
     [Fact]
     public async Task ExecuteAsync_GoalNotMet_ReturnsIsMetFalse()
     {
-        var goal = BehavioralGoal.Create(UserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Talk less");
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        var goal = BehavioralGoal.Create(UserId, ProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Talk less");
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { goal });
 
         var meeting = CreateAnalyzedMeeting(
             CreateAnalysis(talkTime: [("Alice", 40), ("Bob", 60)]));
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Single(result);
         // Bob is target participant (highest avg talk time)
@@ -60,16 +61,16 @@ public sealed class EvaluateGoalProgressTests
     public async Task ExecuteAsync_TalkTimeGoalForHighestParticipant_EvaluatesCorrectly()
     {
         // Alice has 40%, goal is < 50 — but target participant is Bob (highest avg)
-        var goal = BehavioralGoal.Create(UserId, MetricType.TalkTimePercentage, GoalOperator.LessThanOrEqual, 55, null, "Keep under 55%");
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        var goal = BehavioralGoal.Create(UserId, ProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThanOrEqual, 55, null, "Keep under 55%");
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { goal });
 
         var meeting = CreateAnalyzedMeeting(
             CreateAnalysis(talkTime: [("Alice", 45), ("Bob", 55)]));
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Single(result);
         Assert.Equal(55, result[0].CurrentValue);
@@ -79,19 +80,19 @@ public sealed class EvaluateGoalProgressTests
     [Fact]
     public async Task ExecuteAsync_MultipleGoals_ReturnsProgressForEach()
     {
-        var goal1 = BehavioralGoal.Create(UserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Talk less");
-        var goal2 = BehavioralGoal.Create(UserId, MetricType.RedFlagCount, GoalOperator.LessThanOrEqual, 0, null, "Zero flags");
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        var goal1 = BehavioralGoal.Create(UserId, ProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Talk less");
+        var goal2 = BehavioralGoal.Create(UserId, ProfileId, MetricType.RedFlagCount, GoalOperator.LessThanOrEqual, 0, null, "Zero flags");
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { goal1, goal2 });
 
         var analysis = CreateAnalysis(
             talkTime: [("Alice", 60), ("Bob", 40)],
             redFlags: [("evasive", "Alice", "Avoided question", "Context", "high")]);
         var meeting = CreateAnalyzedMeeting(analysis);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Equal(2, result.Count);
     }
@@ -99,8 +100,8 @@ public sealed class EvaluateGoalProgressTests
     [Fact]
     public async Task ExecuteAsync_StreakCalculation_CountsConsecutiveMetGoals()
     {
-        var goal = BehavioralGoal.Create(UserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Talk less");
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        var goal = BehavioralGoal.Create(UserId, ProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Talk less");
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { goal });
 
         // Alice is target (highest avg across meetings: 55, 55, 45, 45 = avg 50 vs Bob 50)
@@ -112,10 +113,10 @@ public sealed class EvaluateGoalProgressTests
             CreateAnalyzedMeeting(CreateAnalysis(talkTime: [("Alice", 45), ("Bob", 55)]), DateTimeOffset.UtcNow.AddDays(-4)),
             CreateAnalyzedMeeting(CreateAnalysis(talkTime: [("Alice", 40), ("Bob", 60)]), DateTimeOffset.UtcNow.AddDays(-1)),
         };
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Single(result);
         // Target participant is highest average talk time
@@ -129,8 +130,8 @@ public sealed class EvaluateGoalProgressTests
     [Fact]
     public async Task ExecuteAsync_RecentResults_ContainsUpToEightEntries()
     {
-        var goal = BehavioralGoal.Create(UserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test");
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        var goal = BehavioralGoal.Create(UserId, ProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test");
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { goal });
 
         var meetings = Enumerable.Range(0, 10)
@@ -138,10 +139,10 @@ public sealed class EvaluateGoalProgressTests
                 CreateAnalysis(talkTime: [("Alice", 60), ("Bob", 40)]),
                 DateTimeOffset.UtcNow.AddDays(-20 + i)))
             .ToArray();
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Single(result);
         Assert.Equal(8, result[0].RecentResults.Count);
@@ -150,13 +151,13 @@ public sealed class EvaluateGoalProgressTests
     [Fact]
     public async Task ExecuteAsync_NoMeetings_ReturnsNullCurrentValue()
     {
-        var goal = BehavioralGoal.Create(UserId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test");
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        var goal = BehavioralGoal.Create(UserId, ProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan, 50, null, "Test");
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { goal });
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Meeting>());
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Single(result);
         Assert.Null(result[0].CurrentValue);
@@ -167,18 +168,18 @@ public sealed class EvaluateGoalProgressTests
     [Fact]
     public async Task ExecuteAsync_QuestionRatioMetric_ExtractsCorrectValues()
     {
-        var goal = BehavioralGoal.Create(UserId, MetricType.QuestionRatio, GoalOperator.GreaterThanOrEqual, 0.3, null, "Ask more questions");
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        var goal = BehavioralGoal.Create(UserId, ProfileId, MetricType.QuestionRatio, GoalOperator.GreaterThanOrEqual, 0.3, null, "Ask more questions");
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { goal });
 
         var analysis = CreateAnalysis(
             talkTime: [("Alice", 60), ("Bob", 40)],
             questionRatios: new Dictionary<string, double> { ["Alice"] = 0.35, ["Bob"] = 0.15 });
         var meeting = CreateAnalyzedMeeting(analysis);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Single(result);
         // Alice is target participant (highest talk time)
@@ -189,8 +190,8 @@ public sealed class EvaluateGoalProgressTests
     [Fact]
     public async Task ExecuteAsync_RedFlagMetric_CountsCorrectly()
     {
-        var goal = BehavioralGoal.Create(UserId, MetricType.RedFlagCount, GoalOperator.LessThanOrEqual, 1, null, "Few red flags");
-        _goalRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        var goal = BehavioralGoal.Create(UserId, ProfileId, MetricType.RedFlagCount, GoalOperator.LessThanOrEqual, 1, null, "Few red flags");
+        _goalRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { goal });
 
         var analysis = CreateAnalysis(
@@ -200,10 +201,10 @@ public sealed class EvaluateGoalProgressTests
                 ("hedging", "Alice", "Uncertain", "Context", "low"),
                 ("defensive", "Bob", "Defensive", "Context", "medium")]);
         var meeting = CreateAnalyzedMeeting(analysis);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId));
+        var result = await _sut.ExecuteAsync(new EvaluateGoalProgress.Query(UserId, ProfileId));
 
         Assert.Single(result);
         // Alice is target, has 2 red flags
@@ -216,7 +217,7 @@ public sealed class EvaluateGoalProgressTests
     private static Meeting CreateAnalyzedMeeting(BehavioralAnalysisData analysis, DateTimeOffset? date = null)
     {
         var json = JsonSerializer.Serialize(analysis, JsonOptions);
-        var meeting = Meeting.Create(UserId, "Test Meeting", date ?? DateTimeOffset.UtcNow.AddDays(-1));
+        var meeting = Meeting.Create(UserId, ProfileId, "Test Meeting", date ?? DateTimeOffset.UtcNow.AddDays(-1));
         meeting.SubmitTranscript("Test transcript content for analysis.");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Test summary", "[]", "[]", json);

@@ -26,7 +26,7 @@ public sealed class GetActionItemStatus(
 
         // Get all tasks linked to this meeting
         // Use GroupBy to handle potential duplicate links gracefully (take first)
-        var userTasks = await taskRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var userTasks = await taskRepository.GetByUserIdAsync(query.UserId, meeting.ProfileId, cancellationToken);
         var linkedTasks = userTasks
             .Where(t => t.ActionItemRef?.MeetingId == query.MeetingId)
             .GroupBy(t => t.ActionItemRef!.ActionItemId)

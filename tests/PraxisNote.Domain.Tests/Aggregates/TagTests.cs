@@ -5,6 +5,7 @@ namespace PraxisNote.Domain.Tests.Aggregates;
 public class TagTests
 {
     private readonly Guid _validUserId = Guid.NewGuid();
+    private readonly Guid _validProfileId = Guid.NewGuid();
 
     [Fact]
     public void Create_WithValidInputs_ReturnsTagWithCorrectProperties()
@@ -13,7 +14,7 @@ public class TagTests
         var name = "Work";
 
         // Act
-        var tag = Tag.Create(_validUserId, name);
+        var tag = Tag.Create(_validUserId, _validProfileId, name);
 
         // Assert
         Assert.NotEqual(Guid.Empty, tag.Id);
@@ -26,14 +27,14 @@ public class TagTests
     public void Create_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => Tag.Create(Guid.Empty, "Work"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Tag.Create(Guid.Empty, _validProfileId, "Work"));
     }
 
     [Fact]
     public void Create_WithNullName_ThrowsArgumentNullException()
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentNullException>(() => Tag.Create(_validUserId, null!));
+        Assert.Throws<ArgumentNullException>(() => Tag.Create(_validUserId, _validProfileId, null!));
     }
 
     [Theory]
@@ -42,14 +43,14 @@ public class TagTests
     public void Create_WithEmptyOrWhitespaceName_ThrowsArgumentException(string invalidName)
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentException>(() => Tag.Create(_validUserId, invalidName));
+        Assert.Throws<ArgumentException>(() => Tag.Create(_validUserId, _validProfileId, invalidName));
     }
 
     [Fact]
     public void Rename_WithValidName_UpdatesName()
     {
         // Arrange
-        var tag = Tag.Create(_validUserId, "Old Name");
+        var tag = Tag.Create(_validUserId, _validProfileId, "Old Name");
 
         // Act
         tag.Rename("New Name");
@@ -62,7 +63,7 @@ public class TagTests
     public void Rename_WithNullName_ThrowsArgumentNullException()
     {
         // Arrange
-        var tag = Tag.Create(_validUserId, "Valid Name");
+        var tag = Tag.Create(_validUserId, _validProfileId, "Valid Name");
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => tag.Rename(null!));
@@ -74,7 +75,7 @@ public class TagTests
     public void Rename_WithEmptyOrWhitespaceName_ThrowsArgumentException(string invalidName)
     {
         // Arrange
-        var tag = Tag.Create(_validUserId, "Valid Name");
+        var tag = Tag.Create(_validUserId, _validProfileId, "Valid Name");
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => tag.Rename(invalidName));
@@ -84,7 +85,7 @@ public class TagTests
     public void Create_WithMixedCaseName_StoresAsLowercase()
     {
         // Arrange & Act
-        var tag = Tag.Create(_validUserId, "Work");
+        var tag = Tag.Create(_validUserId, _validProfileId, "Work");
 
         // Assert
         Assert.Equal("work", tag.Name);
@@ -94,7 +95,7 @@ public class TagTests
     public void Create_WithUpperCaseName_StoresAsLowercase()
     {
         // Arrange & Act
-        var tag = Tag.Create(_validUserId, "URGENT");
+        var tag = Tag.Create(_validUserId, _validProfileId, "URGENT");
 
         // Assert
         Assert.Equal("urgent", tag.Name);
@@ -104,7 +105,7 @@ public class TagTests
     public void Rename_WithMixedCaseName_StoresAsLowercase()
     {
         // Arrange
-        var tag = Tag.Create(_validUserId, "old name");
+        var tag = Tag.Create(_validUserId, _validProfileId, "old name");
 
         // Act
         tag.Rename("New-Name");

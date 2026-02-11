@@ -14,16 +14,16 @@ public sealed class EvaluateGoalProgress(
         PropertyNameCaseInsensitive = true
     };
 
-    public record Query(Guid UserId);
+    public record Query(Guid UserId, Guid ProfileId);
 
     public async Task<IReadOnlyList<GoalProgressDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        var allGoals = await goalRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var allGoals = await goalRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
         var goals = allGoals.Where(g => g.IsActive).ToList();
         if (goals.Count == 0)
             return [];
 
-        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
 
         var cutoff = DateTimeOffset.UtcNow.AddDays(-30);
 

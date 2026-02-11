@@ -10,6 +10,7 @@ namespace PraxisNote.Application.Tests.Summary;
 public sealed class GetDailySummaryTests
 {
     private static readonly Guid UserId = Guid.NewGuid();
+    private static readonly Guid ProfileId = Guid.NewGuid();
 
     private readonly IMeetingRepository _meetingRepo = Substitute.For<IMeetingRepository>();
     private readonly ITaskRepository _taskRepo = Substitute.For<ITaskRepository>();
@@ -28,7 +29,7 @@ public sealed class GetDailySummaryTests
     {
         SetupEmptyRepositories();
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.NotNull(result);
         Assert.Equal(0, result.Stats.MeetingCount);
@@ -47,17 +48,17 @@ public sealed class GetDailySummaryTests
     public async Task ExecuteAsync_DataOnDifferentDay_ReturnsZeroCounts()
     {
         var yesterday = DateTimeOffset.UtcNow.AddDays(-1);
-        var meeting = Meeting.Create(UserId, "Yesterday's Meeting", yesterday);
+        var meeting = Meeting.Create(UserId, ProfileId, "Yesterday's Meeting", yesterday);
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal(0, result.Stats.MeetingCount);
     }
@@ -71,16 +72,16 @@ public sealed class GetDailySummaryTests
     {
         var targetDate = new DateOnly(2026, 2, 7);
         var meetingDate = new DateTimeOffset(2026, 2, 7, 10, 0, 0, TimeSpan.Zero);
-        var meeting = Meeting.Create(UserId, "Sprint Planning", meetingDate);
+        var meeting = Meeting.Create(UserId, ProfileId, "Sprint Planning", meetingDate);
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(1, result.Stats.MeetingCount);
         Assert.Single(result.Meetings);
@@ -91,19 +92,19 @@ public sealed class GetDailySummaryTests
     public async Task ExecuteAsync_MeetingsOrderedByTime()
     {
         var targetDate = new DateOnly(2026, 2, 7);
-        var morning = Meeting.Create(UserId, "Morning Standup",
+        var morning = Meeting.Create(UserId, ProfileId, "Morning Standup",
             new DateTimeOffset(2026, 2, 7, 9, 0, 0, TimeSpan.Zero));
-        var afternoon = Meeting.Create(UserId, "Afternoon Review",
+        var afternoon = Meeting.Create(UserId, ProfileId, "Afternoon Review",
             new DateTimeOffset(2026, 2, 7, 14, 0, 0, TimeSpan.Zero));
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { afternoon, morning }); // intentionally reversed
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(2, result.Meetings.Count);
         Assert.Equal("Morning Standup", result.Meetings[0].Title);
@@ -115,7 +116,7 @@ public sealed class GetDailySummaryTests
     {
         var targetDate = new DateOnly(2026, 2, 7);
         var meetingDate = new DateTimeOffset(2026, 2, 7, 10, 0, 0, TimeSpan.Zero);
-        var meeting = Meeting.Create(UserId, "Planning", meetingDate);
+        var meeting = Meeting.Create(UserId, ProfileId, "Planning", meetingDate);
 
         // Add transcript and analyze to get action items
         meeting.SubmitTranscript("Discussion about project tasks.");
@@ -127,14 +128,14 @@ public sealed class GetDailySummaryTests
         };
         meeting.CompleteAnalysis("Summary of planning", "[]", "[\"Use REST\"]", actionItems: actionItems);
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(2, result.Meetings[0].ActionItemCount);
         Assert.Equal(1, result.Meetings[0].DecisionCount);
@@ -145,17 +146,17 @@ public sealed class GetDailySummaryTests
     public async Task ExecuteAsync_MeetingWithNullDate_UsesCreatedAtFallback()
     {
         // Meeting created today with null MeetingDate should still appear in today's summary
-        var meeting = Meeting.Create(UserId, "Quick Chat", meetingDate: null);
+        var meeting = Meeting.Create(UserId, ProfileId, "Quick Chat", meetingDate: null);
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal(1, result.Stats.MeetingCount);
         Assert.Single(result.Meetings);
@@ -166,18 +167,18 @@ public sealed class GetDailySummaryTests
     public async Task ExecuteAsync_MeetingWithNullDecisions_ReturnsZeroDecisionCount()
     {
         var targetDate = new DateOnly(2026, 2, 7);
-        var meeting = Meeting.Create(UserId, "Planning",
+        var meeting = Meeting.Create(UserId, ProfileId, "Planning",
             new DateTimeOffset(2026, 2, 7, 10, 0, 0, TimeSpan.Zero));
         // Meeting in Draft status has null Decisions
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(0, result.Meetings[0].DecisionCount);
     }
@@ -190,15 +191,15 @@ public sealed class GetDailySummaryTests
     public async Task ExecuteAsync_CompletedTasksOnTargetDate_Included()
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var task = TaskItem.CreateStandalone(UserId, "Fix login bug");
+        var task = TaskItem.CreateStandalone(UserId, ProfileId, "Fix login bug");
         task.Complete(); // Sets CompletedAt to now
 
         SetupEmptyMeetingsAndNotes();
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { task });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, today));
+            new GetDailySummary.Query(UserId, ProfileId, today));
 
         Assert.Equal(1, result.Stats.TasksCompleted);
         Assert.Single(result.CompletedTasks);
@@ -208,15 +209,15 @@ public sealed class GetDailySummaryTests
     [Fact]
     public async Task ExecuteAsync_InProgressTasksStartedOnDate_Included()
     {
-        var task = TaskItem.CreateStandalone(UserId, "Build feature");
+        var task = TaskItem.CreateStandalone(UserId, ProfileId, "Build feature");
         task.Start(); // Sets StartedAt to now, Status = InProgress
 
         SetupEmptyMeetingsAndNotes();
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { task });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal(1, result.Stats.TasksStarted);
         Assert.Single(result.InProgressTasks);
@@ -227,15 +228,15 @@ public sealed class GetDailySummaryTests
     public async Task ExecuteAsync_CompletedTaskNotInProgress_ExcludedFromStarted()
     {
         // A completed task should not appear in InProgress even if StartedAt is today
-        var task = TaskItem.CreateStandalone(UserId, "Quick task");
+        var task = TaskItem.CreateStandalone(UserId, ProfileId, "Quick task");
         task.Complete(); // Status = Done, StartedAt = now, CompletedAt = now
 
         SetupEmptyMeetingsAndNotes();
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { task });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal(1, result.Stats.TasksCompleted);
         Assert.Equal(0, result.Stats.TasksStarted); // Not counted as "started" since it's Done
@@ -245,16 +246,16 @@ public sealed class GetDailySummaryTests
     [Fact]
     public async Task ExecuteAsync_PriorityTaskFlagged()
     {
-        var task = TaskItem.CreateStandalone(UserId, "Urgent fix");
+        var task = TaskItem.CreateStandalone(UserId, ProfileId, "Urgent fix");
         task.TogglePriority(); // IsPriority = true
         task.Complete();
 
         SetupEmptyMeetingsAndNotes();
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { task });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.True(result.CompletedTasks[0].IsPriority);
     }
@@ -266,14 +267,14 @@ public sealed class GetDailySummaryTests
     [Fact]
     public async Task ExecuteAsync_NotesUpdatedOnTargetDate_Included()
     {
-        var note = Note.Create(UserId, "# My Note\nSome content here");
+        var note = Note.Create(UserId, ProfileId, "# My Note\nSome content here");
 
         SetupEmptyMeetingsAndTasks();
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { note });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal(1, result.Stats.NotesUpdated);
         Assert.Single(result.NotesUpdated);
@@ -283,14 +284,14 @@ public sealed class GetDailySummaryTests
     [Fact]
     public async Task ExecuteAsync_NoteTitle_ExtractedFromPlainText()
     {
-        var note = Note.Create(UserId, "API Design Thoughts\nSome notes about API");
+        var note = Note.Create(UserId, ProfileId, "API Design Thoughts\nSome notes about API");
 
         SetupEmptyMeetingsAndTasks();
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { note });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal("API Design Thoughts", result.NotesUpdated[0].Title);
     }
@@ -298,14 +299,14 @@ public sealed class GetDailySummaryTests
     [Fact]
     public async Task ExecuteAsync_EmptyNote_TitledUntitled()
     {
-        var note = Note.Create(UserId);
+        var note = Note.Create(UserId, ProfileId);
 
         SetupEmptyMeetingsAndTasks();
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { note });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal("Untitled Note", result.NotesUpdated[0].Title);
     }
@@ -314,14 +315,14 @@ public sealed class GetDailySummaryTests
     public async Task ExecuteAsync_NoteTitle_ExtractedFromTipTapJson()
     {
         var tipTapJson = """{"type":"doc","content":[{"type":"heading","attrs":{"level":1},"content":[{"type":"text","text":"Sprint Retrospective"}]},{"type":"paragraph","content":[{"type":"text","text":"What went well..."}]}]}""";
-        var note = Note.Create(UserId, tipTapJson);
+        var note = Note.Create(UserId, ProfileId, tipTapJson);
 
         SetupEmptyMeetingsAndTasks();
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { note });
 
         var result = await _sut.ExecuteAsync(
-            new GetDailySummary.Query(UserId, DateOnly.FromDateTime(DateTime.UtcNow)));
+            new GetDailySummary.Query(UserId, ProfileId, DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal("Sprint Retrospective", result.NotesUpdated[0].Title);
     }
@@ -333,16 +334,16 @@ public sealed class GetDailySummaryTests
         // Create a note that was created yesterday but updated today
         var yesterday = new DateTimeOffset(2026, 2, 6, 10, 0, 0, TimeSpan.Zero);
         var today = new DateTimeOffset(2026, 2, 7, 14, 0, 0, TimeSpan.Zero);
-        var note = Note.Create(UserId, "Existing note");
+        var note = Note.Create(UserId, ProfileId, "Existing note");
         // Use reflection to set CreatedAt and UpdatedAt for test control
         typeof(Note).GetProperty("CreatedAt")!.SetValue(note, yesterday);
         typeof(Note).GetProperty("UpdatedAt")!.SetValue(note, today);
 
         SetupEmptyMeetingsAndTasks();
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { note });
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Single(result.NotesUpdated);
         Assert.False(result.NotesUpdated[0].IsNew); // Created yesterday, not new
@@ -357,20 +358,20 @@ public sealed class GetDailySummaryTests
     {
         var targetDate = new DateOnly(2026, 2, 7);
         var recentMeetingDate = new DateTimeOffset(2026, 2, 5, 10, 0, 0, TimeSpan.Zero);
-        var recentMeeting = Meeting.Create(UserId, "Recent Meeting", recentMeetingDate);
+        var recentMeeting = Meeting.Create(UserId, ProfileId, "Recent Meeting", recentMeetingDate);
         recentMeeting.SubmitTranscript("Transcript");
         recentMeeting.StartAnalysis();
         recentMeeting.CompleteAnalysis("Summary", "[]", "[]",
             actionItems: new[] { ActionItem.Create("Follow up on design") });
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { recentMeeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(1, result.Stats.ActionItemsOpen);
         Assert.Single(result.OutstandingActionItems);
@@ -383,7 +384,7 @@ public sealed class GetDailySummaryTests
     {
         var targetDate = new DateOnly(2026, 2, 7);
         var meetingDate = new DateTimeOffset(2026, 2, 5, 10, 0, 0, TimeSpan.Zero);
-        var meeting = Meeting.Create(UserId, "Meeting", meetingDate);
+        var meeting = Meeting.Create(UserId, ProfileId, "Meeting", meetingDate);
         meeting.SubmitTranscript("Transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", "[]", "[]",
@@ -393,14 +394,14 @@ public sealed class GetDailySummaryTests
         var actionItemId = meeting.ActionItems.First().Id;
         meeting.ToggleActionItem(actionItemId);
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(0, result.Stats.ActionItemsOpen);
         Assert.Empty(result.OutstandingActionItems);
@@ -411,20 +412,20 @@ public sealed class GetDailySummaryTests
     {
         var targetDate = new DateOnly(2026, 2, 7);
         var oldMeetingDate = new DateTimeOffset(2025, 12, 1, 10, 0, 0, TimeSpan.Zero);
-        var oldMeeting = Meeting.Create(UserId, "Old Meeting", oldMeetingDate);
+        var oldMeeting = Meeting.Create(UserId, ProfileId, "Old Meeting", oldMeetingDate);
         oldMeeting.SubmitTranscript("Transcript");
         oldMeeting.StartAnalysis();
         oldMeeting.CompleteAnalysis("Summary", "[]", "[]",
             actionItems: new[] { ActionItem.Create("Old action item") });
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { oldMeeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(0, result.Stats.ActionItemsOpen);
         Assert.Empty(result.OutstandingActionItems);
@@ -435,7 +436,7 @@ public sealed class GetDailySummaryTests
     {
         var targetDate = new DateOnly(2026, 2, 7);
         var meetingDate = new DateTimeOffset(2026, 2, 5, 10, 0, 0, TimeSpan.Zero);
-        var meeting = Meeting.Create(UserId, "Meeting", meetingDate);
+        var meeting = Meeting.Create(UserId, ProfileId, "Meeting", meetingDate);
         meeting.SubmitTranscript("Transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", "[]", "[]",
@@ -445,17 +446,17 @@ public sealed class GetDailySummaryTests
 
         // Create a task linked to this action item
         var actionItemRef = new ActionItemRef(meeting.Id, actionItemId);
-        var linkedTask = TaskItem.CreateFromActionItem(UserId, "Task-linked item", actionItemRef);
+        var linkedTask = TaskItem.CreateFromActionItem(UserId, ProfileId, "Task-linked item", actionItemRef);
         linkedTask.Start(); // Status = InProgress
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { linkedTask });
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Single(result.OutstandingActionItems);
         var item = result.OutstandingActionItems[0];
@@ -470,20 +471,20 @@ public sealed class GetDailySummaryTests
         var targetDate = new DateOnly(2026, 2, 7);
         // Meeting scheduled for the future (after the target date end)
         var futureMeetingDate = new DateTimeOffset(2026, 2, 8, 10, 0, 0, TimeSpan.Zero);
-        var futureMeeting = Meeting.Create(UserId, "Future Meeting", futureMeetingDate);
+        var futureMeeting = Meeting.Create(UserId, ProfileId, "Future Meeting", futureMeetingDate);
         futureMeeting.SubmitTranscript("Transcript");
         futureMeeting.StartAnalysis();
         futureMeeting.CompleteAnalysis("Summary", "[]", "[]",
             actionItems: new[] { ActionItem.Create("Future action item") });
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { futureMeeting });
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(0, result.Stats.ActionItemsOpen);
         Assert.Empty(result.OutstandingActionItems);
@@ -499,7 +500,7 @@ public sealed class GetDailySummaryTests
         var targetDate = new DateOnly(2026, 1, 15);
         SetupEmptyRepositories();
 
-        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, targetDate));
+        var result = await _sut.ExecuteAsync(new GetDailySummary.Query(UserId, ProfileId, targetDate));
 
         Assert.Equal(targetDate, result.Date);
     }
@@ -510,27 +511,27 @@ public sealed class GetDailySummaryTests
 
     private void SetupEmptyRepositories()
     {
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Meeting>());
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
     }
 
     private void SetupEmptyMeetingsAndNotes()
     {
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Meeting>());
-        _noteRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Note>());
     }
 
     private void SetupEmptyMeetingsAndTasks()
     {
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Meeting>());
-        _taskRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _taskRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<TaskItem>());
     }
 

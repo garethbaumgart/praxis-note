@@ -24,6 +24,7 @@ public static class CalendarEndpoints
     }
 
     private static async Task<IResult> HandleGetStatus(
+        HttpContext context,
         ClaimsPrincipal user,
         GetCalendarConnectionStatus getStatus,
         CancellationToken cancellationToken)
@@ -31,8 +32,9 @@ public static class CalendarEndpoints
         var userId = user.GetUserId();
         if (userId is null) return Results.Unauthorized();
 
+        var profileId = context.GetProfileId();
         var result = await getStatus.ExecuteAsync(
-            new GetCalendarConnectionStatus.Query(userId.Value),
+            new GetCalendarConnectionStatus.Query(userId.Value, profileId),
             cancellationToken);
 
         return Results.Ok(result);
@@ -172,9 +174,13 @@ public static class CalendarEndpoints
             return Results.Redirect("/settings?error=no_refresh_token");
         }
 
+        // OAuth callback does not have the X-Profile-Id header, so use the default profile
+        var profileId = context.GetProfileId();
+
         await connectCalendar.ExecuteAsync(
             new ConnectGoogleCalendar.Command(
                 userId.Value,
+                profileId,
                 accessToken,
                 refreshToken,
                 DateTimeOffset.UtcNow.AddSeconds(expiresIn)),
@@ -185,6 +191,7 @@ public static class CalendarEndpoints
     }
 
     private static async Task<IResult> HandleSync(
+        HttpContext context,
         ClaimsPrincipal user,
         SyncCalendarEvents syncEvents,
         CancellationToken cancellationToken)
@@ -194,8 +201,9 @@ public static class CalendarEndpoints
 
         try
         {
+            var profileId = context.GetProfileId();
             var result = await syncEvents.ExecuteAsync(
-                new SyncCalendarEvents.Command(userId.Value),
+                new SyncCalendarEvents.Command(userId.Value, profileId),
                 cancellationToken);
 
             return Results.Ok(result);
@@ -207,6 +215,7 @@ public static class CalendarEndpoints
     }
 
     private static async Task<IResult> HandleDisconnect(
+        HttpContext context,
         ClaimsPrincipal user,
         DisconnectGoogleCalendar disconnectCalendar,
         CancellationToken cancellationToken)
@@ -214,8 +223,9 @@ public static class CalendarEndpoints
         var userId = user.GetUserId();
         if (userId is null) return Results.Unauthorized();
 
+        var profileId = context.GetProfileId();
         await disconnectCalendar.ExecuteAsync(
-            new DisconnectGoogleCalendar.Command(userId.Value),
+            new DisconnectGoogleCalendar.Command(userId.Value, profileId),
             cancellationToken);
 
         return Results.Ok(new { message = "Calendar disconnected" });

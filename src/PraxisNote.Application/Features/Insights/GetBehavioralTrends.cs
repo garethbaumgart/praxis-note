@@ -13,14 +13,14 @@ public sealed class GetBehavioralTrends(IMeetingRepository meetingRepository)
         PropertyNameCaseInsensitive = true
     };
 
-    public record Query(Guid UserId, string Range, string? ParticipantName = null);
+    public record Query(Guid UserId, Guid ProfileId, string Range, string? ParticipantName = null);
 
     public async Task<BehavioralTrendsDto> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
         if (!ValidRanges.Contains(query.Range, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException($"Invalid range: {query.Range}. Must be one of: {string.Join(", ", ValidRanges)}");
 
-        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
 
         var cutoff = GetCutoffDate(query.Range);
 

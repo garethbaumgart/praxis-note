@@ -10,29 +10,29 @@ public sealed class NoteRepository(PraxisNoteDbContext context) : INoteRepositor
         return await context.Notes.FindAsync([id], cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Note>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Note>> GetByUserIdAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
     {
         return await context.Notes
-            .Where(n => n.UserId == userId)
+            .Where(n => n.UserId == userId && n.ProfileId == profileId)
             .OrderByDescending(n => n.UpdatedAt)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Note>> GetByTagIdAsync(Guid userId, Guid tagId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Note>> GetByTagIdAsync(Guid userId, Guid profileId, Guid tagId, CancellationToken cancellationToken = default)
     {
         // In-memory filtering required because TagIds uses a JSON value conversion
         // that EF Core can't translate Contains() on. Same pattern as GetTagUsageCountsAsync.
         var notes = await context.Notes
-            .Where(n => n.UserId == userId)
+            .Where(n => n.UserId == userId && n.ProfileId == profileId)
             .ToListAsync(cancellationToken);
 
         return notes.Where(n => n.TagIds.Contains(tagId)).ToList();
     }
 
-    public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
     {
         var tagIdLists = await context.Notes
-            .Where(n => n.UserId == userId)
+            .Where(n => n.UserId == userId && n.ProfileId == profileId)
             .Select(n => n.TagIds)
             .ToListAsync(cancellationToken);
 

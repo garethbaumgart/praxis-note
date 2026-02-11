@@ -5,6 +5,7 @@ namespace PraxisNote.Domain.Aggregates.BehavioralGoals;
 public sealed class BehavioralGoal : AggregateRoot
 {
     public Guid UserId { get; private init; }
+    public Guid ProfileId { get; private init; }
     public MetricType MetricType { get; private set; }
     public GoalOperator Operator { get; private set; }
     public double TargetValue { get; private set; }
@@ -19,6 +20,7 @@ public sealed class BehavioralGoal : AggregateRoot
     private BehavioralGoal(
         Guid id,
         Guid userId,
+        Guid profileId,
         MetricType metricType,
         GoalOperator goalOperator,
         double targetValue,
@@ -26,10 +28,12 @@ public sealed class BehavioralGoal : AggregateRoot
         string title) : base(id)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
+        ArgumentOutOfRangeException.ThrowIfEqual(profileId, Guid.Empty, nameof(profileId));
         ValidateTitle(title);
         ValidateTarget(goalOperator, targetValue, targetValueUpper);
 
         UserId = userId;
+        ProfileId = profileId;
         MetricType = metricType;
         Operator = goalOperator;
         TargetValue = targetValue;
@@ -42,13 +46,14 @@ public sealed class BehavioralGoal : AggregateRoot
 
     public static BehavioralGoal Create(
         Guid userId,
+        Guid profileId,
         MetricType metricType,
         GoalOperator goalOperator,
         double targetValue,
         double? targetValueUpper,
         string title)
     {
-        return new BehavioralGoal(Guid.NewGuid(), userId, metricType, goalOperator, targetValue, targetValueUpper, title);
+        return new BehavioralGoal(Guid.NewGuid(), userId, profileId, metricType, goalOperator, targetValue, targetValueUpper, title);
     }
 
     public void Update(

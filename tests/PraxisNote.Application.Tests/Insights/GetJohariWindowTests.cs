@@ -10,6 +10,7 @@ namespace PraxisNote.Application.Tests.Insights;
 public sealed class GetJohariWindowTests
 {
     private static readonly Guid UserId = Guid.NewGuid();
+    private static readonly Guid ProfileId = Guid.NewGuid();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -29,10 +30,10 @@ public sealed class GetJohariWindowTests
     [Fact]
     public async Task ExecuteAsync_NoMeetings_ReturnsHasEnoughDataFalse()
     {
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Meeting>());
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
         Assert.Equal(0, result.MeetingCount);
@@ -45,10 +46,10 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_TwoMeetings_ReturnsHasEnoughDataFalse()
     {
         var meetings = CreateMeetingsWithReflections(2);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
         Assert.Equal(2, result.MeetingCount);
@@ -65,10 +66,10 @@ public sealed class GetJohariWindowTests
                 DateTimeOffset.UtcNow.AddDays(-10 + i)))
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
     }
@@ -77,13 +78,13 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_DraftMeetings_ReturnsHasEnoughDataFalse()
     {
         var meetings = Enumerable.Range(0, 5)
-            .Select(_ => Meeting.Create(UserId, "Draft"))
+            .Select(_ => Meeting.Create(UserId, ProfileId, "Draft"))
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
         Assert.Equal(0, result.MeetingCount);
@@ -101,10 +102,10 @@ public sealed class GetJohariWindowTests
                 DateTimeOffset.UtcNow.AddDays(-5 + i)))
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(validMeetings.Concat(invalidMeetings).ToArray());
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
     }
@@ -121,10 +122,10 @@ public sealed class GetJohariWindowTests
                 DateTimeOffset.UtcNow.AddDays(-5 + i)))
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(validMeetings.Concat(invalidMeetings).ToArray());
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.False(result.HasEnoughData);
     }
@@ -132,10 +133,10 @@ public sealed class GetJohariWindowTests
     [Fact]
     public async Task ExecuteAsync_EmptyResult_AllPercentagesZero()
     {
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Meeting>());
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.Equal(0, result.OpenPercentage);
         Assert.Equal(0, result.BlindSpotPercentage);
@@ -278,10 +279,10 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_ThreeMeetings_ReturnsHasEnoughDataTrue()
     {
         var meetings = CreateMeetingsWithReflections(3);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.True(result.HasEnoughData);
         Assert.Equal(3, result.MeetingCount);
@@ -292,10 +293,10 @@ public sealed class GetJohariWindowTests
     {
         // Create meetings where self-assessment matches AI analysis
         var meetings = CreateAlignedMeetings(3);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.True(result.HasEnoughData);
         Assert.True(result.OpenPercentage > 50, $"Expected Open > 50%, got {result.OpenPercentage}%");
@@ -306,10 +307,10 @@ public sealed class GetJohariWindowTests
     {
         // Create meetings where self-assessment is way off from AI analysis
         var meetings = CreateMisalignedMeetings(3);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.True(result.HasEnoughData);
         Assert.True(result.BlindSpotPercentage > 50, $"Expected BlindSpot > 50%, got {result.BlindSpotPercentage}%");
@@ -319,10 +320,10 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_PercentagesSumTo100()
     {
         var meetings = CreateMeetingsWithReflections(5);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         var total = result.OpenPercentage + result.BlindSpotPercentage +
                     result.HiddenPercentage + result.UnknownPercentage;
@@ -333,10 +334,10 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_WithData_ReturnsFourDimensions()
     {
         var meetings = CreateMeetingsWithReflections(3);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.Equal(4, result.Dimensions.Count);
         var names = result.Dimensions.Select(d => d.Name).ToHashSet();
@@ -350,10 +351,10 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_DimensionsHaveValidQuadrants()
     {
         var meetings = CreateMeetingsWithReflections(3);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         var validQuadrants = new HashSet<string> { "Open", "BlindSpot", "Hidden", "Unknown" };
         foreach (var dim in result.Dimensions)
@@ -367,10 +368,10 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_MisalignedMeetings_ReturnsBlindSpotDetails()
     {
         var meetings = CreateMisalignedMeetings(3);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.NotEmpty(result.BlindSpots);
         foreach (var spot in result.BlindSpots)
@@ -403,10 +404,10 @@ public sealed class GetJohariWindowTests
                 DateTimeOffset.UtcNow.AddDays(-60 + i)))
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(recentMeetings.Concat(oldMeetings).ToArray());
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "7d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "7d"));
 
         Assert.True(result.HasEnoughData);
         Assert.Equal(3, result.MeetingCount);
@@ -422,10 +423,10 @@ public sealed class GetJohariWindowTests
                 DateTimeOffset.UtcNow.AddDays(-365 + i)))
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(oldMeetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "all"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "all"));
 
         Assert.True(result.HasEnoughData);
         Assert.Equal(3, result.MeetingCount);
@@ -440,10 +441,10 @@ public sealed class GetJohariWindowTests
     {
         // Fewer than 4 meetings → null trend
         var meetings = CreateMeetingsWithReflections(3);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.Null(result.OpenTrend);
     }
@@ -452,10 +453,10 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_FourOrMoreMeetings_ReturnsOpenTrend()
     {
         var meetings = CreateMeetingsWithReflections(6);
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, "90d"));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, "90d"));
 
         Assert.NotNull(result.OpenTrend);
     }
@@ -483,10 +484,10 @@ public sealed class GetJohariWindowTests
     public async Task ExecuteAsync_UppercaseRange_FiltersSameAsLowercase(string range)
     {
         var meetings = CreateMeetingsWithReflections(3, DateTimeOffset.UtcNow.AddDays(-5));
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, range));
+        var result = await _sut.ExecuteAsync(new GetJohariWindow.Query(UserId, ProfileId, range));
 
         Assert.True(result.HasEnoughData);
         Assert.Equal(3, result.MeetingCount);
@@ -570,7 +571,7 @@ public sealed class GetJohariWindowTests
         string? reflectionJson,
         DateTimeOffset? date = null)
     {
-        var meeting = Meeting.Create(UserId, "Test Meeting", date ?? DateTimeOffset.UtcNow.AddDays(-1));
+        var meeting = Meeting.Create(UserId, ProfileId, "Test Meeting", date ?? DateTimeOffset.UtcNow.AddDays(-1));
         meeting.SubmitTranscript("Test transcript content for analysis.");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Test summary", "[]", "[]", behavioralAnalysisJson);

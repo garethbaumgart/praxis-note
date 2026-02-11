@@ -6,7 +6,7 @@ namespace PraxisNote.Application.Features.Tasks;
 
 public sealed class ReorderTasks(ITaskRepository taskRepository, IUnitOfWork unitOfWork)
 {
-    public record Command(Guid UserId, string Status, IReadOnlyList<Guid> TaskIds);
+    public record Command(Guid UserId, Guid ProfileId, string Status, IReadOnlyList<Guid> TaskIds);
     public record Result(bool Success, string? Error = null);
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
@@ -17,7 +17,7 @@ public sealed class ReorderTasks(ITaskRepository taskRepository, IUnitOfWork uni
             return new Result(false, $"Invalid status: {command.Status}");
         }
 
-        var tasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
+        var tasks = await taskRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
         var tasksInStatus = tasks
             .Where(t => t.Status == status)
             .ToDictionary(t => t.Id);

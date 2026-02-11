@@ -9,6 +9,7 @@ namespace PraxisNote.Application.Tests.Insights;
 public sealed class GetInsightsSummaryTests
 {
     private static readonly Guid UserId = Guid.NewGuid();
+    private static readonly Guid ProfileId = Guid.NewGuid();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -28,10 +29,10 @@ public sealed class GetInsightsSummaryTests
     [Fact]
     public async Task ExecuteAsync_NoMeetings_ReturnsNull()
     {
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Meeting>());
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.Null(result);
     }
@@ -39,12 +40,12 @@ public sealed class GetInsightsSummaryTests
     [Fact]
     public async Task ExecuteAsync_OnlyDraftMeetings_ReturnsNull()
     {
-        var meeting = Meeting.Create(UserId, "Draft meeting");
+        var meeting = Meeting.Create(UserId, ProfileId, "Draft meeting");
         // Draft meetings have no behavioral analysis
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.Null(result);
     }
@@ -54,10 +55,10 @@ public sealed class GetInsightsSummaryTests
     {
         var meeting = CreateAnalyzedMeeting("not valid json");
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.Null(result);
     }
@@ -69,10 +70,10 @@ public sealed class GetInsightsSummaryTests
         var validMeeting = CreateAnalyzedMeeting(Serialize(validAnalysis), DateTimeOffset.UtcNow.AddDays(-3));
         var invalidMeeting = CreateAnalyzedMeeting("not valid json", DateTimeOffset.UtcNow.AddDays(-2));
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { validMeeting, invalidMeeting });
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.Equal(1, result.MeetingCount);
@@ -94,10 +95,10 @@ public sealed class GetInsightsSummaryTests
 
         var meeting = CreateAnalyzedMeeting(Serialize(analysis));
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.Equal(1, result.MeetingCount);
@@ -121,10 +122,10 @@ public sealed class GetInsightsSummaryTests
         var meeting1 = CreateAnalyzedMeeting(Serialize(analysis1), DateTimeOffset.UtcNow.AddDays(-10));
         var meeting2 = CreateAnalyzedMeeting(Serialize(analysis2), DateTimeOffset.UtcNow.AddDays(-5));
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting1, meeting2 });
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.Equal(2, result.MeetingCount);
@@ -146,10 +147,10 @@ public sealed class GetInsightsSummaryTests
             })
             .ToArray();
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.Equal(8, result.SparklineValues.Count);
@@ -167,10 +168,10 @@ public sealed class GetInsightsSummaryTests
 
         var meeting = CreateAnalyzedMeeting(Serialize(analysis));
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { meeting });
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.Equal("Alice", result.ParticipantName);
@@ -186,10 +187,10 @@ public sealed class GetInsightsSummaryTests
         var recentMeeting = CreateAnalyzedMeeting(Serialize(recentAnalysis), DateTimeOffset.UtcNow.AddDays(-5));
         var oldMeeting = CreateAnalyzedMeeting(Serialize(oldAnalysis), DateTimeOffset.UtcNow.AddDays(-60));
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(new[] { recentMeeting, oldMeeting });
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.Equal(1, result.MeetingCount);
@@ -213,10 +214,10 @@ public sealed class GetInsightsSummaryTests
             meetings.Add(CreateAnalyzedMeeting(Serialize(analysis), DateTimeOffset.UtcNow.AddDays(-20 + i * 3)));
         }
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.NotNull(result.NudgeText);
@@ -235,10 +236,10 @@ public sealed class GetInsightsSummaryTests
             meetings.Add(CreateAnalyzedMeeting(Serialize(analysis), DateTimeOffset.UtcNow.AddDays(-20 + i * 3)));
         }
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.NotNull(result.NudgeText);
@@ -261,10 +262,10 @@ public sealed class GetInsightsSummaryTests
             meetings.Add(CreateAnalyzedMeeting(Serialize(analysis), DateTimeOffset.UtcNow.AddDays(-20 + i * 3)));
         }
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.NotNull(result.NudgeText);
@@ -284,10 +285,10 @@ public sealed class GetInsightsSummaryTests
             meetings.Add(CreateAnalyzedMeeting(Serialize(analysis), DateTimeOffset.UtcNow.AddDays(-20 + i * 3)));
         }
 
-        _meetingRepo.GetByUserIdAsync(UserId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByUserIdAsync(UserId, ProfileId, Arg.Any<CancellationToken>())
             .Returns(meetings);
 
-        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId));
+        var result = await _sut.ExecuteAsync(new GetInsightsSummary.Query(UserId, ProfileId));
 
         Assert.NotNull(result);
         Assert.Null(result.NudgeText);
@@ -299,7 +300,7 @@ public sealed class GetInsightsSummaryTests
 
     private static Meeting CreateAnalyzedMeeting(string behavioralAnalysisJson, DateTimeOffset? date = null)
     {
-        var meeting = Meeting.Create(UserId, "Test Meeting", date ?? DateTimeOffset.UtcNow.AddDays(-1));
+        var meeting = Meeting.Create(UserId, ProfileId, "Test Meeting", date ?? DateTimeOffset.UtcNow.AddDays(-1));
         meeting.SubmitTranscript("Test transcript content for analysis.");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Test summary", "[]", "[]", behavioralAnalysisJson);

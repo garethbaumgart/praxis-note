@@ -15,6 +15,9 @@ public sealed class TagConfiguration : IEntityTypeConfiguration<Tag>
         builder.Property(t => t.UserId)
             .IsRequired();
 
+        builder.Property(t => t.ProfileId)
+            .IsRequired();
+
         builder.Property(t => t.Name)
             .IsRequired()
             .HasMaxLength(50);
@@ -25,8 +28,8 @@ public sealed class TagConfiguration : IEntityTypeConfiguration<Tag>
         // Index for efficient lookup by user
         builder.HasIndex(t => t.UserId);
 
-        // Unique constraint: tag names must be unique per user
-        builder.HasIndex(t => new { t.UserId, t.Name })
+        // Unique constraint: tag names must be unique per user per profile
+        builder.HasIndex(t => new { t.UserId, t.ProfileId, t.Name })
             .IsUnique();
     }
 }

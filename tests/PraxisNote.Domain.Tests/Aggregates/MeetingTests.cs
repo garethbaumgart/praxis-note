@@ -5,6 +5,7 @@ namespace PraxisNote.Domain.Tests.Aggregates;
 public class MeetingTests
 {
     private readonly Guid _validUserId = Guid.NewGuid();
+    private readonly Guid _validProfileId = Guid.NewGuid();
     private readonly string _validTitle = "Sprint Planning";
     private readonly string _validAttendees = "John, Sarah, Mike";
 
@@ -14,7 +15,7 @@ public class MeetingTests
     public void Create_WithUserId_CreatesMeetingWithDefaults()
     {
         // Act
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Assert
         Assert.NotEqual(Guid.Empty, meeting.Id);
@@ -32,7 +33,7 @@ public class MeetingTests
         var meetingDate = DateTimeOffset.UtcNow.AddHours(1);
 
         // Act
-        var meeting = Meeting.Create(_validUserId, _validTitle, meetingDate);
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle, meetingDate);
 
         // Assert
         Assert.Equal(_validTitle, meeting.Title);
@@ -43,7 +44,7 @@ public class MeetingTests
     public void Create_WithNullTitle_CreatesMeetingWithNullTitle()
     {
         // Act
-        var meeting = Meeting.Create(_validUserId, null);
+        var meeting = Meeting.Create(_validUserId, _validProfileId, null);
 
         // Assert
         Assert.Null(meeting.Title);
@@ -53,7 +54,7 @@ public class MeetingTests
     public void Create_WithWhitespaceTitle_TrimsToNull()
     {
         // Act
-        var meeting = Meeting.Create(_validUserId, "   ");
+        var meeting = Meeting.Create(_validUserId, _validProfileId, "   ");
 
         // Assert
         Assert.Null(meeting.Title);
@@ -64,7 +65,7 @@ public class MeetingTests
     {
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            Meeting.Create(Guid.Empty));
+            Meeting.Create(Guid.Empty, _validProfileId));
     }
 
     [Fact]
@@ -74,7 +75,7 @@ public class MeetingTests
         var beforeCreate = DateTimeOffset.UtcNow;
 
         // Act
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var afterCreate = DateTimeOffset.UtcNow;
 
         // Assert
@@ -89,7 +90,7 @@ public class MeetingTests
         var aestDate = new DateTimeOffset(2026, 2, 6, 10, 0, 0, TimeSpan.FromHours(10));
 
         // Act
-        var meeting = Meeting.Create(_validUserId, _validTitle, aestDate);
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle, aestDate);
 
         // Assert - should be stored as UTC (offset 0)
         Assert.Equal(TimeSpan.Zero, meeting.MeetingDate!.Value.Offset);
@@ -100,7 +101,7 @@ public class MeetingTests
     public void Create_SetsCreatedAtAndUpdatedAtToSameValue()
     {
         // Act
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Assert
         Assert.Equal(meeting.CreatedAt, meeting.UpdatedAt);
@@ -114,7 +115,7 @@ public class MeetingTests
     public void UpdateTitle_WithValidTitle_UpdatesTitle()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.UpdateTitle(_validTitle);
@@ -127,7 +128,7 @@ public class MeetingTests
     public void UpdateTitle_WithNull_SetsNullTitle()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId, _validTitle);
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
 
         // Act
         meeting.UpdateTitle(null);
@@ -140,7 +141,7 @@ public class MeetingTests
     public void UpdateTitle_WithWhitespace_SetsNullTitle()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId, _validTitle);
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
 
         // Act
         meeting.UpdateTitle("   ");
@@ -153,7 +154,7 @@ public class MeetingTests
     public void UpdateTitle_TrimsWhitespace()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.UpdateTitle("  Sprint Planning  ");
@@ -166,7 +167,7 @@ public class MeetingTests
     public void UpdateTitle_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -180,7 +181,7 @@ public class MeetingTests
     public void UpdateTitle_WithSameTitle_DoesNotUpdateUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId, _validTitle);
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -198,7 +199,7 @@ public class MeetingTests
     public void UpdateMeetingDate_WithValidDate_UpdatesMeetingDate()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var newDate = DateTimeOffset.UtcNow.AddDays(1);
 
         // Act
@@ -212,7 +213,7 @@ public class MeetingTests
     public void UpdateMeetingDate_WithNull_SetsNull()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.UpdateMeetingDate(null);
@@ -225,7 +226,7 @@ public class MeetingTests
     public void UpdateMeetingDate_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
         var newDate = DateTimeOffset.UtcNow.AddDays(1);
 
@@ -240,7 +241,7 @@ public class MeetingTests
     public void UpdateMeetingDate_WithNonUtcDate_ConvertsToUtc()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var aestDate = new DateTimeOffset(2026, 3, 15, 14, 30, 0, TimeSpan.FromHours(10));
 
         // Act
@@ -256,7 +257,7 @@ public class MeetingTests
     {
         // Arrange
         var meetingDate = DateTimeOffset.UtcNow.AddHours(1);
-        var meeting = Meeting.Create(_validUserId, _validTitle, meetingDate);
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle, meetingDate);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -274,7 +275,7 @@ public class MeetingTests
     public void UpdateAttendees_WithValidAttendees_UpdatesAttendees()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.UpdateAttendees(_validAttendees);
@@ -287,7 +288,7 @@ public class MeetingTests
     public void UpdateAttendees_WithNull_SetsNull()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.UpdateAttendees(_validAttendees);
 
         // Act
@@ -301,7 +302,7 @@ public class MeetingTests
     public void UpdateAttendees_WithWhitespace_SetsNull()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.UpdateAttendees("   ");
@@ -314,7 +315,7 @@ public class MeetingTests
     public void UpdateAttendees_TrimsWhitespace()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.UpdateAttendees("  John, Sarah  ");
@@ -327,7 +328,7 @@ public class MeetingTests
     public void UpdateAttendees_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -341,7 +342,7 @@ public class MeetingTests
     public void UpdateAttendees_WithSameAttendees_DoesNotUpdateUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.UpdateAttendees(_validAttendees);
         var originalUpdatedAt = meeting.UpdatedAt;
 
@@ -365,7 +366,7 @@ public class MeetingTests
     public void UpdateStatus_WithValidStatus_UpdatesStatus(MeetingStatus newStatus)
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.UpdateStatus(newStatus);
@@ -378,7 +379,7 @@ public class MeetingTests
     public void UpdateStatus_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -392,7 +393,7 @@ public class MeetingTests
     public void UpdateStatus_WithSameStatus_DoesNotUpdateUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -410,7 +411,7 @@ public class MeetingTests
     public void MarkAsReviewed_SetsStatusToReviewed()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.UpdateStatus(MeetingStatus.Ready);
 
         // Act
@@ -424,7 +425,7 @@ public class MeetingTests
     public void MarkAsReviewed_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.UpdateStatus(MeetingStatus.Ready);
         var originalUpdatedAt = meeting.UpdatedAt;
 
@@ -439,7 +440,7 @@ public class MeetingTests
     public void MarkAsReviewed_WhenAlreadyReviewed_DoesNotUpdateUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.MarkAsReviewed();
         var originalUpdatedAt = meeting.UpdatedAt;
 
@@ -458,7 +459,7 @@ public class MeetingTests
     public void SubmitTranscript_WithValidTranscript_SetsTranscriptContent()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var transcript = "Speaker 1: Hello\nSpeaker 2: Hi there";
 
         // Act
@@ -472,7 +473,7 @@ public class MeetingTests
     public void SubmitTranscript_TrimsWhitespace()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.SubmitTranscript("  Transcript content  ");
@@ -485,7 +486,7 @@ public class MeetingTests
     public void SubmitTranscript_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -499,7 +500,7 @@ public class MeetingTests
     public void SubmitTranscript_WithNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
@@ -512,7 +513,7 @@ public class MeetingTests
     public void SubmitTranscript_WithEmptyOrWhitespace_ThrowsArgumentException(string invalidTranscript)
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() =>
@@ -523,7 +524,7 @@ public class MeetingTests
     public void SubmitTranscript_OverwritesExistingTranscript()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Original transcript");
 
         // Act
@@ -541,7 +542,7 @@ public class MeetingTests
     public void ClearTranscript_WithExistingTranscript_ClearsContent()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
 
         // Act
@@ -555,7 +556,7 @@ public class MeetingTests
     public void ClearTranscript_WithExistingTranscript_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         var originalUpdatedAt = meeting.UpdatedAt;
 
@@ -570,7 +571,7 @@ public class MeetingTests
     public void ClearTranscript_WithNoTranscript_DoesNotUpdateUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -588,7 +589,7 @@ public class MeetingTests
     public void StartAnalysis_WithTranscript_SetsProcessingStatus()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript content");
 
         // Act
@@ -602,7 +603,7 @@ public class MeetingTests
     public void StartAnalysis_WithoutTranscript_ThrowsInvalidOperationException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
@@ -613,7 +614,7 @@ public class MeetingTests
     public void StartAnalysis_WithNullTranscript_ThrowsInvalidOperationException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         // Transcript is null by default (can't submit empty - SubmitTranscript validates)
 
         // Act & Assert
@@ -629,7 +630,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithValidData_SetsAnalysisFieldsAndReadyStatus()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var summary = "This was a productive meeting.";
@@ -650,7 +651,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithNullSummary_ThrowsArgumentNullException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -663,7 +664,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithEmptySummary_ThrowsArgumentException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -676,7 +677,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithWhitespaceSummary_ThrowsArgumentException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -689,7 +690,7 @@ public class MeetingTests
     public void CompleteAnalysis_TrimsSummary()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -704,7 +705,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithNullKeyPointsAndDecisions_Succeeds()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -721,7 +722,7 @@ public class MeetingTests
     public void CompleteAnalysis_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var originalUpdatedAt = meeting.UpdatedAt;
@@ -737,7 +738,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithBehavioralAnalysis_StoresData()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var behavioralAnalysis = """{"speakingDynamics":{"talkTimeByParticipant":[{"participant":"John","percentage":60,"duration":"5:30"}]}}""";
@@ -754,7 +755,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithNullBehavioralAnalysis_StoresNull()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -770,7 +771,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithoutBehavioralAnalysisParameter_DefaultsToNull()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -789,7 +790,7 @@ public class MeetingTests
     public void FailAnalysis_SetsFailedStatus()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -804,7 +805,7 @@ public class MeetingTests
     public void FailAnalysis_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var originalUpdatedAt = meeting.UpdatedAt;
@@ -824,7 +825,7 @@ public class MeetingTests
     public void ClearAnalysis_WithExistingAnalysis_ClearsFieldsAndSetsDraftStatus()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", "[\"Key Point\"]", "[\"Decision\"]");
@@ -843,7 +844,7 @@ public class MeetingTests
     public void ClearAnalysis_ClearsBehavioralAnalysis()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var behavioralAnalysis = """{"speakingDynamics":{}}""";
@@ -860,7 +861,7 @@ public class MeetingTests
     public void ClearAnalysis_WithExistingAnalysis_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null);
@@ -877,7 +878,7 @@ public class MeetingTests
     public void ClearAnalysis_WithNoAnalysis_DoesNotUpdateUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -895,7 +896,7 @@ public class MeetingTests
     public void AddTag_WithValidTagId_AddsTagToMeeting()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var tagId = Guid.NewGuid();
 
         // Act
@@ -910,7 +911,7 @@ public class MeetingTests
     public void AddTag_WithMultipleTags_AddsAllTags()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var tagId1 = Guid.NewGuid();
         var tagId2 = Guid.NewGuid();
 
@@ -928,7 +929,7 @@ public class MeetingTests
     public void AddTag_WithDuplicateTag_IsIdempotent()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var tagId = Guid.NewGuid();
         meeting.AddTag(tagId);
         var originalUpdatedAt = meeting.UpdatedAt;
@@ -945,7 +946,7 @@ public class MeetingTests
     public void AddTag_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -956,7 +957,7 @@ public class MeetingTests
     public void AddTag_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
         var tagId = Guid.NewGuid();
 
@@ -971,7 +972,7 @@ public class MeetingTests
     public void RemoveTag_WithExistingTag_RemovesTag()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var tagId = Guid.NewGuid();
         meeting.AddTag(tagId);
 
@@ -986,7 +987,7 @@ public class MeetingTests
     public void RemoveTag_WithNonExistentTag_IsIdempotent()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
         var tagId = Guid.NewGuid();
 
@@ -1002,7 +1003,7 @@ public class MeetingTests
     public void RemoveTag_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var tagId = Guid.NewGuid();
         meeting.AddTag(tagId);
         var originalUpdatedAt = meeting.UpdatedAt;
@@ -1018,7 +1019,7 @@ public class MeetingTests
     public void HasTag_WithExistingTag_ReturnsTrue()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var tagId = Guid.NewGuid();
         meeting.AddTag(tagId);
 
@@ -1033,7 +1034,7 @@ public class MeetingTests
     public void HasTag_WithNonExistentTag_ReturnsFalse()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var tagId = Guid.NewGuid();
 
         // Act
@@ -1051,7 +1052,7 @@ public class MeetingTests
     public void StartTranscription_SetsProcessingStatus()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.StartTranscription();
@@ -1064,7 +1065,7 @@ public class MeetingTests
     public void StartTranscription_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -1078,7 +1079,7 @@ public class MeetingTests
     public void StartTranscription_DoesNotRequireTranscript()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act - should not throw (unlike StartAnalysis which requires transcript)
         meeting.StartTranscription();
@@ -1096,7 +1097,7 @@ public class MeetingTests
     public void CompleteTranscription_WithValidText_SetsTranscriptAndDraftStatus()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.StartTranscription();
         var transcribedText = "Speaker 1: Hello\nSpeaker 2: Hi there";
 
@@ -1112,7 +1113,7 @@ public class MeetingTests
     public void CompleteTranscription_TrimsWhitespace()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.StartTranscription();
 
         // Act
@@ -1126,7 +1127,7 @@ public class MeetingTests
     public void CompleteTranscription_WithNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.StartTranscription();
 
         // Act & Assert
@@ -1140,7 +1141,7 @@ public class MeetingTests
     public void CompleteTranscription_WithEmptyOrWhitespace_ThrowsArgumentException(string invalidText)
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.StartTranscription();
 
         // Act & Assert
@@ -1152,7 +1153,7 @@ public class MeetingTests
     public void CompleteTranscription_TransitionsFromProcessingToDraft()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.StartTranscription();
         Assert.Equal(MeetingStatus.Processing, meeting.Status);
 
@@ -1167,7 +1168,7 @@ public class MeetingTests
     public void CompleteTranscription_AlwaysUpdatesUpdatedAt()
     {
         // Arrange - status is already Draft, so UpdateStatus would be a no-op
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -1181,7 +1182,7 @@ public class MeetingTests
     public void CompleteTranscription_OverwritesExistingTranscript()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Old transcript");
         meeting.StartTranscription();
 
@@ -1200,7 +1201,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithActionItems_StoresActionItems()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var actionItems = new[]
@@ -1222,7 +1223,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithNullActionItems_HasEmptyList()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -1237,7 +1238,7 @@ public class MeetingTests
     public void CompleteAnalysis_OverwritesPreviousActionItems()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Old item") });
@@ -1257,7 +1258,7 @@ public class MeetingTests
     public void ToggleActionItem_WithExistingItem_TogglesCompletion()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var actionItem = ActionItem.Create("Test item");
@@ -1276,7 +1277,7 @@ public class MeetingTests
     public void ToggleActionItem_TogglesBackToIncomplete()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var actionItem = ActionItem.Create("Test item");
@@ -1295,7 +1296,7 @@ public class MeetingTests
     public void ToggleActionItem_WithNonExistentItem_ReturnsFalse()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
@@ -1313,7 +1314,7 @@ public class MeetingTests
     public void ToggleActionItem_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
@@ -1331,7 +1332,7 @@ public class MeetingTests
     public void ClearAnalysis_ClearsActionItems()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
@@ -1347,7 +1348,7 @@ public class MeetingTests
     public void GetActionItem_WithExistingItem_ReturnsItem()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var actionItem = ActionItem.Create("Test item");
@@ -1367,7 +1368,7 @@ public class MeetingTests
     public void GetActionItem_WithNonExistentItem_ReturnsNull()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
@@ -1383,7 +1384,7 @@ public class MeetingTests
     public void GetActionItem_WithEmptyActionItems_ReturnsNull()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null);
@@ -1403,7 +1404,7 @@ public class MeetingTests
     public void SubmitReflection_WithValidJson_StoresReflectionData()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var json = """{"selfAssessedTalkTime":30,"selfAssessedEngagement":"medium"}""";
 
         // Act
@@ -1419,7 +1420,7 @@ public class MeetingTests
     public void SubmitReflection_WithNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
@@ -1432,7 +1433,7 @@ public class MeetingTests
     public void SubmitReflection_WithEmptyOrWhitespace_ThrowsArgumentException(string invalidJson)
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() =>
@@ -1443,7 +1444,7 @@ public class MeetingTests
     public void SubmitReflection_TrimsWhitespace()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Act
         meeting.SubmitReflection("""  {"test":true}  """);
@@ -1456,7 +1457,7 @@ public class MeetingTests
     public void SubmitReflection_UpdatesTimestamps()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var beforeSubmit = DateTimeOffset.UtcNow;
 
         // Act
@@ -1471,7 +1472,7 @@ public class MeetingTests
     public void SubmitReflection_CalledTwice_OverwritesReflection()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitReflection("""{"first":true}""");
 
         // Act
@@ -1485,7 +1486,7 @@ public class MeetingTests
     public void HasReflection_WhenNoReflection_ReturnsFalse()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Assert
         Assert.False(meeting.HasReflection);
@@ -1505,7 +1506,7 @@ public class MeetingTests
         var meetingDate = DateTimeOffset.UtcNow.AddHours(2);
 
         // Act
-        var meeting = Meeting.CreateFromCalendar(_validUserId, _validTitle, meetingDate, _validAttendees, calendarEventId);
+        var meeting = Meeting.CreateFromCalendar(_validUserId, _validProfileId, _validTitle, meetingDate, _validAttendees, calendarEventId);
 
         // Assert
         Assert.NotEqual(Guid.Empty, meeting.Id);
@@ -1521,7 +1522,7 @@ public class MeetingTests
     public void CreateFromCalendar_TrimsCalendarEventId()
     {
         // Act
-        var meeting = Meeting.CreateFromCalendar(_validUserId, _validTitle, null, null, "  event_123  ");
+        var meeting = Meeting.CreateFromCalendar(_validUserId, _validProfileId, _validTitle, null, null, "  event_123  ");
 
         // Assert
         Assert.Equal("event_123", meeting.CalendarEventId);
@@ -1534,21 +1535,21 @@ public class MeetingTests
     public void CreateFromCalendar_WithInvalidCalendarEventId_ThrowsArgumentException(string? eventId)
     {
         Assert.ThrowsAny<ArgumentException>(() =>
-            Meeting.CreateFromCalendar(_validUserId, _validTitle, null, null, eventId!));
+            Meeting.CreateFromCalendar(_validUserId, _validProfileId, _validTitle, null, null, eventId!));
     }
 
     [Fact]
     public void CreateFromCalendar_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            Meeting.CreateFromCalendar(Guid.Empty, _validTitle, null, null, "event_123"));
+            Meeting.CreateFromCalendar(Guid.Empty, _validProfileId, _validTitle, null, null, "event_123"));
     }
 
     [Fact]
     public void Create_RegularMeeting_HasNullCalendarEventId()
     {
         // Verify regular Create method does not set CalendarEventId
-        var meeting = Meeting.Create(_validUserId, _validTitle);
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
 
         Assert.Null(meeting.CalendarEventId);
     }
@@ -1561,7 +1562,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithSuggestedTitle_SetsTitle_WhenUntitled()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -1577,7 +1578,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithSuggestedTitle_DoesNotOverrideExistingTitle()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId, "My Custom Title");
+        var meeting = Meeting.Create(_validUserId, _validProfileId, "My Custom Title");
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -1593,7 +1594,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithSuggestedTitle_SetsIsTitleAutoGenerated()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -1608,7 +1609,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithNullSuggestedTitle_DoesNotSetTitle()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -1624,7 +1625,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithWhitespaceSuggestedTitle_DoesNotSetTitle()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -1640,7 +1641,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithSuggestedTitle_TrimsSuggestedTitle()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -1655,7 +1656,7 @@ public class MeetingTests
     public void UpdateTitle_ClearsIsTitleAutoGenerated()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null, suggestedTitle: "AI Title");
@@ -1673,7 +1674,7 @@ public class MeetingTests
     public void Create_IsTitleAutoGenerated_DefaultsFalse()
     {
         // Act
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Assert
         Assert.False(meeting.IsTitleAutoGenerated);
@@ -1689,7 +1690,7 @@ public class MeetingTests
     public void SetExcludeFromInsights_SetsExcludedFlag(bool initial, bool target)
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SetExcludeFromInsights(initial);
 
         // Act
@@ -1703,7 +1704,7 @@ public class MeetingTests
     public void SetExcludeFromInsights_UpdatesUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -1717,7 +1718,7 @@ public class MeetingTests
     public void SetExcludeFromInsights_WithSameValue_DoesNotUpdateUpdatedAt()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -1731,7 +1732,7 @@ public class MeetingTests
     public void ExcludeFromInsights_DefaultsFalse()
     {
         // Act
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
 
         // Assert
         Assert.False(meeting.ExcludeFromInsights);
@@ -1745,7 +1746,7 @@ public class MeetingTests
     public void CompleteAnalysis_StoresSuggestedTags()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var suggestedTags = """["budget","planning","review"]""";
@@ -1761,7 +1762,7 @@ public class MeetingTests
     public void CompleteAnalysis_WithNullSuggestedTags_StoresNull()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
 
@@ -1776,7 +1777,7 @@ public class MeetingTests
     public void ClearAnalysis_ClearsSuggestedTags()
     {
         // Arrange
-        var meeting = Meeting.Create(_validUserId);
+        var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         meeting.CompleteAnalysis("Summary", null, null, suggestedTags: """["budget"]""");

@@ -27,7 +27,7 @@ public sealed class UpdateNoteContent(
         var newCheckboxes = checkboxExtractor.Extract(command.Content);
 
         // Get all tasks for this user that are linked to this note
-        var userTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
+        var userTasks = await taskRepository.GetByUserIdAsync(command.UserId, note.ProfileId, cancellationToken);
         var linkedTasks = userTasks
             .Where(t => t.CheckboxRef?.NoteId == command.NoteId)
             .ToList();

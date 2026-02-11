@@ -14,11 +14,11 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
         PropertyNameCaseInsensitive = true
     };
 
-    public record Query(Guid UserId, string Range);
+    public record Query(Guid UserId, Guid ProfileId, string Range);
 
     public async Task<CommunicationProfileDto> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, cancellationToken);
+        var allMeetings = await meetingRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
 
         var cutoff = GetCutoffDate(query.Range);
 

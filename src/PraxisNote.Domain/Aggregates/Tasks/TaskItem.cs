@@ -26,6 +26,11 @@ public sealed class TaskItem : AggregateRoot
     public Guid UserId { get; private init; }
 
     /// <summary>
+    /// The profile this task belongs to (data silo boundary).
+    /// </summary>
+    public Guid ProfileId { get; private init; }
+
+    /// <summary>
     /// The task title/description.
     /// </summary>
     public string Title { get; private set; } = string.Empty;
@@ -108,16 +113,19 @@ public sealed class TaskItem : AggregateRoot
     private TaskItem(
         Guid id,
         Guid userId,
+        Guid profileId,
         string title,
         CheckboxRef? checkboxRef,
         ActionItemRef? actionItemRef = null) : base(id)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
+        ArgumentOutOfRangeException.ThrowIfEqual(profileId, Guid.Empty, nameof(profileId));
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
 
         var now = DateTimeOffset.UtcNow;
 
         UserId = userId;
+        ProfileId = profileId;
         Title = title.Trim();
         Status = TaskStatus.Todo;
         CheckboxRef = checkboxRef;
@@ -129,27 +137,27 @@ public sealed class TaskItem : AggregateRoot
     /// <summary>
     /// Creates a standalone task directly on the board.
     /// </summary>
-    public static TaskItem CreateStandalone(Guid userId, string title)
+    public static TaskItem CreateStandalone(Guid userId, Guid profileId, string title)
     {
-        return new TaskItem(Guid.NewGuid(), userId, title, checkboxRef: null);
+        return new TaskItem(Guid.NewGuid(), userId, profileId, title, checkboxRef: null);
     }
 
     /// <summary>
     /// Creates a task from a note's checkbox.
     /// </summary>
-    public static TaskItem CreateFromCheckbox(Guid userId, string title, CheckboxRef checkboxRef)
+    public static TaskItem CreateFromCheckbox(Guid userId, Guid profileId, string title, CheckboxRef checkboxRef)
     {
         ArgumentNullException.ThrowIfNull(checkboxRef);
-        return new TaskItem(Guid.NewGuid(), userId, title, checkboxRef);
+        return new TaskItem(Guid.NewGuid(), userId, profileId, title, checkboxRef);
     }
 
     /// <summary>
     /// Creates a task from a meeting's action item.
     /// </summary>
-    public static TaskItem CreateFromActionItem(Guid userId, string title, ActionItemRef actionItemRef)
+    public static TaskItem CreateFromActionItem(Guid userId, Guid profileId, string title, ActionItemRef actionItemRef)
     {
         ArgumentNullException.ThrowIfNull(actionItemRef);
-        return new TaskItem(Guid.NewGuid(), userId, title, checkboxRef: null, actionItemRef: actionItemRef);
+        return new TaskItem(Guid.NewGuid(), userId, profileId, title, checkboxRef: null, actionItemRef: actionItemRef);
     }
 
     /// <summary>

@@ -24,6 +24,11 @@ public sealed class Note : AggregateRoot
     public Guid UserId { get; private init; }
 
     /// <summary>
+    /// The profile this note belongs to (data silo boundary).
+    /// </summary>
+    public Guid ProfileId { get; private init; }
+
+    /// <summary>
     /// The raw note content. Format depends on the editor plugin (TipTap JSON, Markdown, etc.).
     /// </summary>
     public string Content { get; private set; } = string.Empty;
@@ -56,13 +61,15 @@ public sealed class Note : AggregateRoot
     /// </summary>
     private Note() { }
 
-    private Note(Guid id, Guid userId, string content) : base(id)
+    private Note(Guid id, Guid userId, Guid profileId, string content) : base(id)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
+        ArgumentOutOfRangeException.ThrowIfEqual(profileId, Guid.Empty, nameof(profileId));
 
         var now = DateTimeOffset.UtcNow;
 
         UserId = userId;
+        ProfileId = profileId;
         Content = content ?? string.Empty;
         CreatedAt = now;
         UpdatedAt = now;
@@ -71,17 +78,17 @@ public sealed class Note : AggregateRoot
     /// <summary>
     /// Creates a new empty note.
     /// </summary>
-    public static Note Create(Guid userId)
+    public static Note Create(Guid userId, Guid profileId)
     {
-        return new Note(Guid.NewGuid(), userId, string.Empty);
+        return new Note(Guid.NewGuid(), userId, profileId, string.Empty);
     }
 
     /// <summary>
     /// Creates a new note with initial content.
     /// </summary>
-    public static Note Create(Guid userId, string content)
+    public static Note Create(Guid userId, Guid profileId, string content)
     {
-        return new Note(Guid.NewGuid(), userId, content);
+        return new Note(Guid.NewGuid(), userId, profileId, content);
     }
 
     #region Content Management

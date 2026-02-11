@@ -23,6 +23,7 @@ public static class TaskEndpoints
     }
 
     private static async Task<IResult> HandleGetTasks(
+        HttpContext context,
         ClaimsPrincipal user,
         GetUserTasks getUserTasks,
         CancellationToken cancellationToken,
@@ -34,13 +35,15 @@ public static class TaskEndpoints
             return Results.Unauthorized();
         }
 
-        var query = new GetUserTasks.Query(userId.Value, includeArchived);
+        var profileId = context.GetProfileId();
+        var query = new GetUserTasks.Query(userId.Value, profileId, includeArchived);
         var tasks = await getUserTasks.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(tasks);
     }
 
     private static async Task<IResult> HandleGetArchivedCount(
+        HttpContext context,
         ClaimsPrincipal user,
         GetArchivedCount getArchivedCount,
         CancellationToken cancellationToken)
@@ -51,13 +54,15 @@ public static class TaskEndpoints
             return Results.Unauthorized();
         }
 
-        var query = new GetArchivedCount.Query(userId.Value);
+        var profileId = context.GetProfileId();
+        var query = new GetArchivedCount.Query(userId.Value, profileId);
         var count = await getArchivedCount.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(new { count });
     }
 
     private static async Task<IResult> HandleCreateTask(
+        HttpContext context,
         ClaimsPrincipal user,
         CreateTaskRequest request,
         CreateTask createTask,
@@ -74,7 +79,8 @@ public static class TaskEndpoints
             return Results.BadRequest(new { error = "Title is required" });
         }
 
-        var command = new CreateTask.Command(userId.Value, request.Title);
+        var profileId = context.GetProfileId();
+        var command = new CreateTask.Command(userId.Value, profileId, request.Title);
         var result = await createTask.ExecuteAsync(command, cancellationToken);
 
         return Results.Created($"/api/tasks/{result.TaskId}", new { id = result.TaskId });
@@ -165,6 +171,7 @@ public static class TaskEndpoints
     }
 
     private static async Task<IResult> HandleReorderTasks(
+        HttpContext context,
         ClaimsPrincipal user,
         ReorderTasksRequest request,
         ReorderTasks reorderTasks,
@@ -181,7 +188,8 @@ public static class TaskEndpoints
             return Results.BadRequest(new { error = "Status is required and at least one task ID must be provided" });
         }
 
-        var command = new ReorderTasks.Command(userId.Value, request.Status, request.TaskIds);
+        var profileId = context.GetProfileId();
+        var command = new ReorderTasks.Command(userId.Value, profileId, request.Status, request.TaskIds);
         var result = await reorderTasks.ExecuteAsync(command, cancellationToken);
 
         return result.Success

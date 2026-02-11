@@ -64,6 +64,9 @@ namespace PraxisNote.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<double>("TargetValue")
                         .HasColumnType("double precision");
 
@@ -83,7 +86,7 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "ProfileId");
 
                     b.ToTable("BehavioralGoals", (string)null);
                 });
@@ -105,6 +108,9 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("LastSyncedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -123,7 +129,7 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "Provider")
+                    b.HasIndex("UserId", "ProfileId", "Provider")
                         .IsUnique();
 
                     b.ToTable("CalendarConnections");
@@ -167,6 +173,9 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.Property<DateTimeOffset?>("MeetingDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ReflectionData")
                         .HasColumnType("text");
@@ -212,11 +221,11 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.HasIndex("MeetingDate");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("UserId", "CalendarEventId")
                         .IsUnique()
                         .HasFilter("\"CalendarEventId\" IS NOT NULL");
+
+                    b.HasIndex("UserId", "ProfileId");
 
                     b.ToTable("Meetings");
                 });
@@ -233,6 +242,9 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -252,7 +264,7 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "ProfileId");
 
                     b.ToTable("Notes");
                 });
@@ -294,6 +306,40 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.ToTable("FeatureNotifications");
                 });
 
+            modelBuilder.Entity("PraxisNote.Domain.Aggregates.Profiles.Profile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Profiles", (string)null);
+                });
+
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.Tags.Tag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -308,6 +354,9 @@ namespace PraxisNote.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
@@ -315,7 +364,7 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserId", "Name")
+                    b.HasIndex("UserId", "ProfileId", "Name")
                         .IsUnique();
 
                     b.ToTable("Tags", (string)null);
@@ -338,6 +387,9 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.Property<int>("Position")
                         .HasColumnType("integer");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("StartedAt")
                         .HasColumnType("timestamp with time zone");
@@ -370,7 +422,7 @@ namespace PraxisNote.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "ProfileId");
 
                     b.ToTable("Tasks");
                 });

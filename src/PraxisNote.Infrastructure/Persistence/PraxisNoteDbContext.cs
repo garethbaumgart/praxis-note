@@ -6,6 +6,7 @@ using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Notifications;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
+using PraxisNote.Domain.Aggregates.Profiles;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.Users;
@@ -19,6 +20,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<Meeting> Meetings => Set<Meeting>();
+    public DbSet<Profile> Profiles => Set<Profile>();
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
     public DbSet<FeatureNotification> FeatureNotifications => Set<FeatureNotification>();
     public DbSet<BehavioralGoal> BehavioralGoals => Set<BehavioralGoal>();

@@ -19,7 +19,7 @@ public sealed class UpdateTag(ITagRepository tagRepository, IUnitOfWork unitOfWo
         }
 
         // Check for duplicate name (exclude current tag)
-        var existing = await tagRepository.GetByNameAsync(command.UserId, command.Name, cancellationToken);
+        var existing = await tagRepository.GetByNameAsync(command.UserId, tag.ProfileId, command.Name, cancellationToken);
         if (existing is not null && existing.Id != command.TagId)
         {
             throw new InvalidOperationException(DuplicateNameError);

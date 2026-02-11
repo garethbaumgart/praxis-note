@@ -1,4 +1,5 @@
 using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.Profiles;
 using PraxisNote.Domain.Aggregates.Users;
 using PraxisNote.Domain.ValueObjects;
 
@@ -15,6 +16,7 @@ public record LoginOrRegisterResult(Guid UserId, bool IsNewUser);
 
 public sealed class LoginOrRegisterUser(
     IUserRepository userRepository,
+    IProfileRepository profileRepository,
     IUnitOfWork unitOfWork)
 {
     public async Task<LoginOrRegisterResult> ExecuteAsync(
@@ -30,6 +32,10 @@ public sealed class LoginOrRegisterUser(
         {
             existingUser.RecordLogin(command.AvatarUrl);
             userRepository.Update(existingUser);
+
+            // Ensure user has at least one profile (handles migration of existing users)
+            await EnsureDefaultProfileAsync(existingUser.Id, cancellationToken);
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return new LoginOrRegisterResult(existingUser.Id, IsNewUser: false);
         }
@@ -38,8 +44,27 @@ public sealed class LoginOrRegisterUser(
         var newUser = User.Register(externalIdentity, email, command.Name, command.AvatarUrl);
 
         await userRepository.AddAsync(newUser, cancellationToken);
+
+        // Create default profile for new user
+        var defaultProfile = Profile.CreateDefault(newUser.Id);
+        await profileRepository.AddAsync(defaultProfile, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new LoginOrRegisterResult(newUser.Id, IsNewUser: true);
+    }
+
+    /// <summary>
+    /// Ensures the user has at least one profile. Creates a default profile if none exist.
+    /// This handles the case where existing users don't yet have profiles after migration.
+    /// </summary>
+    private async Task EnsureDefaultProfileAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var profiles = await profileRepository.GetByUserIdAsync(userId, cancellationToken);
+        if (profiles.Count == 0)
+        {
+            var defaultProfile = Profile.CreateDefault(userId);
+            await profileRepository.AddAsync(defaultProfile, cancellationToken);
+        }
     }
 }

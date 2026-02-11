@@ -2,6 +2,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Mvc;
+using PraxisNote.Application.Features.Profiles;
 using PraxisNote.Application.Features.Users;
 
 namespace PraxisNote.Web.Endpoints;
@@ -23,7 +25,7 @@ public static class AuthEndpoints
         group.MapGet("/callback/google", (Delegate)HandleGoogleCallback)
             .AllowAnonymous();
 
-        group.MapGet("/me", HandleGetCurrentUser)
+        group.MapGet("/me", (Delegate)HandleGetCurrentUser)
             .RequireAuthorization();
 
         group.MapPost("/logout", (Delegate)HandleLogout)
@@ -113,7 +115,10 @@ public static class AuthEndpoints
         return Results.Redirect("/");
     }
 
-    private static IResult HandleGetCurrentUser(ClaimsPrincipal user)
+    private static async Task<IResult> HandleGetCurrentUser(
+        ClaimsPrincipal user,
+        [FromServices] GetUserProfiles getUserProfiles,
+        CancellationToken cancellationToken)
     {
         var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -127,12 +132,17 @@ public static class AuthEndpoints
         var avatarUrl = user.FindFirstValue(AvatarUrlClaim);
         var provider = user.FindFirstValue(ProviderClaim);
 
-        return Results.Ok(new UserDto(
+        // Fetch user profiles
+        var profiles = await getUserProfiles.ExecuteAsync(
+            new GetUserProfiles.Query(userId), cancellationToken);
+
+        return Results.Ok(new UserWithProfilesDto(
             userId,
             email ?? "",
             name ?? "",
             avatarUrl,
-            provider ?? ""));
+            provider ?? "",
+            profiles));
     }
 
     private static async Task<IResult> HandleLogout(HttpContext context)
@@ -141,3 +151,11 @@ public static class AuthEndpoints
         return Results.Ok(new { message = "Logged out successfully" });
     }
 }
+
+public record UserWithProfilesDto(
+    Guid Id,
+    string Email,
+    string Name,
+    string? AvatarUrl,
+    string Provider,
+    IReadOnlyList<GetUserProfiles.ProfileDto> Profiles);

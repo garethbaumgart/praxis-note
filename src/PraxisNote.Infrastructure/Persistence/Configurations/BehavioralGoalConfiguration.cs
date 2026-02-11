@@ -15,6 +15,9 @@ public sealed class BehavioralGoalConfiguration : IEntityTypeConfiguration<Behav
         builder.Property(g => g.UserId)
             .IsRequired();
 
+        builder.Property(g => g.ProfileId)
+            .IsRequired();
+
         builder.Property(g => g.MetricType)
             .IsRequired()
             .HasConversion<string>()
@@ -41,6 +44,6 @@ public sealed class BehavioralGoalConfiguration : IEntityTypeConfiguration<Behav
         builder.Property(g => g.UpdatedAt)
             .IsRequired();
 
-        builder.HasIndex(g => g.UserId);
+        builder.HasIndex(g => new { g.UserId, g.ProfileId });
     }
 }

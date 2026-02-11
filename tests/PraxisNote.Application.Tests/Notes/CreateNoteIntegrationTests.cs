@@ -17,6 +17,7 @@ public class CreateNoteIntegrationTests
 {
     private readonly TiptapCheckboxExtractor _checkboxExtractor = new();
     private readonly Guid _validUserId = Guid.NewGuid();
+    private readonly Guid _validProfileId = Guid.NewGuid();
 
     #region Checkbox Extraction Behavior Documentation
 
@@ -54,7 +55,7 @@ public class CreateNoteIntegrationTests
         """;
 
         // Act - Extract checkboxes (this is what CreateNote should do)
-        var note = Note.Create(_validUserId, tiptapContent);
+        var note = Note.Create(_validUserId, _validProfileId, tiptapContent);
         var checkboxes = _checkboxExtractor.Extract(tiptapContent);
         foreach (var checkbox in checkboxes)
         {
@@ -106,7 +107,7 @@ public class CreateNoteIntegrationTests
         """;
 
         // Act - Extract checkboxes (this is what CreateNote should do)
-        var note = Note.Create(_validUserId, tiptapContent);
+        var note = Note.Create(_validUserId, _validProfileId, tiptapContent);
         var checkboxes = _checkboxExtractor.Extract(tiptapContent);
         foreach (var checkbox in checkboxes)
         {
@@ -126,7 +127,7 @@ public class CreateNoteIntegrationTests
         string? content = null;
 
         // Act - Create note (CreateNote should skip extraction if content is null)
-        var note = Note.Create(_validUserId, content ?? string.Empty);
+        var note = Note.Create(_validUserId, _validProfileId, content ?? string.Empty);
         // No extraction should happen when content is null
 
         // Assert - Note should have no checkboxes
@@ -140,7 +141,7 @@ public class CreateNoteIntegrationTests
         var content = string.Empty;
 
         // Act - Create note (CreateNote should skip extraction if content is empty)
-        var note = Note.Create(_validUserId, content);
+        var note = Note.Create(_validUserId, _validProfileId, content);
         // No extraction should happen when content is empty
 
         // Assert - Note should have no checkboxes
@@ -164,7 +165,7 @@ public class CreateNoteIntegrationTests
         """;
 
         // Act - Extract checkboxes (should return empty list)
-        var note = Note.Create(_validUserId, tiptapContent);
+        var note = Note.Create(_validUserId, _validProfileId, tiptapContent);
         var checkboxes = _checkboxExtractor.Extract(tiptapContent);
         foreach (var checkbox in checkboxes)
         {
@@ -206,7 +207,7 @@ public class CreateNoteIntegrationTests
         }
         """;
 
-        var note = Note.Create(_validUserId, tiptapContent);
+        var note = Note.Create(_validUserId, _validProfileId, tiptapContent);
         var checkboxes = _checkboxExtractor.Extract(tiptapContent);
         foreach (var checkbox in checkboxes)
         {

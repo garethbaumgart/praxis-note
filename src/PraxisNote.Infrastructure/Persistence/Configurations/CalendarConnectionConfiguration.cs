@@ -13,6 +13,9 @@ public sealed class CalendarConnectionConfiguration : IEntityTypeConfiguration<C
         builder.Property(c => c.UserId)
             .IsRequired();
 
+        builder.Property(c => c.ProfileId)
+            .IsRequired();
+
         builder.Property(c => c.Provider)
             .HasMaxLength(50)
             .IsRequired();
@@ -29,8 +32,8 @@ public sealed class CalendarConnectionConfiguration : IEntityTypeConfiguration<C
         builder.Property(c => c.ConnectedAt);
         builder.Property(c => c.LastSyncedAt);
 
-        // One connection per user per provider
-        builder.HasIndex(c => new { c.UserId, c.Provider })
+        // One connection per user per provider per profile
+        builder.HasIndex(c => new { c.UserId, c.ProfileId, c.Provider })
             .IsUnique();
 
         builder.Ignore(c => c.DomainEvents);

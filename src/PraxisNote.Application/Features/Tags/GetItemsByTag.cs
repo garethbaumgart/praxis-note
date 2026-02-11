@@ -23,9 +23,9 @@ public sealed class GetItemsByTag(
             throw new InvalidOperationException(NotFoundError);
 
         // Sequential to avoid concurrent DbContext access (EF Core DbContext is not thread-safe)
-        var notes = await noteRepository.GetByTagIdAsync(query.UserId, query.TagId, cancellationToken);
-        var meetings = await meetingRepository.GetByTagIdAsync(query.UserId, query.TagId, cancellationToken);
-        var tasks = await taskRepository.GetTasksWithTagAsync(query.UserId, query.TagId, cancellationToken);
+        var notes = await noteRepository.GetByTagIdAsync(query.UserId, tag.ProfileId, query.TagId, cancellationToken);
+        var meetings = await meetingRepository.GetByTagIdAsync(query.UserId, tag.ProfileId, query.TagId, cancellationToken);
+        var tasks = await taskRepository.GetTasksWithTagAsync(query.UserId, tag.ProfileId, query.TagId, cancellationToken);
 
         var items = new List<TagItemDto>();
 

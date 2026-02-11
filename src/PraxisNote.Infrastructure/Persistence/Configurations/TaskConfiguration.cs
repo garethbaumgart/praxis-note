@@ -17,6 +17,9 @@ public sealed class TaskConfiguration : IEntityTypeConfiguration<TaskItem>
         builder.Property(t => t.UserId)
             .IsRequired();
 
+        builder.Property(t => t.ProfileId)
+            .IsRequired();
+
         builder.Property(t => t.Title)
             .HasMaxLength(500)
             .IsRequired();
@@ -97,8 +100,8 @@ public sealed class TaskConfiguration : IEntityTypeConfiguration<TaskItem>
 
         builder.Ignore(t => t.Comments);
 
-        // Index for querying user's tasks
-        builder.HasIndex(t => t.UserId);
+        // Index for querying user's tasks by profile
+        builder.HasIndex(t => new { t.UserId, t.ProfileId });
 
         builder.Ignore(t => t.DomainEvents);
     }

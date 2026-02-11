@@ -31,6 +31,7 @@ public static class MeetingEndpoints
     }
 
     private static async Task<IResult> HandleGetMeetings(
+        HttpContext context,
         ClaimsPrincipal user,
         [FromServices] GetUserMeetings getUserMeetings,
         CancellationToken cancellationToken)
@@ -41,7 +42,8 @@ public static class MeetingEndpoints
             return Results.Unauthorized();
         }
 
-        var query = new GetUserMeetings.Query(userId.Value);
+        var profileId = context.GetProfileId();
+        var query = new GetUserMeetings.Query(userId.Value, profileId);
         var meetings = await getUserMeetings.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(meetings);
@@ -66,6 +68,7 @@ public static class MeetingEndpoints
     }
 
     private static async Task<IResult> HandleCreateMeeting(
+        HttpContext context,
         ClaimsPrincipal user,
         CreateMeetingRequest request,
         [FromServices] CreateMeeting createMeeting,
@@ -77,8 +80,10 @@ public static class MeetingEndpoints
             return Results.Unauthorized();
         }
 
+        var profileId = context.GetProfileId();
         var command = new CreateMeeting.Command(
             userId.Value,
+            profileId,
             request.Title,
             request.MeetingDate,
             request.Attendees);

@@ -8,6 +8,7 @@ namespace PraxisNote.Domain.Tests.Aggregates;
 public class TaskItemTests
 {
     private readonly Guid _validUserId = Guid.NewGuid();
+    private readonly Guid _validProfileId = Guid.NewGuid();
     private readonly string _validTitle = "Complete the report";
 
     #region CreateStandalone Tests
@@ -16,7 +17,7 @@ public class TaskItemTests
     public void CreateStandalone_WithValidInputs_CreatesTaskWithCorrectProperties()
     {
         // Act
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Assert
         Assert.NotEqual(Guid.Empty, task.Id);
@@ -34,7 +35,7 @@ public class TaskItemTests
     public void CreateStandalone_TrimsTitle()
     {
         // Act
-        var task = TaskItem.CreateStandalone(_validUserId, "  Trimmed title  ");
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, "  Trimmed title  ");
 
         // Assert
         Assert.Equal("Trimmed title", task.Title);
@@ -45,7 +46,7 @@ public class TaskItemTests
     {
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            TaskItem.CreateStandalone(Guid.Empty, _validTitle));
+            TaskItem.CreateStandalone(Guid.Empty, _validProfileId, _validTitle));
     }
 
     [Fact]
@@ -53,7 +54,7 @@ public class TaskItemTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            TaskItem.CreateStandalone(_validUserId, null!));
+            TaskItem.CreateStandalone(_validUserId, _validProfileId, null!));
     }
 
     [Theory]
@@ -63,7 +64,7 @@ public class TaskItemTests
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() =>
-            TaskItem.CreateStandalone(_validUserId, invalidTitle));
+            TaskItem.CreateStandalone(_validUserId, _validProfileId, invalidTitle));
     }
 
     #endregion
@@ -77,7 +78,7 @@ public class TaskItemTests
         var checkboxRef = new CheckboxRef(Guid.NewGuid(), "checkbox-1");
 
         // Act
-        var task = TaskItem.CreateFromCheckbox(_validUserId, _validTitle, checkboxRef);
+        var task = TaskItem.CreateFromCheckbox(_validUserId, _validProfileId, _validTitle, checkboxRef);
 
         // Assert
         Assert.Equal(checkboxRef, task.CheckboxRef);
@@ -89,7 +90,7 @@ public class TaskItemTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            TaskItem.CreateFromCheckbox(_validUserId, _validTitle, null!));
+            TaskItem.CreateFromCheckbox(_validUserId, _validProfileId, _validTitle, null!));
     }
 
     #endregion
@@ -103,7 +104,7 @@ public class TaskItemTests
         var actionItemRef = new ActionItemRef(Guid.NewGuid(), Guid.NewGuid());
 
         // Act
-        var task = TaskItem.CreateFromActionItem(_validUserId, _validTitle, actionItemRef);
+        var task = TaskItem.CreateFromActionItem(_validUserId, _validProfileId, _validTitle, actionItemRef);
 
         // Assert
         Assert.Equal(actionItemRef, task.ActionItemRef);
@@ -117,14 +118,14 @@ public class TaskItemTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            TaskItem.CreateFromActionItem(_validUserId, _validTitle, null!));
+            TaskItem.CreateFromActionItem(_validUserId, _validProfileId, _validTitle, null!));
     }
 
     [Fact]
     public void IsLinkedToMeeting_WithNoActionItemRef_ReturnsFalse()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Assert
         Assert.False(task.IsLinkedToMeeting);
@@ -139,7 +140,7 @@ public class TaskItemTests
     public void Start_FromTodo_SetsStatusToInProgressAndSetsStartedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act
         task.Start();
@@ -154,7 +155,7 @@ public class TaskItemTests
     public void Start_WhenAlreadyStarted_PreservesOriginalStartedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.Start();
         var originalStartedAt = task.StartedAt;
 
@@ -172,7 +173,7 @@ public class TaskItemTests
     public void Complete_FromTodo_SetsStatusToDoneAndSetsBothTimestamps()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act
         task.Complete();
@@ -187,7 +188,7 @@ public class TaskItemTests
     public void Complete_FromInProgress_SetsStatusToDoneAndSetsCompletedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.Start();
         var originalStartedAt = task.StartedAt;
 
@@ -204,7 +205,7 @@ public class TaskItemTests
     public void Complete_WhenCalledAgain_UpdatesCompletedAtToMostRecentTime()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.Complete();
         var originalCompletedAt = task.CompletedAt;
 
@@ -223,7 +224,7 @@ public class TaskItemTests
     public void Reopen_FromDone_SetsStatusToTodoAndClearsTimestamps()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.Complete();
 
         // Act
@@ -239,7 +240,7 @@ public class TaskItemTests
     public void Reopen_FromInProgress_SetsStatusToTodoAndClearsStartedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.Start();
 
         // Act
@@ -258,7 +259,7 @@ public class TaskItemTests
     public void UpdateTitle_WithValidTitle_UpdatesTitleAndUpdatedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var originalUpdatedAt = task.UpdatedAt;
 
         // Act
@@ -273,7 +274,7 @@ public class TaskItemTests
     public void UpdateTitle_TrimsWhitespace()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act
         task.UpdateTitle("  Trimmed  ");
@@ -286,7 +287,7 @@ public class TaskItemTests
     public void UpdateTitle_WithNullTitle_ThrowsArgumentNullException()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => task.UpdateTitle(null!));
@@ -298,7 +299,7 @@ public class TaskItemTests
     public void UpdateTitle_WithEmptyOrWhitespaceTitle_ThrowsArgumentException(string invalidTitle)
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => task.UpdateTitle(invalidTitle));
@@ -312,7 +313,7 @@ public class TaskItemTests
     public void SetDueDate_WithValidDate_SetsDueDateAndUpdatesUpdatedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var dueDate = new DueDate(DateOnly.FromDateTime(DateTime.Today.AddDays(7)));
 
         // Act
@@ -326,7 +327,7 @@ public class TaskItemTests
     public void SetDueDate_WithNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => task.SetDueDate(null!));
@@ -336,7 +337,7 @@ public class TaskItemTests
     public void ClearDueDate_RemovesDueDateAndUpdatesUpdatedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var dueDate = new DueDate(DateOnly.FromDateTime(DateTime.Today.AddDays(7)));
         task.SetDueDate(dueDate);
 
@@ -355,7 +356,7 @@ public class TaskItemTests
     public void AddTag_WithValidTagId_AddsToTagIds()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var tagId = Guid.NewGuid();
 
         // Act
@@ -370,7 +371,7 @@ public class TaskItemTests
     public void AddTag_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => task.AddTag(Guid.Empty));
@@ -380,7 +381,7 @@ public class TaskItemTests
     public void AddTag_SameTagTwice_OnlyAddsOnce()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var tagId = Guid.NewGuid();
 
         // Act
@@ -395,7 +396,7 @@ public class TaskItemTests
     public void AddTag_UpdatesUpdatedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var originalUpdatedAt = task.UpdatedAt;
 
         // Act
@@ -409,7 +410,7 @@ public class TaskItemTests
     public void RemoveTag_ExistingTag_RemovesFromTagIds()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var tagId = Guid.NewGuid();
         task.AddTag(tagId);
 
@@ -425,7 +426,7 @@ public class TaskItemTests
     public void RemoveTag_NonExistentTag_DoesNotThrow()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var originalUpdatedAt = task.UpdatedAt;
 
         // Act - should not throw
@@ -439,7 +440,7 @@ public class TaskItemTests
     public void HasTag_WhenTagExists_ReturnsTrue()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var tagId = Guid.NewGuid();
         task.AddTag(tagId);
 
@@ -451,7 +452,7 @@ public class TaskItemTests
     public void HasTag_WhenTagDoesNotExist_ReturnsFalse()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act & Assert
         Assert.False(task.HasTag(Guid.NewGuid()));
@@ -461,7 +462,7 @@ public class TaskItemTests
     public void CreateStandalone_HasEmptyTagIds()
     {
         // Act
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Assert
         Assert.Empty(task.TagIds);
@@ -475,7 +476,7 @@ public class TaskItemTests
     public void SetPosition_WithValidPosition_UpdatesPosition()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act
         task.SetPosition(5);
@@ -488,7 +489,7 @@ public class TaskItemTests
     public void SetPosition_WithZero_SetsPositionToZero()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.SetPosition(10);
 
         // Act
@@ -502,7 +503,7 @@ public class TaskItemTests
     public void SetPosition_WithNegativeValue_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => task.SetPosition(-1));
@@ -512,7 +513,7 @@ public class TaskItemTests
     public void SetPosition_UpdatesUpdatedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var originalUpdatedAt = task.UpdatedAt;
 
         // Act
@@ -526,7 +527,7 @@ public class TaskItemTests
     public void CreateStandalone_HasPositionZero()
     {
         // Act
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Assert
         Assert.Equal(0, task.Position);
@@ -540,7 +541,7 @@ public class TaskItemTests
     public void CreateStandalone_SetsCreatedAtAndUpdatedAtToSameValue()
     {
         // Act
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Assert
         Assert.Equal(task.CreatedAt, task.UpdatedAt);
@@ -550,7 +551,7 @@ public class TaskItemTests
     public void AnyModification_UpdatesUpdatedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var originalUpdatedAt = task.UpdatedAt;
 
         // Act
@@ -568,7 +569,7 @@ public class TaskItemTests
     public void CreateStandalone_HasEmptyComments()
     {
         // Act
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Assert
         Assert.Empty(task.Comments);
@@ -578,7 +579,7 @@ public class TaskItemTests
     public void AddComment_WithValidContent_AddsCommentAndReturnsIt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var content = "This is a comment";
 
         // Act
@@ -596,7 +597,7 @@ public class TaskItemTests
     public void AddComment_TrimsContent()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act
         var comment = task.AddComment("  Trimmed content  ");
@@ -609,7 +610,7 @@ public class TaskItemTests
     public void AddComment_UpdatesUpdatedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var originalUpdatedAt = task.UpdatedAt;
 
         // Act
@@ -626,7 +627,7 @@ public class TaskItemTests
     public void AddComment_WithInvalidContent_ThrowsArgumentException(string? invalidContent)
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act & Assert
         Assert.ThrowsAny<ArgumentException>(() => task.AddComment(invalidContent!));
@@ -636,7 +637,7 @@ public class TaskItemTests
     public void UpdateComment_WithValidContent_UpdatesCommentAndReturnsIt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var comment = task.AddComment("Original content");
         var commentId = comment.Id;
 
@@ -654,7 +655,7 @@ public class TaskItemTests
     public void UpdateComment_WithNonExistentId_ReturnsNull()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.AddComment("Some comment");
 
         // Act
@@ -668,7 +669,7 @@ public class TaskItemTests
     public void UpdateComment_UpdatesTaskUpdatedAt()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var comment = task.AddComment("Original");
         var originalUpdatedAt = task.UpdatedAt;
 
@@ -685,7 +686,7 @@ public class TaskItemTests
     public void RemoveComment_WithExistingId_RemovesAndReturnsTrue()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var comment = task.AddComment("To be removed");
         var commentId = comment.Id;
 
@@ -701,7 +702,7 @@ public class TaskItemTests
     public void RemoveComment_WithNonExistentId_ReturnsFalse()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.AddComment("Some comment");
         var originalCount = task.Comments.Count;
 
@@ -717,7 +718,7 @@ public class TaskItemTests
     public void RemoveComment_UpdatesUpdatedAtOnlyIfRemoved()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.AddComment("Comment");
         var originalUpdatedAt = task.UpdatedAt;
 
@@ -732,7 +733,7 @@ public class TaskItemTests
     public void GetComment_WithExistingId_ReturnsComment()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         var comment = task.AddComment("Test comment");
 
         // Act
@@ -748,7 +749,7 @@ public class TaskItemTests
     public void GetComment_WithNonExistentId_ReturnsNull()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
         task.AddComment("Some comment");
 
         // Act
@@ -762,7 +763,7 @@ public class TaskItemTests
     public void MultipleComments_MaintainsOrder()
     {
         // Arrange
-        var task = TaskItem.CreateStandalone(_validUserId, _validTitle);
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
 
         // Act
         var comment1 = task.AddComment("First");

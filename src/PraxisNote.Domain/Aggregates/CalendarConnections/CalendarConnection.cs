@@ -14,6 +14,11 @@ public sealed class CalendarConnection : AggregateRoot
     public Guid UserId { get; private init; }
 
     /// <summary>
+    /// The profile this calendar connection belongs to (data silo boundary).
+    /// </summary>
+    public Guid ProfileId { get; private init; }
+
+    /// <summary>
     /// The calendar provider name (e.g., "Google").
     /// </summary>
     public string Provider { get; private init; } = null!;
@@ -51,17 +56,20 @@ public sealed class CalendarConnection : AggregateRoot
     private CalendarConnection(
         Guid id,
         Guid userId,
+        Guid profileId,
         string provider,
         string accessToken,
         string refreshToken,
         DateTimeOffset tokenExpiresAt) : base(id)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
+        ArgumentOutOfRangeException.ThrowIfEqual(profileId, Guid.Empty, nameof(profileId));
         ArgumentException.ThrowIfNullOrWhiteSpace(provider, nameof(provider));
         ArgumentException.ThrowIfNullOrWhiteSpace(accessToken, nameof(accessToken));
         ArgumentException.ThrowIfNullOrWhiteSpace(refreshToken, nameof(refreshToken));
 
         UserId = userId;
+        ProfileId = profileId;
         Provider = provider.Trim();
         AccessToken = accessToken;
         RefreshToken = refreshToken;
@@ -74,12 +82,13 @@ public sealed class CalendarConnection : AggregateRoot
     /// </summary>
     public static CalendarConnection Create(
         Guid userId,
+        Guid profileId,
         string provider,
         string accessToken,
         string refreshToken,
         DateTimeOffset tokenExpiresAt)
     {
-        return new CalendarConnection(Guid.NewGuid(), userId, provider, accessToken, refreshToken, tokenExpiresAt);
+        return new CalendarConnection(Guid.NewGuid(), userId, profileId, provider, accessToken, refreshToken, tokenExpiresAt);
     }
 
     /// <summary>

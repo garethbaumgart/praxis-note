@@ -17,6 +17,7 @@ public class MergeTagsTests
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly MergeTags _sut;
     private readonly Guid _userId = Guid.NewGuid();
+    private readonly Guid _profileId = Guid.NewGuid();
     private readonly Guid _sourceTagId = Guid.NewGuid();
     private readonly Guid _targetTagId = Guid.NewGuid();
 
@@ -53,7 +54,7 @@ public class MergeTagsTests
     public async Task ExecuteAsync_SourceTagBelongsToDifferentUser_ThrowsSourceNotFoundError()
     {
         var otherUserId = Guid.NewGuid();
-        var sourceTag = Tag.Create(otherUserId, "source-tag");
+        var sourceTag = Tag.Create(otherUserId, _profileId, "source-tag");
         _tagRepo.GetByIdAsync(_sourceTagId, Arg.Any<CancellationToken>()).Returns(sourceTag);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -79,7 +80,7 @@ public class MergeTagsTests
     {
         SetupSourceTag();
         var otherUserId = Guid.NewGuid();
-        var targetTag = Tag.Create(otherUserId, "target-tag");
+        var targetTag = Tag.Create(otherUserId, _profileId, "target-tag");
         _tagRepo.GetByIdAsync(_targetTagId, Arg.Any<CancellationToken>()).Returns(targetTag);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -99,9 +100,9 @@ public class MergeTagsTests
         SetupTargetTag();
         SetupEmptyNotesAndMeetings();
 
-        var task = TaskItem.CreateStandalone(_userId, "Task 1");
+        var task = TaskItem.CreateStandalone(_userId, _profileId, "Task 1");
         task.AddTag(_sourceTagId);
-        _taskRepo.GetTasksWithTagAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task });
 
         await _sut.ExecuteAsync(new MergeTags.Command(_userId, _sourceTagId, _targetTagId));
@@ -117,9 +118,9 @@ public class MergeTagsTests
         SetupTargetTag();
         SetupEmptyTasksAndMeetings();
 
-        var note = Note.Create(_userId);
+        var note = Note.Create(_userId, _profileId);
         note.AddTag(_sourceTagId);
-        _noteRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
 
         await _sut.ExecuteAsync(new MergeTags.Command(_userId, _sourceTagId, _targetTagId));
@@ -135,9 +136,9 @@ public class MergeTagsTests
         SetupTargetTag();
         SetupEmptyTasksAndNotes();
 
-        var meeting = Meeting.Create(_userId, "Meeting 1", attendees: "");
+        var meeting = Meeting.Create(_userId, _profileId, "Meeting 1", attendees: "");
         meeting.AddTag(_sourceTagId);
-        _meetingRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { meeting });
 
         await _sut.ExecuteAsync(new MergeTags.Command(_userId, _sourceTagId, _targetTagId));
@@ -152,19 +153,19 @@ public class MergeTagsTests
         var sourceTag = SetupSourceTag();
         SetupTargetTag();
 
-        var task = TaskItem.CreateStandalone(_userId, "Task");
+        var task = TaskItem.CreateStandalone(_userId, _profileId, "Task");
         task.AddTag(_sourceTagId);
-        _taskRepo.GetTasksWithTagAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task });
 
-        var note = Note.Create(_userId);
+        var note = Note.Create(_userId, _profileId);
         note.AddTag(_sourceTagId);
-        _noteRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
 
-        var meeting = Meeting.Create(_userId, "Meeting", attendees: "");
+        var meeting = Meeting.Create(_userId, _profileId, "Meeting", attendees: "");
         meeting.AddTag(_sourceTagId);
-        _meetingRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { meeting });
 
         await _sut.ExecuteAsync(new MergeTags.Command(_userId, _sourceTagId, _targetTagId));
@@ -190,10 +191,10 @@ public class MergeTagsTests
         SetupEmptyNotesAndMeetings();
 
         // Task already has both source and target tags
-        var task = TaskItem.CreateStandalone(_userId, "Overlapping Task");
+        var task = TaskItem.CreateStandalone(_userId, _profileId, "Overlapping Task");
         task.AddTag(_sourceTagId);
         task.AddTag(_targetTagId);
-        _taskRepo.GetTasksWithTagAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task });
 
         await _sut.ExecuteAsync(new MergeTags.Command(_userId, _sourceTagId, _targetTagId));
@@ -210,22 +211,22 @@ public class MergeTagsTests
         SetupSourceTag();
         SetupTargetTag();
 
-        var task = TaskItem.CreateStandalone(_userId, "Task");
+        var task = TaskItem.CreateStandalone(_userId, _profileId, "Task");
         task.AddTag(_sourceTagId);
         task.AddTag(_targetTagId);
-        _taskRepo.GetTasksWithTagAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task });
 
-        var note = Note.Create(_userId);
+        var note = Note.Create(_userId, _profileId);
         note.AddTag(_sourceTagId);
         note.AddTag(_targetTagId);
-        _noteRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
 
-        var meeting = Meeting.Create(_userId, "Meeting", attendees: "");
+        var meeting = Meeting.Create(_userId, _profileId, "Meeting", attendees: "");
         meeting.AddTag(_sourceTagId);
         meeting.AddTag(_targetTagId);
-        _meetingRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting> { meeting });
 
         var result = await _sut.ExecuteAsync(new MergeTags.Command(_userId, _sourceTagId, _targetTagId));
@@ -270,19 +271,19 @@ public class MergeTagsTests
         SetupSourceTag();
         SetupTargetTag();
 
-        var task1 = TaskItem.CreateStandalone(_userId, "Task 1");
+        var task1 = TaskItem.CreateStandalone(_userId, _profileId, "Task 1");
         task1.AddTag(_sourceTagId);
-        var task2 = TaskItem.CreateStandalone(_userId, "Task 2");
+        var task2 = TaskItem.CreateStandalone(_userId, _profileId, "Task 2");
         task2.AddTag(_sourceTagId);
-        _taskRepo.GetTasksWithTagAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem> { task1, task2 });
 
-        var note = Note.Create(_userId);
+        var note = Note.Create(_userId, _profileId);
         note.AddTag(_sourceTagId);
-        _noteRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note> { note });
 
-        _meetingRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
 
         var result = await _sut.ExecuteAsync(new MergeTags.Command(_userId, _sourceTagId, _targetTagId));
@@ -299,49 +300,49 @@ public class MergeTagsTests
 
     private Tag SetupSourceTag()
     {
-        var tag = Tag.Create(_userId, "source-tag");
+        var tag = Tag.Create(_userId, _profileId, "source-tag");
         _tagRepo.GetByIdAsync(_sourceTagId, Arg.Any<CancellationToken>()).Returns(tag);
         return tag;
     }
 
     private Tag SetupTargetTag()
     {
-        var tag = Tag.Create(_userId, "target-tag");
+        var tag = Tag.Create(_userId, _profileId, "target-tag");
         _tagRepo.GetByIdAsync(_targetTagId, Arg.Any<CancellationToken>()).Returns(tag);
         return tag;
     }
 
     private void SetupEmptyRepositories()
     {
-        _taskRepo.GetTasksWithTagAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
-        _noteRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
-        _meetingRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
     }
 
     private void SetupEmptyNotesAndMeetings()
     {
-        _noteRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
-        _meetingRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
     }
 
     private void SetupEmptyTasksAndMeetings()
     {
-        _taskRepo.GetTasksWithTagAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
-        _meetingRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _meetingRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Meeting>());
     }
 
     private void SetupEmptyTasksAndNotes()
     {
-        _taskRepo.GetTasksWithTagAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _taskRepo.GetTasksWithTagAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<TaskItem>());
-        _noteRepo.GetByTagIdAsync(_userId, _sourceTagId, Arg.Any<CancellationToken>())
+        _noteRepo.GetByTagIdAsync(_userId, _profileId, _sourceTagId, Arg.Any<CancellationToken>())
             .Returns(new List<Note>());
     }
 

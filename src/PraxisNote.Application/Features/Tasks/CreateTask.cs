@@ -5,13 +5,13 @@ namespace PraxisNote.Application.Features.Tasks;
 
 public sealed class CreateTask(ITaskRepository taskRepository, IUnitOfWork unitOfWork)
 {
-    public record Command(Guid UserId, string Title);
+    public record Command(Guid UserId, Guid ProfileId, string Title);
     public record Result(Guid TaskId);
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
         // Get existing tasks to increment their positions
-        var existingTasks = await taskRepository.GetByUserIdAsync(command.UserId, cancellationToken);
+        var existingTasks = await taskRepository.GetByUserIdAsync(command.UserId, command.ProfileId, cancellationToken);
         var todoTasks = existingTasks.Where(t => t.Status == Domain.ValueObjects.TaskStatus.Todo);
 
         // Push down existing Todo tasks
@@ -21,7 +21,7 @@ public sealed class CreateTask(ITaskRepository taskRepository, IUnitOfWork unitO
         }
 
         // Create new task at position 0
-        var task = TaskItem.CreateStandalone(command.UserId, command.Title);
+        var task = TaskItem.CreateStandalone(command.UserId, command.ProfileId, command.Title);
 
         await taskRepository.AddAsync(task, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

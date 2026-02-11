@@ -23,6 +23,11 @@ public sealed class Meeting : AggregateRoot
     public Guid UserId { get; private init; }
 
     /// <summary>
+    /// The profile this meeting belongs to (data silo boundary).
+    /// </summary>
+    public Guid ProfileId { get; private init; }
+
+    /// <summary>
     /// The meeting title. Can be null until user reviews/edits the meeting.
     /// </summary>
     public string? Title { get; private set; }
@@ -130,13 +135,15 @@ public sealed class Meeting : AggregateRoot
     /// </summary>
     private Meeting() { }
 
-    private Meeting(Guid id, Guid userId, string? title, DateTimeOffset? meetingDate, string? attendees) : base(id)
+    private Meeting(Guid id, Guid userId, Guid profileId, string? title, DateTimeOffset? meetingDate, string? attendees) : base(id)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
+        ArgumentOutOfRangeException.ThrowIfEqual(profileId, Guid.Empty, nameof(profileId));
 
         var now = DateTimeOffset.UtcNow;
 
         UserId = userId;
+        ProfileId = profileId;
         Title = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
         MeetingDate = meetingDate?.ToUniversalTime() ?? now;
         Attendees = string.IsNullOrWhiteSpace(attendees) ? null : attendees.Trim();
@@ -152,21 +159,23 @@ public sealed class Meeting : AggregateRoot
     /// For back-to-back meetings, title can be added later during review.
     /// If meetingDate is null, defaults to current time.
     /// </remarks>
-    public static Meeting Create(Guid userId, string? title = null, DateTimeOffset? meetingDate = null, string? attendees = null)
+    public static Meeting Create(Guid userId, Guid profileId, string? title = null, DateTimeOffset? meetingDate = null, string? attendees = null)
     {
-        return new Meeting(Guid.NewGuid(), userId, title, meetingDate, attendees);
+        return new Meeting(Guid.NewGuid(), userId, profileId, title, meetingDate, attendees);
     }
 
     /// <summary>
     /// Creates a meeting imported from an external calendar event.
     /// </summary>
     /// <param name="userId">The user who owns this meeting.</param>
+    /// <param name="profileId">The profile this meeting belongs to.</param>
     /// <param name="title">The calendar event title.</param>
     /// <param name="meetingDate">The calendar event start time.</param>
     /// <param name="attendees">Comma-separated attendee names.</param>
     /// <param name="calendarEventId">The external calendar event ID for deduplication.</param>
     public static Meeting CreateFromCalendar(
         Guid userId,
+        Guid profileId,
         string? title,
         DateTimeOffset? meetingDate,
         string? attendees,
@@ -174,7 +183,7 @@ public sealed class Meeting : AggregateRoot
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(calendarEventId, nameof(calendarEventId));
 
-        return new Meeting(Guid.NewGuid(), userId, title, meetingDate, attendees)
+        return new Meeting(Guid.NewGuid(), userId, profileId, title, meetingDate, attendees)
         {
             CalendarEventId = calendarEventId.Trim()
         };

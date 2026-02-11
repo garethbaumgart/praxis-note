@@ -16,6 +16,9 @@ public sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
         builder.Property(n => n.UserId)
             .IsRequired();
 
+        builder.Property(n => n.ProfileId)
+            .IsRequired();
+
         builder.Property(n => n.Content);
 
         builder.Property(n => n.CreatedAt);
@@ -60,8 +63,8 @@ public sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
 
         builder.Ignore(n => n.TagIds);
 
-        // Index for querying user's notes
-        builder.HasIndex(n => n.UserId);
+        // Index for querying user's notes by profile
+        builder.HasIndex(n => new { n.UserId, n.ProfileId });
 
         builder.Ignore(n => n.DomainEvents);
     }

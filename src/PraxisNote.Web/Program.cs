@@ -12,6 +12,7 @@ using PraxisNote.Infrastructure;
 using PraxisNote.Infrastructure.Persistence;
 using PraxisNote.Web.Auth;
 using PraxisNote.Web.Endpoints;
+using PraxisNote.Web.Middleware;
 using PraxisNote.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -214,9 +215,13 @@ app.UseWebSockets(new WebSocketOptions
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Profile validation middleware (extracts X-Profile-Id header, falls back to default profile)
+app.UseMiddleware<ProfileValidationMiddleware>();
+
 // Minimal API endpoints
 app.MapGet("/api/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
 app.MapAuthEndpoints();
+app.MapProfileEndpoints();
 app.MapTaskEndpoints();
 app.MapCommentEndpoints();
 app.MapDueDateEndpoints();

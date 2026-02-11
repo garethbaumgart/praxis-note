@@ -10,32 +10,32 @@ public sealed class TaskRepository(PraxisNoteDbContext context) : ITaskRepositor
         return await context.Tasks.FindAsync([id], cancellationToken);
     }
 
-    public async Task<IReadOnlyList<TaskItem>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TaskItem>> GetByUserIdAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
     {
         return await context.Tasks
-            .Where(t => t.UserId == userId)
+            .Where(t => t.UserId == userId && t.ProfileId == profileId)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<TaskItem>> GetTasksWithTagAsync(Guid userId, Guid tagId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TaskItem>> GetTasksWithTagAsync(Guid userId, Guid profileId, Guid tagId, CancellationToken cancellationToken = default)
     {
         // In-memory filtering required because TagIds uses a JSON value conversion
         // that EF Core can't translate Contains() on. Same pattern as GetTagUsageCountsAsync.
         var tasks = await context.Tasks
-            .Where(t => t.UserId == userId)
+            .Where(t => t.UserId == userId && t.ProfileId == profileId)
             .ToListAsync(cancellationToken);
 
         return tasks.Where(t => t.TagIds.Contains(tagId)).ToList();
     }
 
-    public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyDictionary<Guid, int>> GetTagUsageCountsAsync(Guid userId, Guid profileId, CancellationToken cancellationToken = default)
     {
         // Project only TagIds to minimize data transfer (TagIds is stored as JSON).
         // In-memory aggregation is necessary because EF Core can't translate
         // SelectMany/GroupBy on JSON arrays to SQL without raw queries.
         var tagIdLists = await context.Tasks
-            .Where(t => t.UserId == userId)
+            .Where(t => t.UserId == userId && t.ProfileId == profileId)
             .Select(t => t.TagIds)
             .ToListAsync(cancellationToken);
 
