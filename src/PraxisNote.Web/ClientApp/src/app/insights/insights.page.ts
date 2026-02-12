@@ -6,6 +6,7 @@ import { InsightsService } from './insights.service';
 import { InsightsSummaryCardsComponent } from './insights-summary-cards.component';
 import { InsightsTrendChartComponent } from './insights-trend-chart.component';
 import { GoalsSectionComponent } from './goals-section.component';
+import { NudgesSectionComponent } from './nudges-section.component';
 import { CommunicationProfileComponent } from './communication-profile.component';
 import { JohariWindowComponent } from './johari-window.component';
 import { DateRange } from './insights.model';
@@ -17,7 +18,7 @@ import { PageContentComponent } from '../shared/components/page-content.componen
   selector: 'app-insights-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, CommunicationProfileComponent, JohariWindowComponent, ErrorStateComponent, PageContentComponent],
+  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, NudgesSectionComponent, CommunicationProfileComponent, JohariWindowComponent, ErrorStateComponent, PageContentComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Insights</h1>
@@ -78,6 +79,9 @@ import { PageContentComponent } from '../shared/components/page-content.componen
         <!-- Johari Window (always visible) -->
         <app-johari-window />
 
+        <!-- Blind Spot Nudges (always visible) -->
+        <app-nudges-section />
+
         <!-- Goals Section (always visible) -->
         <app-goals-section />
       } @else {
@@ -92,6 +96,11 @@ import { PageContentComponent } from '../shared/components/page-content.componen
         <!-- Johari Window -->
         <div class="mt-6">
           <app-johari-window />
+        </div>
+
+        <!-- Blind Spot Nudges -->
+        <div class="mt-6">
+          <app-nudges-section />
         </div>
 
         <!-- Goals Section -->

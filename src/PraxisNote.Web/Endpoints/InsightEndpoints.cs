@@ -19,6 +19,10 @@ public static class InsightEndpoints
         group.MapGet("/communication-profile", (Delegate)HandleGetCommunicationProfile);
         group.MapGet("/johari-window", (Delegate)HandleGetJohariWindow);
 
+        group.MapGet("/nudges", (Delegate)HandleGetNudges);
+        group.MapPost("/nudges/{id:guid}/dismiss", (Delegate)HandleDismissNudge);
+        group.MapPost("/nudges/{id:guid}/accept", (Delegate)HandleAcceptNudge);
+
         group.MapGet("/goals", (Delegate)HandleGetGoals);
         group.MapGet("/goals/progress", (Delegate)HandleGetGoalProgress);
         group.MapPost("/goals", (Delegate)HandleCreateGoal);
@@ -123,6 +127,84 @@ public static class InsightEndpoints
         var result = await getJohariWindow.ExecuteAsync(query, cancellationToken);
 
         return Results.Ok(result);
+    }
+
+    private static async Task<IResult> HandleGetNudges(
+        HttpContext context,
+        ClaimsPrincipal user,
+        [FromQuery] string? range,
+        [FromServices] GenerateBlindSpotNudges generateNudges,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+            return Results.Unauthorized();
+
+        var effectiveRange = range ?? "90d";
+        if (!GetJohariWindow.ValidRanges.Contains(effectiveRange, StringComparer.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
+        }
+
+        var profileId = context.GetProfileId();
+        var query = new GenerateBlindSpotNudges.Query(userId.Value, profileId, effectiveRange);
+        var nudges = await generateNudges.ExecuteAsync(query, cancellationToken);
+
+        return Results.Ok(nudges);
+    }
+
+    private static async Task<IResult> HandleDismissNudge(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] DismissNudge dismissNudge,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+            return Results.Unauthorized();
+
+        try
+        {
+            var command = new DismissNudge.Command(userId.Value, id);
+            await dismissNudge.ExecuteAsync(command, cancellationToken);
+            return Results.NoContent();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == DismissNudge.NotFoundError)
+        {
+            return Results.NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(new { error = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> HandleAcceptNudge(
+        Guid id,
+        HttpContext context,
+        ClaimsPrincipal user,
+        [FromServices] AcceptNudgeAsGoal acceptNudge,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+            return Results.Unauthorized();
+
+        try
+        {
+            var profileId = context.GetProfileId();
+            var command = new AcceptNudgeAsGoal.Command(userId.Value, profileId, id);
+            var goalId = await acceptNudge.ExecuteAsync(command, cancellationToken);
+            return Results.Ok(new { goalId });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == AcceptNudgeAsGoal.NotFoundError)
+        {
+            return Results.NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(new { error = ex.Message });
+        }
     }
 
     private static async Task<IResult> HandleGetGoals(

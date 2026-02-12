@@ -8,6 +8,7 @@ using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
 using PraxisNote.Application.Features.Transcription;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
+using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
@@ -50,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IProfileRepository, ProfileRepository>();
         services.AddScoped<IBehavioralGoalRepository, BehavioralGoalRepository>();
+        services.AddScoped<IBlindSpotNudgeRepository, BlindSpotNudgeRepository>();
         services.AddScoped<ILinkedIdentityRepository, LinkedIdentityRepository>();
         services.AddScoped<IAccountLinkCodeRepository, AccountLinkCodeRepository>();
 

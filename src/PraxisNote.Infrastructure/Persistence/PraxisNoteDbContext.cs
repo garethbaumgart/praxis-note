@@ -6,6 +6,7 @@ using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Notifications;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
+using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.Profiles;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
@@ -24,6 +25,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
     public DbSet<FeatureNotification> FeatureNotifications => Set<FeatureNotification>();
     public DbSet<BehavioralGoal> BehavioralGoals => Set<BehavioralGoal>();
+    public DbSet<BlindSpotNudge> BlindSpotNudges => Set<BlindSpotNudge>();
     public DbSet<LinkedIdentity> LinkedIdentities => Set<LinkedIdentity>();
     public DbSet<AccountLinkCode> AccountLinkCodes => Set<AccountLinkCode>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
