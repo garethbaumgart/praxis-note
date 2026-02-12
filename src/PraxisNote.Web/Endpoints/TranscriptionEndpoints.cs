@@ -27,7 +27,8 @@ public static class TranscriptionEndpoints
     private static async Task<IResult> HandleStatus(
         IOptions<DeepgramSettings> settings,
         IHttpClientFactory httpClientFactory,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
     {
         var logger = loggerFactory.CreateLogger("TranscriptionEndpoints");
         var apiKey = settings.Value.ApiKey;
@@ -46,13 +47,15 @@ public static class TranscriptionEndpoints
         // without incurring any transcription billing.
         try
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                timeoutCts.Token, cancellationToken);
             using var httpClient = httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Token", apiKey);
 
-            var response = await httpClient.GetAsync(
-                "https://api.deepgram.com/v1/projects", cts.Token);
+            using var response = await httpClient.GetAsync(
+                "https://api.deepgram.com/v1/projects", linkedCts.Token);
 
             if (response.IsSuccessStatusCode)
             {
@@ -78,6 +81,11 @@ public static class TranscriptionEndpoints
                 available = false,
                 reason = "Transcription service returned an error. Please try again.",
             });
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Client disconnected — let the framework handle it
+            throw;
         }
         catch (OperationCanceledException)
         {
@@ -210,8 +218,16 @@ public static class TranscriptionEndpoints
 
         try
         {
-            using var connectCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            await deepgramWs.ConnectAsync(new Uri(deepgramUrl), connectCts.Token);
+            using var connectTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var connectLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                connectTimeoutCts.Token, context.RequestAborted);
+            await deepgramWs.ConnectAsync(new Uri(deepgramUrl), connectLinkedCts.Token);
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            // Client disconnected — clean up silently
+            logger.LogInformation("Client disconnected during Deepgram WebSocket connect");
+            return;
         }
         catch (OperationCanceledException)
         {
