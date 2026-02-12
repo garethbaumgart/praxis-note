@@ -4,8 +4,8 @@
   "description": "Intelligent note-taking and task management",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#5e81ac",
-  "theme_color": "#5e81ac",
+  "background_color": "#2e3440",
+  "theme_color": "#2e3440",
   "icons": [
     {
       "src": "icon-192x192.png",

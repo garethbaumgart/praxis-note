@@ -1,23 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
   <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#5e81ac"/>
-      <stop offset="100%" style="stop-color:#81a1c1"/>
-    </linearGradient>
+    <clipPath id="squircle">
+      <rect width="80" height="80" rx="18"/>
+    </clipPath>
+    <filter id="barShadow">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#2e3440" flood-opacity="0.2"/>
+    </filter>
+    <filter id="badgeShadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#2e3440" flood-opacity="0.25"/>
+    </filter>
   </defs>
-  <!-- Background -->
-  <rect width="64" height="64" rx="14" fill="url(#bgGradient)"/>
-  <!-- Main rounded square with checkmark -->
-  <rect x="14" y="14" width="36" height="36" rx="8" fill="white"/>
-  <polyline points="22,32 30,40 44,24" fill="none" stroke="#5e81ac" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Neural accent dots outside -->
-  <circle cx="8" cy="8" r="3" fill="white" opacity="0.6"/>
-  <circle cx="56" cy="8" r="3" fill="white" opacity="0.6"/>
-  <circle cx="8" cy="56" r="3" fill="white" opacity="0.6"/>
-  <circle cx="56" cy="56" r="3" fill="white" opacity="0.6"/>
-  <!-- Connection lines -->
-  <line x1="11" y1="11" x2="16" y2="16" stroke="white" stroke-width="1" opacity="0.4"/>
-  <line x1="53" y1="11" x2="48" y2="16" stroke="white" stroke-width="1" opacity="0.4"/>
-  <line x1="11" y1="53" x2="16" y2="48" stroke="white" stroke-width="1" opacity="0.4"/>
-  <line x1="53" y1="53" x2="48" y2="48" stroke="white" stroke-width="1" opacity="0.4"/>
+  <g clip-path="url(#squircle)">
+    <!-- Background: Polar Night -->
+    <rect width="80" height="80" fill="#2e3440"/>
+    <!-- Horizontal bars -->
+    <rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/>
+    <rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/>
+    <!-- Vertical bars (over horizontals) -->
+    <rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c" filter="url(#barShadow)"/>
+    <rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770" filter="url(#barShadow)"/>
+    <!-- Weave: horizontal over vertical segments -->
+    <rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac" filter="url(#barShadow)"/>
+    <rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0" filter="url(#barShadow)"/>
+    <!-- Center badge: dark squircle -->
+    <rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7" filter="url(#badgeShadow)"/>
+    <rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/>
+    <!-- Checkmark -->
+    <polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>
