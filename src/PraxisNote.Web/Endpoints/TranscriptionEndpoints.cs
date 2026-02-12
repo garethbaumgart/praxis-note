@@ -232,19 +232,17 @@ public static class TranscriptionEndpoints
         catch (OperationCanceledException)
         {
             logger.LogWarning("Deepgram WebSocket connection timed out after 10 seconds");
-            await clientWs.CloseAsync(
+            await CloseIfOpenAsync(clientWs, logger,
                 WebSocketCloseStatus.InternalServerError,
-                "Transcription service connection timed out.",
-                CancellationToken.None);
+                "Transcription service connection timed out.");
             return;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to connect to Deepgram");
-            await clientWs.CloseAsync(
+            await CloseIfOpenAsync(clientWs, logger,
                 WebSocketCloseStatus.InternalServerError,
-                "Failed to connect to transcription service.",
-                CancellationToken.None);
+                "Failed to connect to transcription service.");
             return;
         }
 
@@ -394,16 +392,20 @@ public static class TranscriptionEndpoints
         }
     }
 
-    private static async Task CloseIfOpenAsync(WebSocket ws, ILogger logger)
+    private static Task CloseIfOpenAsync(WebSocket ws, ILogger logger) =>
+        CloseIfOpenAsync(ws, logger, WebSocketCloseStatus.NormalClosure, "Done");
+
+    private static async Task CloseIfOpenAsync(
+        WebSocket ws,
+        ILogger logger,
+        WebSocketCloseStatus status,
+        string reason)
     {
         try
         {
             if (ws.State is WebSocketState.Open or WebSocketState.CloseReceived)
             {
-                await ws.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Done",
-                    CancellationToken.None);
+                await ws.CloseAsync(status, reason, CancellationToken.None);
             }
         }
         catch (Exception ex)
