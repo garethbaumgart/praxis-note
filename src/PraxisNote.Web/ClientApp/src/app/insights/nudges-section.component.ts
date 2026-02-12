@@ -87,8 +87,9 @@ export class NudgesSectionComponent implements OnInit {
   }
 
   protected accept(id: string): void {
-    this.nudgeService.acceptNudge(id);
-    // Reload goals after accepting a nudge as a goal
-    this.goalsService.loadGoalsAndProgress();
+    this.nudgeService.acceptNudge(id, () => {
+      // Reload goals after the accept call completes to avoid stale data
+      this.goalsService.loadGoalsAndProgress();
+    });
   }
 }

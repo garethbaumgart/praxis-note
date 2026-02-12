@@ -1,10 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BlindSpotNudge } from './insights.model';
+import { ToastService } from '../shared/services/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class NudgeService {
   private readonly http = inject(HttpClient);
+  private readonly toast = inject(ToastService);
 
   private readonly _nudges = signal<BlindSpotNudge[]>([]);
   private readonly _loading = signal(false);
@@ -35,16 +37,17 @@ export class NudgeService {
       next: () => {
         this._nudges.update(nudges => nudges.filter(n => n.id !== id));
       },
-      error: () => this._error.set('Failed to dismiss nudge'),
+      error: () => this.toast.error('Failed to dismiss nudge'),
     });
   }
 
-  acceptNudge(id: string): void {
+  acceptNudge(id: string, onSuccess?: () => void): void {
     this.http.post<{ goalId: string }>(`/api/insights/nudges/${id}/accept`, {}).subscribe({
       next: () => {
         this._nudges.update(nudges => nudges.filter(n => n.id !== id));
+        onSuccess?.();
       },
-      error: () => this._error.set('Failed to create goal from nudge'),
+      error: () => this.toast.error('Failed to create goal from nudge'),
     });
   }
 }

@@ -19,7 +19,11 @@ public sealed class GenerateBlindSpotNudges(
 
     public async Task<IReadOnlyList<BlindSpotNudgeDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
-        // Check if user already has active nudges — if so, return them
+        // Check if user already has active nudges — if so, return them.
+        // Note: There is a theoretical TOCTOU race if two requests arrive simultaneously for the same
+        // user/profile, potentially creating up to 6 nudges instead of 3. This is acceptable because
+        // nudge generation is triggered by a single user browsing the insights page. If this becomes
+        // an issue, consider adding a DB-level advisory lock or unique partial index.
         var existing = await nudgeRepository.GetActiveByUserAsync(query.UserId, query.ProfileId, cancellationToken);
         if (existing.Count > 0)
         {

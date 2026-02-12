@@ -141,6 +141,11 @@ public static class InsightEndpoints
             return Results.Unauthorized();
 
         var effectiveRange = range ?? "90d";
+        if (!GetJohariWindow.ValidRanges.Contains(effectiveRange, StringComparer.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest("Invalid range. Use: 7d, 30d, 90d, all");
+        }
+
         var profileId = context.GetProfileId();
         var query = new GenerateBlindSpotNudges.Query(userId.Value, profileId, effectiveRange);
         var nudges = await generateNudges.ExecuteAsync(query, cancellationToken);
@@ -168,6 +173,10 @@ public static class InsightEndpoints
         {
             return Results.NotFound();
         }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(new { error = ex.Message });
+        }
     }
 
     private static async Task<IResult> HandleAcceptNudge(
@@ -191,6 +200,10 @@ public static class InsightEndpoints
         catch (InvalidOperationException ex) when (ex.Message == AcceptNudgeAsGoal.NotFoundError)
         {
             return Results.NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(new { error = ex.Message });
         }
     }
 
