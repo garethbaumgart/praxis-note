@@ -57,10 +57,11 @@ export class DeepgramTranscriptionService implements OnDestroy {
   async checkAvailability(): Promise<boolean> {
     try {
       const response = await firstValueFrom(
-        this.http.get<{ available: boolean }>('/api/transcription/status')
+        this.http.get<{ available: boolean; reason?: string }>('/api/transcription/status')
       );
       if (!response.available) {
-        this.error.set('Transcription service is not configured. Please contact your administrator.');
+        this.error.set(response.reason
+          ?? 'Transcription service is not configured. Please contact your administrator.');
         return false;
       }
       return true;

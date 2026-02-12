@@ -24,9 +24,87 @@ public static class TranscriptionEndpoints
         routes.Map("/api/transcription/stream", HandleStream);
     }
 
-    private static IResult HandleStatus(IOptions<DeepgramSettings> settings)
+    private static async Task<IResult> HandleStatus(
+        IOptions<DeepgramSettings> settings,
+        IHttpClientFactory httpClientFactory,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
     {
-        return Results.Ok(new { available = !string.IsNullOrWhiteSpace(settings.Value.ApiKey) });
+        var logger = loggerFactory.CreateLogger("TranscriptionEndpoints");
+        var apiKey = settings.Value.ApiKey;
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            return Results.Ok(new
+            {
+                available = false,
+                reason = "Transcription service is not configured.",
+            });
+        }
+
+        // Test actual connectivity to Deepgram using a lightweight REST endpoint.
+        // GET /v1/projects validates the API key and confirms the service is reachable
+        // without incurring any transcription billing.
+        try
+        {
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                timeoutCts.Token, cancellationToken);
+            using var httpClient = httpClientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Token", apiKey);
+
+            using var response = await httpClient.GetAsync(
+                "https://api.deepgram.com/v1/projects", linkedCts.Token);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return Results.Ok(new { available = true });
+            }
+
+            if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized
+                or System.Net.HttpStatusCode.Forbidden)
+            {
+                logger.LogWarning("Deepgram API key is invalid (HTTP {StatusCode})",
+                    (int)response.StatusCode);
+                return Results.Ok(new
+                {
+                    available = false,
+                    reason = "Transcription API key is invalid.",
+                });
+            }
+
+            logger.LogWarning("Deepgram connectivity check failed (HTTP {StatusCode})",
+                (int)response.StatusCode);
+            return Results.Ok(new
+            {
+                available = false,
+                reason = "Transcription service returned an error. Please try again.",
+            });
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Client disconnected — let the framework handle it
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Deepgram connectivity check timed out");
+            return Results.Ok(new
+            {
+                available = false,
+                reason = "Transcription service is not responding. Please try again.",
+            });
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "Deepgram connectivity check failed");
+            return Results.Ok(new
+            {
+                available = false,
+                reason = "Cannot reach transcription service. Please check your connection.",
+            });
+        }
     }
 
     private static async Task HandleStream(
@@ -140,15 +218,31 @@ public static class TranscriptionEndpoints
 
         try
         {
-            await deepgramWs.ConnectAsync(new Uri(deepgramUrl), CancellationToken.None);
+            using var connectTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var connectLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                connectTimeoutCts.Token, context.RequestAborted);
+            await deepgramWs.ConnectAsync(new Uri(deepgramUrl), connectLinkedCts.Token);
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            // Client disconnected — clean up silently
+            logger.LogInformation("Client disconnected during Deepgram WebSocket connect");
+            return;
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Deepgram WebSocket connection timed out after 10 seconds");
+            await CloseIfOpenAsync(clientWs, logger,
+                WebSocketCloseStatus.InternalServerError,
+                "Transcription service connection timed out.");
+            return;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to connect to Deepgram");
-            await clientWs.CloseAsync(
+            await CloseIfOpenAsync(clientWs, logger,
                 WebSocketCloseStatus.InternalServerError,
-                "Failed to connect to transcription service.",
-                CancellationToken.None);
+                "Failed to connect to transcription service.");
             return;
         }
 
@@ -298,16 +392,20 @@ public static class TranscriptionEndpoints
         }
     }
 
-    private static async Task CloseIfOpenAsync(WebSocket ws, ILogger logger)
+    private static Task CloseIfOpenAsync(WebSocket ws, ILogger logger) =>
+        CloseIfOpenAsync(ws, logger, WebSocketCloseStatus.NormalClosure, "Done");
+
+    private static async Task CloseIfOpenAsync(
+        WebSocket ws,
+        ILogger logger,
+        WebSocketCloseStatus status,
+        string reason)
     {
         try
         {
             if (ws.State is WebSocketState.Open or WebSocketState.CloseReceived)
             {
-                await ws.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Done",
-                    CancellationToken.None);
+                await ws.CloseAsync(status, reason, CancellationToken.None);
             }
         }
         catch (Exception ex)
