@@ -20,6 +20,7 @@ public sealed class RedeemLinkCode(
 {
     public const string InvalidCodeError = "Invalid or expired link code";
     public const string AlreadyLinkedError = "This account is already linked to a user";
+    public const string AlreadyLinkedToTargetError = "These accounts are already linked";
     public const string SameUserError = "Cannot link an account to itself";
     public const string CancelledError = "Link operation cancelled by user";
 
@@ -77,7 +78,22 @@ public sealed class RedeemLinkCode(
 
         if (existingLink is not null)
         {
-            return new Result(command.RedeemingUserId, false, AlreadyLinkedError);
+            if (existingLink.UserId == codeOwnerUserId)
+            {
+                // Already linked to the target account — nothing to do
+                return new Result(codeOwnerUserId, false, AlreadyLinkedToTargetError);
+            }
+
+            if (existingLink.UserId != redeemingUser.Id)
+            {
+                // Linked to a different account — block
+                return new Result(command.RedeemingUserId, false, AlreadyLinkedError);
+            }
+
+            // Self-link (seeded by migration): remove so the new LinkedIdentity
+            // on the code owner's account can be created without violating the
+            // unique constraint on (Provider, ProviderId)
+            linkedIdentityRepository.Remove(existingLink);
         }
 
         // Mark code as redeemed
