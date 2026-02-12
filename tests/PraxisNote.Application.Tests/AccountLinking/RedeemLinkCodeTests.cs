@@ -43,7 +43,7 @@ public class RedeemLinkCodeTests
 
         SetupValidCode(_codeOwnerUserId);
         SetupUsers(codeOwner, redeemingUser);
-        SetupExistingLink(selfLink);
+        SetupExistingLink(selfLink, "google", "redeemer-456");
         SetupDefaultProfile(_codeOwnerUserId);
 
         // Act
@@ -65,6 +65,9 @@ public class RedeemLinkCodeTests
 
         // The redeeming user should have been removed
         _userRepo.Received(1).Remove(redeemingUser);
+
+        // Changes should have been persisted
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     #endregion
@@ -87,7 +90,7 @@ public class RedeemLinkCodeTests
 
         SetupValidCode(_codeOwnerUserId);
         SetupUsers(codeOwner, redeemingUser);
-        SetupExistingLink(existingLink);
+        SetupExistingLink(existingLink, "google", "redeemer-456");
 
         // Act
         var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
@@ -120,7 +123,7 @@ public class RedeemLinkCodeTests
 
         SetupValidCode(_codeOwnerUserId);
         SetupUsers(codeOwner, redeemingUser);
-        SetupExistingLink(thirdPartyLink);
+        SetupExistingLink(thirdPartyLink, "google", "redeemer-456");
 
         // Act
         var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
@@ -164,6 +167,9 @@ public class RedeemLinkCodeTests
         await _linkedIdentityRepo.Received(1).AddAsync(
             Arg.Is<LinkedIdentity>(li => li.UserId == _codeOwnerUserId),
             Arg.Any<CancellationToken>());
+
+        // Changes should have been persisted
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     #endregion
@@ -197,10 +203,10 @@ public class RedeemLinkCodeTests
         _userRepo.GetByIdAsync(redeemingUser.Id, Arg.Any<CancellationToken>()).Returns(redeemingUser);
     }
 
-    private void SetupExistingLink(LinkedIdentity link)
+    private void SetupExistingLink(LinkedIdentity link, string provider, string providerId)
     {
         _linkedIdentityRepo.GetByProviderAsync(
-            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            provider, providerId, Arg.Any<CancellationToken>())
             .Returns(link);
     }
 
