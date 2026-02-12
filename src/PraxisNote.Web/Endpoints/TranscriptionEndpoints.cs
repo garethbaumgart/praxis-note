@@ -24,9 +24,79 @@ public static class TranscriptionEndpoints
         routes.Map("/api/transcription/stream", HandleStream);
     }
 
-    private static IResult HandleStatus(IOptions<DeepgramSettings> settings)
+    private static async Task<IResult> HandleStatus(
+        IOptions<DeepgramSettings> settings,
+        IHttpClientFactory httpClientFactory,
+        ILoggerFactory loggerFactory)
     {
-        return Results.Ok(new { available = !string.IsNullOrWhiteSpace(settings.Value.ApiKey) });
+        var logger = loggerFactory.CreateLogger("TranscriptionEndpoints");
+        var apiKey = settings.Value.ApiKey;
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            return Results.Ok(new
+            {
+                available = false,
+                reason = "Transcription service is not configured.",
+            });
+        }
+
+        // Test actual connectivity to Deepgram using a lightweight REST endpoint.
+        // GET /v1/projects validates the API key and confirms the service is reachable
+        // without incurring any transcription billing.
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var httpClient = httpClientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Token", apiKey);
+
+            var response = await httpClient.GetAsync(
+                "https://api.deepgram.com/v1/projects", cts.Token);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return Results.Ok(new { available = true });
+            }
+
+            if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized
+                or System.Net.HttpStatusCode.Forbidden)
+            {
+                logger.LogWarning("Deepgram API key is invalid (HTTP {StatusCode})",
+                    (int)response.StatusCode);
+                return Results.Ok(new
+                {
+                    available = false,
+                    reason = "Transcription API key is invalid.",
+                });
+            }
+
+            logger.LogWarning("Deepgram connectivity check failed (HTTP {StatusCode})",
+                (int)response.StatusCode);
+            return Results.Ok(new
+            {
+                available = false,
+                reason = "Transcription service returned an error. Please try again.",
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Deepgram connectivity check timed out");
+            return Results.Ok(new
+            {
+                available = false,
+                reason = "Transcription service is not responding. Please try again.",
+            });
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "Deepgram connectivity check failed");
+            return Results.Ok(new
+            {
+                available = false,
+                reason = "Cannot reach transcription service. Please check your connection.",
+            });
+        }
     }
 
     private static async Task HandleStream(
@@ -140,7 +210,17 @@ public static class TranscriptionEndpoints
 
         try
         {
-            await deepgramWs.ConnectAsync(new Uri(deepgramUrl), CancellationToken.None);
+            using var connectCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await deepgramWs.ConnectAsync(new Uri(deepgramUrl), connectCts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Deepgram WebSocket connection timed out after 10 seconds");
+            await clientWs.CloseAsync(
+                WebSocketCloseStatus.InternalServerError,
+                "Transcription service connection timed out.",
+                CancellationToken.None);
+            return;
         }
         catch (Exception ex)
         {
