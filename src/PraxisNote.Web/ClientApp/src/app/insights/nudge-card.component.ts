@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { BlindSpotNudge } from './insights.model';
 
 @Component({
@@ -49,14 +49,4 @@ export class NudgeCardComponent {
   readonly nudge = input.required<BlindSpotNudge>();
   readonly onDismiss = output<string>();
   readonly onAccept = output<string>();
-
-  readonly dimensionIcon = computed(() => {
-    const icons: Record<string, string> = {
-      'Talk Time': 'pi pi-chart-pie',
-      Engagement: 'pi pi-users',
-      Tone: 'pi pi-comments',
-      Interruptions: 'pi pi-ban',
-    };
-    return icons[this.nudge().dimension] ?? 'pi pi-lightbulb';
-  });
 }
