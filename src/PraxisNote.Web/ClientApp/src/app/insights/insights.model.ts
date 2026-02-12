@@ -187,3 +187,11 @@ export interface BlindSpotDetail {
   description: string;
   meetingCount: number;
 }
+
+export interface BlindSpotNudge {
+  id: string;
+  dimension: string;
+  suggestion: string;
+  blindSpotDescription: string;
+  status: 'Active' | 'Dismissed' | 'AcceptedAsGoal';
+}

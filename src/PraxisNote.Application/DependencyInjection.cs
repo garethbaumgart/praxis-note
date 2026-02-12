@@ -117,6 +117,11 @@ public static class DependencyInjection
         services.AddScoped<GetCommunicationProfile>();
         services.AddScoped<GetJohariWindow>();
 
+        // Nudge use cases
+        services.AddScoped<GenerateBlindSpotNudges>();
+        services.AddScoped<DismissNudge>();
+        services.AddScoped<AcceptNudgeAsGoal>();
+
         // Summary use cases
         services.AddScoped<GetDailySummary>();
 
