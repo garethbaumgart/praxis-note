@@ -72,13 +72,15 @@ The prompt to the sub-agent MUST include ALL of the following context so it can 
 >
 > 3. **Implement**: Follow the implementation plan step by step. Write the code, create tests as specified, and ensure everything compiles.
 >
-> 4. **Create PR and Merge**: Run the /pr skill to create a PR, run tests, monitor CI, address review comments, and merge. Override these /pr steps:
+> 4. **Functional Verification**: Before creating the PR, manually verify the feature works by running the dev stack and using browser automation to exercise the primary user flow. For UI features, this means: navigate to the feature, interact with it (click, type, toggle), and verify the expected result appears in the DOM. If the feature does not work as expected, fix it before proceeding.
+>
+> 5. **Create PR and Merge**: Run the /pr skill to create a PR, run tests, monitor CI, address review comments, and merge. Override these /pr steps:
 >    - /pr Step 3 (Broadcast): EITHER "Run /broadcast automatically (no user prompt) — this is a user-facing change." OR "Skip broadcast — this is a minor/internal change."
->    - /pr Step 9 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user.
+>    - /pr Step 10 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user.
 >
-> 5. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then run `git checkout main && git pull`.
+> 6. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then run `git checkout main && git pull`.
 >
-> 6. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed). If you created a broadcast notification, mention that too.
+> 7. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed). If you created a broadcast notification, mention that too.
 >
 > **Critical Rules:**
 > - Do NOT ask the user any questions. Work fully autonomously.
