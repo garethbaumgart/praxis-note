@@ -13,7 +13,7 @@ import { ProfileService } from '../profiles/profile.service';
     <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-border bg-surface hover:bg-surface-muted/50 transition-colors">
       <!-- Profile icon -->
       <div class="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center shrink-0">
-        <i class="pi {{ profile().icon ?? 'pi-user' }} text-foreground-secondary" aria-hidden="true"></i>
+        <i class="pi {{ profile().icon ?? 'pi-user' }} text-foreground-secondary text-sm" aria-hidden="true"></i>
       </div>
 
       <!-- Profile info -->
