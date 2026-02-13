@@ -26,6 +26,7 @@ import { FormsModule } from '@angular/forms';
 import { SlashCommands } from './extensions/slash-commands.extension';
 import { SlashCommandItem } from './extensions/slash-command-items';
 import { SlashCommandMenuComponent } from './slash-command-menu.component';
+import { normalizeLinkUrl, normalizeImageUrl } from '../shared/url-utils';
 import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion';
 
 // Block type options for the dropdown
@@ -1397,7 +1398,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       const rawUrl = window.prompt('Enter the URL:');
       if (!rawUrl) return;
 
-      const url = this.normalizeUrl(rawUrl);
+      const url = normalizeLinkUrl(rawUrl);
       if (!url) {
         window.alert('Please enter a valid http, https, or mailto URL.');
         return;
@@ -1420,7 +1421,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       const rawUrl = window.prompt('Enter the URL:');
       if (!rawUrl) return;
 
-      const url = this.normalizeUrl(rawUrl);
+      const url = normalizeLinkUrl(rawUrl);
       if (!url) {
         window.alert('Please enter a valid http, https, or mailto URL.');
         return;
@@ -1432,27 +1433,6 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         .setTextSelection({ from, to })
         .setLink({ href: url })
         .run();
-    }
-  }
-
-  private normalizeUrl(input: string): string | null {
-    const trimmed = input.trim();
-    if (!trimmed) return null;
-
-    const allowedProtocols = ['http:', 'https:', 'mailto:'];
-
-    try {
-      const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed);
-      const candidate = hasProtocol ? trimmed : `https://${trimmed}`;
-      const url = new URL(candidate);
-
-      if (!allowedProtocols.includes(url.protocol)) {
-        return null;
-      }
-
-      return url.toString();
-    } catch {
-      return null;
     }
   }
 
@@ -1515,7 +1495,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     const rawUrl = window.prompt('Enter the image URL:');
     if (!rawUrl) return;
 
-    const url = this.normalizeUrl(rawUrl);
+    const url = normalizeImageUrl(rawUrl);
     if (!url) {
       window.alert('Please enter a valid http or https URL.');
       return;

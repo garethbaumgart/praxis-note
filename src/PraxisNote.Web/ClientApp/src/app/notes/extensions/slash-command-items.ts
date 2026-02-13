@@ -1,20 +1,6 @@
 import { Editor } from '@tiptap/core';
 import { formatShortcut } from '../../shared/keyboard-utils';
-
-/** Validates and normalizes a URL, only allowing http/https protocols */
-function normalizeImageUrl(input: string): string | null {
-  const trimmed = input.trim();
-  if (!trimmed) return null;
-  try {
-    const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed);
-    const candidate = hasProtocol ? trimmed : `https://${trimmed}`;
-    const url = new URL(candidate);
-    if (!['http:', 'https:'].includes(url.protocol)) return null;
-    return url.toString();
-  } catch {
-    return null;
-  }
-}
+import { normalizeImageUrl } from '../../shared/url-utils';
 
 export interface SlashCommandItem {
   label: string;
