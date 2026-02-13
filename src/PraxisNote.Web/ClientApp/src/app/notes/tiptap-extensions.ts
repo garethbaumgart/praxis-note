@@ -15,6 +15,7 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details';
 import { common, createLowlight } from 'lowlight';
+import { InsertDate } from './extensions/insert-date.extension';
 
 const lowlight = createLowlight(common);
 
@@ -51,4 +52,5 @@ export const tiptapExtensions = [
   Details.configure({ persist: false }),
   DetailsSummary,
   DetailsContent,
+  InsertDate,
 ];
