@@ -194,6 +194,110 @@ Each step must include:
 - **Include optimistic update changes** — if the change affects data that's optimistically updated on the frontend, include steps to update all callers
 - **Include test expectations** — note what tests should be added or updated (but don't write the test code in the plan)
 
+### Plan Quality Requirements (ENFORCED)
+
+These requirements ensure sub-agents can implement the plan without ambiguity or missed updates.
+
+#### 1. Exact Method Signatures
+
+For any method being **created or modified**, the plan must include the full method signature — not just the file path. This prevents sub-agents from guessing parameter types, return types, or method names.
+
+```markdown
+**Method signature:**
+\`\`\`csharp
+// New method in ITaskRepository
+Task<IReadOnlyList<TaskItem>> GetByDueDateRangeAsync(Guid userId, DateOnly from, DateOnly to, CancellationToken ct = default);
+\`\`\`
+
+\`\`\`typescript
+// New method in task.service.ts
+loadByDueDateRange(from: string, to: string): void
+\`\`\`
+```
+
+Do NOT write vague instructions like "add a method to get tasks by date range" — show the exact signature.
+
+#### 2. List All Callers
+
+For any method being **changed** (signature, behavior, or return type), the plan must identify **all call sites** by running grep and listing the results. Sub-agents must not discover missing callers mid-implementation.
+
+```markdown
+**Callers of `TaskRepository.GetByStatusAsync` (must be updated):**
+- `src/PraxisNote.Application/Features/Tasks/GetUserTasks.cs:34`
+- `src/PraxisNote.Application/Features/Summary/GetDailySummary.cs:58`
+- `src/PraxisNote.Web/ClientApp/src/app/tasks/task.service.ts:42`
+```
+
+If a method has zero callers (new method), state that explicitly: "No existing callers — this is a new method."
+
+#### 3. Template HTML Before/After
+
+For UI changes, show the **exact HTML being modified** with before and after snippets. Do not write "update the template to show the new field" — show the actual markup.
+
+```markdown
+**Before** (from `tasks.page.ts` template, lines 45-52):
+\`\`\`html
+<div class="flex items-center gap-2">
+  <span class="text-sm text-foreground">{{ task.title }}</span>
+</div>
+\`\`\`
+
+**After:**
+\`\`\`html
+<div class="flex items-center gap-2">
+  <span class="text-sm text-foreground">{{ task.title }}</span>
+  @if (task.dueDate) {
+    <span class="text-xs text-foreground-muted">{{ task.dueDate | date }}</span>
+  }
+</div>
+\`\`\`
+```
+
+#### 4. List Shared Components to Reuse
+
+Explicitly name shared components (with file paths) that the implementation should use, and **warn against creating duplicates**. Check `src/app/shared/components/` and `src/app/shared/services/` before planning any new shared utility.
+
+```markdown
+**Shared components to reuse:**
+- `src/app/shared/components/error-state.component.ts` — use for API error display
+- `src/app/shared/components/delete-confirm-button.component.ts` — use for inline delete
+- `src/app/shared/services/toast.service.ts` — use for mutation success/error feedback
+
+**Do NOT create:** A new error display component, toast wrapper, or confirmation dialog — these already exist.
+```
+
+#### 5. Pre-Flight Completeness Checklist
+
+Append this machine-readable checklist to the end of every refined issue body. Every box must be checked before the issue is considered fully refined.
+
+```markdown
+## Pre-Flight Checklist
+
+- [ ] All callers of modified methods identified
+- [ ] Shared components listed (or confirmed none apply)
+- [ ] Template HTML before/after included (for UI changes)
+- [ ] Method signatures specified for new/modified methods
+- [ ] Verification steps defined for each acceptance criterion
+- [ ] Optimistic update impact assessed
+- [ ] E2E test decision documented (add/skip with reason)
+```
+
+If a checklist item does not apply (e.g., "Template HTML" for a backend-only change), check it and add "N/A — backend only".
+
+#### 6. Verification Contracts
+
+Each acceptance criterion must have a concrete **verification contract** describing exactly what to navigate to, interact with, and assert during browser validation. This replaces vague criteria like "the feature works" with testable steps.
+
+```markdown
+## Acceptance Criteria
+
+- [ ] Tasks can be filtered by due date range
+  - **Verify:** Navigate to `/tasks`. Click the date filter. Select "This Week". Assert that only tasks with due dates in the current week are visible. Clear the filter. Assert all tasks reappear.
+
+- [ ] Due date badge shows correct color
+  - **Verify:** Create a task with due date = today. Navigate to `/tasks`. Assert the due date badge has class `text-danger`. Create a task with due date = next week. Assert the badge has class `text-foreground-muted`.
+```
+
 ### Plan Template
 
 ```markdown
@@ -207,9 +311,30 @@ Each step must include:
 |------|--------|
 | `path/to/file.cs` | Description of change |
 
+**Method signatures** (new/modified):
+\`\`\`csharp
+Task<Result> NewMethodAsync(Guid userId, string title, CancellationToken ct = default);
+\`\`\`
+
+**Callers** (for modified methods):
+- `path/to/caller1.cs:34` — update to pass new parameter
+- `path/to/caller2.ts:58` — update return type handling
+
+**Shared components to reuse:**
+- `src/app/shared/components/error-state.component.ts` — for error display
+
 **Pattern to follow** (from `path/to/existing.cs:28-42`):
 \`\`\`csharp
 // Existing code that shows the pattern
+\`\`\`
+
+**Template before/after** (for UI steps):
+\`\`\`html
+<!-- Before (line 45-52) -->
+<div>...</div>
+
+<!-- After -->
+<div>...updated...</div>
 \`\`\`
 
 **New code:**
@@ -305,7 +430,19 @@ gh issue edit <number> --body "$(cat <<'ISSUE_BODY'
 ---
 
 ## Acceptance Criteria
-[preserved or refined from original]
+[preserved or refined from original — each criterion includes a verification contract]
+
+---
+
+## Pre-Flight Checklist
+
+- [ ] All callers of modified methods identified
+- [ ] Shared components listed (or confirmed none apply)
+- [ ] Template HTML before/after included (for UI changes)
+- [ ] Method signatures specified for new/modified methods
+- [ ] Verification steps defined for each acceptance criterion
+- [ ] Optimistic update impact assessed
+- [ ] E2E test decision documented (add/skip with reason)
 ISSUE_BODY
 )"
 ```
@@ -316,7 +453,8 @@ ISSUE_BODY
 - **Dependencies** — preserve as-is
 - **Chosen Design** — update if a mockup was created/selected in this session
 - **Implementation Plan** — the full step-by-step plan from Step 6
-- **Acceptance Criteria** — preserve original, add any new criteria discovered during planning
+- **Acceptance Criteria** — preserve original, add any new criteria discovered during planning. Each criterion must have a **verification contract** (see Plan Quality Requirements, item 6)
+- **Pre-Flight Checklist** — the completeness checklist from Plan Quality Requirements, item 5
 
 ### What NOT to Include
 
