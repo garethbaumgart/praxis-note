@@ -26,6 +26,7 @@ import { FormsModule } from '@angular/forms';
 import { SlashCommands } from './extensions/slash-commands.extension';
 import { SlashCommandItem } from './extensions/slash-command-items';
 import { SlashCommandMenuComponent } from './slash-command-menu.component';
+import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion';
 
 // Block type options for the dropdown
 interface BlockType {
@@ -1047,7 +1048,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         suggestion: {
           render: () => {
             return {
-              onStart: (props) => {
+              onStart: (props: SuggestionProps<SlashCommandItem, SlashCommandItem>) => {
                 const rect = props.clientRect?.();
                 if (rect) {
                   this.slashMenuPosition.set({ top: rect.bottom + 4, left: rect.left });
@@ -1058,7 +1059,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.slashMenuVisible.set(true);
                 this.cdr.markForCheck();
               },
-              onUpdate: (props) => {
+              onUpdate: (props: SuggestionProps<SlashCommandItem, SlashCommandItem>) => {
                 const rect = props.clientRect?.();
                 if (rect) {
                   this.slashMenuPosition.set({ top: rect.bottom + 4, left: rect.left });
@@ -1077,7 +1078,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.slashMenuSelectedIndex.set(0);
                 this.cdr.markForCheck();
               },
-              onKeyDown: ({ event }) => {
+              onKeyDown: ({ event }: SuggestionKeyDownProps) => {
                 if (event.key === 'ArrowUp') {
                   event.preventDefault();
                   const items = this.slashMenuItems();
