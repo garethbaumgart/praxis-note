@@ -23,6 +23,9 @@ import { Select } from 'primeng/select';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
+import { SlashCommands } from './extensions/slash-commands.extension';
+import { SlashCommandItem } from './extensions/slash-command-items';
+import { SlashCommandMenuComponent } from './slash-command-menu.component';
 
 // Block type options for the dropdown
 interface BlockType {
@@ -36,7 +39,7 @@ interface BlockType {
   selector: 'app-tiptap-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TiptapEditorDirective, Select, Menu, FormsModule],
+  imports: [TiptapEditorDirective, Select, Menu, FormsModule, SlashCommandMenuComponent],
   host: {
     '[class.expandable]': 'expandable()',
   },
@@ -306,6 +309,18 @@ interface BlockType {
         }
       </div>
     </div>
+
+    <!-- Slash command menu -->
+    @if (slashMenuVisible()) {
+      <app-slash-command-menu
+        [items]="slashMenuItems()"
+        [selectedIndex]="slashMenuSelectedIndex()"
+        [position]="slashMenuPosition()"
+        [groups]="slashMenuGroups()"
+        (selectItem)="onSlashCommandSelect($event)"
+        (hoverItem)="slashMenuSelectedIndex.set($event)"
+      />
+    }
 
     <!-- Hidden color input for color picker -->
     <input
@@ -956,6 +971,30 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     taskStatus: 'Todo' | 'InProgress' | 'Done' | null;
   }>>([]);
 
+  /** Slash command menu state */
+  readonly slashMenuVisible = signal(false);
+  readonly slashMenuItems = signal<SlashCommandItem[]>([]);
+  readonly slashMenuPosition = signal<{ top: number; left: number }>({ top: 0, left: 0 });
+  readonly slashMenuSelectedIndex = signal(0);
+
+  /** Grouped items for the slash menu, computed from filtered items */
+  readonly slashMenuGroups = computed(() => {
+    const items = this.slashMenuItems();
+    const groupMap = new Map<string, Array<SlashCommandItem & { flatIndex: number }>>();
+
+    items.forEach((item, index) => {
+      if (!groupMap.has(item.group)) {
+        groupMap.set(item.group, []);
+      }
+      groupMap.get(item.group)!.push({ ...item, flatIndex: index });
+    });
+
+    return Array.from(groupMap.entries()).map(([name, groupItems]) => ({
+      name,
+      items: groupItems,
+    }));
+  });
+
   /** Signal to track editor selection changes for reactive updates */
   private readonly selectionVersion = signal(0);
 
@@ -986,12 +1025,98 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /** ResizeObserver for toolbar responsiveness */
   private toolbarResizeObserver: ResizeObserver | null = null;
 
+  /** Document click handler for slash menu dismissal */
+  private readonly onDocumentClick = (event: MouseEvent): void => {
+    if (!this.slashMenuVisible()) return;
+    const target = event.target as HTMLElement;
+    // If the click is outside the slash menu, dismiss it
+    if (!target.closest('.slash-menu')) {
+      this.slashMenuVisible.set(false);
+      this.cdr.markForCheck();
+    }
+  };
+
   editor = new Editor({
     editable: true,
     extensions: [
       ...tiptapExtensions,
       Placeholder.configure({
         placeholder: 'Take a note...',
+      }),
+      SlashCommands.configure({
+        suggestion: {
+          render: () => {
+            return {
+              onStart: (props) => {
+                const rect = props.clientRect?.();
+                if (rect) {
+                  this.slashMenuPosition.set({ top: rect.bottom + 4, left: rect.left });
+                }
+                this.slashMenuItems.set(props.items);
+                this.slashMenuSelectedIndex.set(0);
+                this.slashMenuCommand = props.command;
+                this.slashMenuVisible.set(true);
+                this.cdr.markForCheck();
+              },
+              onUpdate: (props) => {
+                const rect = props.clientRect?.();
+                if (rect) {
+                  this.slashMenuPosition.set({ top: rect.bottom + 4, left: rect.left });
+                }
+                this.slashMenuItems.set(props.items);
+                this.slashMenuCommand = props.command;
+                // Reset selection if it's out of bounds
+                if (this.slashMenuSelectedIndex() >= props.items.length) {
+                  this.slashMenuSelectedIndex.set(0);
+                }
+                this.cdr.markForCheck();
+              },
+              onExit: () => {
+                this.slashMenuVisible.set(false);
+                this.slashMenuItems.set([]);
+                this.slashMenuSelectedIndex.set(0);
+                this.cdr.markForCheck();
+              },
+              onKeyDown: ({ event }) => {
+                if (event.key === 'ArrowUp') {
+                  event.preventDefault();
+                  const items = this.slashMenuItems();
+                  if (items.length === 0) return true;
+                  this.slashMenuSelectedIndex.update((i) =>
+                    i <= 0 ? items.length - 1 : i - 1,
+                  );
+                  this.cdr.markForCheck();
+                  return true;
+                }
+
+                if (event.key === 'ArrowDown') {
+                  event.preventDefault();
+                  const items = this.slashMenuItems();
+                  if (items.length === 0) return true;
+                  this.slashMenuSelectedIndex.update((i) =>
+                    i >= items.length - 1 ? 0 : i + 1,
+                  );
+                  this.cdr.markForCheck();
+                  return true;
+                }
+
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  this.onSlashCommandSelect(this.slashMenuSelectedIndex());
+                  return true;
+                }
+
+                if (event.key === 'Escape') {
+                  this.slashMenuVisible.set(false);
+                  this.cdr.markForCheck();
+                  return true;
+                }
+
+                return false;
+              },
+            };
+          },
+        },
       }),
     ],
     onCreate: () => {
@@ -1039,6 +1164,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.setupScrollListener();
     this.setupToolbarResizeObserver();
     this.scheduleOverlayUpdate();
+    document.addEventListener('click', this.onDocumentClick, true);
   }
 
   private setupToolbarResizeObserver(): void {
@@ -1215,6 +1341,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.toolbarResizeObserver) {
       this.toolbarResizeObserver.disconnect();
     }
+    document.removeEventListener('click', this.onDocumentClick, true);
     this.editor.destroy();
   }
 
@@ -1418,4 +1545,20 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   focus(): void {
     this.editor.commands.focus('start');
   }
+
+  /** Handle slash command item selection — delegates to the suggestion plugin's command */
+  onSlashCommandSelect(index: number): void {
+    const items = this.slashMenuItems();
+    const item = items[index];
+    if (!item) return;
+
+    // The suggestion plugin's command deletes the "/" trigger text, then calls the item's action
+    if (this.slashMenuCommand) {
+      this.slashMenuCommand(item);
+    }
+    this.slashMenuVisible.set(false);
+  }
+
+  /** Stored reference to the suggestion command from render props */
+  private slashMenuCommand: ((item: SlashCommandItem) => void) | null = null;
 }
