@@ -133,7 +133,7 @@ import { AutoResizeDirective } from '../shared/directives/auto-resize.directive'
         [cdkDropListData]="tasks()"
         [cdkDropListConnectedTo]="connectedTo()"
         (cdkDropListDropped)="onDrop.emit($event)"
-        class="flex-1 space-y-2 min-h-12"
+        class="flex-1 flex flex-col gap-2 min-h-12"
       >
         @if (isCreating()) {
           <div
