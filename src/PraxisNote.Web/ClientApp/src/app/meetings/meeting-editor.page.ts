@@ -54,7 +54,7 @@ interface DateOption {
     <div class="meeting-editor-page">
       <!-- Actions template (rendered by app shell top bar) -->
       <ng-template #headerActions>
-        <span class="flex items-center gap-1.5 text-xs text-foreground-muted pr-2" [class.text-accent-foreground]="isSaving()">
+        <span class="flex items-center gap-1.5 text-xs text-foreground-muted pr-2" [class.text-accent-foreground]="isSaving()" role="status" aria-live="polite">
           @if (isSaving()) {
             <i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i> <span class="hidden md:inline">Saving...</span>
           } @else if (lastSaved()) {
