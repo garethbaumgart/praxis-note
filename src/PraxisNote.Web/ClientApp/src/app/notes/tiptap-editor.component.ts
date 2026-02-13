@@ -26,7 +26,7 @@ import { FormsModule } from '@angular/forms';
 import { SlashCommands } from './extensions/slash-commands.extension';
 import { SlashCommandItem } from './extensions/slash-command-items';
 import { SlashCommandMenuComponent } from './slash-command-menu.component';
-import { normalizeLinkUrl } from '../shared/url-utils';
+import { normalizeLinkUrl, normalizeImageUrl } from '../shared/url-utils';
 import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion';
 
 // Block type options for the dropdown
@@ -1495,7 +1495,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     const rawUrl = window.prompt('Enter the image URL:');
     if (!rawUrl) return;
 
-    const url = normalizeLinkUrl(rawUrl);
+    const url = normalizeImageUrl(rawUrl);
     if (!url) {
       window.alert('Please enter a valid http or https URL.');
       return;
