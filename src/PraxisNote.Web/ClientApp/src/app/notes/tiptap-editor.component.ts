@@ -762,8 +762,8 @@ interface BlockType {
       color: var(--color-accent-emphasis);
     }
 
-    /* Toggle Section (Details) */
-    :host ::ng-deep .ProseMirror details {
+    /* Toggle Section (Details) — targets NodeView DOM: <div data-type="details"> */
+    :host ::ng-deep .ProseMirror div[data-type="details"] {
       border: 1px solid var(--color-border);
       border-left: 2px solid var(--color-accent-solid);
       border-radius: 6px;
@@ -772,30 +772,48 @@ interface BlockType {
       background: var(--color-surface-subtle);
     }
 
-    :host ::ng-deep .ProseMirror details summary {
+    /* Toggle button: <button> inside the details wrapper */
+    :host ::ng-deep .ProseMirror div[data-type="details"] > button {
       cursor: pointer;
       font-weight: 600;
       user-select: none;
-      list-style: none;
+      background: none;
+      border: none;
       padding: 0.25em 0;
+      font-size: inherit;
+      font-family: inherit;
+      color: inherit;
+      width: 100%;
+      text-align: left;
     }
 
-    :host ::ng-deep .ProseMirror details summary::before {
-      content: "▶ ";
+    /* Arrow indicator on the toggle button */
+    :host ::ng-deep .ProseMirror div[data-type="details"] > button::before {
+      content: "▶";
       font-size: 0.75em;
-      transition: transform 0.15s;
       display: inline-block;
+      margin-right: 0.25em;
+      transition: transform 0.15s;
     }
 
-    :host ::ng-deep .ProseMirror details.is-open summary::before {
-      content: "▼ ";
+    /* Open state arrow — rotate instead of swapping content */
+    :host ::ng-deep .ProseMirror div[data-type="details"].is-open > button::before {
+      transform: rotate(90deg);
     }
 
-    :host ::ng-deep .ProseMirror details.is-open summary {
+    /* Open state spacing */
+    :host ::ng-deep .ProseMirror div[data-type="details"].is-open > button {
       margin-bottom: 0.5em;
     }
 
-    :host ::ng-deep .ProseMirror details > div[data-type="detailsContent"] {
+    /* Summary element inside contentDOM */
+    :host ::ng-deep .ProseMirror div[data-type="details"] summary {
+      font-weight: 600;
+      outline: none;
+    }
+
+    /* Details content */
+    :host ::ng-deep .ProseMirror div[data-type="detailsContent"] {
       padding-left: 0.25em;
     }
 
