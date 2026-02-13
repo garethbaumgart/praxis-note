@@ -93,9 +93,9 @@ const MAX_PROFILES = 5;
           } @else {
             <div class="space-y-2 mb-4">
               @for (identity of linkedAccountsService.identities(); track identity.id) {
-                <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-border bg-surface">
+                <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-border bg-surface hover:bg-surface-muted/50 transition-colors">
                   <!-- Provider icon -->
-                  <div class="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center shrink-0">
+                  <div class="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center shrink-0">
                     <i class="pi pi-google text-foreground-secondary text-sm" aria-hidden="true"></i>
                   </div>
 
