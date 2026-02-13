@@ -56,9 +56,9 @@ interface DateOption {
       <ng-template #headerActions>
         <span class="flex items-center gap-1.5 text-xs text-foreground-muted pr-2" [class.text-accent-foreground]="isSaving()">
           @if (isSaving()) {
-            <i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i> Saving...
+            <i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i> <span class="hidden md:inline">Saving...</span>
           } @else if (lastSaved()) {
-            <i class="pi pi-check text-done-foreground"></i> <span class="text-done-foreground">Saved</span>
+            <i class="pi pi-check text-done-foreground"></i> <span class="hidden md:inline text-done-foreground">Saved</span>
           }
         </span>
         @if (meetingId()) {
