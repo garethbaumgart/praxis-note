@@ -174,6 +174,34 @@ public class RedeemLinkCodeTests
 
     #endregion
 
+    #region Create New Profile
+
+    [Fact]
+    public async Task ExecuteAsync_CreateNewProfile_UsesEmailAsProfileName()
+    {
+        // Arrange
+        var codeOwner = CreateUser(_codeOwnerUserId, "google", "owner-123", "owner@example.com", "Owner");
+        var redeemingUser = CreateUser(_redeemingUserId, "google", "redeemer-456", "redeemer@example.com", "Redeemer");
+
+        SetupValidCode(_codeOwnerUserId);
+        SetupUsers(codeOwner, redeemingUser);
+        _linkedIdentityRepo.GetByProviderAsync("google", "redeemer-456", Arg.Any<CancellationToken>())
+            .Returns((LinkedIdentity?)null);
+        _profileRepo.GetCountByUserIdAsync(_codeOwnerUserId, Arg.Any<CancellationToken>()).Returns(0);
+
+        // Act
+        var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
+            _redeemingUserId, PlainCode, MergeStrategy.CreateNewProfile));
+
+        // Assert
+        Assert.True(result.Success);
+        await _profileRepo.Received(1).AddAsync(
+            Arg.Is<Profile>(p => p.Name == "redeemer@example.com"),
+            Arg.Any<CancellationToken>());
+    }
+
+    #endregion
+
     #region Helpers
 
     private static User CreateUser(Guid userId, string provider, string providerId, string email, string name)

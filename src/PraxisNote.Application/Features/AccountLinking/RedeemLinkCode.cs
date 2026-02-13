@@ -147,7 +147,7 @@ public sealed class RedeemLinkCode(
                     return new Result(command.RedeemingUserId, false, "Maximum number of profiles reached");
                 }
 
-                var profileName = redeemingUser.Name;
+                var profileName = redeemingUser.Email.Value;
                 var newProfile = Profile.Create(codeOwnerUserId, profileName);
                 await profileRepository.AddAsync(newProfile, cancellationToken);
 

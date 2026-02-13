@@ -170,7 +170,7 @@ type EnterState = 'idle' | 'loading' | 'success' | 'error' | 'choose';
                     <i class="pi pi-plus text-accent-foreground" aria-hidden="true"></i>
                     <div>
                       <p class="text-sm font-medium text-foreground">Create new profile</p>
-                      <p class="text-xs text-foreground-muted">Keep the data in a separate profile</p>
+                      <p class="text-xs text-foreground-muted">Keep the data in a separate profile named after the email</p>
                     </div>
                   </button>
                   <button
