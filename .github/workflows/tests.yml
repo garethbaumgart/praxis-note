@@ -30,6 +30,21 @@ jobs:
       - name: Build
         run: dotnet build src/PraxisNote.slnx --no-restore
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: src/PraxisNote.Web/ClientApp/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: src/PraxisNote.Web/ClientApp
+
+      - name: Run frontend unit tests
+        run: npx ng test --watch=false
+        working-directory: src/PraxisNote.Web/ClientApp
+
       - name: Run unit tests with coverage
         id: test
         run: |

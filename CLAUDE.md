@@ -570,6 +570,50 @@ E2E tests are expensive to write, maintain, and run. Only add E2E tests for **cr
 
 When adding a new feature, ask: "If this breaks, does the app become unusable?" If no, skip the E2E test.
 
+### Frontend Unit Tests
+
+Frontend unit tests run via `ng test` (Vitest + jsdom). Tests live alongside source files as `*.spec.ts`.
+
+```bash
+cd src/PraxisNote.Web/ClientApp && npx ng test --watch=false
+```
+
+**Testing patterns:**
+
+- **Pure functions** (services, utilities): Import and test directly. No TestBed needed.
+- **TipTap editor actions**: Instantiate a real `Editor` with the production `tiptapExtensions` array, execute commands, and assert against `getJSON()`, `getHTML()`, or `isActive()`.
+
+**TipTap editor test template** (see `tiptap-editor.spec.ts`):
+
+```typescript
+import { Editor } from '@tiptap/core';
+import { tiptapExtensions } from './tiptap-extensions';
+
+let editor: Editor;
+
+beforeEach(() => {
+  editor = new Editor({
+    element: document.createElement('div'),
+    extensions: [...tiptapExtensions, Placeholder.configure({ placeholder: 'Test...' })],
+  });
+});
+
+afterEach(() => editor.destroy());
+
+it('toggleBold applies bold mark', () => {
+  // Insert text, select all, apply mark, assert
+  editor.commands.setContent({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }] });
+  editor.commands.selectAll();
+  editor.chain().focus().toggleBold().run();
+  expect(editor.isActive('bold')).toBe(true);
+});
+```
+
+**Rules:**
+- When adding a new editor action or slash command, add a corresponding test in `tiptap-editor.spec.ts`
+- The "Slash Command Completeness" meta-test will fail if a new slash command is added without a test
+- Shared utilities (e.g., `url-utils.ts`, `date-utils.ts`) must have their own `*.spec.ts` file
+
 ### Flaky Tests Are Not Acceptable
 
 **Zero tolerance for flaky tests.** A flaky test is one that sometimes passes and sometimes fails without code changes. Flaky tests:
