@@ -129,12 +129,51 @@ Once tests pass and self-review fixes are committed:
    - Test both light and dark mode if styling is involved (screenshot both)
    - Check responsive behavior if layout changes are involved
    - Test keyboard navigation if interactive elements are added
-6. **Add screenshots to PR**:
-   - Use `gh pr comment` to add screenshots showing the UI works
+6. **Upload screenshots to GitHub Releases**:
+   - Get the PR number and repo path programmatically:
+     ```bash
+     PR_NUM=$(gh pr view --json number -q '.number')
+     REPO_PATH=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
+     ```
+   - Ensure the `pr-screenshots` draft release exists:
+     ```bash
+     gh release view pr-screenshots 2>/dev/null || gh release create pr-screenshots --draft --title "PR Screenshots" --notes "Asset hosting for PR validation screenshots. Do not delete."
+     ```
+   - Copy screenshots to a temp directory with PR number prefix (avoids filename collisions across PRs):
+     ```bash
+     UPLOAD_DIR=$(mktemp -d)
+     for f in tests/PraxisNote.E2E.Tests/screenshots/<feature>/*.png; do
+       cp "$f" "$UPLOAD_DIR/pr${PR_NUM}-$(basename "$f")"
+     done
+     ```
+   - Upload all prefixed screenshots to the release:
+     ```bash
+     gh release upload pr-screenshots "$UPLOAD_DIR"/pr${PR_NUM}-*.png --clobber
+     ```
+   - The `--clobber` flag overwrites if re-uploading after fixes.
+
+7. **Add screenshots to PR comment using release download URLs**:
+   - Construct URLs using the repo path: `https://github.com/${REPO_PATH}/releases/download/pr-screenshots/<filename>.png`
+   - Use `gh pr comment` with these URLs in markdown `![Alt text](url)`
    - For refactoring: "No visual changes - before/after comparison attached"
    - For new features: "Feature working as expected - screenshots attached"
-7. **Clean up**: Delete any temporary validation scripts after screenshots are captured
-8. **Fix any issues**: If something doesn't work or looks wrong, fix it, commit, push, and re-run tests
+
+   **Example comment:**
+   ```markdown
+   ## Browser Validation Screenshots
+
+   ### Light Mode
+   ![Settings Light](https://github.com/garethbaumgart/praxis-note/releases/download/pr-screenshots/pr507-01-settings-light.png)
+
+   ### Dark Mode
+   ![Settings Dark](https://github.com/garethbaumgart/praxis-note/releases/download/pr-screenshots/pr507-04-settings-dark.png)
+   ```
+
+8. **Clean up**: Delete the temp upload directory, any temporary validation scripts, and local screenshot copies. The screenshots persist permanently on the GitHub Release.
+   ```bash
+   rm -rf "$UPLOAD_DIR"
+   ```
+9. **Fix any issues**: If something doesn't work or looks wrong, fix it, commit, push, and re-run tests
 
 **Screenshot requirements by PR type**:
 | PR Type | Required Screenshots |
