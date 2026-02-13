@@ -4,7 +4,6 @@ import {
   input,
   output,
   ElementRef,
-  inject,
   effect,
   viewChild,
 } from '@angular/core';
@@ -132,7 +131,6 @@ import { SlashCommandItem } from './extensions/slash-command-items';
   ],
 })
 export class SlashCommandMenuComponent {
-  private readonly el = inject(ElementRef);
   private readonly menuContainer = viewChild<ElementRef>('menuContainer');
 
   /** The filtered list of slash command items */
