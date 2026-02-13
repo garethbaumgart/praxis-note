@@ -18,7 +18,7 @@ export const InsertDate = Extension.create({
         () =>
         ({ chain }) => {
           const dateText = formatShortDate(new Date());
-          return chain().insertContent(dateText).run();
+          return chain().insertContent({ type: 'text', text: dateText }).run();
         },
     };
   },

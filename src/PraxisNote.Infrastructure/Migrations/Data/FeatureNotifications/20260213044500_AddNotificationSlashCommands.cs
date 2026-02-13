@@ -13,7 +13,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                 VALUES (
                     'Feature',
                     'Slash commands in note editor',
-                    'Type / in the note editor to open a searchable command menu for headings, lists, blocks, tables, and more. Use Cmd+Shift+D to insert today''s date inline.',
+                    'Type / in the note editor to open a searchable command menu for headings, lists, blocks, tables, and more. Use Ctrl/Cmd+Shift+D to insert today''s date inline.',
                     'https://github.com/garethbaumgart/praxis-note/issues/494',
                     '2026-02-13T04:45:00+00:00'
                 );
@@ -24,7 +24,10 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Slash commands in note editor';
+                WHERE "Type" = 'Feature'
+                  AND "Title" = 'Slash commands in note editor'
+                  AND "IssueUrl" = 'https://github.com/garethbaumgart/praxis-note/issues/494'
+                  AND "CreatedAt" = '2026-02-13T04:45:00+00:00';
                 """);
         }
     }

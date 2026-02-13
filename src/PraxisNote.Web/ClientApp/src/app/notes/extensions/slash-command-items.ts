@@ -1,6 +1,20 @@
 import { Editor } from '@tiptap/core';
-import { formatShortDate } from '../../shared/date-utils';
 import { formatShortcut } from '../../shared/keyboard-utils';
+
+/** Validates and normalizes a URL, only allowing http/https protocols */
+function normalizeImageUrl(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  try {
+    const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed);
+    const candidate = hasProtocol ? trimmed : `https://${trimmed}`;
+    const url = new URL(candidate);
+    if (!['http:', 'https:'].includes(url.protocol)) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
 
 export interface SlashCommandItem {
   label: string;
@@ -92,8 +106,14 @@ export const slashCommandItems: SlashCommandItem[] = [
     icon: 'pi pi-image',
     group: 'Insert',
     action: (editor) => {
-      const url = window.prompt('Enter the image URL:');
-      if (url) editor.chain().focus().setImage({ src: url }).run();
+      const rawUrl = window.prompt('Enter the image URL:');
+      if (!rawUrl) return;
+      const normalized = normalizeImageUrl(rawUrl);
+      if (!normalized) {
+        window.alert('Please enter a valid http or https URL.');
+        return;
+      }
+      editor.chain().focus().setImage({ src: normalized }).run();
     },
   },
   {
@@ -108,8 +128,7 @@ export const slashCommandItems: SlashCommandItem[] = [
     group: 'Insert',
     shortcut: formatShortcut({ mod: true, shift: true, key: 'D' }),
     action: (editor) => {
-      const dateText = formatShortDate(new Date());
-      editor.chain().focus().insertContent(dateText).run();
+      editor.commands.insertDate();
     },
   },
 ];
