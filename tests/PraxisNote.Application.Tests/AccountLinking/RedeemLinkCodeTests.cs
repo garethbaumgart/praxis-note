@@ -200,6 +200,31 @@ public class RedeemLinkCodeTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task ExecuteAsync_CreateNewProfile_TruncatesLongEmailAsProfileName()
+    {
+        // Arrange
+        var codeOwner = CreateUser(_codeOwnerUserId, "google", "owner-123", "owner@example.com", "Owner");
+        var longEmail = "redeemer." + new string('x', 160) + "@example.com"; // > 100 characters
+        var redeemingUser = CreateUser(_redeemingUserId, "google", "redeemer-456", longEmail, "Redeemer");
+
+        SetupValidCode(_codeOwnerUserId);
+        SetupUsers(codeOwner, redeemingUser);
+        _linkedIdentityRepo.GetByProviderAsync("google", "redeemer-456", Arg.Any<CancellationToken>())
+            .Returns((LinkedIdentity?)null);
+        _profileRepo.GetCountByUserIdAsync(_codeOwnerUserId, Arg.Any<CancellationToken>()).Returns(0);
+
+        // Act
+        var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
+            _redeemingUserId, PlainCode, MergeStrategy.CreateNewProfile));
+
+        // Assert
+        Assert.True(result.Success);
+        await _profileRepo.Received(1).AddAsync(
+            Arg.Is<Profile>(p => !string.IsNullOrEmpty(p.Name) && p.Name.Length <= 100 && p.Name.EndsWith("...")),
+            Arg.Any<CancellationToken>());
+    }
+
     #endregion
 
     #region Helpers
