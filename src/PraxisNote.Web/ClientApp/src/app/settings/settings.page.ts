@@ -12,6 +12,7 @@ import { Profile } from '../profiles/profile.model';
 import { ProfileCardComponent } from './profile-card.component';
 import { CreateProfileDialogComponent } from './create-profile-dialog.component';
 import { LinkedAccountsService } from './linked-accounts.service';
+import { LinkedAccountCardComponent } from './linked-account-card.component';
 import { LinkAccountPanelComponent } from './link-account-panel.component';
 
 const MAX_PROFILES = 5;
@@ -20,7 +21,7 @@ const MAX_PROFILES = 5;
   selector: 'app-settings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, DatePipe, Dialog, PageContentComponent, ProfileCardComponent, CreateProfileDialogComponent, LinkAccountPanelComponent],
+  imports: [Button, DatePipe, Dialog, PageContentComponent, ProfileCardComponent, CreateProfileDialogComponent, LinkedAccountCardComponent, LinkAccountPanelComponent],
   template: `
     <app-page-content maxWidth="narrow">
       <h1 class="sr-only">Settings</h1>
@@ -93,34 +94,12 @@ const MAX_PROFILES = 5;
           } @else {
             <div class="space-y-2 mb-4">
               @for (identity of linkedAccountsService.identities(); track identity.id) {
-                <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-border bg-surface hover:bg-surface-muted/50 transition-colors">
-                  <!-- Provider icon -->
-                  <div class="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center shrink-0">
-                    <i class="pi pi-google text-foreground-secondary text-sm" aria-hidden="true"></i>
-                  </div>
-
-                  <!-- Account info -->
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-foreground truncate">{{ identity.email }}</p>
-                    @if (identity.defaultProfileId) {
-                      <p class="text-xs text-foreground-muted">Default: {{ getProfileName(identity.defaultProfileId) }}</p>
-                    }
-                  </div>
-
-                  <!-- Primary badge or Unlink button -->
-                  @if (linkedAccountsService.identities().length <= 1) {
-                    <span class="text-[10px] font-semibold text-accent-foreground bg-accent px-1.5 py-0.5 rounded">Primary</span>
-                  } @else {
-                    <button
-                      type="button"
-                      class="px-3 py-1 text-xs text-danger hover:text-white hover:bg-danger border border-danger rounded transition-colors"
-                      (click)="startUnlinkIdentity(identity.id, identity.email)"
-                      [attr.aria-label]="'Unlink ' + identity.email"
-                    >
-                      Unlink
-                    </button>
-                  }
-                </div>
+                <app-linked-account-card
+                  [identity]="identity"
+                  [profiles]="profileService.profiles()"
+                  [canUnlink]="linkedAccountsService.identities().length > 1"
+                  (onUnlink)="startUnlinkIdentity($event.id, $event.email)"
+                />
               }
             </div>
 
@@ -449,10 +428,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   // --- Linked Accounts actions ---
-
-  getProfileName(profileId: string): string {
-    return this.profileService.profiles().find(p => p.id === profileId)?.name ?? 'Unknown';
-  }
 
   startUnlinkIdentity(identityId: string, email: string): void {
     this.unlinkIdentityId.set(identityId);
