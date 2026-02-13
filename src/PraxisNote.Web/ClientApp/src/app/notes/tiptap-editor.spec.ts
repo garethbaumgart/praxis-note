@@ -403,24 +403,33 @@ describe('TipTap Editor', () => {
 
     it('insertDate uses formatShortDate output', () => {
       vi.useFakeTimers();
-      vi.setSystemTime(new Date('2026-06-15T10:00:00'));
+      try {
+        vi.setSystemTime(new Date('2026-06-15T10:00:00'));
 
-      // Create fresh editor with faked time
-      const timedEditor = createEditor();
-      timedEditor.commands.insertDate();
+        // Create fresh editor with faked time
+        const timedEditor = createEditor();
+        try {
+          timedEditor.commands.insertDate();
 
-      const text = timedEditor.getText();
-      const expected = formatShortDate(new Date('2026-06-15T10:00:00'));
-      expect(text).toContain(expected);
-
-      timedEditor.destroy();
-      vi.useRealTimers();
+          const text = timedEditor.getText();
+          const expected = formatShortDate(new Date('2026-06-15T10:00:00'));
+          expect(text).toContain(expected);
+        } finally {
+          timedEditor.destroy();
+        }
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
   // ── Step 14: Slash Command Actions ──────────────────────────
 
   describe('Slash Command Actions', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
     it('Heading 1 action sets heading level 1', () => {
       const item = slashCommandItems.find((i) => i.label === 'Heading 1')!;
       item.action(editor);
@@ -486,7 +495,6 @@ describe('TipTap Editor', () => {
     });
 
     it('Image action inserts image when user provides valid URL', () => {
-      // Mock window.prompt to return a URL and window.alert
       vi.spyOn(window, 'prompt').mockReturnValue('https://example.com/photo.jpg');
       vi.spyOn(window, 'alert').mockImplementation(() => {});
 
@@ -496,8 +504,6 @@ describe('TipTap Editor', () => {
       const json = JSON.stringify(editor.getJSON());
       expect(json).toContain('"type":"image"');
       expect(json).toContain('https://example.com/photo.jpg');
-
-      vi.restoreAllMocks();
     });
 
     it('Image action does nothing when user cancels prompt', () => {
@@ -508,8 +514,6 @@ describe('TipTap Editor', () => {
 
       const json = JSON.stringify(editor.getJSON());
       expect(json).not.toContain('"type":"image"');
-
-      vi.restoreAllMocks();
     });
 
     it('Image action alerts on invalid URL', () => {
@@ -522,8 +526,6 @@ describe('TipTap Editor', () => {
       expect(alertSpy).toHaveBeenCalled();
       const json = JSON.stringify(editor.getJSON());
       expect(json).not.toContain('"type":"image"');
-
-      vi.restoreAllMocks();
     });
 
     it('Divider action inserts horizontal rule', () => {
