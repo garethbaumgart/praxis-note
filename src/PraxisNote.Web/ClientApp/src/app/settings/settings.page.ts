@@ -46,7 +46,7 @@ const MAX_PROFILES = 5;
               <span class="sr-only">Loading profiles...</span>
             </div>
           } @else {
-            <div class="space-y-3 mb-4">
+            <div class="flex flex-col gap-3 mb-4">
               @for (profile of profileService.profiles(); track profile.id) {
                 <app-profile-card
                   [profile]="profile"
@@ -92,7 +92,7 @@ const MAX_PROFILES = 5;
               <span class="sr-only">Loading linked accounts...</span>
             </div>
           } @else {
-            <div class="space-y-3 mb-4">
+            <div class="flex flex-col gap-3 mb-4">
               @for (identity of linkedAccountsService.identities(); track identity.id) {
                 <app-linked-account-card
                   [identity]="identity"
