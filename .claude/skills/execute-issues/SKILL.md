@@ -11,27 +11,50 @@ You are executing a list of GitHub issues sequentially. The argument is a space-
 
 Before implementing anything, scan ALL listed issues upfront to assess readiness.
 
-1. For each issue number provided, run `gh issue view <number>` and check:
-   - Does the issue body contain an `## Implementation Plan` section?
-   - Is the scope clear enough to implement without clarification?
-   - Are there acceptance criteria?
-   - Is this a minor change (bug fix, dependency update, config, docs, test-only)?
+### Step 1: Assess Each Issue
 
-2. Present a summary table to the user:
+For each issue number provided, run `gh issue view <number>` and check:
+- Does the issue body contain an `## Implementation Plan` section?
+- Is the scope clear enough to implement without clarification?
+- Are there acceptance criteria?
+- Is this a **trivial** change? (label changes, dependency bumps, one-line config fixes, docs-only)
+
+### Step 2: Hard-Gate on Implementation Plans
+
+**Issues without an `## Implementation Plan` section must NOT be autonomously refined.** This is a hard gate.
+
+Classification rules:
+- **Trivial issues** (label changes, dependency bumps, one-line fixes, docs-only): May proceed without a plan. These do not need `/refine`.
+- **Non-trivial issues without a plan**: Must be surfaced to the user. Do NOT autonomously run `/refine` — the plan quality depends on human judgment for non-trivial work.
+
+### Step 3: Check Plan Staleness
+
+For issues that **have** an implementation plan, check if the plan is stale:
+
+1. Extract all file paths mentioned in the plan's `## Implementation Plan` section.
+2. Run `git log --oneline --since="$(gh issue view <number> --json updatedAt -q .updatedAt)" -- <file1> <file2> ...` to check if any referenced files were modified after the plan was written.
+3. If files were modified, the plan is **stale** and must be flagged.
+
+### Step 4: Present Summary
+
+Present a summary table to the user:
 
 ```
-| Issue | Title | Has Plan? | Needs Refinement? | Minor? | Reason |
-|-------|-------|-----------|-------------------|--------|--------|
-| #340  | ...   | Yes       | No                | No     |        |
-| #341  | ...   | No        | Yes               | No     | No implementation plan |
-| #342  | ...   | Yes       | Yes               | Yes    | Ambiguous acceptance criteria |
+| Issue | Title | Has Plan? | Trivial? | Stale? | Action |
+|-------|-------|-----------|----------|--------|--------|
+| #340  | ...   | Yes       | No       | No     | Ready to execute |
+| #341  | ...   | No        | No       | N/A    | BLOCKED — needs /refine first |
+| #342  | ...   | Yes       | No       | Yes    | STALE — files changed since plan was written |
+| #343  | ...   | No        | Yes      | N/A    | Ready (trivial, no plan needed) |
 ```
 
-3. Ask the user: **"These issues need refinement before implementation. Should I proceed with refining them as part of the execution, or do you want to refine them separately first?"**
+### Step 5: User Decision
 
-4. **Wait for the user's response before continuing to Phase 2.**
+- **If any issues are BLOCKED** (non-trivial, no plan): Ask the user: "These issues need refinement before implementation. Please run `/refine` on them first, or confirm you'd like to skip them."
+- **If any issues are STALE**: Ask the user: "These plans reference files that changed since the plan was written. Should I re-refine them, or proceed with the existing plan?"
+- **If all issues are ready**: Tell the user all issues are ready and ask for confirmation to begin execution.
 
-If no issues need refinement, tell the user all issues are ready and ask for confirmation to begin execution.
+**Wait for the user's response before continuing to Phase 2.**
 
 ## Phase 2: Sequential Execution via Sub-Agents
 
