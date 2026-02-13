@@ -114,9 +114,17 @@ Once tests pass and self-review fixes are committed:
    - If this is a refactoring PR with no expected visual changes, take screenshots BEFORE making changes (from main branch) and AFTER
    - Compare to verify no unintended visual differences
    - Include screenshots in the PR description or comments
-5. **Test each UI change**: For every UI-visible change in this PR:
+5. **Test each UI change**: For **all UI changes** (new features, modifications, refactors, styling changes, library upgrades), the validation script MUST interact with the affected functionality — not just screenshot the page. The script should: (1) trigger or navigate to the affected feature, (2) interact with it (click, type, toggle, hover — whatever the feature does), (3) assert the expected DOM changes occurred, (4) screenshot the result. A screenshot of a page where you haven't exercised the changed functionality is NOT valid validation.
+
+   This applies to:
+   - **New UI features**: Exercise the new functionality end-to-end
+   - **UI modifications/refactors**: Exercise the existing functionality to verify it still works after the change
+   - **CSS/styling changes**: Verify the affected elements render correctly and interactive states (hover, focus, active) still work
+   - **Library upgrades**: Exercise all features that depend on the upgraded library to catch DOM structure or API changes
+
+   For every UI-visible change in this PR:
    - Navigate to the affected area
-   - Verify the change works as expected
+   - Interact with the feature (click, type, toggle) and verify the expected result
    - **Take a screenshot** of the working feature
    - Test both light and dark mode if styling is involved (screenshot both)
    - Check responsive behavior if layout changes are involved
@@ -138,7 +146,21 @@ Once tests pass and self-review fixes are committed:
 
 **If UI validation fails**: Fix the issue, commit, push, and restart from Step 4.
 
-## Step 8: Post-PR Monitoring and Review Comments
+## Step 8: Acceptance Criteria Verification
+
+If this PR references a GitHub issue, verify that the implementation satisfies all acceptance criteria.
+
+1. **Read the linked issue's acceptance criteria** using `gh issue view <number>`
+2. For each criterion:
+   - Verify the implementation satisfies it (check the code, test results, or browser validation output)
+   - Check off the criterion on the issue using `gh issue edit` to update the body with `[x]` replacing `[ ]`
+   - If a criterion is NOT met, fix the implementation before proceeding
+3. **Do NOT proceed to Step 9** until every acceptance criterion is checked off
+4. If the issue has no acceptance criteria section, skip this step
+
+This step applies to all PRs that reference a GitHub issue. The agent must go back to the issue and verify each criterion — not just assume the implementation is correct because tests pass.
+
+## Step 9: Post-PR Monitoring and Review Comments
 
 After the PR is created, **actively monitor** and address feedback:
 
@@ -187,13 +209,14 @@ After the PR is created, **actively monitor** and address feedback:
 
 **Do not stop monitoring until**: CI is green, all line-level comments have been fetched and addressed, and either (a) all AI reviewers have reviewed the latest commit SHA, or (b) the 10-minute polling timeout has elapsed for reviewers whose previous round had no unaddressed comments.
 
-## Step 9: User Approval and Merge
+## Step 10: User Approval and Merge
 
 Once CI is green and all comments are addressed:
 
-1. **Notify the user**: Tell them the PR is ready for their review and approval
-2. **Wait for approval**: Do NOT merge until the user explicitly approves
-3. **If feedback given**: Make fixes, commit, push, and repeat from Step 4 (build, tests + browser validation)
-4. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
+1. **Verify test plan completion**: Before requesting merge approval, verify that ALL test plan checkboxes in the PR description are checked. If any manual verification items remain unchecked, complete them first or convert them to automated checks. Do not proceed until every checkbox is marked done.
+2. **Notify the user**: Tell them the PR is ready for their review and approval
+3. **Wait for approval**: Do NOT merge until the user explicitly approves
+4. **If feedback given**: Make fixes, commit, push, and repeat from Step 4 (build, tests + browser validation)
+5. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
 
 **Exception**: For markdown-only PRs (`.md` files only), merge immediately without waiting for user approval.

@@ -171,6 +171,10 @@ cat src/PraxisNote.Domain/Aggregates/<Entity>/<Entity>.cs
 - What patterns exist that should be followed
 - What optimistic update hooks exist on the frontend
 
+### Third-Party UI Extensions
+
+When the plan involves integrating a UI library or extension, identify the actual DOM output by reading the library's source code or documentation. Do NOT assume standard HTML elements — many libraries (TipTap, ProseMirror, Slate, etc.) use custom NodeViews that render non-standard DOM structures. Include the actual DOM structure in the plan so CSS selectors, query selectors, and interaction logic are correct from the start.
+
 ## Step 6: Write the Implementation Plan
 
 Write a concrete, step-by-step implementation plan with:
@@ -216,7 +220,65 @@ Each step must include:
 ### Step 2 — ...
 ```
 
-## Step 7: Update the GitHub Issue
+## Step 7: Propose E2E Tests
+
+After completing the implementation plan, assess whether the feature warrants E2E test coverage.
+
+### Evaluation Criteria
+
+**Propose a test if the feature involves:**
+- Third-party library integration (custom DOM, NodeViews, plugins)
+- New DOM structures not covered by existing tests
+- Multi-step interaction flows (insert → interact → verify)
+- Data persistence through complex UI paths (e.g., TipTap JSON ↔ DOM round-trip)
+
+**Do NOT propose tests for:**
+- Simple styling changes
+- Individual formatting buttons (bold, italic) — tested upstream by the library
+- Tooltip additions, icon changes
+- Features fully covered by existing unit tests
+
+If no tests meet the evaluation criteria, skip this step entirely — don't ask about tests that aren't worth writing.
+
+### Presentation Flow — One Test at a Time
+
+For each candidate E2E test, use `AskUserQuestion` to present it individually:
+
+```
+Question: "Should we add this E2E test?"
+Header: "E2E Test"
+Options:
+  - "Yes" — Include this test in the implementation plan
+  - "No" — Skip this test
+  - (User can also select "Other" to describe modifications)
+
+Description for the question should include:
+  - Test name (e.g., "can insert and interact with toggle section")
+  - Test file (e.g., smoke-tests/note-editor.spec.ts)
+  - What it exercises (e.g., "Insert toggle via slash command → verify div[data-type='details'] renders → click toggle button → verify content shows/hides")
+  - Why it's valuable (e.g., "Would have caught #493 — third-party NodeView mismatch")
+```
+
+Present tests **one at a time**, waiting for the user's response before presenting the next. This ensures each test gets individual consideration rather than being rubber-stamped as a batch.
+
+### After All Tests Are Reviewed
+
+- Add approved tests as implementation steps in the plan
+- Note which tests were declined (for traceability)
+- If the user modified a test, incorporate their feedback into the plan
+
+## Step 8: Update Labels
+
+After writing the plan, update the issue labels:
+- **Remove** the `to-refine` label
+- **Add** the `refined` label
+- Add any relevant feature labels (e.g., `tag-hub`, `bug`)
+
+```bash
+gh issue edit <number> --remove-label "to-refine" --add-label "refined"
+```
+
+## Step 9: Update the GitHub Issue Body
 
 Replace the issue body with the refined version. **Preserve** the original sections (Overview, Dependencies, Chosen Design) and **add/overwrite** the Implementation Plan section.
 
@@ -262,7 +324,7 @@ ISSUE_BODY
 - Alternative approaches that were rejected
 - Code that was read but not relevant to the plan
 
-## Step 8: Summary
+## Step 10: Summary
 
 Tell the user:
 1. What you found during exploration
