@@ -93,7 +93,7 @@ import { PageContentComponent } from '../shared/components/page-content.componen
               <div class="h-4 w-16 bg-surface-muted rounded animate-pulse"></div>
               <div class="h-3 w-24 bg-surface-muted rounded animate-pulse"></div>
             </div>
-            <div class="space-y-2">
+            <div class="flex flex-col gap-2">
               @for (i of skeletonArray; track i) {
                 <app-meeting-row-skeleton />
               }
@@ -173,7 +173,7 @@ import { PageContentComponent } from '../shared/components/page-content.componen
               </div>
 
               <!-- Meetings for this day -->
-              <div class="space-y-2">
+              <div class="flex flex-col gap-2">
                 @for (meeting of group.meetings; track meeting.id) {
                   <app-meeting-row
                     [meeting]="meeting"
