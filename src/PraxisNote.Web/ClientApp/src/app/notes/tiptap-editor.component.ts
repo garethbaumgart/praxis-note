@@ -789,15 +789,16 @@ interface BlockType {
 
     /* Arrow indicator on the toggle button */
     :host ::ng-deep .ProseMirror div[data-type="details"] > button::before {
-      content: "▶ ";
+      content: "▶";
       font-size: 0.75em;
       display: inline-block;
+      margin-right: 0.25em;
       transition: transform 0.15s;
     }
 
-    /* Open state arrow */
+    /* Open state arrow — rotate instead of swapping content */
     :host ::ng-deep .ProseMirror div[data-type="details"].is-open > button::before {
-      content: "▼ ";
+      transform: rotate(90deg);
     }
 
     /* Open state spacing */
