@@ -25,14 +25,18 @@ import { Profile } from '../profiles/profile.model';
         }
       </div>
 
-      <!-- Actions menu -->
-      <button type="button"
-        class="touch-target w-7 h-7 flex items-center justify-center rounded text-foreground-muted hover:bg-surface-muted transition"
-        (click)="menu.toggle($event); $event.stopPropagation()"
-        [attr.aria-label]="'Actions for ' + identity().email">
-        <i class="pi pi-ellipsis-v text-xs" aria-hidden="true"></i>
-      </button>
-      <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+      <!-- Actions menu or Primary badge -->
+      @if (menuItems().length > 0) {
+        <button type="button"
+          class="touch-target w-7 h-7 flex items-center justify-center rounded text-foreground-muted hover:bg-surface-muted transition"
+          (click)="menu.toggle($event); $event.stopPropagation()"
+          [attr.aria-label]="'Actions for ' + identity().email">
+          <i class="pi pi-ellipsis-v text-xs" aria-hidden="true"></i>
+        </button>
+        <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+      } @else {
+        <span class="text-[10px] font-semibold text-accent-foreground bg-accent px-1.5 py-0.5 rounded">Primary</span>
+      }
     </div>
   `,
 })
