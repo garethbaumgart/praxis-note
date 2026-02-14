@@ -24,7 +24,9 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Redesigned login page';
+                WHERE "Title" = 'Redesigned login page'
+                  AND "Type" = 'Improvement'
+                  AND "IssueUrl" = 'https://github.com/garethbaumgart/praxis-note/pull/530';
                 """);
         }
     }
