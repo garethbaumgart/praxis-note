@@ -4,41 +4,29 @@ using PraxisNote.Domain.Aggregates.Users;
 
 namespace PraxisNote.Application.Features.AccountLinking;
 
-public enum MergeStrategy
-{
-    MergeIntoExisting,
-    CreateNewProfile,
-    Cancel
-}
-
 public sealed class RedeemLinkCode(
     IAccountLinkCodeRepository accountLinkCodeRepository,
     ILinkedIdentityRepository linkedIdentityRepository,
     IUserRepository userRepository,
     IProfileRepository profileRepository,
+    UserDataTransferService userDataTransferService,
     IUnitOfWork unitOfWork)
 {
     public const string InvalidCodeError = "Invalid or expired link code";
     public const string AlreadyLinkedError = "This account is already linked to a user";
     public const string AlreadyLinkedToTargetError = "These accounts are already linked";
     public const string SameUserError = "Cannot link an account to itself";
-    public const string CancelledError = "Link operation cancelled by user";
+    public const string MaxProfilesError = "Maximum number of profiles reached";
 
     public record Command(
         Guid RedeemingUserId,
         string Code,
-        MergeStrategy Strategy,
-        Guid? TargetProfileId = null);
+        string ProfileName);
 
     public record Result(Guid TargetUserId, bool Success, string? Error = null);
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
-        if (command.Strategy == MergeStrategy.Cancel)
-        {
-            return new Result(command.RedeemingUserId, false, CancelledError);
-        }
-
         // Hash the provided code and do a targeted DB lookup
         var codeHash = LinkCodeService.HashCode(command.Code);
 
@@ -99,66 +87,19 @@ public sealed class RedeemLinkCode(
         // Mark code as redeemed
         matchingCode.MarkRedeemed();
 
-        // Determine target profile based on strategy
-        Guid targetProfileId;
+        // Always create a new profile on the code owner's account
+        var profileCount = await profileRepository.GetCountByUserIdAsync(
+            codeOwnerUserId, cancellationToken);
 
-        switch (command.Strategy)
+        if (profileCount >= 5)
         {
-            case MergeStrategy.MergeIntoExisting:
-            {
-                if (command.TargetProfileId.HasValue)
-                {
-                    // Verify the target profile belongs to the code owner
-                    var targetProfile = await profileRepository.GetByIdAsync(
-                        command.TargetProfileId.Value, cancellationToken);
-
-                    if (targetProfile is null || targetProfile.UserId != codeOwnerUserId)
-                    {
-                        return new Result(command.RedeemingUserId, false, "Target profile not found");
-                    }
-
-                    targetProfileId = targetProfile.Id;
-                }
-                else
-                {
-                    // Use the code owner's default profile
-                    var defaultProfile = await profileRepository.GetDefaultByUserIdAsync(
-                        codeOwnerUserId, cancellationToken);
-
-                    if (defaultProfile is null)
-                    {
-                        return new Result(command.RedeemingUserId, false, "Code owner has no default profile");
-                    }
-
-                    targetProfileId = defaultProfile.Id;
-                }
-
-                break;
-            }
-
-            case MergeStrategy.CreateNewProfile:
-            {
-                // Create a new profile on the code owner's account
-                var profileCount = await profileRepository.GetCountByUserIdAsync(
-                    codeOwnerUserId, cancellationToken);
-
-                if (profileCount >= 5)
-                {
-                    return new Result(command.RedeemingUserId, false, "Maximum number of profiles reached");
-                }
-
-                var email = redeemingUser.Email.Value;
-                var profileName = email.Length <= 100 ? email : email[..97] + "...";
-                var newProfile = Profile.Create(codeOwnerUserId, profileName);
-                await profileRepository.AddAsync(newProfile, cancellationToken);
-
-                targetProfileId = newProfile.Id;
-                break;
-            }
-
-            default:
-                return new Result(command.RedeemingUserId, false, "Invalid merge strategy");
+            return new Result(command.RedeemingUserId, false, MaxProfilesError);
         }
+
+        var newProfile = Profile.Create(codeOwnerUserId, command.ProfileName);
+        await profileRepository.AddAsync(newProfile, cancellationToken);
+
+        var targetProfileId = newProfile.Id;
 
         // Create a LinkedIdentity on the code owner from the redeeming user's ExternalIdentity
         var linkedIdentity = LinkedIdentity.Create(
@@ -172,11 +113,14 @@ public sealed class RedeemLinkCode(
 
         await linkedIdentityRepository.AddAsync(linkedIdentity, cancellationToken);
 
+        // Transfer all of User B's data to the new profile on User A before deleting User B
+        await userDataTransferService.TransferAsync(
+            command.RedeemingUserId, codeOwnerUserId, targetProfileId, cancellationToken);
+
         // Delete User B (the redeeming user) so their ExternalIdentity no longer
         // matches in Step 1 of login. Without this, logging in with the linked
         // Google account would still resolve to the old User B instead of
         // reaching Step 2 (LinkedIdentity lookup) which resolves to User A.
-        // Cascade delete will clean up User B's profiles and other owned data.
         userRepository.Remove(redeemingUser);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

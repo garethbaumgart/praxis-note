@@ -53,16 +53,15 @@ public static class AccountLinkEndpoints
             return Results.BadRequest(new { error = "Code is required" });
         }
 
-        if (!Enum.TryParse<MergeStrategy>(request.MergeStrategy, true, out var strategy))
+        if (string.IsNullOrWhiteSpace(request.ProfileName))
         {
-            return Results.BadRequest(new { error = "Invalid merge strategy. Use: MergeIntoExisting, CreateNewProfile, or Cancel" });
+            return Results.BadRequest(new { error = "Profile name is required" });
         }
 
         var command = new RedeemLinkCode.Command(
             userId.Value,
             request.Code,
-            strategy,
-            request.TargetProfileId);
+            request.ProfileName.Trim());
 
         var result = await redeemLinkCode.ExecuteAsync(command, cancellationToken);
 
@@ -175,5 +174,5 @@ public static class AccountLinkEndpoints
     }
 }
 
-public record RedeemLinkCodeRequest(string Code, string MergeStrategy, Guid? TargetProfileId = null);
+public record RedeemLinkCodeRequest(string Code, string ProfileName);
 public record SetDefaultProfileRequest(Guid? ProfileId);

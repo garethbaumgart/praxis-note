@@ -18,6 +18,13 @@ public sealed class TaskRepository(PraxisNoteDbContext context) : ITaskRepositor
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<TaskItem>> GetAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.Tasks
+            .Where(t => t.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<TaskItem>> GetTasksWithTagAsync(Guid userId, Guid profileId, Guid tagId, CancellationToken cancellationToken = default)
     {
         // In-memory filtering required because TagIds uses a JSON value conversion

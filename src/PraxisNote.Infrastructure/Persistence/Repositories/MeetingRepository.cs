@@ -18,6 +18,13 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Meeting>> GetAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.Meetings
+            .Where(m => m.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Meeting>> GetByTagIdAsync(Guid userId, Guid profileId, Guid tagId, CancellationToken cancellationToken = default)
     {
         // In-memory filtering required because TagIds uses a JSON value conversion

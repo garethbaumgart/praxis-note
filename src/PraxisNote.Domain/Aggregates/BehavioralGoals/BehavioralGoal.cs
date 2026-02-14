@@ -4,8 +4,8 @@ namespace PraxisNote.Domain.Aggregates.BehavioralGoals;
 
 public sealed class BehavioralGoal : AggregateRoot
 {
-    public Guid UserId { get; private init; }
-    public Guid ProfileId { get; private init; }
+    public Guid UserId { get; private set; }
+    public Guid ProfileId { get; private set; }
     public MetricType MetricType { get; private set; }
     public GoalOperator Operator { get; private set; }
     public double TargetValue { get; private set; }
@@ -104,6 +104,20 @@ public sealed class BehavioralGoal : AggregateRoot
     private static void ValidateTitle(string title)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
+    }
+
+    /// <summary>
+    /// Reassigns this behavioral goal to a different user and profile.
+    /// Used during account linking to transfer data before deleting the source user.
+    /// </summary>
+    public void Reassign(Guid newUserId, Guid newProfileId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(newUserId, Guid.Empty, nameof(newUserId));
+        ArgumentOutOfRangeException.ThrowIfEqual(newProfileId, Guid.Empty, nameof(newProfileId));
+
+        UserId = newUserId;
+        ProfileId = newProfileId;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     private static void ValidateTarget(GoalOperator goalOperator, double targetValue, double? targetValueUpper)

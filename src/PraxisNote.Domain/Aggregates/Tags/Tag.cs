@@ -11,12 +11,12 @@ public sealed class Tag : AggregateRoot
     /// <summary>
     /// The user who owns this tag.
     /// </summary>
-    public Guid UserId { get; private init; }
+    public Guid UserId { get; private set; }
 
     /// <summary>
     /// The profile this tag belongs to (data silo boundary).
     /// </summary>
-    public Guid ProfileId { get; private init; }
+    public Guid ProfileId { get; private set; }
 
     /// <summary>
     /// The display name of the tag. Must be unique per user.
@@ -65,6 +65,19 @@ public sealed class Tag : AggregateRoot
     {
         ValidateName(newName);
         Name = newName.ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Reassigns this tag to a different user and profile.
+    /// Used during account linking to transfer data before deleting the source user.
+    /// </summary>
+    public void Reassign(Guid newUserId, Guid newProfileId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(newUserId, Guid.Empty, nameof(newUserId));
+        ArgumentOutOfRangeException.ThrowIfEqual(newProfileId, Guid.Empty, nameof(newProfileId));
+
+        UserId = newUserId;
+        ProfileId = newProfileId;
     }
 
     private static void ValidateName(string name)

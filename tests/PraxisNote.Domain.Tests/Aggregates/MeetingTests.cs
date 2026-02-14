@@ -1895,4 +1895,60 @@ public class MeetingTests
     }
 
     #endregion
+
+    #region Reassign Tests
+
+    [Fact]
+    public void Reassign_WithValidIds_UpdatesUserIdAndProfileId()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+        var newUserId = Guid.NewGuid();
+        var newProfileId = Guid.NewGuid();
+
+        // Act
+        meeting.Reassign(newUserId, newProfileId);
+
+        // Assert
+        Assert.Equal(newUserId, meeting.UserId);
+        Assert.Equal(newProfileId, meeting.ProfileId);
+    }
+
+    [Fact]
+    public void Reassign_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+        var originalUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.Reassign(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            meeting.Reassign(Guid.Empty, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyProfileId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            meeting.Reassign(Guid.NewGuid(), Guid.Empty));
+    }
+
+    #endregion
 }

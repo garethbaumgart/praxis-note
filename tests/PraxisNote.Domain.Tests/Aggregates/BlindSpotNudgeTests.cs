@@ -213,4 +213,68 @@ public class BlindSpotNudgeTests
     }
 
     #endregion
+
+    #region Reassign Tests
+
+    [Fact]
+    public void Reassign_WithValidIds_UpdatesUserIdAndProfileId()
+    {
+        // Arrange
+        var nudge = BlindSpotNudge.Create(
+            _validUserId, _validProfileId, "Talk Time",
+            "suggestion", "description");
+        var newUserId = Guid.NewGuid();
+        var newProfileId = Guid.NewGuid();
+
+        // Act
+        nudge.Reassign(newUserId, newProfileId);
+
+        // Assert
+        Assert.Equal(newUserId, nudge.UserId);
+        Assert.Equal(newProfileId, nudge.ProfileId);
+    }
+
+    [Fact]
+    public void Reassign_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var nudge = BlindSpotNudge.Create(
+            _validUserId, _validProfileId, "Talk Time",
+            "suggestion", "description");
+        var originalUpdatedAt = nudge.UpdatedAt;
+
+        // Act
+        nudge.Reassign(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        Assert.True(nudge.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var nudge = BlindSpotNudge.Create(
+            _validUserId, _validProfileId, "Talk Time",
+            "suggestion", "description");
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            nudge.Reassign(Guid.Empty, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyProfileId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var nudge = BlindSpotNudge.Create(
+            _validUserId, _validProfileId, "Talk Time",
+            "suggestion", "description");
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            nudge.Reassign(Guid.NewGuid(), Guid.Empty));
+    }
+
+    #endregion
 }
