@@ -208,7 +208,7 @@ else
 // WebSocket support (for real-time transcription proxy)
 app.UseWebSockets(new WebSocketOptions
 {
-    KeepAliveInterval = TimeSpan.FromSeconds(30)
+    KeepAliveInterval = TimeSpan.FromSeconds(20)
 });
 
 // Authentication & Authorization middleware

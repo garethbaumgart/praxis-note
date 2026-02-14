@@ -10,4 +10,5 @@ public class DeepgramSettings
     public bool InterimResults { get; set; } = true;
     public string Language { get; set; } = "en-US";
     public bool Diarize { get; set; } = true;
+    public int KeepAliveIntervalSeconds { get; set; } = 10;
 }

@@ -1,5 +1,7 @@
 using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.Extensions.Options;
 using PraxisNote.Application.Features.Transcription;
 using PraxisNote.Web.Extensions;
@@ -113,6 +115,7 @@ public static class TranscriptionEndpoints
         ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger("TranscriptionEndpoints");
+        var sessionId = Guid.NewGuid().ToString("N")[..8];
 
         // Authenticate the WebSocket connection.
         // Cookie auth works automatically. For dev mock auth, accept query param
@@ -140,7 +143,7 @@ public static class TranscriptionEndpoints
 
         if (user.Identity?.IsAuthenticated != true)
         {
-            logger.LogWarning("Transcription WebSocket rejected: user not authenticated");
+            logger.LogWarning("[{SessionId}] Transcription WebSocket rejected: user not authenticated", sessionId);
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return;
         }
@@ -154,7 +157,7 @@ public static class TranscriptionEndpoints
         var deepgramSettings = settings.Value;
         if (string.IsNullOrWhiteSpace(deepgramSettings.ApiKey))
         {
-            logger.LogWarning("Transcription WebSocket rejected: Deepgram API key not configured");
+            logger.LogWarning("[{SessionId}] Transcription WebSocket rejected: Deepgram API key not configured", sessionId);
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             await context.Response.WriteAsync("Transcription service not configured.");
             return;
@@ -162,7 +165,7 @@ public static class TranscriptionEndpoints
 
         using var clientWs = await context.WebSockets.AcceptWebSocketAsync();
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        logger.LogInformation("Transcription session started for user {UserId}", userId);
+        logger.LogInformation("[{SessionId}] Transcription session started for user {UserId}", sessionId, userId);
 
         // Build Deepgram streaming URL
         var channels = context.Request.Query["channels"].FirstOrDefault();
@@ -183,9 +186,9 @@ public static class TranscriptionEndpoints
         if (isMultichannel && isContainerFormat)
         {
             logger.LogInformation(
-                "Multichannel requested with container format (mimeType={MimeType}), " +
+                "[{SessionId}] Multichannel requested with container format (mimeType={MimeType}), " +
                 "falling back to single-channel with diarization",
-                mimeType ?? "auto-detect");
+                sessionId, mimeType ?? "auto-detect");
             isMultichannel = false;
         }
 
@@ -215,6 +218,7 @@ public static class TranscriptionEndpoints
 
         using var deepgramWs = new ClientWebSocket();
         deepgramWs.Options.SetRequestHeader("Authorization", $"Token {deepgramSettings.ApiKey}");
+        deepgramWs.Options.KeepAliveInterval = TimeSpan.FromSeconds(15);
 
         try
         {
@@ -226,84 +230,150 @@ public static class TranscriptionEndpoints
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
             // Client disconnected — clean up silently
-            logger.LogInformation("Client disconnected during Deepgram WebSocket connect");
+            logger.LogInformation("[{SessionId}] Client disconnected during Deepgram WebSocket connect", sessionId);
             return;
         }
         catch (OperationCanceledException)
         {
-            logger.LogWarning("Deepgram WebSocket connection timed out after 10 seconds");
-            await CloseIfOpenAsync(clientWs, logger,
+            logger.LogWarning("[{SessionId}] Deepgram WebSocket connection timed out after 10 seconds", sessionId);
+            await CloseIfOpenAsync(clientWs, logger, sessionId,
                 WebSocketCloseStatus.InternalServerError,
                 "Transcription service connection timed out.");
             return;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to connect to Deepgram");
-            await CloseIfOpenAsync(clientWs, logger,
+            logger.LogError(ex, "[{SessionId}] Failed to connect to Deepgram", sessionId);
+            await CloseIfOpenAsync(clientWs, logger, sessionId,
                 WebSocketCloseStatus.InternalServerError,
                 "Failed to connect to transcription service.");
             return;
         }
 
-        using var cts = new CancellationTokenSource();
+        logger.LogInformation("[{SessionId}] Connected to Deepgram, starting relay tasks", sessionId);
 
-        var relayAudio = RelayAudioAsync(clientWs, deepgramWs, cts, logger);
-        var relayResults = RelayResultsAsync(deepgramWs, clientWs, cts, logger);
+        var lastAudioSent = new StrongBox<DateTimeOffset>(DateTimeOffset.UtcNow);
+        using var sessionCts = new CancellationTokenSource();
+        using var audioCts = CancellationTokenSource.CreateLinkedTokenSource(sessionCts.Token, context.RequestAborted);
+        using var resultsCts = CancellationTokenSource.CreateLinkedTokenSource(sessionCts.Token, context.RequestAborted);
 
-        // Wait for either direction to complete (typically client closes first)
-        await Task.WhenAny(relayAudio, relayResults);
-        await cts.CancelAsync();
+        var relayAudio = RelayAudioAsync(clientWs, deepgramWs, audioCts, resultsCts, logger, lastAudioSent, sessionId);
+        var relayResults = RelayResultsAsync(deepgramWs, clientWs, resultsCts, audioCts, logger, sessionId);
+        var keepAlive = SendKeepAliveAsync(deepgramWs, sessionCts, lastAudioSent, logger, sessionId, deepgramSettings.KeepAliveIntervalSeconds);
+
+        var completed = await Task.WhenAny(relayAudio, relayResults);
+        if (completed == relayAudio)
+            await resultsCts.CancelAsync();
+        else
+            await audioCts.CancelAsync();
+
+        // Cancel the session to stop the keepalive task
+        await sessionCts.CancelAsync();
+
+        // Wait for all tasks to finish gracefully
+        await Task.WhenAll(relayAudio, relayResults, keepAlive);
 
         // Clean up connections
-        await CloseIfOpenAsync(deepgramWs, logger);
-        await CloseIfOpenAsync(clientWs, logger);
+        await CloseIfOpenAsync(deepgramWs, logger, sessionId);
+        await CloseIfOpenAsync(clientWs, logger, sessionId);
 
-        logger.LogInformation("Transcription session ended for user {UserId}", userId);
+        logger.LogInformation("[{SessionId}] Transcription session ended for user {UserId}", sessionId, userId);
     }
 
     /// <summary>
     /// Reads binary audio frames from the browser client and forwards them to Deepgram.
+    /// Copies received bytes to a new buffer before sending to avoid buffer reuse corruption.
     /// </summary>
     private static async Task RelayAudioAsync(
         WebSocket clientWs,
         ClientWebSocket deepgramWs,
-        CancellationTokenSource cts,
-        ILogger logger)
+        CancellationTokenSource ownCts,
+        CancellationTokenSource otherCts,
+        ILogger logger,
+        StrongBox<DateTimeOffset> lastAudioSent,
+        string sessionId)
     {
         var buffer = new byte[BufferSize];
+        long totalBytes = 0;
+        long frameCount = 0;
 
         try
         {
-            while (!cts.Token.IsCancellationRequested)
+            while (!ownCts.Token.IsCancellationRequested)
             {
-                var result = await clientWs.ReceiveAsync(buffer, cts.Token);
+                WebSocketReceiveResult result;
+                try
+                {
+                    result = await clientWs.ReceiveAsync(buffer, ownCts.Token);
+                }
+                catch (WebSocketException ex)
+                {
+                    logger.LogWarning("[{SessionId}] Client WebSocket receive error: {Message}", sessionId, ex.Message);
+                    break;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    logger.LogWarning("[{SessionId}] Client WebSocket in invalid state: {Message}", sessionId, ex.Message);
+                    break;
+                }
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
+                    logger.LogInformation("[{SessionId}] Client sent close frame, sending CloseStream to Deepgram", sessionId);
                     // Client stopped recording — signal Deepgram to finalize.
-                    // Use CancellationToken.None since the other relay task may have already cancelled cts.
-                    if (deepgramWs.State == WebSocketState.Open)
+                    try
                     {
-                        var closeMessage = System.Text.Encoding.UTF8.GetBytes("{\"type\":\"CloseStream\"}");
+                        var closeMessage = Encoding.UTF8.GetBytes("{\"type\":\"CloseStream\"}");
                         await deepgramWs.SendAsync(
                             closeMessage,
                             WebSocketMessageType.Text,
                             endOfMessage: true,
                             CancellationToken.None);
                     }
+                    catch (WebSocketException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Failed to send CloseStream to Deepgram: {Message}", sessionId, ex.Message);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Deepgram WebSocket not open for CloseStream: {Message}", sessionId, ex.Message);
+                    }
                     break;
                 }
 
-                if (result.MessageType == WebSocketMessageType.Binary
-                    && result.Count > 0
-                    && deepgramWs.State == WebSocketState.Open)
+                if (result.MessageType == WebSocketMessageType.Binary && result.Count > 0)
                 {
-                    await deepgramWs.SendAsync(
-                        new ArraySegment<byte>(buffer, 0, result.Count),
-                        WebSocketMessageType.Binary,
-                        result.EndOfMessage,
-                        cts.Token);
+                    // Fix 2a: Copy buffer before sending to avoid reuse corruption
+                    var copy = new byte[result.Count];
+                    Buffer.BlockCopy(buffer, 0, copy, 0, result.Count);
+
+                    try
+                    {
+                        await deepgramWs.SendAsync(
+                            new ArraySegment<byte>(copy, 0, result.Count),
+                            WebSocketMessageType.Binary,
+                            result.EndOfMessage,
+                            ownCts.Token);
+
+                        totalBytes += result.Count;
+                        frameCount++;
+                        lastAudioSent.Value = DateTimeOffset.UtcNow;
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Failed to send audio to Deepgram: {Message}", sessionId, ex.Message);
+                        break;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Deepgram WebSocket not open for audio send: {Message}", sessionId, ex.Message);
+                        break;
+                    }
+                }
+                else if (result.MessageType != WebSocketMessageType.Binary)
+                {
+                    // Fix 2e: Log unexpected message types
+                    logger.LogWarning("[{SessionId}] Unexpected message type from client: {MessageType}", sessionId, result.MessageType);
                 }
             }
         }
@@ -311,70 +381,125 @@ public static class TranscriptionEndpoints
         {
             // Expected on shutdown
         }
-        catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
-        {
-            logger.LogWarning("Client WebSocket closed prematurely");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error relaying audio to Deepgram");
-        }
+
+        logger.LogInformation(
+            "[{SessionId}] Audio relay stopped. Total bytes: {TotalBytes}, frames: {FrameCount}",
+            sessionId, totalBytes, frameCount);
     }
 
     /// <summary>
     /// Reads JSON transcript results from Deepgram and forwards them to the browser client.
+    /// Aggregates multi-frame messages using MemoryStream before sending.
     /// </summary>
     private static async Task RelayResultsAsync(
         ClientWebSocket deepgramWs,
         WebSocket clientWs,
-        CancellationTokenSource cts,
-        ILogger logger)
+        CancellationTokenSource ownCts,
+        CancellationTokenSource otherCts,
+        ILogger logger,
+        string sessionId)
     {
         var buffer = new byte[BufferSize];
+        long messageCount = 0;
 
         try
         {
-            while (!cts.Token.IsCancellationRequested)
+            while (!ownCts.Token.IsCancellationRequested)
             {
-                var result = await deepgramWs.ReceiveAsync(buffer, cts.Token);
+                // Fix 2d: Aggregate multi-frame messages
+                using var messageStream = new MemoryStream();
+                WebSocketReceiveResult result;
 
-                if (result.MessageType == WebSocketMessageType.Close)
+                do
                 {
-                    logger.LogWarning(
-                        "Deepgram closed connection: {CloseStatus} - {CloseDescription}",
-                        deepgramWs.CloseStatus,
-                        deepgramWs.CloseStatusDescription);
-
-                    // Forward the close reason to the browser client so the frontend
-                    // can surface a meaningful error instead of silently retrying.
-                    if (clientWs.State == WebSocketState.Open)
+                    try
                     {
-                        var reason = deepgramWs.CloseStatusDescription ?? "Transcription service closed the connection";
-
-                        // RFC 6455: close reason must be <= 123 bytes UTF-8
-                        while (System.Text.Encoding.UTF8.GetByteCount(reason) > 123)
-                        {
-                            reason = reason[..^4] + "...";
-                        }
-
-                        // Use non-1000 close code when Deepgram closes unexpectedly
-                        // so the frontend's onclose handler triggers error handling.
-                        var closeCode = WebSocketCloseStatus.InternalServerError;
-                        await clientWs.CloseAsync(closeCode, reason, CancellationToken.None);
+                        result = await deepgramWs.ReceiveAsync(buffer, ownCts.Token);
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Deepgram WebSocket receive error: {Message}", sessionId, ex.Message);
+                        return;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Deepgram WebSocket in invalid state: {Message}", sessionId, ex.Message);
+                        return;
                     }
 
-                    break;
-                }
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        logger.LogWarning(
+                            "[{SessionId}] Deepgram closed connection: {CloseStatus} - {CloseDescription}",
+                            sessionId, deepgramWs.CloseStatus, deepgramWs.CloseStatusDescription);
 
-                if (result.MessageType == WebSocketMessageType.Text
-                    && result.Count > 0
-                    && clientWs.State == WebSocketState.Open)
+                        // Forward the close reason to the browser client so the frontend
+                        // can surface a meaningful error instead of silently retrying.
+                        try
+                        {
+                            var reason = deepgramWs.CloseStatusDescription ?? "Transcription service closed the connection";
+
+                            // RFC 6455: close reason must be <= 123 bytes UTF-8
+                            while (Encoding.UTF8.GetByteCount(reason) > 123)
+                            {
+                                reason = reason[..^4] + "...";
+                            }
+
+                            // Use non-1000 close code when Deepgram closes unexpectedly
+                            // so the frontend's onclose handler triggers error handling.
+                            await clientWs.CloseAsync(
+                                WebSocketCloseStatus.InternalServerError,
+                                reason,
+                                CancellationToken.None);
+                        }
+                        catch (WebSocketException ex)
+                        {
+                            logger.LogWarning("[{SessionId}] Failed to forward close to client: {Message}", sessionId, ex.Message);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            logger.LogWarning("[{SessionId}] Client WebSocket not open for close forward: {Message}", sessionId, ex.Message);
+                        }
+
+                        return;
+                    }
+
+                    if (result.Count > 0)
+                    {
+                        messageStream.Write(buffer, 0, result.Count);
+                    }
+
+                } while (!result.EndOfMessage);
+
+                if (result.MessageType == WebSocketMessageType.Text && messageStream.Length > 0)
                 {
-                    await clientWs.SendAsync(
-                        new ArraySegment<byte>(buffer, 0, result.Count),
-                        WebSocketMessageType.Text,
-                        result.EndOfMessage,
-                        cts.Token);
+                    var messageBytes = messageStream.ToArray();
+
+                    try
+                    {
+                        await clientWs.SendAsync(
+                            new ArraySegment<byte>(messageBytes),
+                            WebSocketMessageType.Text,
+                            endOfMessage: true,
+                            ownCts.Token);
+
+                        messageCount++;
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Failed to send result to client: {Message}", sessionId, ex.Message);
+                        break;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Client WebSocket not open for result send: {Message}", sessionId, ex.Message);
+                        break;
+                    }
+                }
+                else if (result.MessageType != WebSocketMessageType.Text)
+                {
+                    // Fix 2e: Log unexpected message types
+                    logger.LogWarning("[{SessionId}] Unexpected message type from Deepgram: {MessageType}", sessionId, result.MessageType);
                 }
             }
         }
@@ -382,35 +507,93 @@ public static class TranscriptionEndpoints
         {
             // Expected on shutdown
         }
-        catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+
+        logger.LogInformation(
+            "[{SessionId}] Results relay stopped. Total messages forwarded: {MessageCount}",
+            sessionId, messageCount);
+    }
+
+    /// <summary>
+    /// Sends periodic KeepAlive messages to Deepgram when no audio has been sent within the interval.
+    /// This prevents Deepgram from closing idle connections during recording pauses.
+    /// </summary>
+    private static async Task SendKeepAliveAsync(
+        ClientWebSocket deepgramWs,
+        CancellationTokenSource sessionCts,
+        StrongBox<DateTimeOffset> lastAudioSent,
+        ILogger logger,
+        string sessionId,
+        int intervalSeconds)
+    {
+        var keepAliveMessage = Encoding.UTF8.GetBytes("{\"type\":\"KeepAlive\"}");
+        var interval = TimeSpan.FromSeconds(intervalSeconds);
+
+        try
         {
-            logger.LogWarning("Deepgram WebSocket closed prematurely");
+            while (!sessionCts.Token.IsCancellationRequested)
+            {
+                await Task.Delay(interval, sessionCts.Token);
+
+                if (DateTimeOffset.UtcNow - lastAudioSent.Value > interval)
+                {
+                    try
+                    {
+                        await deepgramWs.SendAsync(
+                            keepAliveMessage,
+                            WebSocketMessageType.Text,
+                            endOfMessage: true,
+                            sessionCts.Token);
+
+                        logger.LogDebug("[{SessionId}] Sent KeepAlive to Deepgram", sessionId);
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Failed to send KeepAlive to Deepgram: {Message}", sessionId, ex.Message);
+                        break;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        logger.LogWarning("[{SessionId}] Deepgram WebSocket not open for KeepAlive: {Message}", sessionId, ex.Message);
+                        break;
+                    }
+                }
+            }
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            logger.LogError(ex, "Error relaying results from Deepgram");
+            // Expected on shutdown
         }
     }
 
-    private static Task CloseIfOpenAsync(WebSocket ws, ILogger logger) =>
-        CloseIfOpenAsync(ws, logger, WebSocketCloseStatus.NormalClosure, "Done");
-
+    /// <summary>
+    /// Gracefully closes a WebSocket if it's still open. Uses CloseOutputAsync with a 5-second timeout,
+    /// falling back to Abort() if the close handshake doesn't complete in time.
+    /// </summary>
     private static async Task CloseIfOpenAsync(
         WebSocket ws,
         ILogger logger,
-        WebSocketCloseStatus status,
-        string reason)
+        string sessionId,
+        WebSocketCloseStatus status = WebSocketCloseStatus.NormalClosure,
+        string reason = "Done")
     {
         try
         {
             if (ws.State is WebSocketState.Open or WebSocketState.CloseReceived)
             {
-                await ws.CloseAsync(status, reason, CancellationToken.None);
+                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                await ws.CloseOutputAsync(status, reason, timeoutCts.Token);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Close handshake timed out — force close
+            logger.LogWarning("[{SessionId}] WebSocket close timed out, aborting", sessionId);
+            ws.Abort();
         }
         catch (Exception ex)
         {
-            logger.LogDebug(ex, "Error closing WebSocket");
+            logger.LogDebug(ex, "[{SessionId}] Error closing WebSocket, aborting", sessionId);
+            try { ws.Abort(); } catch { /* Best effort */ }
         }
     }
 }

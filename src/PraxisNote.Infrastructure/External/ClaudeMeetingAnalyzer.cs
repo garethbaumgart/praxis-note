@@ -337,7 +337,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         );
     }
 
-    private static TimeZoneInfo GetTimeZoneInfo(string? ianaTimeZone)
+    private TimeZoneInfo GetTimeZoneInfo(string? ianaTimeZone)
     {
         if (string.IsNullOrWhiteSpace(ianaTimeZone))
             return TimeZoneInfo.Local;
@@ -348,10 +348,12 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         }
         catch (TimeZoneNotFoundException)
         {
+            _logger.LogWarning("Timezone '{TimeZone}' not found, falling back to local timezone", ianaTimeZone);
             return TimeZoneInfo.Local;
         }
         catch (InvalidTimeZoneException)
         {
+            _logger.LogWarning("Timezone '{TimeZone}' is invalid, falling back to local timezone", ianaTimeZone);
             return TimeZoneInfo.Local;
         }
     }

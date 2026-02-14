@@ -21,14 +21,17 @@ export class DeepgramTranscriptionService implements OnDestroy {
   private intentionallyStopped = false;
   private hasEverConnected = false;
   private reconnectAttempts = 0;
+  private totalReconnects = 0;
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private pendingAudioChunks: ArrayBuffer[] = [];
   private droppedAudioChunks = 0;
   private static readonly MAX_RECONNECT_ATTEMPTS = 10;
+  private static readonly MAX_TOTAL_RECONNECTS = 20;
   private static readonly MAX_DROPPED_CHUNKS_BEFORE_ERROR = 10;
   private static readonly INITIAL_RECONNECT_DELAY_MS = 500;
   private static readonly MAX_RECONNECT_DELAY_MS = 15000;
-  private static readonly MAX_PENDING_CHUNKS = 30;
+  private static readonly MAX_PENDING_CHUNKS = 10;
+  private static readonly FLUSH_THROTTLE_MS = 50;
 
   readonly transcript = signal('');
   readonly segments = signal<TranscriptSegment[]>([]);
@@ -87,6 +90,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.intentionallyStopped = false;
     this.hasEverConnected = false;
     this.reconnectAttempts = 0;
+    this.totalReconnects = 0;
     this.isReconnecting.set(false);
     this.pendingAudioChunks = [];
     this.droppedAudioChunks = 0;
@@ -173,6 +177,10 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.ws.onerror = () => {
       this.isListening.set(false);
       if (!this.intentionallyStopped) {
+        // Fix 7: Set isReconnecting immediately before attemptReconnect, guarded by hasEverConnected
+        if (this.hasEverConnected) {
+          this.isReconnecting.set(true);
+        }
         this.attemptReconnect();
       }
     };
@@ -180,6 +188,10 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.ws.onclose = (event: CloseEvent) => {
       this.isListening.set(false);
       if (event.code !== 1000 && !this.intentionallyStopped) {
+        // Fix 7: Set isReconnecting immediately before attemptReconnect, guarded by hasEverConnected
+        if (this.hasEverConnected) {
+          this.isReconnecting.set(true);
+        }
         this.attemptReconnect(event.reason);
       }
     };
@@ -188,7 +200,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
   private attemptReconnect(closeReason?: string): void {
     if (this.intentionallyStopped) return;
     // Guard against duplicate calls (onerror + onclose can both fire for the same failure)
-    if (this.isReconnecting() && this.reconnectTimeoutId !== null) return;
+    if (this.reconnectTimeoutId !== null) return;
 
     // Fail immediately if the connection was never successfully established.
     // No point retrying with exponential backoff if the initial connection failed.
@@ -202,6 +214,14 @@ export class DeepgramTranscriptionService implements OnDestroy {
       return;
     }
 
+    // Step 8: Session-level reconnection budget
+    if (this.totalReconnects >= DeepgramTranscriptionService.MAX_TOTAL_RECONNECTS) {
+      this.isReconnecting.set(false);
+      this.pendingAudioChunks = [];
+      this.error.set('Transcription connection lost. Maximum session reconnection limit reached.');
+      return;
+    }
+
     if (this.reconnectAttempts >= DeepgramTranscriptionService.MAX_RECONNECT_ATTEMPTS) {
       this.isReconnecting.set(false);
       this.pendingAudioChunks = [];
@@ -211,6 +231,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
 
     this.isReconnecting.set(true);
     this.reconnectAttempts++;
+    this.totalReconnects++;
 
     const delay = Math.min(
       DeepgramTranscriptionService.INITIAL_RECONNECT_DELAY_MS * Math.pow(2, this.reconnectAttempts - 1),
@@ -226,12 +247,27 @@ export class DeepgramTranscriptionService implements OnDestroy {
   }
 
   private flushPendingAudio(): void {
-    for (const chunk of this.pendingAudioChunks) {
-      if (this.ws?.readyState === WebSocket.OPEN) {
-        this.ws.send(chunk);
-      }
+    // Step 6: Keep only the most recent chunks to avoid flooding the new connection
+    if (this.pendingAudioChunks.length > DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
+      this.pendingAudioChunks = this.pendingAudioChunks.slice(-DeepgramTranscriptionService.MAX_PENDING_CHUNKS);
     }
+
+    const chunks = [...this.pendingAudioChunks];
     this.pendingAudioChunks = [];
+
+    // Throttle sends with a delay between each chunk
+    let index = 0;
+    const sendNext = (): void => {
+      if (index >= chunks.length) return;
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(chunks[index]);
+        index++;
+        if (index < chunks.length) {
+          setTimeout(sendNext, DeepgramTranscriptionService.FLUSH_THROTTLE_MS);
+        }
+      }
+    };
+    sendNext();
   }
 
   private handleDeepgramResult(data: Record<string, unknown>): void {
@@ -325,28 +361,17 @@ export class DeepgramTranscriptionService implements OnDestroy {
     return speakerNum ?? null;
   }
 
+  /**
+   * Step 5: Sync entry point that delegates to async. Checks readyState synchronously first,
+   * then re-checks after the async blob.arrayBuffer() call completes.
+   */
   sendAudio(blob: Blob): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.droppedAudioChunks = 0;
-      blob.arrayBuffer().then(buffer => {
-        this.ws?.send(buffer);
-      }).catch(() => {
-        // Blob may have been invalidated (e.g. tab backgrounded). Non-fatal — skip this chunk.
-      });
+      this.sendAudioAsync(blob);
     } else if (this.isReconnecting()) {
       // Buffer audio during reconnect so it can be flushed when the connection is restored
-      blob.arrayBuffer().then(buffer => {
-        // Re-check: connection may have been restored while arrayBuffer() resolved
-        if (!this.isReconnecting() && this.ws?.readyState === WebSocket.OPEN) {
-          this.ws.send(buffer);
-          return;
-        }
-        if (this.pendingAudioChunks.length < DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
-          this.pendingAudioChunks.push(buffer);
-        }
-      }).catch(() => {
-        // Non-fatal
-      });
+      this.bufferChunk(blob);
     } else if (!this.intentionallyStopped) {
       // WebSocket is not open and not reconnecting — audio is being silently dropped.
       // Surface an error after a threshold of dropped chunks so the user knows.
@@ -354,6 +379,48 @@ export class DeepgramTranscriptionService implements OnDestroy {
       if (this.droppedAudioChunks >= DeepgramTranscriptionService.MAX_DROPPED_CHUNKS_BEFORE_ERROR && !this.error()) {
         this.error.set('Transcription connection lost. Audio is not being transcribed.');
       }
+    }
+  }
+
+  /**
+   * Async helper that converts the blob to an ArrayBuffer and re-checks WebSocket readyState
+   * after the await, since the connection may have closed during the async operation.
+   */
+  private sendAudioAsync(blob: Blob): void {
+    blob.arrayBuffer().then(buffer => {
+      // Re-check readyState after async boundary — connection may have closed
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(buffer);
+      } else if (this.isReconnecting()) {
+        this.addToPendingBuffer(buffer);
+      }
+    }).catch(() => {
+      // Blob may have been invalidated (e.g. tab backgrounded). Non-fatal — skip this chunk.
+    });
+  }
+
+  /**
+   * Buffers a blob's audio data for replay after reconnection.
+   */
+  private bufferChunk(blob: Blob): void {
+    blob.arrayBuffer().then(buffer => {
+      // Re-check: connection may have been restored while arrayBuffer() resolved
+      if (!this.isReconnecting() && this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(buffer);
+        return;
+      }
+      this.addToPendingBuffer(buffer);
+    }).catch(() => {
+      // Non-fatal
+    });
+  }
+
+  /**
+   * Adds an ArrayBuffer to the pending buffer, enforcing the max size limit.
+   */
+  private addToPendingBuffer(buffer: ArrayBuffer): void {
+    if (this.pendingAudioChunks.length < DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
+      this.pendingAudioChunks.push(buffer);
     }
   }
 
