@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, output, signal, OnDestroy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, output, signal, computed, OnDestroy, inject } from '@angular/core';
 import { LinkedAccountsService } from './linked-accounts.service';
 import { AuthService } from '../auth';
 
@@ -125,7 +125,7 @@ type EnterState = 'idle' | 'loading' | 'success' | 'error';
                       placeholder="PRAXIS-XXXX-XXXX"
                       [value]="enteredCode()"
                       (input)="enteredCode.set($any($event.target).value)"
-                      (keydown.enter)="redeemCode()"
+                      (keydown.enter)="canLink() && redeemCode()"
                     />
                   </div>
                   <div>
@@ -136,7 +136,7 @@ type EnterState = 'idle' | 'loading' | 'success' | 'error';
                       placeholder="e.g. Work, Personal"
                       [value]="profileName()"
                       (input)="profileName.set($any($event.target).value)"
-                      (keydown.enter)="redeemCode()"
+                      (keydown.enter)="canLink() && redeemCode()"
                     />
                   </div>
                   <div class="flex justify-end">
@@ -223,9 +223,9 @@ export class LinkAccountPanelComponent implements OnDestroy {
   readonly profileName = signal('');
   readonly enterError = signal('');
 
-  canLink(): boolean {
-    return !!this.enteredCode().trim() && !!this.profileName().trim();
-  }
+  readonly canLink = computed(() =>
+    !!this.enteredCode().trim() && !!this.profileName().trim()
+  );
 
   ngOnDestroy(): void {
     this.clearCountdown();
