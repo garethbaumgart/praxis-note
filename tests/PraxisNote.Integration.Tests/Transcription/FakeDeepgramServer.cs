@@ -69,7 +69,7 @@ public sealed class FakeDeepgramServer : IAsyncDisposable
     }
 
     /// <summary>
-    /// Start the fake server on a random port. Returns "localhost:{port}".
+    /// Start the fake server on a random port. Returns "127.0.0.1:{port}".
     /// </summary>
     public async Task<string> StartAsync()
     {
@@ -143,7 +143,20 @@ public sealed class FakeDeepgramServer : IAsyncDisposable
                 }
                 else if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    var text = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    // Accumulate text fragments until the complete message arrives
+                    using var textStream = new MemoryStream();
+                    textStream.Write(buffer, 0, result.Count);
+
+                    while (!result.EndOfMessage)
+                    {
+                        result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+                        if (result.Count > 0)
+                        {
+                            textStream.Write(buffer, 0, result.Count);
+                        }
+                    }
+
+                    var text = Encoding.UTF8.GetString(textStream.ToArray());
                     ReceivedTextMessages.Enqueue(text);
                 }
             }

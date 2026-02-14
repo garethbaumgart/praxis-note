@@ -19,19 +19,15 @@ public class TranscriptionRelayTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _fakeDeepgram.DisposeAsync();
         await _factory.DisposeAsync();
+        await _fakeDeepgram.DisposeAsync();
     }
 
+    // WebSocket mock auth is passed via the query string built in BuildWsUri;
+    // no additional WebSocketClient request configuration is required.
     private WebSocketClient CreateWebSocketClient()
     {
-        var client = _factory.Server.CreateWebSocketClient();
-        client.ConfigureRequest = request =>
-        {
-            // Add mock auth query param for dev environment
-            // The request URI is set separately, but we need to add the query param
-        };
-        return client;
+        return _factory.Server.CreateWebSocketClient();
     }
 
     private Uri BuildWsUri(string? extraQuery = null)
@@ -198,7 +194,7 @@ public class TranscriptionRelayTests : IAsyncLifetime
         var wsClient = CreateWebSocketClient();
         using var ws = await wsClient.ConnectAsync(BuildWsUri(), CancellationToken.None);
 
-        // Act: Send one audio frame, then wait 3+ seconds without sending audio
+        // Act: Send one audio frame, then wait for KeepAlive messages
         var audioData = new byte[] { 0x01 };
         await ws.SendAsync(
             new ArraySegment<byte>(audioData),
@@ -206,8 +202,10 @@ public class TranscriptionRelayTests : IAsyncLifetime
             endOfMessage: true,
             CancellationToken.None);
 
-        // Wait for KeepAlive messages to be sent (interval is 1 second)
-        await Task.Delay(3500);
+        // Wait for at least one KeepAlive message (interval is 1 second, use generous timeout for CI)
+        await WaitForConditionAsync(
+            () => _fakeDeepgram.ReceivedTextMessages.Any(m => m.Contains("KeepAlive")),
+            timeoutMs: 10000);
 
         // Close client
         await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);

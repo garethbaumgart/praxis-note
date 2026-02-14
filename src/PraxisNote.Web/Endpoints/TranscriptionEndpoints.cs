@@ -58,8 +58,7 @@ public static class TranscriptionEndpoints
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Token", apiKey);
 
             var baseUrl = settings.Value.BaseUrl;
-            var httpScheme = baseUrl.StartsWith("127.0.0.1") || baseUrl.StartsWith("localhost")
-                ? "http" : "https";
+            var httpScheme = IsLoopbackAddress(baseUrl) ? "http" : "https";
             using var response = await httpClient.GetAsync(
                 $"{httpScheme}://{baseUrl}/v1/projects", linkedCts.Token);
 
@@ -219,8 +218,7 @@ public static class TranscriptionEndpoints
         }
 
         // Use ws:// for local/test servers, wss:// for production
-        var wsScheme = deepgramSettings.BaseUrl.StartsWith("127.0.0.1") || deepgramSettings.BaseUrl.StartsWith("localhost")
-            ? "ws" : "wss";
+        var wsScheme = IsLoopbackAddress(deepgramSettings.BaseUrl) ? "ws" : "wss";
         var deepgramUrl = $"{wsScheme}://{deepgramSettings.BaseUrl}/v1/listen?{string.Join("&", queryParams)}";
 
         using var deepgramWs = new ClientWebSocket();
@@ -605,6 +603,18 @@ public static class TranscriptionEndpoints
         {
             // Expected on shutdown
         }
+    }
+
+    /// <summary>
+    /// Checks if a base URL (host or host:port) refers to a loopback address.
+    /// Matches localhost, 127.x.x.x, and [::1] (with or without port).
+    /// </summary>
+    private static bool IsLoopbackAddress(string baseUrl)
+    {
+        return baseUrl.StartsWith("localhost", StringComparison.OrdinalIgnoreCase)
+            || baseUrl.StartsWith("127.", StringComparison.Ordinal)
+            || baseUrl.StartsWith("[::1]", StringComparison.Ordinal)
+            || baseUrl.Equals("::1", StringComparison.Ordinal);
     }
 
     /// <summary>

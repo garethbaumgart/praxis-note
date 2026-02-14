@@ -86,8 +86,8 @@ describe('DeepgramTranscriptionService', () => {
     vi.unstubAllGlobals();
   });
 
-  describe('sendAudio re-check', () => {
-    it('buffers audio when WebSocket closes during arrayBuffer conversion', async () => {
+  describe('sendAudio', () => {
+    it('sendAudio_WebSocketClosesDuringConversion_BuffersAudioChunks', async () => {
       service.start();
       const ws = MockWebSocket.instances[0];
       ws.simulateOpen();
@@ -109,7 +109,7 @@ describe('DeepgramTranscriptionService', () => {
       // sendAudio will check readyState synchronously (CLOSED), then enter reconnecting branch
       service.sendAudio(blob);
 
-      // Wait for the blob.arrayBuffer() promise to resolve
+      // Wait for the blob.arrayBuffer() promise to resolve via microtask flush
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // Audio should be in pending buffer (not sent to WS since it was closed)
@@ -118,7 +118,7 @@ describe('DeepgramTranscriptionService', () => {
   });
 
   describe('flushPendingAudio', () => {
-    it('sends only 10 most recent chunks after reconnect', () => {
+    it('flushPendingAudio_MoreThan10Chunks_SendsOnly10MostRecent', () => {
       service.start();
       const ws1 = MockWebSocket.instances[0];
       ws1.simulateOpen();
@@ -144,8 +144,8 @@ describe('DeepgramTranscriptionService', () => {
     });
   });
 
-  describe('isReconnecting signal', () => {
-    it('sets isReconnecting true immediately on error', () => {
+  describe('isReconnecting', () => {
+    it('isReconnecting_OnError_SetsTrueImmediately', () => {
       service.start();
       const ws = MockWebSocket.instances[0];
       ws.simulateOpen();
@@ -161,8 +161,8 @@ describe('DeepgramTranscriptionService', () => {
     });
   });
 
-  describe('totalReconnects cap', () => {
-    it('stops reconnecting after 20 total reconnections', () => {
+  describe('reconnect', () => {
+    it('reconnect_After20Attempts_StopsAndSetsError', () => {
       vi.useFakeTimers();
 
       service.start();
@@ -193,8 +193,8 @@ describe('DeepgramTranscriptionService', () => {
     });
   });
 
-  describe('dropped chunks threshold', () => {
-    it('shows error after 10 dropped audio chunks when not connected', () => {
+  describe('sendAudio dropped chunks', () => {
+    it('sendAudio_NotConnectedAfter10Drops_SetsConnectionLostError', () => {
       service.start();
       // Don't open the WebSocket — leave it in CONNECTING state
       // But set hasEverConnected to false (it already is by default since onopen never fired)
