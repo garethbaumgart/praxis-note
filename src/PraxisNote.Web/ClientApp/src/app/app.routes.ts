@@ -29,7 +29,7 @@ export const routes: Routes = [
     path: 'meetings/:id',
     loadComponent: () => import('./meetings/meeting-editor.page').then(m => m.MeetingEditorPage),
   },
-{
+  {
     path: 'insights',
     loadComponent: () => import('./insights/insights.page').then(m => m.InsightsPage),
   },
