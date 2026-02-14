@@ -67,7 +67,7 @@ Review the full diff against the base branch using `git diff main...HEAD` and lo
 - Performance improvements without added complexity
 - Patterns that don't match existing codebase conventions
 - Missing null guards or error handling
-- **Boy Scout Rule**: Any banned patterns (`*ngIf`, `[ngClass]`, hardcoded colors, `dark:` prefix, constructor injection) in lines touched by this PR should be migrated to their modern equivalents
+- **Boy Scout Rule**: Any banned or discouraged patterns (`*ngIf`, `[ngClass]`, hardcoded colors, `dark:` prefix, constructor injection → `inject()`) in lines touched by this PR should be migrated to their modern equivalents
 
 ### Security
 - Missing `rel="noreferrer"` on external links (`target="_blank"`)

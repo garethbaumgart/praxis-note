@@ -67,7 +67,7 @@ background: var(--color-todo-foreground);  /* This is a text color! */
 
 ### Boy Scout Rule (Scoped)
 
-When modifying code, fix banned patterns in the lines you're already changing — but do NOT expand scope.
+When modifying code, fix banned or discouraged patterns in the lines you're already changing — but do NOT expand scope.
 
 **DO fix (within lines you're already editing):**
 - `*ngIf` / `*ngFor` / `*ngSwitch` → `@if` / `@for` / `@switch` control flow
