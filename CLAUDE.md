@@ -609,6 +609,26 @@ git checkout -b chore/update-dependencies
 - `chore/` - Maintenance tasks, refactoring, dependencies
 - `docs/` - Documentation only changes
 
+### Atomic Commits
+
+Keep commits atomic: commit only the files you touched and list each path explicitly.
+
+**For tracked (modified) files:**
+```bash
+git commit -m "<scoped message>" -- path/to/file1 path/to/file2
+```
+
+**For brand-new (untracked) files:**
+```bash
+git restore --staged :/ && git add "path/to/file1" "path/to/file2" && git commit -m "<scoped message>" -- path/to/file1 path/to/file2
+```
+
+**Rules:**
+- **NEVER** use `git add .` or `git add -A` — these can stage unrelated files
+- Always list files explicitly by path
+- Each commit should contain only related changes (one logical unit of work)
+- Use `git restore --staged :/` before adding new files to ensure a clean staging area
+
 ### PR Workflow
 
 **ALWAYS** use the `/pr` skill when creating or updating a pull request. This ensures README is reviewed, tests are run, the PR is properly reviewed, and CI checks are monitored for warnings.
