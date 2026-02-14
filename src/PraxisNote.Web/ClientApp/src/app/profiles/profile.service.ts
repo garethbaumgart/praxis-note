@@ -7,7 +7,7 @@ import { TaskService } from '../tasks/task.service';
 import { NoteService } from '../notes/note.service';
 import { MeetingService } from '../meetings/meeting.service';
 import { TagService } from '../tags/tag.service';
-import { SummaryService } from '../summary/summary.service';
+import { HomeDashboardService } from '../home/home-dashboard.service';
 
 const ACTIVE_PROFILE_KEY = 'praxis_active_profile_id';
 
@@ -20,7 +20,7 @@ export class ProfileService {
   private readonly noteService = inject(NoteService);
   private readonly meetingService = inject(MeetingService);
   private readonly tagService = inject(TagService);
-  private readonly summaryService = inject(SummaryService);
+  private readonly homeDashboardService = inject(HomeDashboardService);
 
   private readonly _profiles = signal<Profile[]>([]);
   private readonly _activeProfileId = signal<string | null>(null);
@@ -183,6 +183,6 @@ export class ProfileService {
     this.noteService.loadNotes();
     this.meetingService.loadMeetings();
     this.tagService.loadTags();
-    this.summaryService.loadSummary();
+    this.homeDashboardService.loadActionItems();
   }
 }

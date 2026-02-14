@@ -5,6 +5,7 @@ import { NoteService } from '../notes/note.service';
 import { HomeDashboardService } from './home-dashboard.service';
 import { GreetingService } from './greeting.service';
 import { InsightsWidgetComponent } from './insights-widget.component';
+import { OutstandingActionItemsComponent } from './outstanding-action-items.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ProfileService } from '../profiles/profile.service';
@@ -12,7 +13,7 @@ import { ProfileService } from '../profiles/profile.service';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [RouterLink, InsightsWidgetComponent, PageContentComponent],
+  imports: [RouterLink, InsightsWidgetComponent, OutstandingActionItemsComponent, PageContentComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Home</h1>
@@ -227,7 +228,12 @@ import { ProfileService } from '../profiles/profile.service';
         </div>
       </section>
 
-      <!-- 6. Insights Widget -->
+      <!-- 6. Outstanding Action Items -->
+      <section class="mb-5 animate-fade-in-delay-5">
+        <app-outstanding-action-items />
+      </section>
+
+      <!-- 7. Insights Widget -->
       <section class="animate-fade-in-delay-5">
         <app-insights-widget />
       </section>
