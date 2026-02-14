@@ -153,6 +153,15 @@ for (var attempt = 1; attempt <= maxRetries; attempt++)
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PraxisNoteDbContext>();
+
+        // InMemory provider doesn't support migrations — use EnsureCreated instead
+        if (db.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+        {
+            db.Database.EnsureCreated();
+            app.Logger.LogInformation("In-memory database created successfully");
+            break;
+        }
+
         db.Database.Migrate();
         app.Logger.LogInformation("Database migrations applied successfully");
         break;

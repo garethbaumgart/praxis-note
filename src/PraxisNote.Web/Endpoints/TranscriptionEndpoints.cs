@@ -57,8 +57,11 @@ public static class TranscriptionEndpoints
             httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Token", apiKey);
 
+            var baseUrl = settings.Value.BaseUrl;
+            var httpScheme = baseUrl.StartsWith("127.0.0.1") || baseUrl.StartsWith("localhost")
+                ? "http" : "https";
             using var response = await httpClient.GetAsync(
-                "https://api.deepgram.com/v1/projects", linkedCts.Token);
+                $"{httpScheme}://{baseUrl}/v1/projects", linkedCts.Token);
 
             if (response.IsSuccessStatusCode)
             {
@@ -215,7 +218,10 @@ public static class TranscriptionEndpoints
             queryParams.Add($"encoding={Uri.EscapeDataString(mimeType)}");
         }
 
-        var deepgramUrl = $"wss://api.deepgram.com/v1/listen?{string.Join("&", queryParams)}";
+        // Use ws:// for local/test servers, wss:// for production
+        var wsScheme = deepgramSettings.BaseUrl.StartsWith("127.0.0.1") || deepgramSettings.BaseUrl.StartsWith("localhost")
+            ? "ws" : "wss";
+        var deepgramUrl = $"{wsScheme}://{deepgramSettings.BaseUrl}/v1/listen?{string.Join("&", queryParams)}";
 
         using var deepgramWs = new ClientWebSocket();
         deepgramWs.Options.SetRequestHeader("Authorization", $"Token {deepgramSettings.ApiKey}");
