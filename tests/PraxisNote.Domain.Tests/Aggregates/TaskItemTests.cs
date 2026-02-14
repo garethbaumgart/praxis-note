@@ -779,4 +779,60 @@ public class TaskItemTests
     }
 
     #endregion
+
+    #region Reassign Tests
+
+    [Fact]
+    public void Reassign_WithValidIds_UpdatesUserIdAndProfileId()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
+        var newUserId = Guid.NewGuid();
+        var newProfileId = Guid.NewGuid();
+
+        // Act
+        task.Reassign(newUserId, newProfileId);
+
+        // Assert
+        Assert.Equal(newUserId, task.UserId);
+        Assert.Equal(newProfileId, task.ProfileId);
+    }
+
+    [Fact]
+    public void Reassign_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
+        var originalUpdatedAt = task.UpdatedAt;
+
+        // Act
+        task.Reassign(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        Assert.True(task.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            task.Reassign(Guid.Empty, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyProfileId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var task = TaskItem.CreateStandalone(_validUserId, _validProfileId, _validTitle);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            task.Reassign(Guid.NewGuid(), Guid.Empty));
+    }
+
+    #endregion
 }

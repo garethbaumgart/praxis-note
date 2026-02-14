@@ -1,11 +1,10 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, OnDestroy, inject } from '@angular/core';
-import { Profile } from '../profiles/profile.model';
+import { Component, ChangeDetectionStrategy, output, signal, computed, OnDestroy, inject } from '@angular/core';
 import { LinkedAccountsService } from './linked-accounts.service';
 import { AuthService } from '../auth';
 
 type Tab = 'generate' | 'enter';
 type GenerateState = 'idle' | 'loading' | 'active' | 'expired';
-type EnterState = 'idle' | 'loading' | 'success' | 'error' | 'choose';
+type EnterState = 'idle' | 'loading' | 'success' | 'error';
 
 @Component({
   selector: 'app-link-account-panel',
@@ -118,24 +117,39 @@ type EnterState = 'idle' | 'loading' | 'success' | 'error' | 'choose';
                 <p class="text-sm text-foreground-secondary">
                   Enter the link code from your other account to connect them.
                 </p>
-                <div class="flex gap-2">
-                  <input
-                    type="text"
-                    class="flex-1 px-3 py-2 text-sm font-mono bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent-foreground/30 focus:border-accent-foreground transition"
-                    placeholder="PRAXIS-XXXX-XXXX"
-                    [value]="enteredCode()"
-                    (input)="enteredCode.set($any($event.target).value)"
-                    (keydown.enter)="redeemCode()"
-                  />
-                  <button
-                    type="button"
-                    class="px-4 py-2 text-sm text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity"
-                    [class.opacity-50]="!enteredCode().trim()"
-                    [disabled]="!enteredCode().trim()"
-                    (click)="redeemCode()"
-                  >
-                    Link
-                  </button>
+                <div class="space-y-3">
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      class="flex-1 px-3 py-2 text-sm font-mono bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent-foreground/30 focus:border-accent-foreground transition"
+                      placeholder="PRAXIS-XXXX-XXXX"
+                      [value]="enteredCode()"
+                      (input)="enteredCode.set($any($event.target).value)"
+                      (keydown.enter)="canLink() && redeemCode()"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-foreground-muted mb-1">Profile name for linked data</label>
+                    <input
+                      type="text"
+                      class="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent-foreground/30 focus:border-accent-foreground transition"
+                      placeholder="e.g. Work, Personal"
+                      [value]="profileName()"
+                      (input)="profileName.set($any($event.target).value)"
+                      (keydown.enter)="canLink() && redeemCode()"
+                    />
+                  </div>
+                  <div class="flex justify-end">
+                    <button
+                      type="button"
+                      class="px-4 py-2 text-sm text-white bg-accent-solid hover:opacity-90 rounded-md transition-opacity"
+                      [class.opacity-50]="!canLink()"
+                      [disabled]="!canLink()"
+                      (click)="redeemCode()"
+                    >
+                      Link
+                    </button>
+                  </div>
                 </div>
               </div>
             }
@@ -143,48 +157,6 @@ type EnterState = 'idle' | 'loading' | 'success' | 'error' | 'choose';
               <div class="flex items-center justify-center py-6" role="status" aria-label="Linking accounts">
                 <i class="pi pi-spin pi-spinner text-lg text-foreground-muted" aria-hidden="true"></i>
                 <span class="sr-only">Linking accounts...</span>
-              </div>
-            }
-            @case ('choose') {
-              <div class="space-y-4">
-                <p class="text-sm text-foreground-secondary">
-                  The other account has existing data. How would you like to proceed?
-                </p>
-                <div class="space-y-2">
-                  <button
-                    type="button"
-                    class="w-full flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-surface-muted transition-colors text-left"
-                    (click)="completeLinking('MergeIntoExisting')"
-                  >
-                    <i class="pi pi-arrow-right-arrow-left text-accent-foreground" aria-hidden="true"></i>
-                    <div>
-                      <p class="text-sm font-medium text-foreground">Merge into existing profile</p>
-                      <p class="text-xs text-foreground-muted">Add the data to your current default profile</p>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    class="w-full flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-surface-muted transition-colors text-left"
-                    (click)="completeLinking('CreateNewProfile')"
-                  >
-                    <i class="pi pi-plus text-accent-foreground" aria-hidden="true"></i>
-                    <div>
-                      <p class="text-sm font-medium text-foreground">Create new profile</p>
-                      <p class="text-xs text-foreground-muted">Keep the data in a separate profile named after the email</p>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    class="w-full flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-surface-muted transition-colors text-left"
-                    (click)="enterState.set('idle')"
-                  >
-                    <i class="pi pi-times text-foreground-muted" aria-hidden="true"></i>
-                    <div>
-                      <p class="text-sm font-medium text-foreground">Cancel</p>
-                      <p class="text-xs text-foreground-muted">Don't link these accounts</p>
-                    </div>
-                  </button>
-                </div>
               </div>
             }
             @case ('success') {
@@ -232,8 +204,6 @@ export class LinkAccountPanelComponent implements OnDestroy {
   private readonly linkedAccountsService = inject(LinkedAccountsService);
   private readonly authService = inject(AuthService);
 
-  readonly profiles = input<Profile[]>([]);
-
   readonly onClose = output<void>();
   readonly onLinked = output<void>();
 
@@ -250,8 +220,12 @@ export class LinkAccountPanelComponent implements OnDestroy {
   // Enter tab state
   readonly enterState = signal<EnterState>('idle');
   readonly enteredCode = signal('');
+  readonly profileName = signal('');
   readonly enterError = signal('');
-  private pendingCode = '';
+
+  readonly canLink = computed(() =>
+    !!this.enteredCode().trim() && !!this.profileName().trim()
+  );
 
   ngOnDestroy(): void {
     this.clearCountdown();
@@ -278,40 +252,20 @@ export class LinkAccountPanelComponent implements OnDestroy {
 
   async redeemCode(): Promise<void> {
     const code = this.enteredCode().trim();
-    if (!code) return;
+    const name = this.profileName().trim();
+    if (!code || !name) return;
 
-    this.pendingCode = code;
     this.enterState.set('loading');
 
     try {
-      await this.linkedAccountsService.redeemLinkCode(code, 'MergeIntoExisting');
+      await this.linkedAccountsService.redeemLinkCode(code, name);
       this.enterState.set('success');
       this.authService.recheckAuth();
       setTimeout(() => this.onLinked.emit(), 1500);
     } catch (err: unknown) {
       const error = err as { error?: { error?: string } };
       const message = error?.error?.error ?? '';
-
-      // Check if merge strategy choice is needed (when user has existing data)
-      if (message.includes('has existing data') || message.includes('merge strategy')) {
-        this.enterState.set('choose');
-      } else {
-        this.enterError.set(message || 'Failed to link accounts. Please check the code and try again.');
-        this.enterState.set('error');
-      }
-    }
-  }
-
-  async completeLinking(strategy: string): Promise<void> {
-    this.enterState.set('loading');
-    try {
-      await this.linkedAccountsService.redeemLinkCode(this.pendingCode, strategy);
-      this.enterState.set('success');
-      this.authService.recheckAuth();
-      setTimeout(() => this.onLinked.emit(), 1500);
-    } catch (err: unknown) {
-      const error = err as { error?: { error?: string } };
-      this.enterError.set(error?.error?.error || 'Failed to link accounts');
+      this.enterError.set(message || 'Failed to link accounts. Please check the code and try again.');
       this.enterState.set('error');
     }
   }

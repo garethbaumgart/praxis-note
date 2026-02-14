@@ -113,4 +113,46 @@ public class TagTests
         // Assert
         Assert.Equal("new-name", tag.Name);
     }
+
+    #region Reassign Tests
+
+    [Fact]
+    public void Reassign_WithValidIds_UpdatesUserIdAndProfileId()
+    {
+        // Arrange
+        var tag = Tag.Create(_validUserId, _validProfileId, "test");
+        var newUserId = Guid.NewGuid();
+        var newProfileId = Guid.NewGuid();
+
+        // Act
+        tag.Reassign(newUserId, newProfileId);
+
+        // Assert
+        Assert.Equal(newUserId, tag.UserId);
+        Assert.Equal(newProfileId, tag.ProfileId);
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var tag = Tag.Create(_validUserId, _validProfileId, "test");
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            tag.Reassign(Guid.Empty, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyProfileId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var tag = Tag.Create(_validUserId, _validProfileId, "test");
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            tag.Reassign(Guid.NewGuid(), Guid.Empty));
+    }
+
+    #endregion
 }

@@ -4,8 +4,8 @@ namespace PraxisNote.Domain.Aggregates.BlindSpotNudges;
 
 public sealed class BlindSpotNudge : AggregateRoot
 {
-    public Guid UserId { get; private init; }
-    public Guid ProfileId { get; private init; }
+    public Guid UserId { get; private set; }
+    public Guid ProfileId { get; private set; }
     public string Dimension { get; private set; } = string.Empty;
     public string Suggestion { get; private set; } = string.Empty;
     public string BlindSpotDescription { get; private set; } = string.Empty;
@@ -68,6 +68,20 @@ public sealed class BlindSpotNudge : AggregateRoot
 
         Status = NudgeStatus.AcceptedAsGoal;
         ConvertedGoalId = goalId;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Reassigns this blind spot nudge to a different user and profile.
+    /// Used during account linking to transfer data before deleting the source user.
+    /// </summary>
+    public void Reassign(Guid newUserId, Guid newProfileId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(newUserId, Guid.Empty, nameof(newUserId));
+        ArgumentOutOfRangeException.ThrowIfEqual(newProfileId, Guid.Empty, nameof(newProfileId));
+
+        UserId = newUserId;
+        ProfileId = newProfileId;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

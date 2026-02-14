@@ -71,14 +71,13 @@ export class LinkedAccountsService {
   }
 
   /**
-   * Redeem a link code to link accounts.
+   * Redeem a link code to link accounts. Always creates a new profile with the given name.
    */
-  redeemLinkCode(code: string, mergeStrategy: string, targetProfileId?: string): Promise<{ targetUserId: string }> {
+  redeemLinkCode(code: string, profileName: string): Promise<{ targetUserId: string }> {
     return new Promise((resolve, reject) => {
       this.http.post<{ targetUserId: string }>('/api/account/link', {
         code,
-        mergeStrategy,
-        targetProfileId: targetProfileId ?? null,
+        profileName,
       }).subscribe({
         next: (result) => resolve(result),
         error: (err) => reject(err),

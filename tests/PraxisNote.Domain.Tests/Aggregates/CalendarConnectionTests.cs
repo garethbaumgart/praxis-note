@@ -215,4 +215,49 @@ public class CalendarConnectionTests
     }
 
     #endregion
+
+    #region Reassign Tests
+
+    [Fact]
+    public void Reassign_WithValidIds_UpdatesUserIdAndProfileId()
+    {
+        // Arrange
+        var connection = CalendarConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+        var newUserId = Guid.NewGuid();
+        var newProfileId = Guid.NewGuid();
+
+        // Act
+        connection.Reassign(newUserId, newProfileId);
+
+        // Assert
+        Assert.Equal(newUserId, connection.UserId);
+        Assert.Equal(newProfileId, connection.ProfileId);
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var connection = CalendarConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            connection.Reassign(Guid.Empty, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyProfileId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var connection = CalendarConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            connection.Reassign(Guid.NewGuid(), Guid.Empty));
+    }
+
+    #endregion
 }

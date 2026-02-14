@@ -21,12 +21,12 @@ public sealed class Note : AggregateRoot
     /// <summary>
     /// The user who owns this note.
     /// </summary>
-    public Guid UserId { get; private init; }
+    public Guid UserId { get; private set; }
 
     /// <summary>
     /// The profile this note belongs to (data silo boundary).
     /// </summary>
-    public Guid ProfileId { get; private init; }
+    public Guid ProfileId { get; private set; }
 
     /// <summary>
     /// The raw note content. Format depends on the editor plugin (TipTap JSON, Markdown, etc.).
@@ -223,4 +223,18 @@ public sealed class Note : AggregateRoot
     public bool HasTag(Guid tagId) => _tagIds.Contains(tagId);
 
     #endregion
+
+    /// <summary>
+    /// Reassigns this note to a different user and profile.
+    /// Used during account linking to transfer data before deleting the source user.
+    /// </summary>
+    public void Reassign(Guid newUserId, Guid newProfileId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(newUserId, Guid.Empty, nameof(newUserId));
+        ArgumentOutOfRangeException.ThrowIfEqual(newProfileId, Guid.Empty, nameof(newProfileId));
+
+        UserId = newUserId;
+        ProfileId = newProfileId;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

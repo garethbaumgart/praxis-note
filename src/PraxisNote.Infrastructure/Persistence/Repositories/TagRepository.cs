@@ -18,6 +18,13 @@ public sealed class TagRepository(PraxisNoteDbContext context) : ITagRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Tag>> GetAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.Tags
+            .Where(t => t.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Tag?> GetByNameAsync(Guid userId, Guid profileId, string name, CancellationToken cancellationToken = default)
     {
         var normalizedName = name.ToLowerInvariant();

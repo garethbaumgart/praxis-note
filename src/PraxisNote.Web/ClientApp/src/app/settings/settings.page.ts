@@ -116,7 +116,6 @@ const MAX_PROFILES = 5;
               </button>
             } @else {
               <app-link-account-panel
-                [profiles]="profileService.profiles()"
                 (onClose)="showLinkPanel.set(false)"
                 (onLinked)="onAccountLinked()"
               />

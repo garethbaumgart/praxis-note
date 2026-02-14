@@ -60,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<GetLinkedIdentities>();
         services.AddScoped<UnlinkIdentity>();
         services.AddScoped<SetIdentityDefaultProfile>();
+        services.AddScoped<UserDataTransferService>();
 
         // Profile use cases
         services.AddScoped<GetUserProfiles>();

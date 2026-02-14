@@ -13,6 +13,13 @@ public sealed class BlindSpotNudgeRepository(PraxisNoteDbContext context) : IBli
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<BlindSpotNudge>> GetAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.BlindSpotNudges
+            .Where(n => n.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<BlindSpotNudge?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await context.BlindSpotNudges.FindAsync([id], cancellationToken);

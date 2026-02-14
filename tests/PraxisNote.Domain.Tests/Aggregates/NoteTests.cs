@@ -583,4 +583,60 @@ public class NoteTests
     }
 
     #endregion
+
+    #region Reassign Tests
+
+    [Fact]
+    public void Reassign_WithValidIds_UpdatesUserIdAndProfileId()
+    {
+        // Arrange
+        var note = Note.Create(_validUserId, _validProfileId);
+        var newUserId = Guid.NewGuid();
+        var newProfileId = Guid.NewGuid();
+
+        // Act
+        note.Reassign(newUserId, newProfileId);
+
+        // Assert
+        Assert.Equal(newUserId, note.UserId);
+        Assert.Equal(newProfileId, note.ProfileId);
+    }
+
+    [Fact]
+    public void Reassign_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var note = Note.Create(_validUserId, _validProfileId);
+        var originalUpdatedAt = note.UpdatedAt;
+
+        // Act
+        note.Reassign(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        Assert.True(note.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var note = Note.Create(_validUserId, _validProfileId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            note.Reassign(Guid.Empty, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyProfileId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var note = Note.Create(_validUserId, _validProfileId);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            note.Reassign(Guid.NewGuid(), Guid.Empty));
+    }
+
+    #endregion
 }

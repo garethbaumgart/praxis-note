@@ -1,7 +1,14 @@
 using NSubstitute;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.AccountLinking;
+using PraxisNote.Domain.Aggregates.BehavioralGoals;
+using PraxisNote.Domain.Aggregates.BlindSpotNudges;
+using PraxisNote.Domain.Aggregates.CalendarConnections;
+using PraxisNote.Domain.Aggregates.Meetings;
+using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Profiles;
+using PraxisNote.Domain.Aggregates.Tags;
+using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.Users;
 using PraxisNote.Domain.ValueObjects;
 
@@ -13,16 +20,35 @@ public class RedeemLinkCodeTests
     private readonly ILinkedIdentityRepository _linkedIdentityRepo = Substitute.For<ILinkedIdentityRepository>();
     private readonly IUserRepository _userRepo = Substitute.For<IUserRepository>();
     private readonly IProfileRepository _profileRepo = Substitute.For<IProfileRepository>();
+    private readonly UserDataTransferService _transferService;
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly RedeemLinkCode _sut;
 
     private readonly Guid _codeOwnerUserId = Guid.NewGuid();
     private readonly Guid _redeemingUserId = Guid.NewGuid();
     private const string PlainCode = "PRAXIS-ABCD-EFGH";
+    private const string ProfileName = "Work Profile";
 
     public RedeemLinkCodeTests()
     {
-        _sut = new RedeemLinkCode(_codeRepo, _linkedIdentityRepo, _userRepo, _profileRepo, _unitOfWork);
+        // UserDataTransferService is a class with a primary constructor, so NSubstitute
+        // needs constructor arguments to create a proxy. We pass mock repositories.
+        _transferService = Substitute.ForPartsOf<UserDataTransferService>(
+            Substitute.For<ITaskRepository>(),
+            Substitute.For<INoteRepository>(),
+            Substitute.For<IMeetingRepository>(),
+            Substitute.For<ITagRepository>(),
+            Substitute.For<ICalendarConnectionRepository>(),
+            Substitute.For<IBehavioralGoalRepository>(),
+            Substitute.For<IBlindSpotNudgeRepository>(),
+            _profileRepo);
+
+        // Override TransferAsync to do nothing (it's virtual)
+        _transferService.TransferAsync(
+            Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+
+        _sut = new RedeemLinkCode(_codeRepo, _linkedIdentityRepo, _userRepo, _profileRepo, _transferService, _unitOfWork);
     }
 
     #region Self-Link (Seeded by Migration)
@@ -44,11 +70,11 @@ public class RedeemLinkCodeTests
         SetupValidCode(_codeOwnerUserId);
         SetupUsers(codeOwner, redeemingUser);
         SetupExistingLink(selfLink, "google", "redeemer-456");
-        SetupDefaultProfile(_codeOwnerUserId);
+        SetupProfileCount(_codeOwnerUserId, 0);
 
         // Act
         var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
-            _redeemingUserId, PlainCode, MergeStrategy.MergeIntoExisting));
+            _redeemingUserId, PlainCode, ProfileName));
 
         // Assert: Linking should succeed
         Assert.True(result.Success);
@@ -94,7 +120,7 @@ public class RedeemLinkCodeTests
 
         // Act
         var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
-            _redeemingUserId, PlainCode, MergeStrategy.MergeIntoExisting));
+            _redeemingUserId, PlainCode, ProfileName));
 
         // Assert: Should return friendly error, not the generic "already linked" error
         Assert.False(result.Success);
@@ -127,7 +153,7 @@ public class RedeemLinkCodeTests
 
         // Act
         var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
-            _redeemingUserId, PlainCode, MergeStrategy.MergeIntoExisting));
+            _redeemingUserId, PlainCode, ProfileName));
 
         // Assert: Should block with the generic "already linked" error
         Assert.False(result.Success);
@@ -150,11 +176,11 @@ public class RedeemLinkCodeTests
         SetupUsers(codeOwner, redeemingUser);
         _linkedIdentityRepo.GetByProviderAsync("google", "redeemer-456", Arg.Any<CancellationToken>())
             .Returns((LinkedIdentity?)null);
-        SetupDefaultProfile(_codeOwnerUserId);
+        SetupProfileCount(_codeOwnerUserId, 0);
 
         // Act
         var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
-            _redeemingUserId, PlainCode, MergeStrategy.MergeIntoExisting));
+            _redeemingUserId, PlainCode, ProfileName));
 
         // Assert: Should succeed without removing any existing link
         Assert.True(result.Success);
@@ -174,10 +200,10 @@ public class RedeemLinkCodeTests
 
     #endregion
 
-    #region Create New Profile
+    #region Profile Name
 
     [Fact]
-    public async Task ExecuteAsync_CreateNewProfile_UsesEmailAsProfileName()
+    public async Task ExecuteAsync_CreatesProfileWithProvidedName()
     {
         // Arrange
         var codeOwner = CreateUser(_codeOwnerUserId, "google", "owner-123", "owner@example.com", "Owner");
@@ -187,42 +213,72 @@ public class RedeemLinkCodeTests
         SetupUsers(codeOwner, redeemingUser);
         _linkedIdentityRepo.GetByProviderAsync("google", "redeemer-456", Arg.Any<CancellationToken>())
             .Returns((LinkedIdentity?)null);
-        _profileRepo.GetCountByUserIdAsync(_codeOwnerUserId, Arg.Any<CancellationToken>()).Returns(0);
+        SetupProfileCount(_codeOwnerUserId, 0);
 
         // Act
         var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
-            _redeemingUserId, PlainCode, MergeStrategy.CreateNewProfile));
+            _redeemingUserId, PlainCode, "My Work Profile"));
 
         // Assert
         Assert.True(result.Success);
         await _profileRepo.Received(1).AddAsync(
-            Arg.Is<Profile>(p => p.Name == "redeemer@example.com"),
+            Arg.Is<Profile>(p => p.Name == "My Work Profile"),
             Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task ExecuteAsync_CreateNewProfile_TruncatesLongEmailAsProfileName()
+    public async Task ExecuteAsync_MaxProfiles_ReturnsError()
     {
         // Arrange
         var codeOwner = CreateUser(_codeOwnerUserId, "google", "owner-123", "owner@example.com", "Owner");
-        var longEmail = "redeemer." + new string('x', 160) + "@example.com"; // > 100 characters
-        var redeemingUser = CreateUser(_redeemingUserId, "google", "redeemer-456", longEmail, "Redeemer");
+        var redeemingUser = CreateUser(_redeemingUserId, "google", "redeemer-456", "redeemer@example.com", "Redeemer");
 
         SetupValidCode(_codeOwnerUserId);
         SetupUsers(codeOwner, redeemingUser);
         _linkedIdentityRepo.GetByProviderAsync("google", "redeemer-456", Arg.Any<CancellationToken>())
             .Returns((LinkedIdentity?)null);
-        _profileRepo.GetCountByUserIdAsync(_codeOwnerUserId, Arg.Any<CancellationToken>()).Returns(0);
+        SetupProfileCount(_codeOwnerUserId, 5); // Already at max
 
         // Act
         var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
-            _redeemingUserId, PlainCode, MergeStrategy.CreateNewProfile));
+            _redeemingUserId, PlainCode, ProfileName));
 
         // Assert
+        Assert.False(result.Success);
+        Assert.Equal(RedeemLinkCode.MaxProfilesError, result.Error);
+    }
+
+    #endregion
+
+    #region Data Transfer
+
+    [Fact]
+    public async Task ExecuteAsync_CallsTransferService_BeforeDeletingUser()
+    {
+        // Arrange
+        var codeOwner = CreateUser(_codeOwnerUserId, "google", "owner-123", "owner@example.com", "Owner");
+        var redeemingUser = CreateUser(_redeemingUserId, "google", "redeemer-456", "redeemer@example.com", "Redeemer");
+
+        SetupValidCode(_codeOwnerUserId);
+        SetupUsers(codeOwner, redeemingUser);
+        _linkedIdentityRepo.GetByProviderAsync("google", "redeemer-456", Arg.Any<CancellationToken>())
+            .Returns((LinkedIdentity?)null);
+        SetupProfileCount(_codeOwnerUserId, 0);
+
+        // Act
+        var result = await _sut.ExecuteAsync(new RedeemLinkCode.Command(
+            _redeemingUserId, PlainCode, ProfileName));
+
+        // Assert: Transfer service was called with correct parameters
         Assert.True(result.Success);
-        await _profileRepo.Received(1).AddAsync(
-            Arg.Is<Profile>(p => !string.IsNullOrEmpty(p.Name) && p.Name.Length <= 100 && p.Name.EndsWith("...")),
+        await _transferService.Received(1).TransferAsync(
+            _redeemingUserId,
+            _codeOwnerUserId,
+            Arg.Any<Guid>(),
             Arg.Any<CancellationToken>());
+
+        // User B should also have been removed
+        _userRepo.Received(1).Remove(redeemingUser);
     }
 
     #endregion
@@ -263,10 +319,9 @@ public class RedeemLinkCodeTests
             .Returns(link);
     }
 
-    private void SetupDefaultProfile(Guid userId)
+    private void SetupProfileCount(Guid userId, int count)
     {
-        var profile = Profile.Create(userId, "Default");
-        _profileRepo.GetDefaultByUserIdAsync(userId, Arg.Any<CancellationToken>()).Returns(profile);
+        _profileRepo.GetCountByUserIdAsync(userId, Arg.Any<CancellationToken>()).Returns(count);
     }
 
     #endregion

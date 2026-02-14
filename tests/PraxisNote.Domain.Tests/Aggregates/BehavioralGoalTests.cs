@@ -173,4 +173,68 @@ public class BehavioralGoalTests
     }
 
     #endregion
+
+    #region Reassign Tests
+
+    [Fact]
+    public void Reassign_WithValidIds_UpdatesUserIdAndProfileId()
+    {
+        // Arrange
+        var goal = BehavioralGoal.Create(
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan,
+            50, null, "Talk less");
+        var newUserId = Guid.NewGuid();
+        var newProfileId = Guid.NewGuid();
+
+        // Act
+        goal.Reassign(newUserId, newProfileId);
+
+        // Assert
+        Assert.Equal(newUserId, goal.UserId);
+        Assert.Equal(newProfileId, goal.ProfileId);
+    }
+
+    [Fact]
+    public void Reassign_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var goal = BehavioralGoal.Create(
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan,
+            50, null, "Talk less");
+        var originalUpdatedAt = goal.UpdatedAt;
+
+        // Act
+        goal.Reassign(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        Assert.True(goal.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var goal = BehavioralGoal.Create(
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan,
+            50, null, "Talk less");
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            goal.Reassign(Guid.Empty, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Reassign_WithEmptyProfileId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var goal = BehavioralGoal.Create(
+            _validUserId, _validProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan,
+            50, null, "Talk less");
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            goal.Reassign(Guid.NewGuid(), Guid.Empty));
+    }
+
+    #endregion
 }

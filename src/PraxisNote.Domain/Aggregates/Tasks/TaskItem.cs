@@ -23,12 +23,12 @@ public sealed class TaskItem : AggregateRoot
     /// <summary>
     /// The user who owns this task.
     /// </summary>
-    public Guid UserId { get; private init; }
+    public Guid UserId { get; private set; }
 
     /// <summary>
     /// The profile this task belongs to (data silo boundary).
     /// </summary>
-    public Guid ProfileId { get; private init; }
+    public Guid ProfileId { get; private set; }
 
     /// <summary>
     /// The task title/description.
@@ -360,4 +360,18 @@ public sealed class TaskItem : AggregateRoot
     /// Gets a comment by ID.
     /// </summary>
     public Comment? GetComment(Guid commentId) => _comments.Find(c => c.Id == commentId);
+
+    /// <summary>
+    /// Reassigns this task to a different user and profile.
+    /// Used during account linking to transfer data before deleting the source user.
+    /// </summary>
+    public void Reassign(Guid newUserId, Guid newProfileId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(newUserId, Guid.Empty, nameof(newUserId));
+        ArgumentOutOfRangeException.ThrowIfEqual(newProfileId, Guid.Empty, nameof(newProfileId));
+
+        UserId = newUserId;
+        ProfileId = newProfileId;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }
