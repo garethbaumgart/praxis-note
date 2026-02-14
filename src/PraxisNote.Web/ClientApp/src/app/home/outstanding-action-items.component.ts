@@ -68,6 +68,13 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
     }
   `,
   styles: [`
+    .widget-card {
+      padding: 1rem;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 0.75rem;
+    }
+
     .action-item-row {
       display: flex;
       align-items: flex-start;

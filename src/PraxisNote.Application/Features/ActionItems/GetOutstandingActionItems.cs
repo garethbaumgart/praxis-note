@@ -31,7 +31,7 @@ public sealed class GetOutstandingActionItems(
         // Outstanding action items: uncompleted from meetings in last 30 days
         var outstandingActionItems = allMeetings
             .Where(m => (m.MeetingDate ?? m.CreatedAt) >= cutoff
-                        && (m.MeetingDate ?? m.CreatedAt) < now)
+                        && (m.MeetingDate ?? m.CreatedAt) <= now)
             .SelectMany(m => m.ActionItems
                 .Where(ai => !ai.IsCompleted)
                 .Select(ai =>

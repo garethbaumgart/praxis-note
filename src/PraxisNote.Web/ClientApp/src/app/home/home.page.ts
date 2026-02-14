@@ -229,9 +229,11 @@ import { ProfileService } from '../profiles/profile.service';
       </section>
 
       <!-- 6. Outstanding Action Items -->
-      <section class="mb-5 animate-fade-in-delay-5">
-        <app-outstanding-action-items />
-      </section>
+      @if (dashboard.hasActionItems() || dashboard.actionItemsLoading() || dashboard.actionItemsError()) {
+        <section class="mb-5 animate-fade-in-delay-5">
+          <app-outstanding-action-items />
+        </section>
+      }
 
       <!-- 7. Insights Widget -->
       <section class="animate-fade-in-delay-5">
