@@ -255,7 +255,7 @@ public static class TranscriptionEndpoints
 
         // Use StrongBox<long> with Interlocked for thread-safe last-audio timestamp sharing
         var lastAudioSentTicks = new StrongBox<long>(DateTimeOffset.UtcNow.Ticks);
-        var deepgramSendLock = new SemaphoreSlim(1, 1);
+        using var deepgramSendLock = new SemaphoreSlim(1, 1);
         using var sessionCts = new CancellationTokenSource();
         using var audioCts = CancellationTokenSource.CreateLinkedTokenSource(sessionCts.Token, context.RequestAborted);
         using var resultsCts = CancellationTokenSource.CreateLinkedTokenSource(sessionCts.Token, context.RequestAborted);

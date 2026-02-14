@@ -229,7 +229,9 @@ export class DeepgramTranscriptionService implements OnDestroy {
       return;
     }
 
-    this.isReconnecting.set(true);
+    if (!this.isReconnecting()) {
+      this.isReconnecting.set(true);
+    }
     this.reconnectAttempts++;
     this.totalReconnects++;
 
