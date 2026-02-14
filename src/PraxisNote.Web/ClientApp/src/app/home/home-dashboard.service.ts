@@ -183,6 +183,10 @@ export class HomeDashboardService {
   }
 
   loadActionItems(): void {
+    if (this.actionItemsLoading()) {
+      return;
+    }
+
     this.actionItemsLoading.set(true);
     this.actionItemsError.set(null);
     this.http.get<OutstandingActionItem[]>('/api/action-items/outstanding').subscribe({
