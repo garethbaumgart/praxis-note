@@ -2,6 +2,7 @@ using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
+using System.Threading;
 using Microsoft.Extensions.Options;
 using PraxisNote.Application.Features.Transcription;
 using PraxisNote.Web.Extensions;
@@ -252,14 +253,16 @@ public static class TranscriptionEndpoints
 
         logger.LogInformation("[{SessionId}] Connected to Deepgram, starting relay tasks", sessionId);
 
-        var lastAudioSent = new StrongBox<DateTimeOffset>(DateTimeOffset.UtcNow);
+        // Use StrongBox<long> with Interlocked for thread-safe last-audio timestamp sharing
+        var lastAudioSentTicks = new StrongBox<long>(DateTimeOffset.UtcNow.Ticks);
+        var deepgramSendLock = new SemaphoreSlim(1, 1);
         using var sessionCts = new CancellationTokenSource();
         using var audioCts = CancellationTokenSource.CreateLinkedTokenSource(sessionCts.Token, context.RequestAborted);
         using var resultsCts = CancellationTokenSource.CreateLinkedTokenSource(sessionCts.Token, context.RequestAborted);
 
-        var relayAudio = RelayAudioAsync(clientWs, deepgramWs, audioCts, logger, lastAudioSent, sessionId);
+        var relayAudio = RelayAudioAsync(clientWs, deepgramWs, audioCts, logger, lastAudioSentTicks, deepgramSendLock, sessionId);
         var relayResults = RelayResultsAsync(deepgramWs, clientWs, resultsCts, logger, sessionId);
-        var keepAlive = SendKeepAliveAsync(deepgramWs, sessionCts, lastAudioSent, logger, sessionId, deepgramSettings.KeepAliveIntervalSeconds);
+        var keepAlive = SendKeepAliveAsync(deepgramWs, sessionCts, lastAudioSentTicks, deepgramSendLock, logger, sessionId, deepgramSettings.KeepAliveIntervalSeconds);
 
         var completed = await Task.WhenAny(relayAudio, relayResults);
         if (completed == relayAudio)
@@ -283,13 +286,15 @@ public static class TranscriptionEndpoints
     /// <summary>
     /// Reads binary audio frames from the browser client and forwards them to Deepgram.
     /// Copies received bytes to a new buffer before sending to avoid buffer reuse corruption.
+    /// All sends to Deepgram are serialized via deepgramSendLock to prevent concurrent SendAsync calls.
     /// </summary>
     private static async Task RelayAudioAsync(
         WebSocket clientWs,
         ClientWebSocket deepgramWs,
         CancellationTokenSource ownCts,
         ILogger logger,
-        StrongBox<DateTimeOffset> lastAudioSent,
+        StrongBox<long> lastAudioSentTicks,
+        SemaphoreSlim deepgramSendLock,
         string sessionId)
     {
         var buffer = new byte[BufferSize];
@@ -323,11 +328,19 @@ public static class TranscriptionEndpoints
                     try
                     {
                         var closeMessage = Encoding.UTF8.GetBytes("{\"type\":\"CloseStream\"}");
-                        await deepgramWs.SendAsync(
-                            closeMessage,
-                            WebSocketMessageType.Text,
-                            endOfMessage: true,
-                            CancellationToken.None);
+                        await deepgramSendLock.WaitAsync(ownCts.Token);
+                        try
+                        {
+                            await deepgramWs.SendAsync(
+                                closeMessage,
+                                WebSocketMessageType.Text,
+                                endOfMessage: true,
+                                CancellationToken.None);
+                        }
+                        finally
+                        {
+                            deepgramSendLock.Release();
+                        }
                     }
                     catch (WebSocketException ex)
                     {
@@ -342,21 +355,29 @@ public static class TranscriptionEndpoints
 
                 if (result.MessageType == WebSocketMessageType.Binary && result.Count > 0)
                 {
-                    // Fix 2a: Copy buffer before sending to avoid reuse corruption
+                    // Copy buffer before sending to avoid reuse corruption
                     var copy = new byte[result.Count];
                     Buffer.BlockCopy(buffer, 0, copy, 0, result.Count);
 
                     try
                     {
-                        await deepgramWs.SendAsync(
-                            new ArraySegment<byte>(copy, 0, result.Count),
-                            WebSocketMessageType.Binary,
-                            result.EndOfMessage,
-                            ownCts.Token);
+                        await deepgramSendLock.WaitAsync(ownCts.Token);
+                        try
+                        {
+                            await deepgramWs.SendAsync(
+                                new ArraySegment<byte>(copy, 0, result.Count),
+                                WebSocketMessageType.Binary,
+                                result.EndOfMessage,
+                                ownCts.Token);
+                        }
+                        finally
+                        {
+                            deepgramSendLock.Release();
+                        }
 
                         totalBytes += result.Count;
                         frameCount++;
-                        lastAudioSent.Value = DateTimeOffset.UtcNow;
+                        Interlocked.Exchange(ref lastAudioSentTicks.Value, DateTimeOffset.UtcNow.Ticks);
                     }
                     catch (WebSocketException ex)
                     {
@@ -371,7 +392,6 @@ public static class TranscriptionEndpoints
                 }
                 else if (result.MessageType != WebSocketMessageType.Binary)
                 {
-                    // Fix 2e: Log unexpected message types
                     logger.LogWarning("[{SessionId}] Unexpected message type from client: {MessageType}", sessionId, result.MessageType);
                 }
             }
@@ -433,6 +453,8 @@ public static class TranscriptionEndpoints
 
                         // Forward the close reason to the browser client so the frontend
                         // can surface a meaningful error instead of silently retrying.
+                        // Use CloseOutputAsync with a timeout to avoid hanging if the client
+                        // doesn't complete the close handshake.
                         try
                         {
                             var reason = deepgramWs.CloseStatusDescription ?? "Transcription service closed the connection";
@@ -443,12 +465,16 @@ public static class TranscriptionEndpoints
                                 reason = reason[..^4] + "...";
                             }
 
-                            // Use non-1000 close code when Deepgram closes unexpectedly
-                            // so the frontend's onclose handler triggers error handling.
-                            await clientWs.CloseAsync(
+                            using var closeCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                            await clientWs.CloseOutputAsync(
                                 WebSocketCloseStatus.InternalServerError,
                                 reason,
-                                CancellationToken.None);
+                                closeCts.Token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            logger.LogWarning("[{SessionId}] Client close handshake timed out, aborting", sessionId);
+                            clientWs.Abort();
                         }
                         catch (WebSocketException ex)
                         {
@@ -514,11 +540,13 @@ public static class TranscriptionEndpoints
     /// <summary>
     /// Sends periodic KeepAlive messages to Deepgram when no audio has been sent within the interval.
     /// This prevents Deepgram from closing idle connections during recording pauses.
+    /// All sends are serialized via deepgramSendLock to prevent concurrent SendAsync calls.
     /// </summary>
     private static async Task SendKeepAliveAsync(
         ClientWebSocket deepgramWs,
         CancellationTokenSource sessionCts,
-        StrongBox<DateTimeOffset> lastAudioSent,
+        StrongBox<long> lastAudioSentTicks,
+        SemaphoreSlim deepgramSendLock,
         ILogger logger,
         string sessionId,
         int intervalSeconds)
@@ -532,15 +560,25 @@ public static class TranscriptionEndpoints
             {
                 await Task.Delay(interval, sessionCts.Token);
 
-                if (DateTimeOffset.UtcNow - lastAudioSent.Value > interval)
+                var lastSentTicks = Interlocked.Read(ref lastAudioSentTicks.Value);
+                var elapsed = DateTimeOffset.UtcNow - new DateTimeOffset(lastSentTicks, TimeSpan.Zero);
+                if (elapsed > interval)
                 {
                     try
                     {
-                        await deepgramWs.SendAsync(
-                            keepAliveMessage,
-                            WebSocketMessageType.Text,
-                            endOfMessage: true,
-                            sessionCts.Token);
+                        await deepgramSendLock.WaitAsync(sessionCts.Token);
+                        try
+                        {
+                            await deepgramWs.SendAsync(
+                                keepAliveMessage,
+                                WebSocketMessageType.Text,
+                                endOfMessage: true,
+                                sessionCts.Token);
+                        }
+                        finally
+                        {
+                            deepgramSendLock.Release();
+                        }
 
                         logger.LogDebug("[{SessionId}] Sent KeepAlive to Deepgram", sessionId);
                     }

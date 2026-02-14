@@ -416,11 +416,13 @@ export class DeepgramTranscriptionService implements OnDestroy {
   }
 
   /**
-   * Adds an ArrayBuffer to the pending buffer, enforcing the max size limit.
+   * Adds an ArrayBuffer to the pending buffer, evicting oldest chunks when at capacity
+   * to keep the most recent audio data.
    */
   private addToPendingBuffer(buffer: ArrayBuffer): void {
-    if (this.pendingAudioChunks.length < DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
-      this.pendingAudioChunks.push(buffer);
+    this.pendingAudioChunks.push(buffer);
+    if (this.pendingAudioChunks.length > DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
+      this.pendingAudioChunks = this.pendingAudioChunks.slice(-DeepgramTranscriptionService.MAX_PENDING_CHUNKS);
     }
   }
 
