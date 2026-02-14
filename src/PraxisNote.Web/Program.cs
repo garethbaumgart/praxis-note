@@ -153,6 +153,15 @@ for (var attempt = 1; attempt <= maxRetries; attempt++)
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PraxisNoteDbContext>();
+
+        // InMemory provider doesn't support migrations — use EnsureCreated instead
+        if (db.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+        {
+            db.Database.EnsureCreated();
+            app.Logger.LogInformation("In-memory database created successfully");
+            break;
+        }
+
         db.Database.Migrate();
         app.Logger.LogInformation("Database migrations applied successfully");
         break;
@@ -188,8 +197,15 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 // Serve static files from wwwroot/browser (Angular 21 output)
-var browserPath = Path.Combine(app.Environment.WebRootPath, "browser");
-var angularAppExists = Directory.Exists(browserPath);
+var webRootPath = app.Environment.WebRootPath;
+var angularAppExists = false;
+var browserPath = string.Empty;
+
+if (!string.IsNullOrEmpty(webRootPath))
+{
+    browserPath = Path.Combine(webRootPath, "browser");
+    angularAppExists = Directory.Exists(browserPath);
+}
 
 if (angularAppExists)
 {
