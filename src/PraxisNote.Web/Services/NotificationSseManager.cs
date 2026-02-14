@@ -1,13 +1,14 @@
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace PraxisNote.Web.Services;
 
 /// <summary>
 /// Manages SSE connections for real-time notification updates.
 /// </summary>
-public sealed class NotificationSseManager
+public sealed class NotificationSseManager(ILogger<NotificationSseManager> logger)
 {
     // Using ConcurrentDictionary<HttpResponse, byte> as a concurrent set for O(1) removal
     private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<HttpResponse, byte>> _connections = new();
@@ -46,9 +47,9 @@ public sealed class NotificationSseManager
                 await response.Body.WriteAsync(bytes);
                 await response.Body.FlushAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                // Track dead connection for removal
+                logger.LogDebug(ex, "SSE write failed for user {UserId}, removing dead connection", userId);
                 deadConnections.Add(response);
             }
         }

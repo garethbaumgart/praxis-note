@@ -79,7 +79,7 @@ jobs:
             --port=8080
             --memory=512Mi
             --cpu=1
-            --min-instances=0
+            --min-instances=1
             --max-instances=3
             --timeout=3600
             --session-affinity
