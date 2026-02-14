@@ -257,8 +257,8 @@ public static class TranscriptionEndpoints
         using var audioCts = CancellationTokenSource.CreateLinkedTokenSource(sessionCts.Token, context.RequestAborted);
         using var resultsCts = CancellationTokenSource.CreateLinkedTokenSource(sessionCts.Token, context.RequestAborted);
 
-        var relayAudio = RelayAudioAsync(clientWs, deepgramWs, audioCts, resultsCts, logger, lastAudioSent, sessionId);
-        var relayResults = RelayResultsAsync(deepgramWs, clientWs, resultsCts, audioCts, logger, sessionId);
+        var relayAudio = RelayAudioAsync(clientWs, deepgramWs, audioCts, logger, lastAudioSent, sessionId);
+        var relayResults = RelayResultsAsync(deepgramWs, clientWs, resultsCts, logger, sessionId);
         var keepAlive = SendKeepAliveAsync(deepgramWs, sessionCts, lastAudioSent, logger, sessionId, deepgramSettings.KeepAliveIntervalSeconds);
 
         var completed = await Task.WhenAny(relayAudio, relayResults);
@@ -288,7 +288,6 @@ public static class TranscriptionEndpoints
         WebSocket clientWs,
         ClientWebSocket deepgramWs,
         CancellationTokenSource ownCts,
-        CancellationTokenSource otherCts,
         ILogger logger,
         StrongBox<DateTimeOffset> lastAudioSent,
         string sessionId)
@@ -395,7 +394,6 @@ public static class TranscriptionEndpoints
         ClientWebSocket deepgramWs,
         WebSocket clientWs,
         CancellationTokenSource ownCts,
-        CancellationTokenSource otherCts,
         ILogger logger,
         string sessionId)
     {
@@ -526,7 +524,7 @@ public static class TranscriptionEndpoints
         int intervalSeconds)
     {
         var keepAliveMessage = Encoding.UTF8.GetBytes("{\"type\":\"KeepAlive\"}");
-        var interval = TimeSpan.FromSeconds(intervalSeconds);
+        var interval = TimeSpan.FromSeconds(Math.Max(intervalSeconds, 1));
 
         try
         {
