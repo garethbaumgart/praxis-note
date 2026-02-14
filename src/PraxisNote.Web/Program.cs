@@ -197,8 +197,15 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 // Serve static files from wwwroot/browser (Angular 21 output)
-var browserPath = Path.Combine(app.Environment.WebRootPath, "browser");
-var angularAppExists = Directory.Exists(browserPath);
+var webRootPath = app.Environment.WebRootPath;
+var angularAppExists = false;
+var browserPath = string.Empty;
+
+if (!string.IsNullOrEmpty(webRootPath))
+{
+    browserPath = Path.Combine(webRootPath, "browser");
+    angularAppExists = Directory.Exists(browserPath);
+}
 
 if (angularAppExists)
 {
