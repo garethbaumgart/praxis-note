@@ -8,7 +8,7 @@ using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Application.Features.Goals;
 using PraxisNote.Application.Features.Insights;
-using PraxisNote.Application.Features.Summary;
+using PraxisNote.Application.Features.ActionItems;
 using PraxisNote.Application.Features.AccountLinking;
 using PraxisNote.Application.Features.Profiles;
 using PraxisNote.Application.Features.Users;
@@ -123,8 +123,8 @@ public static class DependencyInjection
         services.AddScoped<DismissNudge>();
         services.AddScoped<AcceptNudgeAsGoal>();
 
-        // Summary use cases
-        services.AddScoped<GetDailySummary>();
+        // Action item use cases
+        services.AddScoped<GetOutstandingActionItems>();
 
         // Goal use cases
         services.AddScoped<CreateBehavioralGoal>();

@@ -30,10 +30,6 @@ export const routes: Routes = [
     loadComponent: () => import('./meetings/meeting-editor.page').then(m => m.MeetingEditorPage),
   },
   {
-    path: 'summary',
-    loadComponent: () => import('./summary/summary.page').then(m => m.SummaryPage),
-  },
-  {
     path: 'insights',
     loadComponent: () => import('./insights/insights.page').then(m => m.InsightsPage),
   },

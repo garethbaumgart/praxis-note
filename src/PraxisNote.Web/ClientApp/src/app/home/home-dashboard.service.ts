@@ -1,9 +1,11 @@
-import { Injectable, inject, computed } from '@angular/core';
+import { Injectable, inject, computed, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { TaskService } from '../tasks/task.service';
 import { NoteService } from '../notes/note.service';
 import { MeetingService } from '../meetings/meeting.service';
 import { Task } from '../tasks/task.model';
 import { Note } from '../notes/note.model';
+import { OutstandingActionItem } from './outstanding-action-item.model';
 import { formatShortDate } from '../shared/date-utils';
 
 export interface MeetingChip {
@@ -26,9 +28,18 @@ export interface RecentItem {
 
 @Injectable({ providedIn: 'root' })
 export class HomeDashboardService {
+  private readonly http = inject(HttpClient);
   private readonly taskService = inject(TaskService);
   private readonly noteService = inject(NoteService);
   private readonly meetingService = inject(MeetingService);
+
+  // --- Outstanding Action Items ---
+
+  readonly actionItems = signal<OutstandingActionItem[]>([]);
+  readonly actionItemsLoading = signal(false);
+  readonly actionItemsError = signal<string | null>(null);
+
+  readonly hasActionItems = computed(() => this.actionItems().length > 0);
 
   // --- Priority banner ---
 
@@ -168,6 +179,26 @@ export class HomeDashboardService {
     if (forceRefresh || !this.meetingService.initialLoadComplete()) {
       this.meetingService.loadMeetings();
     }
+    this.loadActionItems();
+  }
+
+  loadActionItems(): void {
+    if (this.actionItemsLoading()) {
+      return;
+    }
+
+    this.actionItemsLoading.set(true);
+    this.actionItemsError.set(null);
+    this.http.get<OutstandingActionItem[]>('/api/action-items/outstanding').subscribe({
+      next: (items) => {
+        this.actionItems.set(items);
+        this.actionItemsLoading.set(false);
+      },
+      error: () => {
+        this.actionItemsError.set('Failed to load action items');
+        this.actionItemsLoading.set(false);
+      },
+    });
   }
 
   // --- Helpers ---
