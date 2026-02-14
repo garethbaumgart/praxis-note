@@ -65,6 +65,25 @@ background: #f5f5f5;
 background: var(--color-todo-foreground);  /* This is a text color! */
 ```
 
+### Boy Scout Rule (Scoped)
+
+When modifying code, fix banned or discouraged patterns in the lines you're already changing — but do NOT expand scope.
+
+**DO fix (within lines you're already editing):**
+- `*ngIf` / `*ngFor` / `*ngSwitch` → `@if` / `@for` / `@switch` control flow
+- `[ngClass]` → `[class.x]="expr"` bindings
+- Hardcoded Tailwind colors (`bg-gray-100`) → semantic tokens (`bg-surface`)
+- `dark:` prefixed classes → remove (CSS variable system handles it)
+- Constructor injection → `inject()` DI
+- Hardcoded CSS colors (`#f5f5f5`) → CSS variables (`var(--color-surface-subtle)`)
+
+**DO NOT:**
+- Refactor functions or methods you aren't otherwise changing
+- Add types, comments, or docstrings to unchanged code
+- Rename files or move code to different locations
+- Create separate commits for Boy Scout cleanup — fold fixes into the feature commit
+- Touch lines outside the scope of the current task
+
 ## Pattern Examples (Real Files)
 
 When implementing a common pattern, use these real files as references instead of guessing.
