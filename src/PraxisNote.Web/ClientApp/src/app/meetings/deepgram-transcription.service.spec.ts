@@ -83,6 +83,7 @@ describe('DeepgramTranscriptionService', () => {
 
   afterEach(() => {
     service.reset();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -137,10 +138,13 @@ describe('DeepgramTranscriptionService', () => {
       const ws2 = MockWebSocket.instances[MockWebSocket.instances.length - 1];
       ws2.simulateOpen();
 
-      // The flush should have trimmed to 10 and sent them
-      // Check that we sent the 10 most recent (sizes 6-15)
+      // The flush throttles sends via setTimeout, so only the first chunk
+      // is sent synchronously. Verify the pending buffer was trimmed to 10
+      // and the first sent chunk is the oldest of the 10 most recent (size 6).
+      expect(service['pendingAudioChunks'].length).toBe(0); // buffer was drained
       const sentSizes = ws2.sentData.map(d => (d as ArrayBuffer).byteLength);
-      expect(sentSizes.length).toBeLessThanOrEqual(10);
+      expect(sentSizes.length).toBeGreaterThanOrEqual(1);
+      expect(sentSizes[0]).toBe(6); // oldest of the 10 most recent (sizes 6-15)
     });
   });
 
@@ -188,8 +192,6 @@ describe('DeepgramTranscriptionService', () => {
       // Should have hit the cap
       expect(service.isReconnecting()).toBe(false);
       expect(service.error()).toContain('reconnection limit');
-
-      vi.useRealTimers();
     });
   });
 
