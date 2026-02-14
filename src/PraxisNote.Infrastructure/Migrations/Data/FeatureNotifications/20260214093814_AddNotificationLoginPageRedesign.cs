@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'Improvement',
                     'Redesigned login page',
                     'The login page now features the PraxisNote woven logo with a cleaner, centered layout that looks great on all screen sizes.',
-                    'https://github.com/garethbaumgart/praxis-note/pull/529',
+                    'https://github.com/garethbaumgart/praxis-note/pull/530',
                     '2026-02-14T09:38:14Z'
                 );
                 """);
