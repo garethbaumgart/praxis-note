@@ -11,6 +11,7 @@ import { DOCS_URL } from '../constants';
       [href]="docsUrl + '/' + path()"
       target="_blank"
       rel="noopener noreferrer"
+      [attr.aria-label]="label() + ' (opens documentation in new tab)'"
     >
       <i class="pi pi-question-circle" style="font-size: 10px;" aria-hidden="true"></i>
       {{ label() }}
