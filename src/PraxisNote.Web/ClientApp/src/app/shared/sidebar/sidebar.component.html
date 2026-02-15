@@ -110,37 +110,73 @@
 
       <!-- In Progress tasks -->
       @if (activity.inProgressTasks().length > 0) {
-        <div class="px-3 h-7 flex items-center">
+        <button
+          type="button"
+          class="w-full px-3 h-7 flex items-center cursor-pointer group"
+          role="button"
+          [attr.aria-expanded]="!inProgressCollapsed()"
+          aria-label="In Progress tasks"
+          (click)="toggleInProgress()"
+          (keydown.space)="$event.preventDefault(); toggleInProgress()"
+        >
           <span class="text-[10px] font-semibold text-inprogress-foreground uppercase tracking-wider">In Progress</span>
-        </div>
-        @for (task of activity.inProgressTasks(); track task.id) {
-          <button
-            type="button"
-            class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
-            (click)="navigateToTask(task.id)"
-            [attr.aria-label]="'Go to task: ' + task.title"
-          >
-            <i class="pi pi-spinner text-inprogress-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
-            <span class="truncate">{{ task.title }}</span>
-          </button>
+          @if (inProgressCollapsed()) {
+            <span class="text-[8px] font-semibold text-foreground-muted bg-surface-muted rounded-full px-1.5 py-px ml-1.5">{{ activity.inProgressTasks().length }}</span>
+          }
+          <i
+            class="pi pi-chevron-down text-[8px] text-foreground-muted ml-auto transition-transform duration-150"
+            [class.-rotate-90]="inProgressCollapsed()"
+            aria-hidden="true"
+          ></i>
+        </button>
+        @if (!inProgressCollapsed()) {
+          @for (task of activity.inProgressTasks(); track task.id) {
+            <button
+              type="button"
+              class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+              (click)="navigateToTask(task.id)"
+              [attr.aria-label]="'Go to task: ' + task.title"
+            >
+              <i class="pi pi-spinner text-inprogress-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+              <span class="truncate">{{ task.title }}</span>
+            </button>
+          }
         }
       }
 
       <!-- Up Next tasks -->
       @if (activity.upNextTasks().length > 0) {
-        <div class="px-3 h-7 flex items-center">
+        <button
+          type="button"
+          class="w-full px-3 h-7 flex items-center cursor-pointer group"
+          role="button"
+          [attr.aria-expanded]="!upNextCollapsed()"
+          aria-label="Up Next tasks"
+          (click)="toggleUpNext()"
+          (keydown.space)="$event.preventDefault(); toggleUpNext()"
+        >
           <span class="text-[10px] font-semibold text-todo-foreground uppercase tracking-wider">Up Next</span>
-        </div>
-        @for (task of activity.upNextTasks(); track task.id) {
-          <button
-            type="button"
-            class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
-            (click)="navigateToTask(task.id)"
-            [attr.aria-label]="'Go to task: ' + task.title"
-          >
-            <i class="pi pi-circle text-todo-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
-            <span class="truncate">{{ task.title }}</span>
-          </button>
+          @if (upNextCollapsed()) {
+            <span class="text-[8px] font-semibold text-foreground-muted bg-surface-muted rounded-full px-1.5 py-px ml-1.5">{{ activity.upNextTasks().length }}</span>
+          }
+          <i
+            class="pi pi-chevron-down text-[8px] text-foreground-muted ml-auto transition-transform duration-150"
+            [class.-rotate-90]="upNextCollapsed()"
+            aria-hidden="true"
+          ></i>
+        </button>
+        @if (!upNextCollapsed()) {
+          @for (task of activity.upNextTasks(); track task.id) {
+            <button
+              type="button"
+              class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+              (click)="navigateToTask(task.id)"
+              [attr.aria-label]="'Go to task: ' + task.title"
+            >
+              <i class="pi pi-circle text-todo-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+              <span class="truncate">{{ task.title }}</span>
+            </button>
+          }
         }
       }
 
@@ -152,30 +188,48 @@
       }
 
       <!-- Context-aware section -->
-      <div class="px-3 h-7 flex items-center gap-1.5">
+      <button
+        type="button"
+        class="w-full px-3 h-7 flex items-center gap-1.5 cursor-pointer group"
+        role="button"
+        [attr.aria-expanded]="!contextCollapsed()"
+        [attr.aria-label]="activity.contextLabel()"
+        (click)="toggleContext()"
+        (keydown.space)="$event.preventDefault(); toggleContext()"
+      >
         <i class="pi {{ activity.contextIcon() }} text-[10px] text-foreground-muted" aria-hidden="true"></i>
         <span class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider">{{ activity.contextLabel() }}</span>
-      </div>
-      @if (activity.contextItems().length === 0) {
-        <div class="px-3 py-2">
-          <p class="text-xs text-foreground-muted">No recent activity yet</p>
-        </div>
-      } @else {
-        @for (item of activity.contextItems(); track item.id) {
-          <button
-            type="button"
-            class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left"
-            (click)="item.queryParams ? navigateTo(item.route, item.queryParams) : navigateTo(item.route)"
-            [attr.aria-label]="item.type === 'task' ? 'Go to task: ' + item.title : 'Go to ' + item.type + ': ' + item.title"
-          >
-            <i class="pi {{ item.icon }} text-[10px] text-foreground-muted flex-shrink-0" aria-hidden="true"></i>
-            <span class="truncate flex-1">{{ item.title }}</span>
-            <span
-              class="text-[10px] flex-shrink-0"
-              [class.text-danger]="item.metaUrgent"
-              [class.text-foreground-muted]="!item.metaUrgent"
-            >{{ item.meta }}</span>
-          </button>
+        @if (contextCollapsed() && activity.contextItems().length > 0) {
+          <span class="text-[8px] font-semibold text-foreground-muted bg-surface-muted rounded-full px-1.5 py-px">{{ activity.contextItems().length }}</span>
+        }
+        <i
+          class="pi pi-chevron-down text-[8px] text-foreground-muted ml-auto transition-transform duration-150"
+          [class.-rotate-90]="contextCollapsed()"
+          aria-hidden="true"
+        ></i>
+      </button>
+      @if (!contextCollapsed()) {
+        @if (activity.contextItems().length === 0) {
+          <div class="px-3 py-2">
+            <p class="text-xs text-foreground-muted">No recent activity yet</p>
+          </div>
+        } @else {
+          @for (item of activity.contextItems(); track item.id) {
+            <button
+              type="button"
+              class="w-full flex items-center gap-2 h-7 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left"
+              (click)="item.queryParams ? navigateTo(item.route, item.queryParams) : navigateTo(item.route)"
+              [attr.aria-label]="item.type === 'task' ? 'Go to task: ' + item.title : 'Go to ' + item.type + ': ' + item.title"
+            >
+              <i class="pi {{ item.icon }} text-[10px] text-foreground-muted flex-shrink-0" aria-hidden="true"></i>
+              <span class="truncate flex-1">{{ item.title }}</span>
+              <span
+                class="text-[10px] flex-shrink-0"
+                [class.text-danger]="item.metaUrgent"
+                [class.text-foreground-muted]="!item.metaUrgent"
+              >{{ item.meta }}</span>
+            </button>
+          }
         }
       }
     } @else {
@@ -365,37 +419,73 @@
 
         <!-- In Progress tasks -->
         @if (activity.inProgressTasks().length > 0) {
-          <div class="px-3 h-7 flex items-center">
+          <button
+            type="button"
+            class="w-full px-3 h-8 flex items-center cursor-pointer group"
+            role="button"
+            [attr.aria-expanded]="!inProgressCollapsed()"
+            aria-label="In Progress tasks"
+            (click)="toggleInProgress()"
+            (keydown.space)="$event.preventDefault(); toggleInProgress()"
+          >
             <span class="text-[10px] font-semibold text-inprogress-foreground uppercase tracking-wider">In Progress</span>
-          </div>
-          @for (task of activity.inProgressTasks(); track task.id) {
-            <button
-              type="button"
-              class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
-              (click)="navigateToTask(task.id)"
-              [attr.aria-label]="'Go to task: ' + task.title"
-            >
-              <i class="pi pi-spinner text-inprogress-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
-              <span class="truncate">{{ task.title }}</span>
-            </button>
+            @if (inProgressCollapsed()) {
+              <span class="text-[8px] font-semibold text-foreground-muted bg-surface-muted rounded-full px-1.5 py-px ml-1.5">{{ activity.inProgressTasks().length }}</span>
+            }
+            <i
+              class="pi pi-chevron-down text-[8px] text-foreground-muted ml-auto transition-transform duration-150"
+              [class.-rotate-90]="inProgressCollapsed()"
+              aria-hidden="true"
+            ></i>
+          </button>
+          @if (!inProgressCollapsed()) {
+            @for (task of activity.inProgressTasks(); track task.id) {
+              <button
+                type="button"
+                class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+                (click)="navigateToTask(task.id)"
+                [attr.aria-label]="'Go to task: ' + task.title"
+              >
+                <i class="pi pi-spinner text-inprogress-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+                <span class="truncate">{{ task.title }}</span>
+              </button>
+            }
           }
         }
 
         <!-- Up Next tasks -->
         @if (activity.upNextTasks().length > 0) {
-          <div class="px-3 h-7 flex items-center">
+          <button
+            type="button"
+            class="w-full px-3 h-8 flex items-center cursor-pointer group"
+            role="button"
+            [attr.aria-expanded]="!upNextCollapsed()"
+            aria-label="Up Next tasks"
+            (click)="toggleUpNext()"
+            (keydown.space)="$event.preventDefault(); toggleUpNext()"
+          >
             <span class="text-[10px] font-semibold text-todo-foreground uppercase tracking-wider">Up Next</span>
-          </div>
-          @for (task of activity.upNextTasks(); track task.id) {
-            <button
-              type="button"
-              class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
-              (click)="navigateToTask(task.id)"
-              [attr.aria-label]="'Go to task: ' + task.title"
-            >
-              <i class="pi pi-circle text-todo-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
-              <span class="truncate">{{ task.title }}</span>
-            </button>
+            @if (upNextCollapsed()) {
+              <span class="text-[8px] font-semibold text-foreground-muted bg-surface-muted rounded-full px-1.5 py-px ml-1.5">{{ activity.upNextTasks().length }}</span>
+            }
+            <i
+              class="pi pi-chevron-down text-[8px] text-foreground-muted ml-auto transition-transform duration-150"
+              [class.-rotate-90]="upNextCollapsed()"
+              aria-hidden="true"
+            ></i>
+          </button>
+          @if (!upNextCollapsed()) {
+            @for (task of activity.upNextTasks(); track task.id) {
+              <button
+                type="button"
+                class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left truncate"
+                (click)="navigateToTask(task.id)"
+                [attr.aria-label]="'Go to task: ' + task.title"
+              >
+                <i class="pi pi-circle text-todo-foreground text-[10px] flex-shrink-0" aria-hidden="true"></i>
+                <span class="truncate">{{ task.title }}</span>
+              </button>
+            }
           }
         }
 
@@ -407,30 +497,48 @@
         }
 
         <!-- Context-aware section -->
-        <div class="px-3 h-7 flex items-center gap-1.5">
+        <button
+          type="button"
+          class="w-full px-3 h-8 flex items-center gap-1.5 cursor-pointer group"
+          role="button"
+          [attr.aria-expanded]="!contextCollapsed()"
+          [attr.aria-label]="activity.contextLabel()"
+          (click)="toggleContext()"
+          (keydown.space)="$event.preventDefault(); toggleContext()"
+        >
           <i class="pi {{ activity.contextIcon() }} text-[10px] text-foreground-muted" aria-hidden="true"></i>
           <span class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider">{{ activity.contextLabel() }}</span>
-        </div>
-        @if (activity.contextItems().length === 0) {
-          <div class="px-3 py-2">
-            <p class="text-xs text-foreground-muted">No recent activity yet</p>
-          </div>
-        } @else {
-          @for (item of activity.contextItems(); track item.id) {
-            <button
-              type="button"
-              class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left"
-              (click)="item.queryParams ? navigateTo(item.route, item.queryParams) : navigateTo(item.route)"
-              [attr.aria-label]="item.type === 'task' ? 'Go to task: ' + item.title : 'Go to ' + item.type + ': ' + item.title"
-            >
-              <i class="pi {{ item.icon }} text-[10px] text-foreground-muted flex-shrink-0" aria-hidden="true"></i>
-              <span class="truncate flex-1">{{ item.title }}</span>
-              <span
-                class="text-[10px] flex-shrink-0"
-                [class.text-danger]="item.metaUrgent"
-                [class.text-foreground-muted]="!item.metaUrgent"
-              >{{ item.meta }}</span>
-            </button>
+          @if (contextCollapsed() && activity.contextItems().length > 0) {
+            <span class="text-[8px] font-semibold text-foreground-muted bg-surface-muted rounded-full px-1.5 py-px">{{ activity.contextItems().length }}</span>
+          }
+          <i
+            class="pi pi-chevron-down text-[8px] text-foreground-muted ml-auto transition-transform duration-150"
+            [class.-rotate-90]="contextCollapsed()"
+            aria-hidden="true"
+          ></i>
+        </button>
+        @if (!contextCollapsed()) {
+          @if (activity.contextItems().length === 0) {
+            <div class="px-3 py-2">
+              <p class="text-xs text-foreground-muted">No recent activity yet</p>
+            </div>
+          } @else {
+            @for (item of activity.contextItems(); track item.id) {
+              <button
+                type="button"
+                class="w-full flex items-center gap-2 h-8 px-3 text-xs text-foreground-secondary hover:bg-surface-muted rounded-md mx-0 text-left"
+                (click)="item.queryParams ? navigateTo(item.route, item.queryParams) : navigateTo(item.route)"
+                [attr.aria-label]="item.type === 'task' ? 'Go to task: ' + item.title : 'Go to ' + item.type + ': ' + item.title"
+              >
+                <i class="pi {{ item.icon }} text-[10px] text-foreground-muted flex-shrink-0" aria-hidden="true"></i>
+                <span class="truncate flex-1">{{ item.title }}</span>
+                <span
+                  class="text-[10px] flex-shrink-0"
+                  [class.text-danger]="item.metaUrgent"
+                  [class.text-foreground-muted]="!item.metaUrgent"
+                >{{ item.meta }}</span>
+              </button>
+            }
           }
         }
       </nav>
