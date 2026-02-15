@@ -18,9 +18,12 @@ using PraxisNote.Web.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure forwarded headers for Cloud Run (SSL termination at load balancer)
+// Cloud Run uses dynamic IPs so KnownProxies/KnownNetworks must be cleared per Google's guidance.
+// ForwardLimit = 1 restricts processing to the single Cloud Run proxy hop.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+    options.ForwardLimit = 1;
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
