@@ -170,7 +170,11 @@ To enable Google Calendar sync in production:
 
 ## Architecture
 
-See [Architecture Decision Records](docs/adr/) for documented decisions on patterns and technology choices.
+See `CLAUDE.md` for documented architecture patterns and conventions.
+
+## Documentation
+
+User-facing documentation is built with [Starlight](https://starlight.astro.build/) and lives in `docs/`. It auto-deploys to Vercel on push to `main`.
 
 ## Claude Code Skills
 
