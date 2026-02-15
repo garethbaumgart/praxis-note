@@ -124,6 +124,7 @@ When implementing a common pattern, use these real files as references instead o
 | `PageContentComponent` | `src/app/shared/components/page-content.component.ts` | Page layout wrapper |
 | `ToastService` | `src/app/shared/services/toast.service.ts` | Mutation success/error feedback |
 | `date-utils.ts` | `src/app/shared/date-utils.ts` | Date formatting utilities |
+| `HelpLinkComponent` | `src/app/shared/components/help-link.component.ts` | Contextual "Learn more" links to docs |
 
 ## Backend (.NET 10)
 
@@ -634,6 +635,42 @@ git restore --staged :/ && git add "path/to/file1" "path/to/file2" && git commit
 **ALWAYS** use the `/pr` skill when creating or updating a pull request. This ensures README is reviewed, tests are run, the PR is properly reviewed, and CI checks are monitored for warnings.
 
 **Markdown-only PRs**: When a PR contains ONLY markdown file changes (`.md` files), merge immediately without waiting for CI or review comments. These are documentation-only changes with no runtime impact.
+
+## Documentation Site (Starlight)
+
+### Structure
+
+The user-facing documentation lives at `docs/` and is built with [Starlight](https://starlight.astro.build/) (Astro).
+
+- Content pages: `docs/src/content/docs/*.mdx`
+- Custom theme: `docs/src/styles/custom.css` (Nord palette)
+- Config: `docs/astro.config.mjs`
+
+### Deployment
+
+Vercel auto-deploys from `docs/` on push to `main`. No GitHub Actions workflow needed.
+
+### Docs URL
+
+The external docs URL is defined in `src/PraxisNote.Web/ClientApp/src/app/shared/constants.ts` as `DOCS_URL`. Update this constant when a custom domain is configured.
+
+### When to Update Docs
+
+Any PR that changes user-facing behavior must include doc updates:
+- New feature -> add/update the relevant `docs/src/content/docs/*.mdx` page
+- Changed behavior -> update affected docs sections
+- New keyboard shortcut -> update `keyboard-shortcuts.mdx`
+
+### When NOT to Update Docs
+
+Internal refactoring, backend performance, test-only changes, CI/CD, developer docs (`README.md`, `CLAUDE.md`).
+
+### Contextual Help Links
+
+Use the shared `<app-help-link path="..." />` component. Add links to:
+- Feature page empty states
+- Complex form fields (priority, due dates, tags)
+- Settings panels, error states with recovery steps, onboarding flows
 
 ## Technical Debt / TODOs
 

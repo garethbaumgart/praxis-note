@@ -11,12 +11,13 @@ import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
 import { PageContentComponent } from '../shared/components/page-content.component';
+import { HelpLinkComponent } from '../shared/components/help-link.component';
 
 @Component({
   selector: 'app-meetings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ImportDialogComponent, Tooltip, PageContentComponent],
+  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ImportDialogComponent, Tooltip, PageContentComponent, HelpLinkComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Meetings</h1>
@@ -110,7 +111,8 @@ import { PageContentComponent } from '../shared/components/page-content.componen
           } @else if (!isCalendarConnected()) {
             <i class="pi pi-comments text-4xl text-foreground-muted mb-4"></i>
             <p class="text-lg font-semibold text-foreground mb-2">No meetings yet</p>
-            <p class="text-sm text-foreground-muted mb-6">Get started by connecting your calendar or adding a meeting manually.</p>
+            <p class="text-sm text-foreground-muted mb-4">Get started by connecting your calendar or adding a meeting manually.</p>
+            <div class="mb-6"><app-help-link path="meetings" /></div>
             <div class="flex items-center justify-center gap-3">
               <button type="button"
                 class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border text-foreground-secondary bg-surface-subtle hover:bg-surface-muted transition-colors"

@@ -13,12 +13,13 @@ import { DateRange } from './insights.model';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
+import { HelpLinkComponent } from '../shared/components/help-link.component';
 
 @Component({
   selector: 'app-insights-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, NudgesSectionComponent, CommunicationProfileComponent, JohariWindowComponent, ErrorStateComponent, PageContentComponent],
+  imports: [FormsModule, SelectButton, Skeleton, InsightsSummaryCardsComponent, InsightsTrendChartComponent, GoalsSectionComponent, NudgesSectionComponent, CommunicationProfileComponent, JohariWindowComponent, ErrorStateComponent, PageContentComponent, HelpLinkComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Insights</h1>
@@ -68,9 +69,10 @@ import { PageContentComponent } from '../shared/components/page-content.componen
         <div class="text-center py-16 mb-6">
           <i class="pi pi-chart-line text-4xl text-foreground-muted mb-4"></i>
           <h2 class="text-lg font-semibold text-foreground mb-2">No insights yet</h2>
-          <p class="text-foreground-muted text-sm max-w-md mx-auto">
+          <p class="text-foreground-muted text-sm max-w-md mx-auto mb-4">
             Insights appear after you analyze meetings with behavioral analysis. Record and analyze a few meetings to start seeing your communication trends.
           </p>
+          <app-help-link path="insights" />
         </div>
 
         <!-- Communication Profile (always visible) -->

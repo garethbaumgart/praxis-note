@@ -12,6 +12,7 @@ import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
+import { HelpLinkComponent } from '../shared/components/help-link.component';
 
 interface ColumnConfig {
   status: TaskStatus;
@@ -30,7 +31,7 @@ interface ColumnConfig {
   selector: 'app-tasks-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ColumnComponent, ErrorStateComponent, PageContentComponent],
+  imports: [ColumnComponent, ErrorStateComponent, PageContentComponent, HelpLinkComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Tasks</h1>
@@ -77,6 +78,10 @@ interface ColumnConfig {
           (retry)="taskService.loadTasks()"
         />
       } @else {
+      <div class="flex justify-end mb-2">
+        <app-help-link path="tasks" />
+      </div>
+
       <!-- Mobile: Segmented column indicator -->
       <div class="flex md:hidden gap-1 py-1" role="tablist" aria-label="Column navigation">
         <button

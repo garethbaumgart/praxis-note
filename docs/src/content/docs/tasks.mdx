@@ -1,0 +1,137 @@
+---
+title: Tasks
+description: Three-state kanban workflow with priorities, due dates, tags, and comments
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+PraxisNote tasks use a kanban-style board with three columns. Each task can have a priority level, due date, tags, and comments to keep you organized.
+
+## Creating Tasks
+
+<Steps>
+1. Navigate to the **Tasks** page from the sidebar.
+2. Click the **New Task** button at the top of the page.
+3. Type a descriptive title and press **Enter**.
+4. The task is created in the **To Do** column.
+</Steps>
+
+<Aside type="tip">
+Keep task titles short and actionable. Start with a verb: "Review proposal", "Fix login bug", "Draft quarterly report".
+</Aside>
+
+## Kanban States
+
+Every task lives in one of three columns:
+
+| Column | Icon | Meaning |
+|--------|------|---------|
+| **To Do** | Circle | Task is queued but not started |
+| **In Progress** | Half-filled circle | Actively being worked on |
+| **Done** | Checkmark | Completed |
+
+### Changing State
+
+You can move tasks between columns in two ways:
+
+- **Drag and drop** — click and drag a task card to another column
+- **Context menu** — click the three-dot menu on a task card and select the target state
+
+When a task moves to **Done**, it records the completion timestamp so you can track when work was finished.
+
+## Priority
+
+Set priority to surface your most important work. Tasks within each column are sorted by priority.
+
+| Priority | Color | When to Use |
+|----------|-------|-------------|
+| **Critical** | Red | Blocking issues, urgent deadlines |
+| **High** | Orange | Important work, do this week |
+| **Medium** | Blue | Normal priority (default) |
+| **Low** | Gray | Nice to have, backlog items |
+
+### Setting Priority
+
+<Steps>
+1. Click the three-dot menu on any task card.
+2. Select **Priority** from the menu.
+3. Choose the desired priority level.
+</Steps>
+
+## Due Dates
+
+Add a due date to any task to track deadlines. Tasks with approaching or overdue due dates are visually highlighted.
+
+| Status | Visual Indicator |
+|--------|-----------------|
+| **Overdue** | Red text and badge |
+| **Due today** | Orange/amber highlight |
+| **Due tomorrow** | Yellow highlight |
+| **Upcoming** | Normal display with date shown |
+
+### Setting a Due Date
+
+<Steps>
+1. Click the three-dot menu on a task card.
+2. Select **Due Date**.
+3. Pick a date from the calendar picker.
+4. The due date appears on the task card.
+</Steps>
+
+<Aside type="note">
+Due dates are displayed relative to today. A task due tomorrow shows "Tomorrow" instead of the full date, making it easy to scan for urgent items.
+</Aside>
+
+## Comments
+
+Add comments to tasks for context, updates, or discussion notes.
+
+<Steps>
+1. Click on a task card to open its detail view.
+2. Type your comment in the text field at the bottom.
+3. Press **Enter** or click the send button.
+4. Comments appear in chronological order with timestamps.
+</Steps>
+
+Comments support plain text. Each comment shows who wrote it and when.
+
+## Tags
+
+Tags let you categorize tasks and filter across your entire workspace. The same tags work on notes and meetings too.
+
+### Adding Tags to a Task
+
+<Steps>
+1. Click the three-dot menu on a task card.
+2. Select **Tags**.
+3. Type a tag name and press **Enter** to create or apply it.
+4. Applied tags appear as colored chips on the task card.
+</Steps>
+
+### Filtering by Tag
+
+Use the search bar at the top of the Tasks page to filter by tag. Click any tag chip to filter the board to only tasks with that tag.
+
+## Search
+
+The search bar at the top of the Tasks page filters tasks across all columns in real time. Search matches against:
+
+- Task title
+- Tag names
+
+As you type, task cards that don't match are hidden, making it easy to find specific items.
+
+## Drag and Drop
+
+Task cards support drag-and-drop between columns. Grab any card and move it to a different column to change its state. The order within each column reflects priority.
+
+<Aside type="tip">
+On mobile devices, you can use the context menu to change task state since drag-and-drop requires a pointer device.
+</Aside>
+
+## Tips
+
+- **Batch process**: Review your To Do column at the start of each day. Move items to In Progress to commit to working on them.
+- **Use tags consistently**: Create a small set of project or area tags and apply them to tasks, notes, and meetings for cross-feature filtering.
+- **Set due dates sparingly**: Not every task needs a due date. Reserve them for tasks with real deadlines to avoid due-date fatigue.
+- **Archive done tasks**: Periodically review your Done column. Completed tasks remain visible until you clear them.

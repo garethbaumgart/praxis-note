@@ -1,0 +1,34 @@
+---
+title: PraxisNote
+description: A note-first task management system
+template: splash
+hero:
+  tagline: Write naturally. Tasks emerge automatically.
+  actions:
+    - text: Quick Tour
+      link: /quick-tour/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/garethbaumgart/praxis-note
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid stagger>
+  <Card title="Tasks" icon="approve-check-circle">
+    Three-state kanban workflow with priorities, due dates, tags, and comments.
+  </Card>
+  <Card title="Notes" icon="document">
+    Rich text editor with slash commands, checkbox-task sync, and PDF export.
+  </Card>
+  <Card title="Meetings" icon="comment">
+    Calendar sync, transcript analysis, and action item extraction.
+  </Card>
+  <Card title="Tags & Insights" icon="magnifier">
+    Unified tag system across all features with behavioral analytics.
+  </Card>
+</CardGrid>
