@@ -266,6 +266,10 @@ interface DateOption {
       padding: 8px 10px; font-size: 13px; color: var(--color-text-primary); outline: none; box-sizing: border-box;
     }
     .field-input::placeholder { color: var(--color-text-muted); }
+    .field-input:focus-visible {
+      outline: 2px solid var(--color-primary-solid);
+      outline-offset: -2px;
+    }
 
     .date-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
 

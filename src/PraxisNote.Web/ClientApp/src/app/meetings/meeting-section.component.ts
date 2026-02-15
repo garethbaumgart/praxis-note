@@ -93,6 +93,7 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
       opacity: 1;
       max-height: 800px;
       margin-top: 12px;
+      overflow: visible;
     }
 
     .section-body-hidden {

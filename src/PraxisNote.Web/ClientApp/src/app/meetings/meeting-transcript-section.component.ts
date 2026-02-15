@@ -294,6 +294,10 @@ import { DeepgramTranscriptionService } from './deepgram-transcription.service';
       resize: none; overflow: hidden; outline: none; box-sizing: border-box; min-height: 80px;
     }
     .transcript-textarea::placeholder { color: var(--color-text-muted); }
+    .transcript-textarea:focus-visible {
+      outline: 2px solid var(--color-primary-solid);
+      outline-offset: -2px;
+    }
   `],
 })
 export class MeetingTranscriptSectionComponent {
