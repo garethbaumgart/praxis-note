@@ -123,7 +123,6 @@ interface DateOption {
               [headerColor]="'var(--color-todo-text)'"
               sectionId="details-section"
               [collapsible]="true"
-              [initialExpanded]="true"
             >
               <!-- Collapsed summary -->
               <div summary class="details-mini-card">

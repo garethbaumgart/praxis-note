@@ -16,9 +16,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { Select, SelectModule } from 'primeng/select';
 import { MeetingTag } from './meeting.model';
 import { TagService } from '../tags/tag.service';
-import { Tag } from '../tags/tag.model';
-import { parseTimeInput, formatTimeLabel, ALL_TIME_OPTIONS } from './meeting-time.utils';
-import { formatShortDate } from '../shared/date-utils';
+import { ALL_TIME_OPTIONS } from './meeting-time.utils';
 
 interface DateOption {
   label: string;
@@ -415,29 +413,6 @@ export class MeetingDetailsSectionComponent {
     const query = this.tagSearch().trim();
     const suggestions = this.tagSuggestions();
     return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
-  });
-
-  /** Compact 2-line summary for collapsed state */
-  readonly dateSummary = computed(() => {
-    const date = this.meetingDate();
-    if (!date) return 'No date set';
-    return formatShortDate(date);
-  });
-
-  readonly timeSummary = computed(() => this.selectedTimeLabel());
-
-  readonly attendeesSummary = computed(() => {
-    const val = this.attendees();
-    if (!val?.trim()) return 'No attendees';
-    const names = val.split(',').map(s => s.trim()).filter(Boolean);
-    if (names.length <= 2) return names.join(', ');
-    return `${names[0]}, ${names[1]} +${names.length - 2}`;
-  });
-
-  readonly tagCountSummary = computed(() => {
-    const count = this.meetingTags().length;
-    if (count === 0) return '';
-    return `${count} tag${count !== 1 ? 's' : ''}`;
   });
 
   onTimeSelectOpen(): void {

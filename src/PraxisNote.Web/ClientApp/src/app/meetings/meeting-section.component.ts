@@ -109,14 +109,11 @@ export class MeetingSectionComponent {
   readonly headerColor = input.required<string>();
   readonly sectionId = input<string>('section');
   readonly collapsible = input(true);
-  readonly initialExpanded = input(true);
 
   /** Combines the base 'pi' class with the specific icon class */
   readonly iconClasses = computed(() => `pi ${this.icon()}`);
 
   readonly expanded = signal(true);
-
-  private initialized = false;
 
   toggle(): void {
     if (!this.collapsible()) return;
