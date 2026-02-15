@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
-import { Meeting, ActionItemStatus, parseJsonArray, parseBehavioralAnalysis } from './meeting.model';
+import { Meeting, ActionItemStatus, parseJsonArray, parseBehavioralAnalysis, hasAnalysisResults } from './meeting.model';
 import { MeetingBehavioralAnalysisComponent } from './meeting-behavioral-analysis.component';
 import { MeetingActionItemsComponent } from './meeting-action-items.component';
 
@@ -8,24 +7,9 @@ import { MeetingActionItemsComponent } from './meeting-action-items.component';
   selector: 'app-meeting-analysis',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule, MeetingBehavioralAnalysisComponent, MeetingActionItemsComponent],
+  imports: [MeetingBehavioralAnalysisComponent, MeetingActionItemsComponent],
   template: `
-    <div class="border border-border rounded-lg p-4 bg-surface-subtle">
-      <!-- Header with Analyze button -->
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold text-foreground">AI Analysis</h3>
-        @if (canAnalyze()) {
-          <p-button
-            [label]="hasAnalysis() ? 'Re-analyze' : 'Analyze'"
-            icon="pi pi-sparkles"
-            size="small"
-            [loading]="isProcessing()"
-            [disabled]="!hasTranscript()"
-            (onClick)="onAnalyze.emit()"
-          />
-        }
-      </div>
-
+    <div>
       <!-- Processing state -->
       @if (isProcessing()) {
         <div class="flex items-center gap-3 text-foreground-muted" role="status" aria-label="Analyzing transcript">
@@ -113,7 +97,7 @@ import { MeetingActionItemsComponent } from './meeting-action-items.component';
 
       <!-- No analysis yet (has transcript but no analysis) -->
       @else {
-        <p class="text-sm text-foreground-muted">Click "Analyze" to generate a summary, key points, and decisions.</p>
+        <p class="text-sm text-foreground-muted">Click the Analyze button to generate a summary, key points, and decisions.</p>
       }
     </div>
   `,
@@ -123,7 +107,6 @@ export class MeetingAnalysisComponent {
   readonly actionItemStatuses = input<ActionItemStatus[]>([]);
   readonly promotingIds = input<Set<string>>(new Set());
 
-  readonly onAnalyze = output<void>();
   readonly onToggleActionItem = output<string>();
   readonly onPromoteActionItem = output<string>();
   readonly onNavigateToTask = output<string>();
@@ -131,14 +114,7 @@ export class MeetingAnalysisComponent {
   readonly hasTranscript = computed(() => !!this.meeting().transcriptContent);
   readonly isProcessing = computed(() => this.meeting().status === 'Processing');
   readonly isFailed = computed(() => this.meeting().status === 'Failed');
-  readonly hasAnalysis = computed(() =>
-    !!this.meeting().summary?.trim() ||
-    this.keyPoints().length > 0 ||
-    this.decisions().length > 0 ||
-    this.meeting().status === 'Ready'
-  );
-  readonly canAnalyze = computed(() => !this.isProcessing());
-
+  readonly hasAnalysis = computed(() => hasAnalysisResults(this.meeting()));
   readonly keyPoints = computed(() => parseJsonArray(this.meeting().keyPoints));
   readonly decisions = computed(() => parseJsonArray(this.meeting().decisions));
   readonly hasBehavioralAnalysis = computed(() => !!parseBehavioralAnalysis(this.meeting().behavioralAnalysis));
