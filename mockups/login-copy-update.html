@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Copy Update — Issue #538 — 7 Copy Options</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: 'var(--color-bg-base)', 'surface-subtle': 'var(--color-bg-subtle)', 'surface-muted': 'var(--color-bg-muted)',
+            foreground: 'var(--color-text-primary)', 'foreground-secondary': 'var(--color-text-secondary)', 'foreground-muted': 'var(--color-text-muted)',
+            border: 'var(--color-border-default)', 'border-muted': 'var(--color-border-muted)',
+            accent: 'var(--color-primary-bg)', 'accent-solid': 'var(--color-primary-solid)', 'accent-foreground': 'var(--color-primary-text)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-bg-base: #fafaf8; --color-bg-subtle: #ffffff; --color-bg-muted: #eceff4;
+      --color-text-primary: #2e3440; --color-text-secondary: #4c566a; --color-text-muted: #7b88a1;
+      --color-border-default: #e5e9f0; --color-border-muted: #eceff4;
+      --color-primary-bg: rgba(94, 129, 172, 0.15); --color-primary-text: #5e81ac; --color-primary-solid: #5e81ac;
+    }
+    [data-theme="dark"] {
+      --color-bg-base: #242933; --color-bg-subtle: #2e3440; --color-bg-muted: #3b4252;
+      --color-text-primary: #eceff4; --color-text-secondary: #d8dee9; --color-text-muted: #4c566a;
+      --color-border-default: #3b4252; --color-border-muted: #2e3440;
+      --color-primary-bg: rgba(94, 129, 172, 0.2); --color-primary-text: #88c0d0; --color-primary-solid: #5e81ac;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--color-bg-base); color: var(--color-text-primary); }
+    .option-card { background: var(--color-bg-subtle); border-radius: 12px; overflow: hidden; border: 1px solid var(--color-border-default); }
+    .option-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border-muted); display: flex; align-items: center; justify-content: space-between; }
+    .option-body { padding: 1.25rem; }
+    .option-number { background: var(--color-primary-solid); color: white; font-size: 11px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .recommended { border: 2px solid #a3be8c !important; }
+    .recommended-badge { background: #a3be8c; color: #2e3440; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+    .option-divider { border-top: 3px dashed var(--color-border-default); margin: 3rem 0; padding-top: 2rem; }
+    .pros-cons { margin-top: 12px; font-size: 11px; line-height: 1.8; }
+    .pros-cons .pro { color: #a3be8c; }
+    .pros-cons .con { color: #bf616a; }
+
+    .login-preview {
+      border: 1px solid var(--color-border-default);
+      border-radius: 8px;
+      overflow: hidden;
+      height: 420px;
+      position: relative;
+      background: var(--color-bg-base);
+    }
+
+    .google-btn {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      height: 44px; padding: 0 24px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-default);
+      border-radius: 10px; color: var(--color-text-secondary); font-weight: 500; font-size: 14px; width: 100%;
+    }
+
+    .logo-svg-xl { width: 80px; height: 80px; }
+
+    .copy-highlight { background: rgba(163, 190, 140, 0.12); border-radius: 6px; padding: 2px 6px; }
+
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .compare-table th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--color-border-default); font-weight: 600; }
+    .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--color-border-muted); }
+    .compare-table tr:last-child td { border-bottom: none; }
+  </style>
+</head>
+<body class="p-8">
+  <!-- Theme Toggle -->
+  <button onclick="toggleTheme()" class="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-surface-subtle border border-border flex items-center justify-center shadow-lg hover:bg-surface-muted transition-colors" aria-label="Toggle theme">
+    <i class="pi pi-moon text-foreground-muted" id="themeIcon"></i>
+  </button>
+
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold text-foreground mb-2">Login Copy Update — Issue #538</h1>
+    <p class="text-foreground-muted text-sm mb-2">7 copy options to align the login page with the meeting coach identity.</p>
+    <p class="text-foreground-muted text-xs mb-8">The layout/design stays as-is (centered minimal from #530). Only the <span class="copy-highlight font-semibold">tagline</span> and <span class="copy-highlight font-semibold">description</span> change. Current copy says "Your notes are full of hidden tasks" — which positions PraxisNote as a task tool, not a meeting coach.</p>
+
+    <!-- Inline SVG logo reused across all options -->
+    <template id="logo-template">
+      <svg class="logo-svg-xl" viewBox="0 0 80 80">
+        <defs><clipPath id="__ID__"><rect width="80" height="80" rx="18"/></clipPath></defs>
+        <g clip-path="url(#__ID__)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+      </svg>
+    </template>
+
+    <!-- Google icon SVG reused -->
+    <template id="google-icon">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+    </template>
+
+    <!-- ==================== CURRENT (for reference) ==================== -->
+    <div class="option-card mb-8" style="border-color: #bf616a;">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number" style="background: #bf616a;">!</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">Current Copy (for reference)</div>
+            <div class="text-foreground-muted text-xs">Positions PraxisNote as a task extraction tool — misaligned with product vision</div>
+          </div>
+        </div>
+        <div style="background: #bf616a; color: white; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px;">Replace</div>
+      </div>
+      <div class="option-body">
+        <div class="login-preview flex items-center justify-center p-8">
+          <div class="text-center max-w-sm w-full">
+            <div class="flex justify-center mb-4">
+              <svg class="logo-svg-xl" viewBox="0 0 80 80">
+                <defs><clipPath id="s-current"><rect width="80" height="80" rx="18"/></clipPath></defs>
+                <g clip-path="url(#s-current)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">PraxisNote</h1>
+            <p class="text-sm text-foreground-muted mb-2" style="text-decoration: line-through; opacity: 0.6;">Your notes are full of hidden tasks.</p>
+            <p class="text-xs text-foreground-secondary mb-8" style="text-decoration: line-through; opacity: 0.6;">PraxisNote finds them for you. Every checkbox becomes a trackable task — no extra work required.</p>
+            <div class="google-btn">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
+            </div>
+            <p class="text-center text-xs text-foreground-muted mt-8">By signing in, you agree to our terms of service and privacy policy.</p>
+          </div>
+        </div>
+        <div class="pros-cons">
+          <div class="con">- Positions PraxisNote as a task extraction tool ("notes full of hidden tasks")</div>
+          <div class="con">- No mention of meetings, coaching, communication, or self-awareness</div>
+          <div class="con">- Directly contradicts the product vision document</div>
+        </div>
+      </div>
+    </div>
+    <div class="option-divider"></div>
+
+    <!-- ==================== OPTION 1 ==================== -->
+    <div class="option-card mb-8 recommended">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">1</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">The Self-Awareness Hook</div>
+            <div class="text-foreground-muted text-xs">Leads with the emotional core — the gap between self-perception and reality</div>
+          </div>
+        </div>
+        <div class="recommended-badge">Recommended</div>
+      </div>
+      <div class="option-body">
+        <div class="login-preview flex items-center justify-center p-8">
+          <div class="text-center max-w-sm w-full">
+            <div class="flex justify-center mb-4">
+              <svg class="logo-svg-xl" viewBox="0 0 80 80">
+                <defs><clipPath id="s1"><rect width="80" height="80" rx="18"/></clipPath></defs>
+                <g clip-path="url(#s1)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">PraxisNote</h1>
+            <p class="text-sm text-foreground-muted mb-2">See yourself the way others do.</p>
+            <p class="text-xs text-foreground-secondary mb-8">PraxisNote analyzes your meetings, reveals your communication blind spots, and tracks your growth over time.</p>
+            <div class="google-btn">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
+            </div>
+            <p class="text-center text-xs text-foreground-muted mt-8">By signing in, you agree to our terms of service and privacy policy.</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 rounded-lg" style="background: rgba(163, 190, 140, 0.08); border: 1px solid rgba(163, 190, 140, 0.2);">
+          <p class="text-xs text-foreground-secondary mb-1"><strong>Tagline:</strong> "See yourself the way others do."</p>
+          <p class="text-xs text-foreground-secondary"><strong>Description:</strong> "PraxisNote analyzes your meetings, reveals your communication blind spots, and tracks your growth over time."</p>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Tagline is punchy, emotionally resonant, and immediately intriguing</div>
+          <div class="pro">+ Directly addresses Pillar 1 (Self-Awareness Gap) — the primary differentiator</div>
+          <div class="pro">+ Description covers all three value props: analyze, reveal blind spots, track growth</div>
+          <div class="pro">+ Short enough to scan in under 3 seconds</div>
+          <div class="con">- "See yourself" could feel slightly confrontational to some users</div>
+          <div class="con">- Doesn't explicitly mention "meetings" in the tagline (only in description)</div>
+        </div>
+      </div>
+    </div>
+    <div class="option-divider"></div>
+
+    <!-- ==================== OPTION 2 ==================== -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">2</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">The Elevator Pitch</div>
+            <div class="text-foreground-muted text-xs">Uses the product vision's own elevator version almost verbatim</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="login-preview flex items-center justify-center p-8">
+          <div class="text-center max-w-sm w-full">
+            <div class="flex justify-center mb-4">
+              <svg class="logo-svg-xl" viewBox="0 0 80 80">
+                <defs><clipPath id="s2"><rect width="80" height="80" rx="18"/></clipPath></defs>
+                <g clip-path="url(#s2)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">PraxisNote</h1>
+            <p class="text-sm text-foreground-muted mb-2">Your AI meeting coach.</p>
+            <p class="text-xs text-foreground-secondary mb-8">Record, reflect, and see the gap between how you think you communicate and how you actually do.</p>
+            <div class="google-btn">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
+            </div>
+            <p class="text-center text-xs text-foreground-muted mt-8">By signing in, you agree to our terms of service and privacy policy.</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 rounded-lg" style="background: rgba(94, 129, 172, 0.08); border: 1px solid rgba(94, 129, 172, 0.2);">
+          <p class="text-xs text-foreground-secondary mb-1"><strong>Tagline:</strong> "Your AI meeting coach."</p>
+          <p class="text-xs text-foreground-secondary"><strong>Description:</strong> "Record, reflect, and see the gap between how you think you communicate and how you actually do."</p>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ "AI meeting coach" is the clearest category description — instant understanding</div>
+          <div class="pro">+ Description echoes the product vision's one-sentence test almost exactly</div>
+          <div class="pro">+ "Record, reflect, and see the gap" previews the core loop in three words</div>
+          <div class="con">- Tagline is descriptive rather than emotionally engaging — reads like a category label</div>
+          <div class="con">- "AI meeting coach" could set expectations for a chatbot-style coach</div>
+        </div>
+      </div>
+    </div>
+    <div class="option-divider"></div>
+
+    <!-- ==================== OPTION 3 ==================== -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">3</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">The Compounding Value</div>
+            <div class="text-foreground-muted text-xs">Emphasizes Pillar 3 — it gets better the more you use it</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="login-preview flex items-center justify-center p-8">
+          <div class="text-center max-w-sm w-full">
+            <div class="flex justify-center mb-4">
+              <svg class="logo-svg-xl" viewBox="0 0 80 80">
+                <defs><clipPath id="s3"><rect width="80" height="80" rx="18"/></clipPath></defs>
+                <g clip-path="url(#s3)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">PraxisNote</h1>
+            <p class="text-sm text-foreground-muted mb-2">Become a better communicator, one meeting at a time.</p>
+            <p class="text-xs text-foreground-secondary mb-8">PraxisNote records your meetings, analyzes your communication patterns, and coaches you to improve — with every meeting.</p>
+            <div class="google-btn">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
+            </div>
+            <p class="text-center text-xs text-foreground-muted mt-8">By signing in, you agree to our terms of service and privacy policy.</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 rounded-lg" style="background: rgba(94, 129, 172, 0.08); border: 1px solid rgba(94, 129, 172, 0.2);">
+          <p class="text-xs text-foreground-secondary mb-1"><strong>Tagline:</strong> "Become a better communicator, one meeting at a time."</p>
+          <p class="text-xs text-foreground-secondary"><strong>Description:</strong> "PraxisNote records your meetings, analyzes your communication patterns, and coaches you to improve — with every meeting."</p>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ "One meeting at a time" reinforces the compounding value proposition</div>
+          <div class="pro">+ "Better communicator" is an aspirational identity that resonates with the target user</div>
+          <div class="pro">+ Description clearly states the mechanism: record, analyze, coach</div>
+          <div class="con">- Tagline is longer — takes more cognitive effort to process on a login page</div>
+          <div class="con">- "One meeting at a time" implies slow progress, which may not excite a first-time visitor</div>
+        </div>
+      </div>
+    </div>
+    <div class="option-divider"></div>
+
+    <!-- ==================== OPTION 4 ==================== -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">4</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">The Provocative Question</div>
+            <div class="text-foreground-muted text-xs">Hooks with curiosity — "do you really know?" — then explains</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="login-preview flex items-center justify-center p-8">
+          <div class="text-center max-w-sm w-full">
+            <div class="flex justify-center mb-4">
+              <svg class="logo-svg-xl" viewBox="0 0 80 80">
+                <defs><clipPath id="s4"><rect width="80" height="80" rx="18"/></clipPath></defs>
+                <g clip-path="url(#s4)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">PraxisNote</h1>
+            <p class="text-sm text-foreground-muted mb-2">You think that meeting went well. Did it?</p>
+            <p class="text-xs text-foreground-secondary mb-8">PraxisNote shows you what you can't see about your own communication — and remembers, so the coaching compounds.</p>
+            <div class="google-btn">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
+            </div>
+            <p class="text-center text-xs text-foreground-muted mt-8">By signing in, you agree to our terms of service and privacy policy.</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 rounded-lg" style="background: rgba(94, 129, 172, 0.08); border: 1px solid rgba(94, 129, 172, 0.2);">
+          <p class="text-xs text-foreground-secondary mb-1"><strong>Tagline:</strong> "You think that meeting went well. Did it?"</p>
+          <p class="text-xs text-foreground-secondary"><strong>Description:</strong> "PraxisNote shows you what you can't see about your own communication — and remembers, so the coaching compounds."</p>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Most emotionally provocative — creates immediate curiosity</div>
+          <div class="pro">+ Directly mirrors the product vision's elevator pitch</div>
+          <div class="pro">+ "Remembers, so the coaching compounds" conveys the Memory Layer simply</div>
+          <div class="con">- Could feel slightly aggressive or presumptuous to some users</div>
+          <div class="con">- Question format on a login page is unusual — may not scan quickly</div>
+        </div>
+      </div>
+    </div>
+    <div class="option-divider"></div>
+
+    <!-- ==================== OPTION 5 ==================== -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">5</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">The Blind Spot</div>
+            <div class="text-foreground-muted text-xs">Leads with the concept of communication blind spots</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="login-preview flex items-center justify-center p-8">
+          <div class="text-center max-w-sm w-full">
+            <div class="flex justify-center mb-4">
+              <svg class="logo-svg-xl" viewBox="0 0 80 80">
+                <defs><clipPath id="s5"><rect width="80" height="80" rx="18"/></clipPath></defs>
+                <g clip-path="url(#s5)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">PraxisNote</h1>
+            <p class="text-sm text-foreground-muted mb-2">You can't coach what you can't see.</p>
+            <p class="text-xs text-foreground-secondary mb-8">PraxisNote reveals your communication blind spots after every meeting — so you can finally work on what matters.</p>
+            <div class="google-btn">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
+            </div>
+            <p class="text-center text-xs text-foreground-muted mt-8">By signing in, you agree to our terms of service and privacy policy.</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 rounded-lg" style="background: rgba(94, 129, 172, 0.08); border: 1px solid rgba(94, 129, 172, 0.2);">
+          <p class="text-xs text-foreground-secondary mb-1"><strong>Tagline:</strong> "You can't coach what you can't see."</p>
+          <p class="text-xs text-foreground-secondary"><strong>Description:</strong> "PraxisNote reveals your communication blind spots after every meeting — so you can finally work on what matters."</p>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ "Can't coach what you can't see" is memorable and quotable</div>
+          <div class="pro">+ "Blind spots" is a universally understood concept in professional development</div>
+          <div class="pro">+ "After every meeting" grounds it in the recurring habit</div>
+          <div class="con">- Tagline sounds more like a coaching aphorism than a product description</div>
+          <div class="con">- Doesn't mention AI or how it works — requires the description to carry all the weight</div>
+        </div>
+      </div>
+    </div>
+    <div class="option-divider"></div>
+
+    <!-- ==================== OPTION 6 ==================== -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">6</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">The Minimal Tagline + Rich Description</div>
+            <div class="text-foreground-muted text-xs">Ultra-short tagline, lets the description do the heavy lifting</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="login-preview flex items-center justify-center p-8">
+          <div class="text-center max-w-sm w-full">
+            <div class="flex justify-center mb-4">
+              <svg class="logo-svg-xl" viewBox="0 0 80 80">
+                <defs><clipPath id="s6"><rect width="80" height="80" rx="18"/></clipPath></defs>
+                <g clip-path="url(#s6)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">PraxisNote</h1>
+            <p class="text-sm text-foreground-muted mb-2">Meeting intelligence that coaches.</p>
+            <p class="text-xs text-foreground-secondary mb-8">Record meetings. Get AI-powered analysis of your communication patterns. Reflect, set goals, and watch yourself improve.</p>
+            <div class="google-btn">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
+            </div>
+            <p class="text-center text-xs text-foreground-muted mt-8">By signing in, you agree to our terms of service and privacy policy.</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 rounded-lg" style="background: rgba(94, 129, 172, 0.08); border: 1px solid rgba(94, 129, 172, 0.2);">
+          <p class="text-xs text-foreground-secondary mb-1"><strong>Tagline:</strong> "Meeting intelligence that coaches."</p>
+          <p class="text-xs text-foreground-secondary"><strong>Description:</strong> "Record meetings. Get AI-powered analysis of your communication patterns. Reflect, set goals, and watch yourself improve."</p>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Tagline is concise and category-defining — "meeting intelligence" is a clear product space</div>
+          <div class="pro">+ Description walks through the core loop step by step</div>
+          <div class="pro">+ "Watch yourself improve" is aspirational without being abstract</div>
+          <div class="con">- "Meeting intelligence" is tech jargon — not emotionally resonant</div>
+          <div class="con">- Description is the longest of all options — may not be fully read on a login page</div>
+        </div>
+      </div>
+    </div>
+    <div class="option-divider"></div>
+
+    <!-- ==================== OPTION 7 ==================== -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="flex items-center gap-3">
+          <div class="option-number">7</div>
+          <div>
+            <div class="text-foreground text-sm font-semibold">The Hybrid — Hook + Category</div>
+            <div class="text-foreground-muted text-xs">Combines the emotional hook with a clear product description</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="login-preview flex items-center justify-center p-8">
+          <div class="text-center max-w-sm w-full">
+            <div class="flex justify-center mb-4">
+              <svg class="logo-svg-xl" viewBox="0 0 80 80">
+                <defs><clipPath id="s7"><rect width="80" height="80" rx="18"/></clipPath></defs>
+                <g clip-path="url(#s7)"><rect width="80" height="80" fill="#2e3440"/><rect x="8" y="22" width="64" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="64" height="11" rx="5.5" fill="#88c0d0"/><rect x="20" y="8" width="11" height="64" rx="5.5" fill="#a3be8c"/><rect x="49" y="8" width="11" height="64" rx="5.5" fill="#d08770"/><rect x="46" y="22" width="26" height="11" rx="5.5" fill="#5e81ac"/><rect x="8" y="47" width="34" height="11" rx="5.5" fill="#88c0d0"/><rect x="26" y="26" width="28" height="28" rx="8" fill="#2e3440" opacity="0.7"/><rect x="26" y="26" width="28" height="28" rx="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/><polyline points="33,40 38,45 47,34" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">PraxisNote</h1>
+            <p class="text-sm text-foreground-muted mb-2">See yourself the way others do.</p>
+            <p class="text-xs text-foreground-secondary mb-8">Your AI meeting coach — record, reflect, and close the gap between how you think you communicate and how you actually do.</p>
+            <div class="google-btn">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
+            </div>
+            <p class="text-center text-xs text-foreground-muted mt-8">By signing in, you agree to our terms of service and privacy policy.</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 rounded-lg" style="background: rgba(94, 129, 172, 0.08); border: 1px solid rgba(94, 129, 172, 0.2);">
+          <p class="text-xs text-foreground-secondary mb-1"><strong>Tagline:</strong> "See yourself the way others do."</p>
+          <p class="text-xs text-foreground-secondary"><strong>Description:</strong> "Your AI meeting coach — record, reflect, and close the gap between how you think you communicate and how you actually do."</p>
+        </div>
+        <div class="pros-cons">
+          <div class="pro">+ Best of both worlds: emotionally engaging tagline + descriptive explanation</div>
+          <div class="pro">+ "AI meeting coach" establishes the product category in the description</div>
+          <div class="pro">+ "Close the gap" directly echoes the product vision's core sentence</div>
+          <div class="pro">+ Description includes the loop (record, reflect) and the differentiator (the gap)</div>
+          <div class="con">- Description is slightly longer than Options 1-2</div>
+          <div class="con">- Tries to do a lot in two lines — might dilute the emotional punch of the tagline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== COMPARISON TABLE ==================== -->
+    <div class="option-card mb-8">
+      <div class="option-header">
+        <div class="text-foreground text-sm font-semibold">Comparison Table</div>
+      </div>
+      <div class="option-body overflow-x-auto">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th style="min-width: 80px;">Option</th>
+              <th style="min-width: 200px;">Tagline</th>
+              <th style="min-width: 100px;">Primary Pillar</th>
+              <th style="min-width: 100px;">Emotional Tone</th>
+              <th style="min-width: 80px;">Length</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(163, 190, 140, 0.08);">
+              <td><strong>1. Self-Awareness Hook</strong></td>
+              <td>"See yourself the way others do."</td>
+              <td>Pillar 1 (Gap)</td>
+              <td>Intriguing, bold</td>
+              <td>Short</td>
+            </tr>
+            <tr>
+              <td>2. Elevator Pitch</td>
+              <td>"Your AI meeting coach."</td>
+              <td>All three</td>
+              <td>Clear, neutral</td>
+              <td>Shortest</td>
+            </tr>
+            <tr>
+              <td>3. Compounding Value</td>
+              <td>"Become a better communicator, one meeting at a time."</td>
+              <td>Pillar 3 (Memory)</td>
+              <td>Aspirational, warm</td>
+              <td>Long</td>
+            </tr>
+            <tr>
+              <td>4. Provocative Question</td>
+              <td>"You think that meeting went well. Did it?"</td>
+              <td>Pillar 1 (Gap)</td>
+              <td>Provocative, edgy</td>
+              <td>Medium</td>
+            </tr>
+            <tr>
+              <td>5. Blind Spot</td>
+              <td>"You can't coach what you can't see."</td>
+              <td>Pillar 1 (Gap)</td>
+              <td>Wise, quotable</td>
+              <td>Short</td>
+            </tr>
+            <tr>
+              <td>6. Minimal + Rich</td>
+              <td>"Meeting intelligence that coaches."</td>
+              <td>Pillar 2 (Loop)</td>
+              <td>Technical, precise</td>
+              <td>Shortest</td>
+            </tr>
+            <tr>
+              <td>7. Hybrid</td>
+              <td>"See yourself the way others do."</td>
+              <td>All three</td>
+              <td>Intriguing + clear</td>
+              <td>Short + long desc</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== RECOMMENDATION ==================== -->
+    <div class="option-card mb-8 recommended">
+      <div class="option-header">
+        <div class="text-foreground text-sm font-semibold">Recommendation</div>
+        <div class="recommended-badge">Option 1</div>
+      </div>
+      <div class="option-body text-sm text-foreground-secondary leading-relaxed">
+        <p class="mb-3"><strong>Option 1 — The Self-Awareness Hook</strong> is recommended because:</p>
+        <ul class="list-disc pl-5 space-y-1.5">
+          <li><strong>Leads with Pillar 1</strong> — The self-awareness gap is the primary differentiator. "See yourself the way others do" immediately communicates the unique value that no competitor offers.</li>
+          <li><strong>Emotionally engaging</strong> — It's a tagline that makes you stop and think. The best login page copy makes you curious, not informed. Information lives in the description.</li>
+          <li><strong>Short and scannable</strong> — Six words. A returning user doesn't need to re-read it; a new user can absorb it in under a second.</li>
+          <li><strong>Description covers the mechanism</strong> — "Analyzes your meetings, reveals your communication blind spots, and tracks your growth over time" explains the how without being a feature list.</li>
+          <li><strong>Matches the product vision</strong> — The vision document says the emotional core is "we show you what you can't see about yourself." This tagline is that sentence, reframed as an invitation.</li>
+        </ul>
+        <p class="mt-4 text-foreground-muted text-xs"><strong>Runner-up:</strong> Option 7 (Hybrid) is a strong alternative if you want to pack more information into the description. It uses the same tagline but adds "Your AI meeting coach" to the description for category clarity. The trade-off is a slightly longer description line.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('themeIcon');
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        icon.className = 'pi pi-moon text-foreground-muted';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.className = 'pi pi-sun text-foreground-muted';
+      }
+    }
+  </script>
+</body>
+</html>
