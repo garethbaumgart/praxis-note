@@ -124,11 +124,27 @@ if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
         // Map the picture claim from Google's user info response
         options.ClaimActions.MapJsonKey("picture", "picture");
 
+        // Configure correlation cookie for Firebase Hosting proxy compatibility
+        options.CorrelationCookie.SameSite = SameSiteMode.None;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
         // Force account selection on each login (useful after logout)
         options.Events.OnRedirectToAuthorizationEndpoint = context =>
         {
             var uri = QueryHelpers.AddQueryString(context.RedirectUri, "prompt", "select_account");
             context.Response.Redirect(uri);
+            return Task.CompletedTask;
+        };
+
+        // Handle remote authentication failures gracefully (e.g., correlation cookie lost by proxy)
+        options.Events.OnRemoteFailure = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                .CreateLogger("GoogleAuth");
+            logger.LogWarning(context.Failure, "Google OAuth remote failure: {Message}", context.Failure?.Message);
+
+            context.Response.Redirect("/?error=auth_failed");
+            context.HandleResponse();
             return Task.CompletedTask;
         };
     });
