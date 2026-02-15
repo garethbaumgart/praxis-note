@@ -124,11 +124,42 @@ if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
         // Map the picture claim from Google's user info response
         options.ClaimActions.MapJsonKey("picture", "picture");
 
+        // Configure correlation cookie for Firebase Hosting proxy compatibility.
+        // SameSite=None is required because the OAuth callback crosses through the
+        // Firebase proxy, which is treated as a cross-site context by the browser.
+        // Local dev uses mock auth (not Google), so this doesn't affect development.
+        options.CorrelationCookie.SameSite = SameSiteMode.None;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
         // Force account selection on each login (useful after logout)
         options.Events.OnRedirectToAuthorizationEndpoint = context =>
         {
             var uri = QueryHelpers.AddQueryString(context.RedirectUri, "prompt", "select_account");
             context.Response.Redirect(uri);
+            return Task.CompletedTask;
+        };
+
+        // Handle remote authentication failures gracefully instead of returning 500.
+        // Distinguishes user cancellation (access_denied) from real errors.
+        options.Events.OnRemoteFailure = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                .CreateLogger("GoogleAuth");
+
+            var errorCode = context.HttpContext.Request.Query["error"].FirstOrDefault();
+            if (string.Equals(errorCode, "access_denied", StringComparison.OrdinalIgnoreCase))
+            {
+                // User cancelled the login — redirect home silently
+                logger.LogInformation("User cancelled Google login");
+                context.Response.Redirect("/");
+            }
+            else
+            {
+                logger.LogWarning(context.Failure, "Google OAuth remote failure: {Message}", context.Failure?.Message);
+                context.Response.Redirect("/?error=auth_failed");
+            }
+
+            context.HandleResponse();
             return Task.CompletedTask;
         };
     });
