@@ -98,6 +98,11 @@ export class SidebarComponent implements OnInit {
   readonly collapsed = this.sidebarService.collapsed;
   protected readonly docsUrl = DOCS_URL;
 
+  // Section collapse state
+  protected readonly inProgressCollapsed = this.sidebarService.inProgressCollapsed;
+  protected readonly upNextCollapsed = this.sidebarService.upNextCollapsed;
+  protected readonly contextCollapsed = this.sidebarService.contextCollapsed;
+
   protected readonly activeProfile = this.profileService.activeProfile;
 
   protected readonly profileMenuItems = computed<MenuItem[]>(() => {
@@ -190,6 +195,18 @@ export class SidebarComponent implements OnInit {
 
   protected toggleCollapse(): void {
     this.sidebarService.toggle();
+  }
+
+  protected toggleInProgress(): void {
+    this.sidebarService.toggleSection(this.sidebarService.inProgressCollapsed, this.sidebarService.sectionKeys.inProgress);
+  }
+
+  protected toggleUpNext(): void {
+    this.sidebarService.toggleSection(this.sidebarService.upNextCollapsed, this.sidebarService.sectionKeys.upNext);
+  }
+
+  protected toggleContext(): void {
+    this.sidebarService.toggleSection(this.sidebarService.contextCollapsed, this.sidebarService.sectionKeys.context);
   }
 
   protected logout(): void {
