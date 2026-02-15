@@ -75,7 +75,7 @@ var authBuilder = builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
-    options.Cookie.Name = "PraxisNote.Auth";
+    options.Cookie.Name = "__session";
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -113,7 +113,10 @@ var clientSecret = googleAuth["ClientSecret"];
 
 if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
 {
-    authBuilder.AddGoogle(options =>
+    authBuilder.AddOAuth<GoogleOptions, FirebaseProxyGoogleHandler>(
+        GoogleDefaults.AuthenticationScheme,
+        GoogleDefaults.DisplayName,
+        options =>
     {
         options.ClientId = clientId;
         options.ClientSecret = clientSecret;
@@ -124,12 +127,9 @@ if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
         // Map the picture claim from Google's user info response
         options.ClaimActions.MapJsonKey("picture", "picture");
 
-        // Configure correlation cookie for Firebase Hosting proxy compatibility.
-        // SameSite=None is required because the OAuth callback crosses through the
-        // Firebase proxy, which is treated as a cross-site context by the browser.
-        // Local dev uses mock auth (not Google), so this doesn't affect development.
-        options.CorrelationCookie.SameSite = SameSiteMode.None;
-        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+        // Correlation cookie settings removed — FirebaseProxyGoogleHandler
+        // stores the correlation ID in the encrypted state parameter instead,
+        // bypassing the cookie that Firebase Hosting would strip.
 
         // Force account selection on each login (useful after logout)
         options.Events.OnRedirectToAuthorizationEndpoint = context =>
