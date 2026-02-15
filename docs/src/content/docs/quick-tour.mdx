@@ -1,0 +1,93 @@
+---
+title: Quick Tour
+description: Get up and running with PraxisNote in five minutes
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Welcome to PraxisNote! This guide walks you through the essentials so you can start capturing notes, tracking tasks, and organizing meetings right away.
+
+## First Login
+
+When you open PraxisNote, you'll be prompted to sign in. PraxisNote supports Google authentication for a seamless login experience.
+
+<Aside type="tip">
+If you're running a self-hosted instance with mock authentication enabled, you can use the dev toolbar at the top of the screen to switch between test users.
+</Aside>
+
+## The Sidebar
+
+The left sidebar is your primary navigation hub. It gives you quick access to every feature:
+
+- **Home** — your dashboard with a daily summary and recent activity
+- **Tasks** — kanban-style task board with priorities and due dates
+- **Notes** — rich text editor for capturing ideas and meeting notes
+- **Meetings** — calendar-synced meeting management with transcript analysis
+- **Tags** — unified tag hub for organizing across all features
+- **Insights** — behavioral analytics from meeting transcripts
+
+On desktop, you can collapse the sidebar to a slim icon-only rail by clicking the chevron at the top. On mobile, tap the hamburger menu to open the sidebar as an overlay.
+
+## Create Your First Task
+
+<Steps>
+1. Click **Tasks** in the sidebar.
+2. Click the **New Task** button at the top of the page.
+3. Type a title for your task (e.g., "Review project proposal").
+4. Press **Enter** or click away — the task is saved automatically.
+5. Your new task appears in the **To Do** column.
+</Steps>
+
+### Task States
+
+Tasks follow a simple three-state workflow:
+
+| State | Meaning |
+|-------|---------|
+| **To Do** | Not started yet |
+| **In Progress** | Currently being worked on |
+| **Done** | Completed |
+
+Drag a task between columns to change its state, or use the context menu (three dots) on any task card.
+
+### Priority Levels
+
+Set priority on any task to help focus your attention:
+
+- **Critical** — urgent, needs immediate attention
+- **High** — important, do soon
+- **Medium** — normal priority (default)
+- **Low** — nice to have, do when time allows
+
+## Create Your First Note
+
+<Steps>
+1. Click **Notes** in the sidebar.
+2. Click the **New Note** button.
+3. Start typing in the editor — your note saves automatically.
+4. Use the toolbar to format text, add headings, or insert checklists.
+</Steps>
+
+<Aside type="tip">
+Checkboxes in notes can be synced with your task board. When you check off a checkbox that's linked to a task, the task is marked as done automatically.
+</Aside>
+
+## Organize with Tags
+
+Tags work across tasks, notes, and meetings. Create a tag once and apply it anywhere:
+
+<Steps>
+1. Open any task, note, or meeting.
+2. Click the **tag** icon or use the tag input field.
+3. Type a tag name (e.g., "project-alpha") and press **Enter**.
+4. Visit the **Tags** page in the sidebar to see all your tags and where they're used.
+</Steps>
+
+## What's Next?
+
+Now that you know the basics, explore these guides for deeper coverage:
+
+- [Tasks](/tasks/) — full guide to the kanban workflow, due dates, comments, and drag-and-drop
+- [Notes](/notes/) — rich text editing, slash commands, and PDF export
+- [Meetings](/meetings/) — calendar sync and transcript analysis
+- [Keyboard Shortcuts](/keyboard-shortcuts/) — speed up your workflow

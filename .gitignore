@@ -450,3 +450,8 @@ test-results/
 
 # Environment variables (API keys)
 .env
+
+# Starlight docs site
+docs/node_modules/
+docs/dist/
+docs/.astro/

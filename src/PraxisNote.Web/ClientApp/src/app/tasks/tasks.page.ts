@@ -12,6 +12,7 @@ import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
+import { HelpLinkComponent } from '../shared/components/help-link.component';
 
 interface ColumnConfig {
   status: TaskStatus;
@@ -30,7 +31,7 @@ interface ColumnConfig {
   selector: 'app-tasks-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ColumnComponent, ErrorStateComponent, PageContentComponent],
+  imports: [ColumnComponent, ErrorStateComponent, PageContentComponent, HelpLinkComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Tasks</h1>
@@ -68,6 +69,10 @@ interface ColumnConfig {
         } @else {
           <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline px-1.5 py-0.5 text-xs text-foreground-muted bg-surface border border-border rounded font-sans">/</kbd>
         }
+      </div>
+
+      <div class="flex justify-end mb-2">
+        <app-help-link path="tasks" />
       </div>
 
       @if (taskService.error()) {

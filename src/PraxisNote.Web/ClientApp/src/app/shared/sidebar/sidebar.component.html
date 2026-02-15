@@ -200,6 +200,29 @@
     }
   </nav>
 
+  <!-- Docs link -->
+  <div class="border-t border-border py-1"
+    [class.px-3]="!collapsed()"
+    [class.px-1]="collapsed()"
+  >
+    @if (collapsed()) {
+      <a [href]="docsUrl" target="_blank" rel="noopener"
+        class="w-full flex items-center justify-center h-9 text-foreground-muted hover:text-foreground-secondary rounded-lg hover:bg-surface-muted transition-colors"
+        pTooltip="Docs" tooltipPosition="right"
+        aria-label="Open documentation (opens in new tab)">
+        <i class="pi pi-book"></i>
+      </a>
+    } @else {
+      <a [href]="docsUrl" target="_blank" rel="noopener"
+        class="w-full flex items-center gap-3 h-8 px-3 text-sm text-foreground-muted hover:text-foreground-secondary rounded-lg hover:bg-surface-muted transition-colors"
+        aria-label="Open documentation (opens in new tab)">
+        <i class="pi pi-book text-foreground-muted"></i>
+        <span class="flex-1">Docs</span>
+        <i class="pi pi-external-link text-[10px] text-foreground-muted" aria-hidden="true"></i>
+      </a>
+    }
+  </div>
+
   <!-- User section -->
   <div class="border-t border-border py-1.5"
     [class.px-3]="!collapsed()"
@@ -411,6 +434,17 @@
           }
         }
       </nav>
+
+      <!-- Mobile Docs link -->
+      <div class="px-3 py-1 border-t border-border">
+        <a [href]="docsUrl" target="_blank" rel="noopener"
+          class="w-full flex items-center gap-3 h-11 px-3 text-sm text-foreground-muted hover:text-foreground-secondary rounded-lg hover:bg-surface-muted transition-colors"
+          aria-label="Open documentation (opens in new tab)">
+          <i class="pi pi-book text-foreground-muted"></i>
+          <span class="flex-1">Docs</span>
+          <i class="pi pi-external-link text-[10px] text-foreground-muted" aria-hidden="true"></i>
+        </a>
+      </div>
 
       <!-- Mobile user section -->
       <div class="py-1.5 px-3 border-t border-border">

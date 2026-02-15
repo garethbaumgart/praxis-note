@@ -27,13 +27,14 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
 import { BreadcrumbItem, ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
+import { HelpLinkComponent } from '../shared/components/help-link.component';
 
 @Component({
   selector: 'app-note-editor-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [DeleteConfirmationService],
-  imports: [TiptapEditorComponent, DeleteConfirmButtonComponent],
+  imports: [TiptapEditorComponent, DeleteConfirmButtonComponent, HelpLinkComponent],
   template: `
     <div class="note-editor-page">
       <!-- Actions template (rendered by app shell top bar) -->
@@ -99,6 +100,7 @@ import { Tag } from '../tags/tag.model';
             Last edited {{ formatDate(note()!.updatedAt) }}
           </span>
         }
+        <app-help-link path="notes" />
         <span class="flex-1"></span>
         <!-- Tags section (editable) -->
         @if (note()) {

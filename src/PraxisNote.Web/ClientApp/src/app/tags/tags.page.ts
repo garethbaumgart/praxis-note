@@ -17,6 +17,7 @@ import { formatShortDate } from '../shared/date-utils';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
+import { HelpLinkComponent } from '../shared/components/help-link.component';
 
 interface DateGroup {
   label: string;
@@ -27,7 +28,7 @@ interface DateGroup {
   selector: 'app-tags-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent, PageContentComponent],
+  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent, PageContentComponent, HelpLinkComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Tags</h1>
@@ -45,9 +46,10 @@ interface DateGroup {
         <div class="text-center py-16">
           <i class="pi pi-tags text-4xl text-foreground-muted mb-4" aria-hidden="true"></i>
           <p class="text-lg font-semibold text-foreground mb-2">No tags yet</p>
-          <p class="text-sm text-foreground-muted max-w-md mx-auto">
+          <p class="text-sm text-foreground-muted max-w-md mx-auto mb-4">
             Tags you create on notes, tasks, and meetings will appear here.
           </p>
+          <app-help-link path="tags" label="Learn about tags" />
         </div>
       } @else {
         <!-- Selector row -->

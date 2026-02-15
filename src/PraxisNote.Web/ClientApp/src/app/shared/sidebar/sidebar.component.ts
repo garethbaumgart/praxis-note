@@ -8,6 +8,7 @@ import { MenuItem } from 'primeng/api';
 import { SidebarActivityService } from './sidebar-activity.service';
 import { SidebarService } from './sidebar.service';
 import { ProfileService } from '../../profiles/profile.service';
+import { DOCS_URL } from '../constants';
 
 interface NavItem {
   path: string;
@@ -95,6 +96,7 @@ export class SidebarComponent implements OnInit {
   protected readonly profileService = inject(ProfileService);
 
   readonly collapsed = this.sidebarService.collapsed;
+  protected readonly docsUrl = DOCS_URL;
 
   protected readonly activeProfile = this.profileService.activeProfile;
 
