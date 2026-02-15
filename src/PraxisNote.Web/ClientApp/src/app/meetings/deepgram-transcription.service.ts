@@ -16,6 +16,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
   private channels = 1;
   private localUserName = 'You';
   private encoding = '';
+  private actualMultichannel: boolean | null = null; // null = not yet received from server
 
   // Reconnection state
   private intentionallyStopped = false;
@@ -87,6 +88,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.channels = channelCount;
     this.localUserName = userName;
     this.encoding = mimeType;
+    this.actualMultichannel = null;
     this.intentionallyStopped = false;
     this.hasEverConnected = false;
     this.reconnectAttempts = 0;
@@ -168,6 +170,10 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.ws.onmessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
+        if (data['type'] === 'SessionConfig') {
+          this.actualMultichannel = data['multichannel'] === true;
+          return;
+        }
         this.handleDeepgramResult(data);
       } catch {
         // Ignore non-JSON messages (metadata, etc.)
@@ -277,7 +283,17 @@ export class DeepgramTranscriptionService implements OnDestroy {
 
     const isFinal = data['is_final'] as boolean;
 
-    if (this.channels > 1) {
+    // Use server-reported mode if available, otherwise fall back to requested channel count.
+    let isMultichannel = this.actualMultichannel ?? (this.channels > 1);
+
+    // Safety net: if we think we're multichannel but the response lacks channel_index,
+    // Deepgram is actually sending single-channel diarized results. Auto-correct.
+    if (isMultichannel && !Array.isArray(data['channel_index'])) {
+      this.actualMultichannel = false;
+      isMultichannel = false;
+    }
+
+    if (isMultichannel) {
       this.handleMultichannelResult(data, isFinal);
     } else {
       this.handleSingleChannelResult(data, isFinal);

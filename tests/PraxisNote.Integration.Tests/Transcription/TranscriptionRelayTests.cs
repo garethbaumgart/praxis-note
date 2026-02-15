@@ -90,6 +90,9 @@ public class TranscriptionRelayTests : IAsyncLifetime
         Assert.True(_fakeDeepgram.ReceivedAudioFrames.TryDequeue(out var receivedFrame));
         Assert.Equal(audioData, receivedFrame);
 
+        // Consume the SessionConfig message sent before results
+        await ConsumeSessionConfigAsync(ws);
+
         // Assert: Client receives the canned result
         var resultBuffer = new byte[4096];
         using var resultCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -164,6 +167,9 @@ public class TranscriptionRelayTests : IAsyncLifetime
             WebSocketMessageType.Binary,
             endOfMessage: true,
             CancellationToken.None);
+
+        // Consume the SessionConfig message sent before results
+        await ConsumeSessionConfigAsync(ws);
 
         // Assert: Client receives a single complete text message
         var resultBuffer = new byte[8192];
@@ -244,6 +250,9 @@ public class TranscriptionRelayTests : IAsyncLifetime
             await Task.Delay(100); // Small delay to ensure processing
         }
 
+        // Consume the SessionConfig message sent before close
+        await ConsumeSessionConfigAsync(ws);
+
         // Assert: Client receives a close event with the error
         var buffer = new byte[4096];
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -316,6 +325,9 @@ public class TranscriptionRelayTests : IAsyncLifetime
         Assert.True(_fakeDeepgram.ReceivedAudioFrames.TryDequeue(out var receivedFrame));
         Assert.Equal(new byte[] { 0xDE, 0xAD }, receivedFrame);
 
+        // Consume the SessionConfig message sent before results
+        await ConsumeSessionConfigAsync(ws);
+
         // Assert: Client can still receive results (relay didn't crash)
         var resultBuffer = new byte[4096];
         using var resultCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -324,6 +336,24 @@ public class TranscriptionRelayTests : IAsyncLifetime
 
         // Clean up
         await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Reads and discards the initial SessionConfig message that the backend sends
+    /// after connecting to Deepgram. Returns the parsed JSON type for verification.
+    /// </summary>
+    private static async Task<string> ConsumeSessionConfigAsync(WebSocket ws)
+    {
+        var buffer = new byte[4096];
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var result = await ws.ReceiveAsync(buffer, cts.Token);
+        Assert.Equal(WebSocketMessageType.Text, result.MessageType);
+
+        var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
+        using var doc = JsonDocument.Parse(json);
+        var type = doc.RootElement.GetProperty("type").GetString()!;
+        Assert.Equal("SessionConfig", type);
+        return type;
     }
 
     private static async Task WaitForConditionAsync(
