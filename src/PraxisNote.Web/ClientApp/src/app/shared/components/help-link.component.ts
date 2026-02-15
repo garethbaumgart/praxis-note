@@ -10,7 +10,7 @@ import { DOCS_URL } from '../constants';
       class="inline-flex items-center gap-1 text-xs text-foreground-muted hover:underline"
       [href]="docsUrl + '/' + path()"
       target="_blank"
-      rel="noopener"
+      rel="noopener noreferrer"
     >
       <i class="pi pi-question-circle" style="font-size: 10px;" aria-hidden="true"></i>
       {{ label() }}
