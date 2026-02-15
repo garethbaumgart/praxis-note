@@ -71,10 +71,6 @@ interface ColumnConfig {
         }
       </div>
 
-      <div class="flex justify-end mb-2">
-        <app-help-link path="tasks" />
-      </div>
-
       @if (taskService.error()) {
         <app-error-state
           title="Something went wrong"
@@ -82,6 +78,10 @@ interface ColumnConfig {
           (retry)="taskService.loadTasks()"
         />
       } @else {
+      <div class="flex justify-end mb-2">
+        <app-help-link path="tasks" />
+      </div>
+
       <!-- Mobile: Segmented column indicator -->
       <div class="flex md:hidden gap-1 py-1" role="tablist" aria-label="Column navigation">
         <button
