@@ -9,31 +9,27 @@ import {
   OnDestroy,
   AfterViewInit,
   HostListener,
-  ElementRef,
   TemplateRef,
   viewChild,
-  afterNextRender,
   Injector,
   DestroyRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
-import { DatePickerModule } from 'primeng/datepicker';
-import { Select, SelectModule } from 'primeng/select';
-import { Menu, MenuModule } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
 import { Meeting, MeetingTag, ActionItemStatus, parseJsonArray } from './meeting.model';
 import { MeetingService } from './meeting.service';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingReflectionComponent } from './meeting-reflection.component';
+import { MeetingSectionComponent } from './meeting-section.component';
+import { MeetingDetailsSectionComponent } from './meeting-details-section.component';
+import { MeetingTranscriptSectionComponent } from './meeting-transcript-section.component';
 import { AudioRecorderService } from './audio-recorder.service';
 import { DeepgramTranscriptionService } from './deepgram-transcription.service';
 import { ToastService } from '../shared/services/toast.service';
 import { BreadcrumbItem, ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
-import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime, ALL_TIME_OPTIONS } from './meeting-time.utils';
+import { parseTimeInput, formatTimeLabel, getDefaultMeetingTime } from './meeting-time.utils';
 import { toLocalISOString, formatShortDate } from '../shared/date-utils';
 import { AuthService } from '../auth/auth.service';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
@@ -49,7 +45,14 @@ interface DateOption {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [DeleteConfirmationService],
-  imports: [FormsModule, DatePickerModule, SelectModule, MenuModule, MeetingAnalysisComponent, MeetingReflectionComponent, DeleteConfirmButtonComponent],
+  imports: [
+    MeetingSectionComponent,
+    MeetingDetailsSectionComponent,
+    MeetingTranscriptSectionComponent,
+    MeetingAnalysisComponent,
+    MeetingReflectionComponent,
+    DeleteConfirmButtonComponent,
+  ],
   template: `
     <div class="meeting-editor-page">
       <!-- Actions template (rendered by app shell top bar) -->
@@ -111,391 +114,92 @@ interface DateOption {
               }
             </div>
 
-            <!-- Details Section - Cyan border -->
-            <div class="section-card details-card">
-              <div class="section-header details-header">
-                <span><i class="pi pi-info-circle"></i> Details</span>
-              </div>
-              <div class="details-stack">
-                <!-- Row 1: Date chips + Time picker -->
-                <div>
-                  <label class="field-label">Date & Time</label>
-                  <div class="date-time-row">
-                    <div class="date-chips">
-                      @for (option of dateOptions; track option.label) {
-                        <button
-                          type="button"
-                          class="date-chip"
-                          [class.active]="selectedDateChip() === option.label"
-                          [attr.aria-pressed]="selectedDateChip() === option.label"
-                          (click)="selectDateOption(option)"
-                        >
-                          {{ option.label }}
-                        </button>
-                      }
-                      @if (selectedDateChip() === 'custom' && customDateLabel()) {
-                        <button type="button" class="date-chip active" [attr.aria-label]="'Selected date: ' + customDateLabel()">
-                          {{ customDateLabel() }}
-                        </button>
-                      }
-                      <button
-                        type="button"
-                        class="date-chip"
-                        [attr.aria-expanded]="showDatePicker()"
-                        aria-label="Pick a date"
-                        (click)="toggleDatePicker()"
-                      >
-                        <i class="pi pi-calendar text-[10px]"></i>
-                        {{ isNewMeeting() ? 'Pick' : 'Change' }}
-                      </button>
-                    </div>
-                    <!-- Time picker (editable combobox) -->
-                    <div class="time-picker-wrapper">
-                      <p-select
-                        #timeSelect
-                        [options]="allTimeOptions"
-                        [ngModel]="selectedTimeLabel()"
-                        (ngModelChange)="onTimeChange($event)"
-                        (onShow)="showDatePicker.set(false); timeSelectOpen.set(true)"
-                        (onHide)="timeSelectOpen.set(false)"
-                        [editable]="true"
-                        [filter]="true"
-                        filterPlaceholder="Type time..."
-                        placeholder="Type or pick time..."
-                        [style]="{ width: '170px' }"
-                        [class.time-invalid]="timeInputInvalid()"
-                        appendTo="body"
-                        ariaLabel="Meeting time"
-                      />
-                      @if (timeInputInvalid()) {
-                        <small class="text-danger text-[10px] mt-0.5 block">Invalid time format</small>
-                      }
-                    </div>
-                  </div>
-                  @if (showDatePicker()) {
-                    <div class="mt-2">
-                      <p-datepicker
-                        [inline]="true"
-                        [ngModel]="meetingDate()"
-                        (ngModelChange)="onDatePickerChange($event)"
-                        dateFormat="dd M yy"
-                      />
-                    </div>
+            <!-- Details Section (collapsible) -->
+            <app-meeting-section
+              #detailsSection
+              title="Details"
+              icon="pi-info-circle"
+              [borderColor]="'var(--color-meeting-details-border)'"
+              [headerColor]="'var(--color-todo-text)'"
+              sectionId="details-section"
+              [collapsible]="true"
+              [initialExpanded]="true"
+            >
+              <!-- Collapsed summary -->
+              <div summary class="details-mini-card">
+                <div class="mini-card-row">
+                  <i class="pi pi-calendar text-[10px] text-foreground-muted"></i>
+                  <span class="text-xs text-foreground-secondary">{{ dateSummary() }}</span>
+                  <span class="text-xs text-foreground-muted">{{ timeSummary() }}</span>
+                </div>
+                <div class="mini-card-row">
+                  <i class="pi pi-users text-[10px] text-foreground-muted"></i>
+                  <span class="text-xs text-foreground-secondary">{{ attendeesSummary() }}</span>
+                  @if (tagCountSummary()) {
+                    <span class="mini-card-divider"></span>
+                    <i class="pi pi-tag text-[10px] text-foreground-muted"></i>
+                    <span class="text-xs text-foreground-secondary">{{ tagCountSummary() }}</span>
                   }
                 </div>
-                <!-- Row 2: Attendees (full width) -->
-                <div>
-                  <label class="field-label">Attendees</label>
-                  <input
-                    class="field-input"
-                    type="text"
-                    placeholder="Comma separated names..."
-                    [value]="attendees()"
-                    (input)="onAttendeesChange(asInput($event).value)"
-                    aria-label="Attendees"
-                  >
-                </div>
-                <!-- Row 3: Tags -->
-                @if (!isNewMeeting()) {
-                  <div>
-                    <label class="field-label">Tags</label>
-                    <div class="tags-section">
-                      @for (tag of visibleTags(); track tag.id) {
-                        <span class="tag-badge">
-                          {{ tag.name }}
-                          <button
-                            type="button"
-                            class="tag-badge-remove"
-                            (click)="removeTag(tag.id)"
-                            [attr.aria-label]="'Remove tag ' + tag.name"
-                          >
-                            <i class="pi pi-times"></i>
-                          </button>
-                        </span>
-                      }
-                      @if (overflowCount() > 0 && !showTagPicker()) {
-                        <button
-                          type="button"
-                          class="overflow-btn"
-                          (click)="inlineTagsExpanded.set(true)"
-                          [attr.aria-label]="'Show ' + overflowCount() + ' more tags'"
-                        >
-                          +{{ overflowCount() }}
-                        </button>
-                      }
-                      <!-- Suggested tags inline (sparkle icon + dashed border) -->
-                      @for (tagName of pendingSuggestedTags(); track tagName) {
-                        <span class="suggested-tag">
-                          <i class="pi pi-sparkles" style="font-size: 9px;"></i>
-                          {{ tagName }}
-                          <button
-                            type="button"
-                            class="suggested-tag-accept"
-                            (click)="acceptSuggestedTag(tagName)"
-                            [attr.aria-label]="'Accept tag ' + tagName"
-                          >
-                            <i class="pi pi-check"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="suggested-tag-dismiss"
-                            (click)="dismissSuggestedTag(tagName)"
-                            [attr.aria-label]="'Dismiss tag ' + tagName"
-                          >
-                            <i class="pi pi-times"></i>
-                          </button>
-                        </span>
-                      }
-                      <!-- Divider if tags exist -->
-                      @if (meetingTags().length > 0 || pendingSuggestedTags().length > 0) {
-                        <span class="w-px h-3.5 bg-border shrink-0 mx-0.5"></span>
-                      }
-                      <!-- Add tag input/button -->
-                      @if (showTagPicker()) {
-                        <div class="tag-input-wrapper">
-                          <input
-                            #tagInput
-                            type="text"
-                            [placeholder]="meetingTags().length > 0 ? 'Add tag...' : 'Add first tag...'"
-                            [value]="tagSearch()"
-                            (input)="tagSearch.set(asInput($event).value)"
-                            (keydown.enter)="onTagEnter(); $event.preventDefault()"
-                            (keydown.escape)="showTagPicker.set(false)"
-                            class="tag-input"
-                            aria-label="Search or create tag"
-                          >
-                          @if (tagSuggestions().length > 0 || canCreateTag()) {
-                            <div class="tag-dropdown">
-                              @for (tag of tagSuggestions(); track tag.id) {
-                                <button
-                                  type="button"
-                                  class="tag-dropdown-item"
-                                  (click)="addTag({ id: tag.id, name: tag.name })"
-                                >
-                                  <span [innerHTML]="highlightMatch(tag.name)"></span>
-                                  <span class="text-foreground-muted">{{ tag.usageCount }}</span>
-                                </button>
-                              }
-                              @if (canCreateTag()) {
-                                @if (tagSuggestions().length > 0) {
-                                  <div class="tag-dropdown-divider"></div>
-                                }
-                                <button
-                                  type="button"
-                                  class="tag-dropdown-item create"
-                                  (click)="createAndAddTag(tagSearch().trim())"
-                                >
-                                  <i class="pi pi-plus text-[10px] mr-1"></i>
-                                  Create "{{ tagSearch().trim() }}"
-                                </button>
-                              }
-                            </div>
-                          }
-                        </div>
-                      } @else {
-                        <button
-                          type="button"
-                          class="add-tag-btn"
-                          (click)="openTagInput()"
-                          aria-label="Add tag"
-                        >
-                          <i class="pi pi-tag text-[9px]"></i>
-                          <span>Add tag</span>
-                        </button>
-                      }
-                      @if (inlineTagsExpanded() && meetingTags().length > 3 && !showTagPicker()) {
-                        <button
-                          type="button"
-                          class="collapse-btn"
-                          (click)="inlineTagsExpanded.set(false)"
-                          aria-label="Show fewer tags"
-                        >
-                          <i class="pi pi-chevron-up text-[8px]"></i>
-                          <span>Less</span>
-                        </button>
-                      }
-                    </div>
-                  </div>
-                }
               </div>
-              @if (!isNewMeeting()) {
-                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-border">
-                  <button
-                    type="button"
-                    class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-md transition-colors"
-                    [class.bg-surface-muted]="includeInInsights()"
-                    [class.text-foreground-secondary]="includeInInsights()"
-                    [class.bg-warning/10]="!includeInInsights()"
-                    [class.text-warning]="!includeInInsights()"
-                    (click)="onToggleExcludeFromInsights()"
-                    [attr.aria-pressed]="includeInInsights()"
-                    aria-label="Include in behavioral insights"
-                  >
-                    <i class="pi" [class.pi-eye]="includeInInsights()" [class.pi-eye-slash]="!includeInInsights()"></i>
-                    {{ includeInInsights() ? 'Included in Insights' : 'Excluded from Insights' }}
-                  </button>
-                  @if (!includeInInsights()) {
-                    <span class="text-xs text-foreground-muted">This meeting won't affect your behavioral trends</span>
-                  }
-                </div>
-              }
-            </div>
+
+              <!-- Expanded content -->
+              <app-meeting-details-section
+                #detailsSectionRef
+                [isNewMeeting]="isNewMeeting()"
+                [meetingDate]="meetingDate()"
+                [attendees]="attendees()"
+                [meetingTags]="meetingTags()"
+                [pendingSuggestedTags]="pendingSuggestedTags()"
+                [includeInInsights]="includeInInsights()"
+                [selectedDateChip]="selectedDateChip()"
+                [customDateLabel]="customDateLabel()"
+                [selectedTimeLabel]="selectedTimeLabel()"
+                [timeInputInvalid]="timeInputInvalid()"
+                [showDatePicker]="showDatePicker()"
+                (onAttendeesChange)="onAttendeesChange($event)"
+                (onDateOptionSelect)="selectDateOption($event)"
+                (onDatePickerToggle)="toggleDatePicker()"
+                (onDatePickerSelect)="onDatePickerChange($event)"
+                (onTimeChanged)="onTimeChange($event)"
+                (onRemoveTag)="removeTag($event)"
+                (onAddTag)="addTag($event)"
+                (onCreateAndAddTag)="createAndAddTag($event)"
+                (onAcceptSuggestedTag)="acceptSuggestedTag($event)"
+                (onDismissSuggestedTag)="dismissSuggestedTag($event)"
+                (onToggleExcludeFromInsights)="onToggleExcludeFromInsights()"
+                (onCloseDatePicker)="showDatePicker.set(false)"
+              />
+            </app-meeting-section>
 
             @if (!isNewMeeting()) {
-              <!-- Transcript Section - Blue border -->
-              <div class="section-card transcript-card">
-                <div class="section-header transcript-header">
-                  <span><i class="pi pi-file-edit"></i> Transcript</span>
-                  <div class="section-actions">
-                    @if (!recorder.isActive()) {
-                      <button
-                        type="button"
-                        class="record-btn"
-                        (click)="recordMenu.toggle($event)"
-                        aria-label="Record and transcribe"
-                        aria-haspopup="true"
-                      >
-                        <i class="pi pi-microphone"></i> Record <i class="pi pi-chevron-down ml-1 text-xs"></i>
-                      </button>
-                      <p-menu #recordMenu [model]="recordMenuItems()" [popup]="true" appendTo="body" (onShow)="recordMenuOpen.set(true)" (onHide)="recordMenuOpen.set(false)" />
-                    }
-                  </div>
-                </div>
+              <!-- Transcript Section (hero element, always expanded) -->
+              <app-meeting-section
+                title="Transcript"
+                icon="pi-file-edit"
+                [borderColor]="'var(--color-meeting-transcript-border)'"
+                [headerColor]="'var(--color-primary-text)'"
+                sectionId="transcript-section"
+                [collapsible]="false"
+              >
+                <app-meeting-transcript-section
+                  [transcript]="transcript()"
+                  [showTabWarning]="showTabWarning()"
+                  (onTranscriptChange)="onTranscriptChange($event)"
+                  (onStartRecording)="startRecording($event)"
+                  (onStopRecording)="stopRecording()"
+                />
+              </app-meeting-section>
 
-                <!-- Audio Recording UI -->
-                @if (recorder.isActive()) {
-                  <div class="recording-area">
-                    <div class="flex items-center justify-between mb-3">
-                      <div class="flex items-center gap-2">
-                        <span class="w-3 h-3 bg-danger rounded-full recording-pulse" aria-hidden="true"></span>
-                        <span class="text-sm font-medium text-foreground">
-                          {{ recorder.isPaused() ? 'Paused' : 'Recording' }}
-                        </span>
-                        @if (recorder.hasSystemAudio()) {
-                          <span class="text-xs px-2 py-0.5 bg-accent-solid/20 text-accent-solid rounded-full">
-                            <i class="pi pi-desktop mr-1"></i>Tab Audio
-                          </span>
-                        }
-                      </div>
-                      <span class="text-sm text-foreground-muted font-mono" aria-label="Recording duration">{{ recorder.formattedTime() }}</span>
-                    </div>
-                    <!-- Audio level bars -->
-                    <div class="flex items-end gap-0.5 h-8 mb-3" aria-hidden="true">
-                      @for (level of recorder.audioLevels(); track $index) {
-                        <div
-                          class="audio-bar flex-1 rounded-sm"
-                          [class.bg-accent-solid]="level > 0.05"
-                          [class.bg-surface-muted]="level <= 0.05"
-                          [style.height.%]="Math.max(level * 100, 10)"
-                        ></div>
-                      }
-                    </div>
-                    <div class="flex justify-center gap-2">
-                      @if (recorder.isRecording()) {
-                        <button
-                          type="button"
-                          class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded-md hover:bg-surface-muted/80 transition-colors"
-                          (click)="recorder.pause()"
-                          aria-label="Pause recording"
-                        >
-                          <i class="pi pi-pause mr-1"></i>Pause
-                        </button>
-                      } @else {
-                        <button
-                          type="button"
-                          class="px-3 py-1.5 text-xs bg-surface-muted text-foreground-secondary rounded-md hover:bg-surface-muted/80 transition-colors"
-                          (click)="recorder.resume()"
-                          aria-label="Resume recording"
-                        >
-                          <i class="pi pi-play mr-1"></i>Resume
-                        </button>
-                      }
-                      <button
-                        type="button"
-                        class="px-3 py-1.5 text-xs bg-danger text-white rounded-md hover:opacity-90 transition-opacity"
-                        (click)="stopRecording()"
-                        aria-label="Stop recording"
-                      >
-                        <i class="pi pi-stop-circle mr-1"></i>Stop
-                      </button>
-                    </div>
-                  </div>
-                }
-
-                @if (recorder.error()) {
-                  <p class="text-xs text-danger mt-2">{{ recorder.error() }}</p>
-                }
-                @if (transcription.isReconnecting()) {
-                  <div class="flex items-center gap-2 text-xs text-foreground-muted bg-surface-muted rounded px-3 py-1.5 mt-2">
-                    <i class="pi pi-spin pi-spinner text-xs"></i>
-                    <span>Reconnecting transcription...</span>
-                  </div>
-                } @else if (transcription.error()) {
-                  <p class="text-xs text-danger mt-2">{{ transcription.error() }}</p>
-                }
-
-                @if (showTabWarning()) {
-                  <div class="flex items-center gap-2 text-xs text-foreground-muted bg-surface-muted rounded px-3 py-1.5 mt-2">
-                    <i class="pi pi-info-circle text-xs"></i>
-                    <span>Keep this tab active for best recording quality.</span>
-                  </div>
-                }
-
-                <!-- Live transcript preview while recording -->
-                @if (recorder.isActive() && (transcription.transcript() || transcription.interimText())) {
-                  <div class="live-transcript">
-                    <div class="flex items-center gap-1.5 mb-2">
-                      <i class="pi pi-volume-up text-xs text-accent-solid"></i>
-                      <span class="text-xs font-medium text-foreground-secondary">Live Transcript</span>
-                    </div>
-                    @if (transcription.segments().length > 0) {
-                      <div class="text-sm leading-relaxed space-y-1">
-                        @for (seg of transcription.segments(); track $index) {
-                          <p>
-                            <span class="font-semibold text-accent-solid text-xs">[{{ seg.speaker }}]</span>
-                            <span class="text-foreground ml-1">{{ seg.text }}</span>
-                          </p>
-                        }
-                        @if (transcription.interimText()) {
-                          <p>
-                            @if (transcription.interimSpeaker()) {
-                              <span class="font-semibold text-foreground-muted text-xs">[{{ transcription.interimSpeaker() }}]</span>
-                            }
-                            <span class="text-foreground-muted italic ml-1">{{ transcription.interimText() }}</span>
-                          </p>
-                        }
-                      </div>
-                    } @else {
-                      <p class="text-sm text-foreground leading-relaxed">
-                        {{ transcription.transcript() }}
-                        @if (transcription.interimText()) {
-                          <span class="text-foreground-muted italic">{{ transcription.interimText() }}</span>
-                        }
-                      </p>
-                    }
-                  </div>
-                }
-
-                <!-- Transcript textarea -->
-                <textarea
-                  #transcriptArea
-                  class="transcript-textarea"
-                  placeholder="Paste transcript here..."
-                  [value]="transcript()"
-                  (input)="onTranscriptInput($event)"
-                  aria-label="Meeting transcript"
-                  rows="3"
-                ></textarea>
-                <div class="flex justify-end mt-1">
-                  <span class="text-xs text-foreground-muted">{{ transcript().length }} characters</span>
-                </div>
-              </div>
-
-              <!-- AI Analysis Section - Green border -->
-              <div class="section-card analysis-card">
-                <div class="section-header analysis-header">
-                  <span><i class="pi pi-sparkles"></i> AI Analysis</span>
-                </div>
+              <!-- AI Analysis Section -->
+              <app-meeting-section
+                #analysisSection
+                title="AI Analysis"
+                icon="pi-sparkles"
+                [borderColor]="'var(--color-meeting-analysis-border)'"
+                [headerColor]="'var(--color-done-text)'"
+                sectionId="analysis-section"
+              >
                 @if (currentMeeting()) {
                   <app-meeting-analysis
                     [meeting]="currentMeeting()!"
@@ -511,18 +215,21 @@ interface DateOption {
                     Click "Generate" to create an AI summary of this meeting
                   </div>
                 }
-              </div>
+              </app-meeting-section>
 
-              <!-- Reflection Section - Purple border -->
+              <!-- Reflection Section (only when behavioral analysis exists) -->
               @if (currentMeeting()?.behavioralAnalysis) {
-                <div class="section-card reflection-card">
-                  <div class="section-header reflection-header">
-                    <span><i class="pi pi-comments"></i> Self-Reflection</span>
-                  </div>
+                <app-meeting-section
+                  title="Self-Reflection"
+                  icon="pi-comments"
+                  [borderColor]="'var(--color-meeting-reflection-border)'"
+                  [headerColor]="'var(--color-meeting-reflection-border)'"
+                  sectionId="reflection-section"
+                >
                   <app-meeting-reflection
                     [meeting]="currentMeeting()!"
                   />
-                </div>
+                </app-meeting-section>
               }
             }
           </div>
@@ -562,126 +269,32 @@ interface DateOption {
     .title-input::placeholder { color: var(--color-text-muted); }
     .title-sparkle { color: var(--color-primary-solid); font-size: 14px; flex-shrink: 0; }
 
-    .section-card {
-      background: var(--color-bg-subtle); border: 1px solid var(--color-border-default);
-      border-radius: 8px; padding: 16px; margin-bottom: 12px;
-    }
-
-    .details-card { border-left: 3px solid var(--color-meeting-details-border); }
-    .transcript-card { border-left: 3px solid var(--color-meeting-transcript-border); }
-    .analysis-card { border-left: 3px solid var(--color-meeting-analysis-border); }
-    .reflection-card { border-left: 3px solid var(--color-meeting-reflection-border); }
-
-    .section-header {
-      font-size: 12px; font-weight: 600; text-transform: uppercase;
-      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
-    }
-
-    .details-header { color: var(--color-todo-text); }
-    .transcript-header { color: var(--color-primary-text); }
-    .analysis-header { color: var(--color-done-text); }
-    .reflection-header { color: var(--color-meeting-reflection-border); }
-    .section-actions { display: flex; gap: 6px; }
-
-    .record-btn { background: var(--color-todo-bg); color: var(--color-todo-text); border: 1px solid var(--color-todo-border); border-radius: 5px; padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all .15s; }
-    .record-btn:hover { background: var(--color-todo-bg-hover); }
-
-    .details-stack { display: flex; flex-direction: column; gap: 12px; }
-    .date-time-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .time-picker-wrapper { flex-shrink: 0; }
-
-    .field-label { font-size: 11px; color: var(--color-text-muted); display: block; margin-bottom: 4px; }
-    .field-input {
-      width: 100%; background: var(--color-bg-muted); border: none; border-radius: 6px;
-      padding: 8px 10px; font-size: 13px; color: var(--color-text-primary); outline: none; box-sizing: border-box;
-    }
-    .field-input::placeholder { color: var(--color-text-muted); }
-
-    .date-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
-
-    .date-chip {
-      padding: 4px 10px; font-size: 11px; border-radius: 9999px; border: none;
-      cursor: pointer; transition: all .15s; background: var(--color-bg-muted); color: var(--color-text-secondary);
-    }
-    .date-chip:hover, .date-chip.active { background: var(--color-primary-bg); color: var(--color-primary-text); }
-
-    :host ::ng-deep .p-select.p-select-editable .p-select-label { font-size: 13px; }
-    :host ::ng-deep .time-invalid .p-select-label { color: var(--color-danger-base); }
-
-    .transcript-textarea {
-      width: 100%; background: var(--color-bg-muted); border: none; border-radius: 6px;
-      padding: 12px; font-size: 13px; line-height: 1.7; color: var(--color-text-primary);
-      resize: none; overflow: hidden; outline: none; box-sizing: border-box; min-height: 80px;
-    }
-    .transcript-textarea::placeholder { color: var(--color-text-muted); }
-
-    .recording-area { background: var(--color-bg-muted); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-    @keyframes pulse-recording { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    .recording-pulse { animation: pulse-recording 1.5s ease-in-out infinite; }
-    .audio-bar { transition: height .1s ease-out; }
-
-    .live-transcript {
-      background: var(--color-bg-muted); border-radius: 6px; padding: 12px;
-      margin-bottom: 12px; max-height: 200px; overflow-y: auto;
-    }
     .empty-analysis {
       background: var(--color-bg-muted); border-radius: 6px; padding: 12px;
       font-size: 13px; color: var(--color-text-muted); text-align: center;
     }
 
-    .suggested-tag {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: var(--color-tag-bg); color: var(--color-tag-text);
-      font-size: 11px; font-weight: 500; padding: 2px 8px;
-      border-radius: 9999px; border: 1px dashed var(--color-border-default); height: 18px;
-    }
-    .suggested-tag-accept, .suggested-tag-dismiss {
-      all: unset; display: inline-flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 10px; padding: 1px; border-radius: 50%;
-    }
-    .suggested-tag-accept { color: var(--color-done-text); }
-    .suggested-tag-dismiss { color: var(--color-text-muted); }
-    .suggested-tag-accept:hover { background: var(--color-done-bg); }
-    .suggested-tag-dismiss:hover { color: var(--color-danger-base); }
-
-    :host ::ng-deep .p-datepicker { border: none; background: transparent; }
-
     .footer { display: flex; align-items: center; padding: 8px 24px; border-top: 1px solid var(--color-border-default); background: var(--color-bg-base); }
-    .tags-section { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
-    .tag-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--color-tag-bg); color: var(--color-tag-text); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 9999px; height: 18px; }
-    .tag-badge-remove { all: unset; position: relative; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--color-tag-text); opacity: .6; transition: opacity .1s; }
-    .tag-badge-remove::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; }
-    .tag-badge-remove:hover { opacity: 1; }
-    .overflow-btn { padding: 2px 6px; border-radius: 9999px; font-size: 10px; background: var(--color-tags-section-bg); color: var(--color-text-muted); border: none; cursor: pointer; transition: all .15s; }
-    .overflow-btn:hover { background: var(--color-tags-badge-bg); color: var(--color-tag-text); }
-    .tag-input-wrapper { position: relative; flex: 1; min-width: 100px; }
-    .tag-input { width: 100%; height: 24px; padding: 0 8px; font-size: 12px; background: var(--color-bg-muted); border-radius: 9999px; border: none; outline: none; color: var(--color-text-primary); }
-    .tag-dropdown {
-      position: absolute; left: 0; top: calc(100% + 4px); width: 192px;
-      background: var(--color-bg-base); border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.15); border: 1px solid var(--color-border-default);
-      padding: 4px 0; z-index: 50;
+    /* Details mini card (collapsed summary) */
+    .details-mini-card {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
-    .tag-dropdown-item {
-      all: unset; display: flex; align-items: center; justify-content: space-between;
-      width: 100%; padding: 6px 12px; font-size: 12px;
-      cursor: pointer; transition: background .15s; box-sizing: border-box;
+    .mini-card-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .tag-dropdown-item:hover { background: var(--color-bg-subtle); }
-    .tag-dropdown-item.create { color: var(--color-primary-solid); }
-    .tag-dropdown-divider { border-top: 1px solid var(--color-border-default); margin: 4px 0; }
 
-    .add-tag-btn {
-      all: unset; display: inline-flex; align-items: center; gap: 4px; height: 18px;
-      padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 500;
-      color: var(--color-text-muted); background: var(--color-bg-muted); cursor: pointer; transition: all .15s;
+    .mini-card-divider {
+      width: 1px;
+      height: 10px;
+      background: var(--color-border-default);
+      flex-shrink: 0;
     }
-    .add-tag-btn:hover { color: var(--color-tag-text); background: var(--color-tags-badge-bg); }
-
-    .collapse-btn { all: unset; display: flex; align-items: center; gap: 2px; margin-left: auto; padding: 2px 6px; border-radius: 9999px; font-size: 10px; background: var(--color-tags-section-bg); color: var(--color-text-muted); cursor: pointer; transition: all .15s; }
-    .collapse-btn:hover { background: var(--color-tags-collapsed-bg); }
   `],
 })
 export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
@@ -698,12 +311,15 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   readonly recorder = inject(AudioRecorderService);
   readonly transcription = inject(DeepgramTranscriptionService);
 
-  /** Expose Math for template */
-  readonly Math = Math;
-
   private readonly destroy$ = new Subject<void>();
   private readonly metadataChange$ = new Subject<void>();
   private readonly transcriptChange$ = new Subject<void>();
+
+  // View children
+  readonly headerActions = viewChild<TemplateRef<unknown>>('headerActions');
+  readonly detailsSection = viewChild<MeetingSectionComponent>('detailsSection');
+  readonly detailsSectionRef = viewChild<MeetingDetailsSectionComponent>('detailsSectionRef');
+  readonly analysisSection = viewChild<MeetingSectionComponent>('analysisSection');
 
   // Core state
   readonly loading = signal(true);
@@ -723,26 +339,12 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   readonly transcript = signal('');
   readonly showTabWarning = signal(false);
 
-  // Recording menu options
-  readonly recordMenuItems = signal<MenuItem[]>([
-    {
-      label: 'Microphone Only',
-      icon: 'pi pi-microphone',
-      command: () => this.startRecording('microphone'),
-    },
-    {
-      label: 'Online Meeting',
-      icon: 'pi pi-desktop',
-      command: () => this.startRecording('both'),
-    },
-  ]);
-
   // Date selection
-  readonly selectedDateChip = signal<string | null>('Tomorrow');
+  readonly selectedDateChip = signal<string | null>('Today');
   readonly customDateLabel = signal<string | null>(null);
   readonly showDatePicker = signal(false);
 
-  // Time selection (editable combobox)
+  // Time selection
   readonly selectedTimeLabel = signal('10:00 AM');
   readonly timeInputInvalid = signal(false);
 
@@ -770,20 +372,6 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     );
   });
 
-  // Tag state
-  readonly showTagPicker = signal(false);
-  readonly inlineTagsExpanded = signal(false);
-  readonly tagSearch = signal('');
-  readonly headerActions = viewChild<TemplateRef<unknown>>('headerActions');
-  readonly tagInput = viewChild<ElementRef<HTMLInputElement>>('tagInput');
-  readonly timeSelect = viewChild<Select>('timeSelect');
-  readonly recordMenuRef = viewChild<Menu>('recordMenu');
-  readonly transcriptArea = viewChild<ElementRef<HTMLTextAreaElement>>('transcriptArea');
-
-  // Overlay open tracking (avoids accessing internal PrimeNG properties)
-  readonly recordMenuOpen = signal(false);
-  readonly timeSelectOpen = signal(false);
-
   private isDestroyed = false;
   private pollingTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -800,53 +388,30 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.currentMeeting()?.actionItems.length ?? 0
   );
 
-  // Date options
-  readonly dateOptions: DateOption[] = [
-    { label: 'Today', getValue: () => new Date() },
-    { label: 'Tomorrow', getValue: () => this.addDays(new Date(), 1) },
-    { label: 'Next Week', getValue: () => this.addDays(new Date(), 7) },
-  ];
-
-  // Time options for autocomplete dropdown
-  readonly allTimeOptions = ALL_TIME_OPTIONS;
-
   // Tag computed properties
   readonly meetingTags = computed(() => this.currentMeeting()?.tags ?? []);
 
-  private readonly MAX_VISIBLE_TAGS = 3;
-
-  readonly visibleTags = computed(() => {
-    const tags = this.meetingTags();
-    const expanded = this.inlineTagsExpanded();
-    const adding = this.showTagPicker();
-    if (expanded || adding) return tags;
-    return tags.slice(0, this.MAX_VISIBLE_TAGS);
+  // Collapsed summary computations (owned by parent to avoid reading child inputs before they're bound)
+  readonly dateSummary = computed(() => {
+    const date = this.meetingDate();
+    if (!date) return 'No date set';
+    return formatShortDate(date);
   });
 
-  readonly overflowCount = computed(() => {
-    const total = this.meetingTags().length;
-    const expanded = this.inlineTagsExpanded();
-    const adding = this.showTagPicker();
-    if (expanded || adding) return 0;
-    return Math.max(0, total - this.MAX_VISIBLE_TAGS);
+  readonly timeSummary = computed(() => this.selectedTimeLabel());
+
+  readonly attendeesSummary = computed(() => {
+    const val = this.attendees();
+    if (!val?.trim()) return 'No attendees';
+    const names = val.split(',').map(s => s.trim()).filter(Boolean);
+    if (names.length <= 2) return names.join(', ');
+    return `${names[0]}, ${names[1]} +${names.length - 2}`;
   });
 
-  readonly existingTagIds = computed(() => this.meetingTags().map(t => t.id));
-
-  readonly tagSuggestions = computed(() => {
-    const query = this.tagSearch().toLowerCase().trim();
-    const existingIds = this.existingTagIds();
-    const allTags = this.tagService.tags();
-    if (!query) return allTags.filter(t => !existingIds.includes(t.id));
-    return allTags
-      .filter(t => !existingIds.includes(t.id) && t.name.toLowerCase().includes(query))
-      .sort((a, b) => b.usageCount - a.usageCount);
-  });
-
-  readonly canCreateTag = computed(() => {
-    const query = this.tagSearch().trim();
-    const suggestions = this.tagSuggestions();
-    return query.length >= 2 && !suggestions.some(t => t.name.toLowerCase() === query.toLowerCase());
+  readonly tagCountSummary = computed(() => {
+    const count = this.meetingTags().length;
+    if (count === 0) return '';
+    return `${count} tag${count !== 1 ? 's' : ''}`;
   });
 
   protected readonly sourceBreadcrumb = signal<BreadcrumbItem>(
@@ -877,15 +442,6 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    // Auto-resize transcript on any change (including programmatic updates)
-    effect(() => {
-      this.transcript();
-      afterNextRender(() => {
-        const ta = this.transcriptArea()?.nativeElement;
-        if (ta) this.autoResizeTextarea(ta);
-      }, { injector: this.injector });
-    });
-
     // Update meetingDate when time label changes
     effect(() => {
       const timeLabel = this.selectedTimeLabel();
@@ -910,6 +466,17 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
         this.sourceBreadcrumb(),
         { label: title },
       ]);
+    });
+
+    // Auto-expand analysis section when results arrive
+    let hadAnalysis = false;
+    effect(() => {
+      const meeting = this.currentMeeting();
+      const hasAnalysis = !!meeting?.summary || (meeting?.actionItems?.length ?? 0) > 0;
+      if (hasAnalysis && !hadAnalysis) {
+        this.analysisSection()?.expand();
+      }
+      hadAnalysis = hasAnalysis;
     });
   }
 
@@ -959,11 +526,9 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.isDestroyed = true;
     this.cancelPolling();
     // Close any open overlays to prevent orphaned popups
-    this.timeSelect()?.hide();
-    this.recordMenuRef()?.hide();
+    this.detailsSectionRef()?.hideTimeSelect();
     this.showDatePicker.set(false);
     // Only stop recording/transcription if no active recording in progress
-    // (allow recording to persist when navigating away)
     if (!this.recorder.isActive()) {
       this.transcription.stop();
       this.recorder.discard();
@@ -993,19 +558,16 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
 
     // Escape: 3-step cascade
     if (event.key === 'Escape') {
-      // Step 1: Close any open overlay
       if (this.closeAnyOpenOverlay()) {
         event.preventDefault();
         return;
       }
-      // Step 2: Blur any focused editable element
       const target = event.target as HTMLElement | null;
       if (target && this.isEditableElement(target)) {
         target.blur();
         event.preventDefault();
         return;
       }
-      // Step 3: Navigate back
       this.navigateBack();
     }
   }
@@ -1019,21 +581,20 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private closeAnyOpenOverlay(): boolean {
-    if (this.recordMenuOpen()) {
-      this.recordMenuRef()?.hide();
-      return true;
-    }
-    if (this.timeSelectOpen()) {
-      this.timeSelect()?.hide();
-      return true;
-    }
-    if (this.showDatePicker()) {
-      this.showDatePicker.set(false);
-      return true;
-    }
-    if (this.showTagPicker()) {
-      this.showTagPicker.set(false);
-      return true;
+    const details = this.detailsSectionRef();
+    if (details) {
+      if (details.isTimeSelectOpen()) {
+        details.hideTimeSelect();
+        return true;
+      }
+      if (this.showDatePicker()) {
+        this.showDatePicker.set(false);
+        return true;
+      }
+      if (details.isTagPickerOpen()) {
+        details.closeTagPickerOverlay();
+        return true;
+      }
     }
     return false;
   }
@@ -1052,14 +613,17 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.actionItemStatuses.set([]);
     this.promotingIds.set(new Set());
 
-    // Default to tomorrow at the nearest 30-min interval
+    // Default to now at the nearest 30-min interval (users typically capture meetings that just happened)
     const defaultTime = getDefaultMeetingTime();
-    const tomorrow = this.addDays(new Date(), 1);
-    tomorrow.setHours(defaultTime.hours, defaultTime.minutes, 0, 0);
-    this.meetingDate.set(tomorrow);
-    this.selectedDateChip.set('Tomorrow');
+    const now = new Date();
+    now.setHours(defaultTime.hours, defaultTime.minutes, 0, 0);
+    this.meetingDate.set(now);
+    this.selectedDateChip.set('Today');
     this.customDateLabel.set(null);
     this.selectedTimeLabel.set(formatTimeLabel(defaultTime.hours, defaultTime.minutes));
+
+    // Collapse details for new meetings (smart defaults applied)
+    setTimeout(() => this.detailsSection()?.collapse());
   }
 
   private loadMeeting(id: string): void {
@@ -1073,11 +637,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     // Resume recording UI if returning to the meeting that's being recorded
     if (this.recorder.isActive() && this.recorder.activeMeetingId() === id) {
       this.showTabWarning.set(true);
-      // Reconnect the audio chunk callback for live transcription
       this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
-    } else if (this.recorder.isActive() && this.recorder.activeMeetingId() !== id) {
-      // Different meeting — don't discard, just don't show recording UI
-      this.showTabWarning.set(false);
     } else {
       this.showTabWarning.set(false);
     }
@@ -1120,9 +680,12 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.meetingDate.set(meetingDate);
     this.extractTimeFromDate(meetingDate);
     this.determineInitialDateChip(meetingDate);
+
+    // Collapse details for existing meetings (focus on transcript)
+    setTimeout(() => this.detailsSection()?.collapse());
   }
 
-  // --- Form change handlers with debounced save ---
+  // --- Form change handlers ---
 
   onTitleChange(value: string): void {
     this.title.set(value);
@@ -1130,18 +693,26 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.metadataChange$.next();
   }
 
+  onAttendeesChange(value: string): void {
+    this.attendees.set(value);
+    this.lastSaved.set(false);
+    this.metadataChange$.next();
+  }
+
+  onTranscriptChange(value: string): void {
+    this.transcript.set(value);
+    this.lastSaved.set(false);
+    this.transcriptChange$.next();
+  }
+
   acceptSuggestedTag(tagName: string): void {
     const id = this.meetingId();
     if (!id) return;
-
-    // Fuzzy match against existing user tags (case-insensitive)
     const allTags = this.tagService.tags();
     const match = allTags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
-
     if (match) {
       this.addTag({ id: match.id, name: match.name });
     } else {
-      // Create the tag and add it to the meeting
       this.createAndAddTag(tagName);
     }
   }
@@ -1161,28 +732,100 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.meetingService.toggleExcludeFromInsights(id, !currentlyExcluded);
   }
 
-  onAttendeesChange(value: string): void {
-    this.attendees.set(value);
+  toggleDatePicker(): void {
+    this.detailsSectionRef()?.hideTimeSelect();
+    this.showDatePicker.set(!this.showDatePicker());
+  }
+
+  // --- Date/time helpers ---
+
+  private addDays(date: Date, days: number): Date {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
+
+  selectDateOption(option: DateOption): void {
+    this.selectedDateChip.set(option.label);
+    this.customDateLabel.set(null);
+    this.showDatePicker.set(false);
+
+    const newDate = option.getValue();
+    const currentDate = this.meetingDate();
+    if (currentDate) {
+      newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
+    } else {
+      const parsed = parseTimeInput(this.selectedTimeLabel());
+      if (parsed) {
+        newDate.setHours(parsed.hours, parsed.minutes, 0, 0);
+      } else {
+        const defaultTime = getDefaultMeetingTime();
+        newDate.setHours(defaultTime.hours, defaultTime.minutes, 0, 0);
+      }
+    }
+    this.meetingDate.set(newDate);
     this.lastSaved.set(false);
     this.metadataChange$.next();
   }
 
-  onTranscriptChange(value: string): void {
-    this.transcript.set(value);
+  onDatePickerChange(date: Date): void {
+    const newDate = new Date(date);
+    const currentDate = this.meetingDate();
+    if (currentDate) {
+      newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
+    }
+    this.meetingDate.set(newDate);
+    this.selectedDateChip.set('custom');
+    this.customDateLabel.set(formatShortDate(date));
+    this.showDatePicker.set(false);
     this.lastSaved.set(false);
-    this.transcriptChange$.next();
+    this.metadataChange$.next();
   }
 
-  onTranscriptInput(event: Event): void {
-    const textarea = event.target as HTMLTextAreaElement;
-    this.onTranscriptChange(textarea.value);
-    this.autoResizeTextarea(textarea);
+  private extractTimeFromDate(date: Date): void {
+    this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
+    this.timeInputInvalid.set(false);
   }
 
-  toggleDatePicker(): void {
-    this.timeSelect()?.hide();
-    this.showDatePicker.set(!this.showDatePicker());
+  onTimeChange(value: string): void {
+    if (!value) {
+      this.timeInputInvalid.set(false);
+      return;
+    }
+    const parsed = parseTimeInput(value);
+    if (parsed) {
+      this.selectedTimeLabel.set(formatTimeLabel(parsed.hours, parsed.minutes));
+      this.timeInputInvalid.set(false);
+    } else {
+      this.selectedTimeLabel.set(value);
+      this.timeInputInvalid.set(value.trim().length > 0);
+    }
   }
+
+  private determineInitialDateChip(date: Date): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = this.addDays(today, 1);
+    const nextWeek = this.addDays(today, 7);
+    const dateOnly = new Date(date);
+    dateOnly.setHours(0, 0, 0, 0);
+
+    if (dateOnly.getTime() === today.getTime()) {
+      this.selectedDateChip.set('Today');
+      this.customDateLabel.set(null);
+    } else if (dateOnly.getTime() === tomorrow.getTime()) {
+      this.selectedDateChip.set('Tomorrow');
+      this.customDateLabel.set(null);
+    } else if (dateOnly.getTime() === nextWeek.getTime()) {
+      this.selectedDateChip.set('Next Week');
+      this.customDateLabel.set(null);
+    } else {
+      this.selectedDateChip.set('custom');
+      this.customDateLabel.set(formatShortDate(date));
+    }
+  }
+
+  // --- Save helpers ---
 
   private saveMetadata(): void {
     if (this.isNewMeeting()) {
@@ -1253,112 +896,13 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  // --- Date/time helpers ---
-
-  private addDays(date: Date, days: number): Date {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
-  }
-
-  selectDateOption(option: DateOption): void {
-    this.selectedDateChip.set(option.label);
-    this.customDateLabel.set(null);
-    this.showDatePicker.set(false);
-
-    const newDate = option.getValue();
-    const currentDate = this.meetingDate();
-    if (currentDate) {
-      newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
-    } else {
-      const parsed = parseTimeInput(this.selectedTimeLabel());
-      if (parsed) {
-        newDate.setHours(parsed.hours, parsed.minutes, 0, 0);
-      } else {
-        const defaultTime = getDefaultMeetingTime();
-        newDate.setHours(defaultTime.hours, defaultTime.minutes, 0, 0);
-      }
-    }
-    this.meetingDate.set(newDate);
-    this.lastSaved.set(false);
-    this.metadataChange$.next();
-  }
-
-  onDatePickerChange(date: Date | null): void {
-    if (!date) return;
-    const newDate = new Date(date);
-    const currentDate = this.meetingDate();
-    if (currentDate) {
-      newDate.setHours(currentDate.getHours(), currentDate.getMinutes(), currentDate.getSeconds(), currentDate.getMilliseconds());
-    }
-    this.meetingDate.set(newDate);
-    this.selectedDateChip.set('custom');
-    this.customDateLabel.set(this.formatDateLabel(date));
-    this.showDatePicker.set(false);
-    this.lastSaved.set(false);
-    this.metadataChange$.next();
-  }
-
-  private formatDateLabel(date: Date): string {
-    return formatShortDate(date);
-  }
-
-  private extractTimeFromDate(date: Date): void {
-    this.selectedTimeLabel.set(formatTimeLabel(date.getHours(), date.getMinutes()));
-    this.timeInputInvalid.set(false);
-  }
-
-  /** Handle time change from editable select (typed or picked) */
-  onTimeChange(value: string): void {
-    if (!value) {
-      this.timeInputInvalid.set(false);
-      return;
-    }
-    const parsed = parseTimeInput(value);
-    if (parsed) {
-      this.selectedTimeLabel.set(formatTimeLabel(parsed.hours, parsed.minutes));
-      this.timeInputInvalid.set(false);
-    } else {
-      // Keep the raw value; the effect will fire but won't update meetingDate since parse fails
-      this.selectedTimeLabel.set(value);
-      this.timeInputInvalid.set(value.trim().length > 0);
-    }
-  }
-
-  private determineInitialDateChip(date: Date): void {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = this.addDays(today, 1);
-    const nextWeek = this.addDays(today, 7);
-    const dateOnly = new Date(date);
-    dateOnly.setHours(0, 0, 0, 0);
-
-    if (dateOnly.getTime() === today.getTime()) {
-      this.selectedDateChip.set('Today');
-      this.customDateLabel.set(null);
-    } else if (dateOnly.getTime() === tomorrow.getTime()) {
-      this.selectedDateChip.set('Tomorrow');
-      this.customDateLabel.set(null);
-    } else if (dateOnly.getTime() === nextWeek.getTime()) {
-      this.selectedDateChip.set('Next Week');
-      this.customDateLabel.set(null);
-    } else {
-      this.selectedDateChip.set('custom');
-      this.customDateLabel.set(this.formatDateLabel(date));
-    }
-  }
-
   // --- Audio recording with live transcription ---
 
   async startRecording(mode: 'microphone' | 'both' = 'microphone'): Promise<void> {
-    // Prevent starting a second recording while one is already active
-    if (this.recorder.isActive()) {
-      return;
-    }
+    if (this.recorder.isActive()) return;
 
     this.transcription.reset();
 
-    // Pre-flight check: verify transcription service is available before starting
     const available = await this.transcription.checkAvailability();
     if (!available) {
       this.toast.error('Transcription service is unavailable. Recording was not started.');
@@ -1366,18 +910,13 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (mode === 'both') {
-      // Start with system audio capture for online meetings
       await this.recorder.startWithSystemAudio();
     } else {
-      // Microphone only for in-person meetings
       await this.recorder.start();
     }
 
     if (this.recorder.isActive()) {
-      // Track which meeting is being recorded
       this.recorder.activeMeetingId.set(this.meetingId());
-      // Pass channel count so backend enables multichannel when stereo
-      // Auto-label channel 0 with the authenticated user's first name
       const firstName = this.auth.user()?.name?.trim().split(' ')[0];
       const userName = firstName || 'You';
       this.transcription.start(this.recorder.channelCount(), userName, this.recorder.mimeType());
@@ -1393,7 +932,6 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       await this.recorder.stop();
       this.showTabWarning.set(false);
 
-      // Set transcript from transcription results (use labeled transcript if speaker segments exist)
       const recognizedText = this.transcription.segments().length > 0
         ? this.transcription.labeledTranscript()
         : this.transcription.transcript();
@@ -1417,7 +955,6 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   analyze(): void {
     const id = this.meetingId();
     if (id) {
-      // Save transcript first before analyzing
       this.saveTranscript();
       this.meetingService.analyzeMeeting(id);
     }
@@ -1481,10 +1018,32 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  // --- Tags ---
+
+  addTag(tag: MeetingTag): void {
+    const id = this.meetingId();
+    if (!id) return;
+    if (this.meetingTags().some(t => t.id === tag.id)) return;
+    this.meetingService.addTag(id, tag.id, tag.name);
+    this.tagService.incrementUsageCount(tag.id, 'meeting');
+  }
+
+  removeTag(tagId: string): void {
+    const id = this.meetingId();
+    if (!id) return;
+    this.meetingService.removeTag(id, tagId);
+    this.tagService.decrementUsageCount(tagId, 'meeting');
+  }
+
+  createAndAddTag(name: string): void {
+    this.tagService.createTag(name, (createdTag: Tag) => {
+      this.addTag({ id: createdTag.id, name: createdTag.name });
+    });
+  }
+
   // --- Navigation ---
 
   navigateBack(): void {
-    // Save before leaving
     if (!this.lastSaved() && !this.isNewMeeting()) {
       this.saveMetadata();
       this.saveTranscript();
@@ -1520,87 +1079,6 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // --- Tags ---
-
-  openTagInput(): void {
-    this.showTagPicker.set(true);
-    this.tagSearch.set('');
-    afterNextRender(() => {
-      this.tagInput()?.nativeElement.focus();
-    }, { injector: this.injector });
-  }
-
-  onTagEnter(): void {
-    const query = this.tagSearch().trim();
-    const suggestions = this.tagSuggestions();
-
-    const exactMatch = suggestions.find(t => t.name.toLowerCase() === query.toLowerCase());
-    if (exactMatch) {
-      this.addTag({ id: exactMatch.id, name: exactMatch.name });
-      return;
-    }
-    if (this.canCreateTag()) {
-      this.createAndAddTag(query);
-      return;
-    }
-    if (suggestions.length === 1) {
-      this.addTag({ id: suggestions[0].id, name: suggestions[0].name });
-    }
-  }
-
-  addTag(tag: MeetingTag): void {
-    const id = this.meetingId();
-    if (!id) return;
-    if (this.meetingTags().some(t => t.id === tag.id)) {
-      this.showTagPicker.set(false);
-      this.tagSearch.set('');
-      return;
-    }
-    this.meetingService.addTag(id, tag.id, tag.name);
-    this.tagService.incrementUsageCount(tag.id, 'meeting');
-    this.showTagPicker.set(false);
-    this.tagSearch.set('');
-  }
-
-  removeTag(tagId: string): void {
-    const id = this.meetingId();
-    if (!id) return;
-    this.meetingService.removeTag(id, tagId);
-    this.tagService.decrementUsageCount(tagId, 'meeting');
-  }
-
-  createAndAddTag(name: string): void {
-    this.tagService.createTag(name, (createdTag: Tag) => {
-      this.addTag({ id: createdTag.id, name: createdTag.name });
-    });
-    this.showTagPicker.set(false);
-    this.tagSearch.set('');
-  }
-
-  highlightMatch(tagName: string): string {
-    const query = this.tagSearch().toLowerCase().trim();
-    if (!query) return this.escapeHtml(tagName);
-    const lowerName = tagName.toLowerCase();
-    const index = lowerName.indexOf(query);
-    if (index === -1) return this.escapeHtml(tagName);
-    const before = tagName.slice(0, index);
-    const match = tagName.slice(index, index + query.length);
-    const after = tagName.slice(index + query.length);
-    return `${this.escapeHtml(before)}<mark class="search-highlight">${this.escapeHtml(match)}</mark>${this.escapeHtml(after)}`;
-  }
-
-  private escapeHtml(text: string): string {
-    const map: { [key: string]: string } = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-      '/': '&#x2F;',
-    };
-    return text.replace(/[&<>"'/]/g, (char) => map[char]);
-  }
-
   // --- Formatting helpers ---
 
   formatDate(dateString: string): string {
@@ -1618,18 +1096,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     return date.toLocaleDateString();
   }
 
-  private autoResizeTextarea(textarea: HTMLTextAreaElement): void {
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
-  }
-
-  /** Type-safe helper for input events */
   asInput(event: Event): HTMLInputElement {
     return event.target as HTMLInputElement;
-  }
-
-  /** Type-safe helper for textarea events */
-  asTextarea(event: Event): HTMLTextAreaElement {
-    return event.target as HTMLTextAreaElement;
   }
 }
