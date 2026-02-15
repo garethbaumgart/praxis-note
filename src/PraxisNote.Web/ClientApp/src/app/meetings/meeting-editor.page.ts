@@ -469,8 +469,15 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
 
     // Auto-expand analysis section when results arrive
     let hadAnalysis = false;
+    let lastMeetingId: string | null = null;
     effect(() => {
       const meeting = this.currentMeeting();
+      const currentId = meeting?.id ?? null;
+      // Reset tracking when navigating to a different meeting
+      if (currentId !== lastMeetingId) {
+        hadAnalysis = false;
+        lastMeetingId = currentId;
+      }
       const hasAnalysis = !!meeting?.summary || (meeting?.actionItems?.length ?? 0) > 0;
       if (hasAnalysis && !hadAnalysis) {
         this.analysisSection()?.expand();
@@ -622,7 +629,10 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.selectedTimeLabel.set(formatTimeLabel(defaultTime.hours, defaultTime.minutes));
 
     // Collapse details for new meetings (smart defaults applied)
-    setTimeout(() => this.detailsSection()?.collapse());
+    setTimeout(() => {
+      if (this.isDestroyed) return;
+      this.detailsSection()?.collapse();
+    });
   }
 
   private loadMeeting(id: string): void {
@@ -681,7 +691,10 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.determineInitialDateChip(meetingDate);
 
     // Collapse details for existing meetings (focus on transcript)
-    setTimeout(() => this.detailsSection()?.collapse());
+    setTimeout(() => {
+      if (this.isDestroyed) return;
+      this.detailsSection()?.collapse();
+    });
   }
 
   // --- Form change handlers ---

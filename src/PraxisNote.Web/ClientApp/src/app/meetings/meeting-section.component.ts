@@ -29,7 +29,7 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
 
       <!-- Collapsed summary -->
       @if (!expanded()) {
-        <div class="collapsed-summary" (click)="toggle()" role="button" tabindex="0" (keydown.enter)="toggle()">
+        <div class="collapsed-summary" (click)="toggle()">
           <ng-content select="[summary]" />
         </div>
       }
@@ -91,7 +91,7 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
 
     .section-body-visible {
       opacity: 1;
-      max-height: 5000px;
+      max-height: 800px;
       margin-top: 12px;
     }
 
