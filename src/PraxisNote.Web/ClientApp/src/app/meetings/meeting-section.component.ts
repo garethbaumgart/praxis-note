@@ -6,26 +6,29 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="section-card" [style.border-left-color]="borderColor()">
-      <button
-        type="button"
-        class="section-header"
-        [style.color]="headerColor()"
-        [attr.aria-expanded]="expanded()"
-        [attr.aria-controls]="sectionId()"
-        (click)="toggle()"
-        (keydown.enter)="toggle()"
-      >
-        <span class="flex items-center gap-1.5">
-          <i [class]="iconClasses()"></i>
-          {{ title() }}
-        </span>
-        <i
-          class="pi collapse-chevron"
-          [class.pi-chevron-down]="!expanded()"
-          [class.pi-chevron-up]="expanded()"
-          aria-hidden="true"
-        ></i>
-      </button>
+      <div class="section-header-row">
+        <button
+          type="button"
+          class="section-header"
+          [style.color]="headerColor()"
+          [attr.aria-expanded]="expanded()"
+          [attr.aria-controls]="sectionId()"
+          (click)="toggle()"
+          (keydown.enter)="toggle()"
+        >
+          <span class="flex items-center gap-1.5">
+            <i [class]="iconClasses()"></i>
+            {{ title() }}
+          </span>
+          <i
+            class="pi collapse-chevron"
+            [class.pi-chevron-down]="!expanded()"
+            [class.pi-chevron-up]="expanded()"
+            aria-hidden="true"
+          ></i>
+        </button>
+        <ng-content select="[headerAction]" />
+      </div>
 
       <!-- Collapsed summary -->
       @if (!expanded()) {
@@ -55,12 +58,18 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
       border-left: 3px solid transparent;
     }
 
+    .section-header-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .section-header {
       all: unset;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      width: 100%;
+      flex: 1;
       font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
@@ -86,19 +95,18 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
 
     .section-body {
       overflow: hidden;
-      transition: opacity 0.2s ease, max-height 0.2s ease;
+      transition: opacity 0.2s ease;
     }
 
     .section-body-visible {
       opacity: 1;
-      max-height: 800px;
       margin-top: 12px;
       overflow: visible;
     }
 
     .section-body-hidden {
       opacity: 0;
-      max-height: 0;
+      height: 0;
       margin-top: 0;
     }
   `],
