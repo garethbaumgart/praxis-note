@@ -257,6 +257,26 @@ public static class TranscriptionEndpoints
 
         logger.LogInformation("[{SessionId}] Connected to Deepgram, starting relay tasks", sessionId);
 
+        // Notify the client of the actual transcription mode so it can route
+        // results correctly (e.g. when multichannel was requested but the backend
+        // fell back to single-channel with diarization for container formats).
+        var sessionConfig = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            type = "SessionConfig",
+            multichannel = isMultichannel,
+            diarize = deepgramSettings.Diarize,
+        });
+        var configBytes = Encoding.UTF8.GetBytes(sessionConfig);
+        await clientWs.SendAsync(
+            new ArraySegment<byte>(configBytes),
+            WebSocketMessageType.Text,
+            endOfMessage: true,
+            context.RequestAborted);
+
+        logger.LogInformation(
+            "[{SessionId}] Sent SessionConfig to client: multichannel={IsMultichannel}, diarize={Diarize}",
+            sessionId, isMultichannel, deepgramSettings.Diarize);
+
         // Use StrongBox<long> with Interlocked for thread-safe last-audio timestamp sharing
         var lastAudioSentTicks = new StrongBox<long>(DateTimeOffset.UtcNow.Ticks);
         using var deepgramSendLock = new SemaphoreSlim(1, 1);

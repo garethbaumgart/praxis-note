@@ -195,6 +195,180 @@ describe('DeepgramTranscriptionService', () => {
     });
   });
 
+  describe('speaker diarization routing', () => {
+    it('singleChannel_MicOnly_RoutesToSingleChannelHandler', () => {
+      // Start with 1 channel (mic-only mode)
+      service.start(1, 'TestUser');
+      const ws = MockWebSocket.instances[0];
+      ws.simulateOpen();
+
+      // Send a single-channel diarized result (no channel_index)
+      ws.simulateMessage(JSON.stringify({
+        type: 'Results',
+        is_final: true,
+        channel: {
+          alternatives: [{
+            transcript: 'Hello everyone',
+            words: [{ word: 'Hello', speaker: 0 }, { word: 'everyone', speaker: 0 }],
+          }],
+        },
+      }));
+
+      const segments = service.segments();
+      expect(segments.length).toBe(1);
+      expect(segments[0].speaker).toBe('Speaker 0');
+      expect(segments[0].text).toBe('Hello everyone');
+    });
+
+    it('multichannelRequestedButFellBack_SessionConfigOverrides_RoutesToSingleChannel', () => {
+      // Start with 2 channels (system audio mode) — but backend will fall back
+      service.start(2, 'LocalUser');
+      const ws = MockWebSocket.instances[0];
+      ws.simulateOpen();
+
+      // Backend sends SessionConfig indicating single-channel fallback
+      ws.simulateMessage(JSON.stringify({
+        type: 'SessionConfig',
+        multichannel: false,
+        diarize: true,
+      }));
+
+      // Send a single-channel diarized result (no channel_index)
+      ws.simulateMessage(JSON.stringify({
+        type: 'Results',
+        is_final: true,
+        channel: {
+          alternatives: [{
+            transcript: 'Hello from remote',
+            words: [{ word: 'Hello', speaker: 1 }, { word: 'from', speaker: 1 }, { word: 'remote', speaker: 1 }],
+          }],
+        },
+      }));
+
+      const segments = service.segments();
+      expect(segments.length).toBe(1);
+      // Should be labeled as Speaker 1 (from diarization), NOT LocalUser
+      expect(segments[0].speaker).toBe('Speaker 1');
+      expect(segments[0].text).toBe('Hello from remote');
+    });
+
+    it('multichannelRequestedButFellBack_NoSessionConfig_SafetyNetAutoCorrects', () => {
+      // Start with 2 channels but no SessionConfig received
+      service.start(2, 'LocalUser');
+      const ws = MockWebSocket.instances[0];
+      ws.simulateOpen();
+
+      // Do NOT send SessionConfig — simulate the case where the server doesn't send one
+
+      // Send a result without channel_index (Deepgram single-channel diarized)
+      ws.simulateMessage(JSON.stringify({
+        type: 'Results',
+        is_final: true,
+        channel: {
+          alternatives: [{
+            transcript: 'Testing safety net',
+            words: [{ word: 'Testing', speaker: 2 }, { word: 'safety', speaker: 2 }, { word: 'net', speaker: 2 }],
+          }],
+        },
+      }));
+
+      const segments = service.segments();
+      expect(segments.length).toBe(1);
+      // Safety net should auto-correct to single-channel: speaker from diarization
+      expect(segments[0].speaker).toBe('Speaker 2');
+      expect(segments[0].text).toBe('Testing safety net');
+
+      // Verify actualMultichannel was auto-corrected
+      expect(service['actualMultichannel']).toBe(false);
+    });
+
+    it('trueMultichannel_WithChannelIndex_RoutesToMultichannelHandler', () => {
+      // Start with 2 channels — true multichannel (raw audio)
+      service.start(2, 'LocalUser');
+      const ws = MockWebSocket.instances[0];
+      ws.simulateOpen();
+
+      // Backend confirms multichannel mode
+      ws.simulateMessage(JSON.stringify({
+        type: 'SessionConfig',
+        multichannel: true,
+        diarize: true,
+      }));
+
+      // Send a multichannel result with channel_index for channel 0 (mic/local)
+      ws.simulateMessage(JSON.stringify({
+        type: 'Results',
+        is_final: true,
+        channel_index: [0, 2],
+        channel: {
+          alternatives: [{
+            transcript: 'Hello from mic',
+            words: [{ word: 'Hello', speaker: 0 }, { word: 'from', speaker: 0 }, { word: 'mic', speaker: 0 }],
+          }],
+        },
+      }));
+
+      const segments = service.segments();
+      expect(segments.length).toBe(1);
+      // Channel 0 = local user
+      expect(segments[0].speaker).toBe('LocalUser');
+      expect(segments[0].text).toBe('Hello from mic');
+    });
+
+    it('trueMultichannel_Channel1_LabelsAsParticipant', () => {
+      // Start with 2 channels — true multichannel
+      service.start(2, 'LocalUser');
+      const ws = MockWebSocket.instances[0];
+      ws.simulateOpen();
+
+      // Backend confirms multichannel mode
+      ws.simulateMessage(JSON.stringify({
+        type: 'SessionConfig',
+        multichannel: true,
+        diarize: true,
+      }));
+
+      // Send a multichannel result for channel 1 (system audio/remote)
+      ws.simulateMessage(JSON.stringify({
+        type: 'Results',
+        is_final: true,
+        channel_index: [1, 2],
+        channel: {
+          alternatives: [{
+            transcript: 'Hello from remote',
+            words: [{ word: 'Hello', speaker: 0 }, { word: 'from', speaker: 0 }, { word: 'remote', speaker: 0 }],
+          }],
+        },
+      }));
+
+      const segments = service.segments();
+      expect(segments.length).toBe(1);
+      // Channel 1 = remote participant
+      expect(segments[0].speaker).toBe('Participant 0');
+      expect(segments[0].text).toBe('Hello from remote');
+    });
+
+    it('sessionConfigResetsOnNewStart', () => {
+      // Start with multichannel
+      service.start(2, 'User1');
+      const ws1 = MockWebSocket.instances[0];
+      ws1.simulateOpen();
+
+      // Receive SessionConfig
+      ws1.simulateMessage(JSON.stringify({
+        type: 'SessionConfig',
+        multichannel: false,
+        diarize: true,
+      }));
+
+      expect(service['actualMultichannel']).toBe(false);
+
+      // Start a new session — actualMultichannel should reset
+      service.start(1, 'User2');
+      expect(service['actualMultichannel']).toBeNull();
+    });
+  });
+
   describe('sendAudio dropped chunks', () => {
     it('sendAudio_NotConnectedAfter10Drops_SetsConnectionLostError', () => {
       service.start();
