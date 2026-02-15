@@ -113,11 +113,9 @@
         <button
           type="button"
           class="w-full px-3 h-7 flex items-center cursor-pointer group"
-          role="button"
           [attr.aria-expanded]="!inProgressCollapsed()"
           aria-label="In Progress tasks"
           (click)="toggleInProgress()"
-          (keydown.space)="$event.preventDefault(); toggleInProgress()"
         >
           <span class="text-[10px] font-semibold text-inprogress-foreground uppercase tracking-wider">In Progress</span>
           @if (inProgressCollapsed()) {
@@ -149,11 +147,9 @@
         <button
           type="button"
           class="w-full px-3 h-7 flex items-center cursor-pointer group"
-          role="button"
           [attr.aria-expanded]="!upNextCollapsed()"
           aria-label="Up Next tasks"
           (click)="toggleUpNext()"
-          (keydown.space)="$event.preventDefault(); toggleUpNext()"
         >
           <span class="text-[10px] font-semibold text-todo-foreground uppercase tracking-wider">Up Next</span>
           @if (upNextCollapsed()) {
@@ -191,11 +187,9 @@
       <button
         type="button"
         class="w-full px-3 h-7 flex items-center gap-1.5 cursor-pointer group"
-        role="button"
         [attr.aria-expanded]="!contextCollapsed()"
         [attr.aria-label]="activity.contextLabel()"
         (click)="toggleContext()"
-        (keydown.space)="$event.preventDefault(); toggleContext()"
       >
         <i class="pi {{ activity.contextIcon() }} text-[10px] text-foreground-muted" aria-hidden="true"></i>
         <span class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider">{{ activity.contextLabel() }}</span>
@@ -422,11 +416,9 @@
           <button
             type="button"
             class="w-full px-3 h-8 flex items-center cursor-pointer group"
-            role="button"
             [attr.aria-expanded]="!inProgressCollapsed()"
             aria-label="In Progress tasks"
             (click)="toggleInProgress()"
-            (keydown.space)="$event.preventDefault(); toggleInProgress()"
           >
             <span class="text-[10px] font-semibold text-inprogress-foreground uppercase tracking-wider">In Progress</span>
             @if (inProgressCollapsed()) {
@@ -458,11 +450,9 @@
           <button
             type="button"
             class="w-full px-3 h-8 flex items-center cursor-pointer group"
-            role="button"
             [attr.aria-expanded]="!upNextCollapsed()"
             aria-label="Up Next tasks"
             (click)="toggleUpNext()"
-            (keydown.space)="$event.preventDefault(); toggleUpNext()"
           >
             <span class="text-[10px] font-semibold text-todo-foreground uppercase tracking-wider">Up Next</span>
             @if (upNextCollapsed()) {
@@ -500,11 +490,9 @@
         <button
           type="button"
           class="w-full px-3 h-8 flex items-center gap-1.5 cursor-pointer group"
-          role="button"
           [attr.aria-expanded]="!contextCollapsed()"
           [attr.aria-label]="activity.contextLabel()"
           (click)="toggleContext()"
-          (keydown.space)="$event.preventDefault(); toggleContext()"
         >
           <i class="pi {{ activity.contextIcon() }} text-[10px] text-foreground-muted" aria-hidden="true"></i>
           <span class="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider">{{ activity.contextLabel() }}</span>

@@ -38,6 +38,8 @@ export class SidebarService {
   private saveKey(key: string, value: boolean): void {
     try {
       localStorage.setItem(key, String(value));
-    } catch { }
+    } catch {
+      // Intentionally ignore localStorage write errors (e.g., disabled, private mode, quota exceeded)
+    }
   }
 }
