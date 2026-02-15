@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
-import { Meeting, MeetingTag, ActionItemStatus, parseJsonArray } from './meeting.model';
+import { Meeting, MeetingTag, ActionItemStatus, parseJsonArray, hasAnalysisResults } from './meeting.model';
 import { MeetingService } from './meeting.service';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingReflectionComponent } from './meeting-reflection.component';
@@ -358,11 +358,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   // Analysis section header button state
   readonly analysisHasTranscript = computed(() => !!this.currentMeeting()?.transcriptContent);
   readonly analysisIsProcessing = computed(() => this.currentMeeting()?.status === 'Processing');
-  readonly analysisHasResults = computed(() => {
-    const m = this.currentMeeting();
-    if (!m) return false;
-    return !!m.summary?.trim() || parseJsonArray(m.keyPoints).length > 0 || parseJsonArray(m.decisions).length > 0 || m.status === 'Ready';
-  });
+  readonly analysisHasResults = computed(() => hasAnalysisResults(this.currentMeeting()));
 
   // Insights exclusion (inverted for positive framing in UI)
   readonly includeInInsights = computed(() => !(this.currentMeeting()?.excludeFromInsights ?? false));

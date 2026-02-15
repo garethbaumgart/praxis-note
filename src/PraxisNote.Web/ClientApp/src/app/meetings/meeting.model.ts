@@ -117,6 +117,15 @@ export function parseJsonArray(json: string | null): string[] {
   }
 }
 
+/** Whether a meeting has any analysis results (summary, key points, decisions, or Ready status). */
+export function hasAnalysisResults(meeting: Meeting | null | undefined): boolean {
+  if (!meeting) return false;
+  return !!meeting.summary?.trim() ||
+    parseJsonArray(meeting.keyPoints).length > 0 ||
+    parseJsonArray(meeting.decisions).length > 0 ||
+    meeting.status === 'Ready';
+}
+
 export function parseBehavioralAnalysis(json: string | null): BehavioralAnalysis | null {
   if (!json) return null;
   try {

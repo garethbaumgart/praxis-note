@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
-import { Meeting, ActionItemStatus, parseJsonArray, parseBehavioralAnalysis } from './meeting.model';
+import { Meeting, ActionItemStatus, parseJsonArray, parseBehavioralAnalysis, hasAnalysisResults } from './meeting.model';
 import { MeetingBehavioralAnalysisComponent } from './meeting-behavioral-analysis.component';
 import { MeetingActionItemsComponent } from './meeting-action-items.component';
 
@@ -97,7 +97,7 @@ import { MeetingActionItemsComponent } from './meeting-action-items.component';
 
       <!-- No analysis yet (has transcript but no analysis) -->
       @else {
-        <p class="text-sm text-foreground-muted">Click "Analyze" above to generate a summary, key points, and decisions.</p>
+        <p class="text-sm text-foreground-muted">Click the Analyze button to generate a summary, key points, and decisions.</p>
       }
     </div>
   `,
@@ -114,12 +114,7 @@ export class MeetingAnalysisComponent {
   readonly hasTranscript = computed(() => !!this.meeting().transcriptContent);
   readonly isProcessing = computed(() => this.meeting().status === 'Processing');
   readonly isFailed = computed(() => this.meeting().status === 'Failed');
-  readonly hasAnalysis = computed(() =>
-    !!this.meeting().summary?.trim() ||
-    this.keyPoints().length > 0 ||
-    this.decisions().length > 0 ||
-    this.meeting().status === 'Ready'
-  );
+  readonly hasAnalysis = computed(() => hasAnalysisResults(this.meeting()));
   readonly keyPoints = computed(() => parseJsonArray(this.meeting().keyPoints));
   readonly decisions = computed(() => parseJsonArray(this.meeting().decisions));
   readonly hasBehavioralAnalysis = computed(() => !!parseBehavioralAnalysis(this.meeting().behavioralAnalysis));
