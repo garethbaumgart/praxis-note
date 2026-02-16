@@ -71,6 +71,7 @@ describe('TipTap Editor', () => {
       'detailsSummary',
       'detailsContent',
       'dateNode',
+      'smartPaste',
     ])('has %s extension registered', (name) => {
       const has = editor.extensionManager.extensions.some((ext) => ext.name === name);
       expect(has).toBe(true);
