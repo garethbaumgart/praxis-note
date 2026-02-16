@@ -199,7 +199,7 @@ import { DeepgramTranscriptionService } from './deepgram-transcription.service';
     </div>
   `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; --transcript-max-height: 300px; }
 
     .record-hero {
       text-align: center;
@@ -291,7 +291,7 @@ import { DeepgramTranscriptionService } from './deepgram-transcription.service';
     .transcript-textarea {
       width: 100%; background: var(--color-bg-muted); border: none; border-radius: 6px;
       padding: 12px; font-size: 13px; line-height: 1.7; color: var(--color-text-primary);
-      resize: none; overflow-y: auto; outline: none; box-sizing: border-box; min-height: 80px; max-height: 300px;
+      resize: none; overflow-y: auto; outline: none; box-sizing: border-box; min-height: 80px; max-height: var(--transcript-max-height);
     }
     .transcript-textarea::placeholder { color: var(--color-text-muted); }
     .transcript-textarea:focus-visible {
@@ -301,6 +301,8 @@ import { DeepgramTranscriptionService } from './deepgram-transcription.service';
   `],
 })
 export class MeetingTranscriptSectionComponent {
+  private static readonly MAX_TEXTAREA_HEIGHT = 300;
+
   readonly recorder = inject(AudioRecorderService);
   readonly transcription = inject(DeepgramTranscriptionService);
   private readonly injector = inject(Injector);
@@ -334,8 +336,15 @@ export class MeetingTranscriptSectionComponent {
       afterNextRender(() => {
         const ta = this.transcriptArea()?.nativeElement;
         if (ta) {
+          // Only auto-scroll if the user is already near the bottom before the update
+          const distanceFromBottom = ta.scrollHeight - (ta.scrollTop + ta.clientHeight);
+          const isNearBottom = distanceFromBottom < 10;
+
           this.autoResizeTextarea(ta);
-          ta.scrollTop = ta.scrollHeight;
+
+          if (isNearBottom) {
+            ta.scrollTop = ta.scrollHeight;
+          }
         }
       }, { injector: this.injector });
     });
@@ -349,6 +358,7 @@ export class MeetingTranscriptSectionComponent {
 
   private autoResizeTextarea(textarea: HTMLTextAreaElement): void {
     textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
+    const maxHeight = parseInt(getComputedStyle(textarea).maxHeight, 10) || MeetingTranscriptSectionComponent.MAX_TEXTAREA_HEIGHT;
+    textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
   }
 }
