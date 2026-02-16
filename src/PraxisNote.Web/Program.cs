@@ -155,8 +155,20 @@ if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
             }
             else
             {
-                logger.LogWarning(context.Failure, "Google OAuth remote failure: {Message}", context.Failure?.Message);
-                context.Response.Redirect("/?error=auth_failed");
+                var message = context.Failure?.Message ?? "Unknown";
+                var isRateLimited = message.Contains("429", StringComparison.OrdinalIgnoreCase)
+                    || message.Contains("Rate", StringComparison.OrdinalIgnoreCase);
+
+                if (isRateLimited)
+                {
+                    logger.LogWarning("Google OAuth rate limited (429). User should wait before retrying.");
+                    context.Response.Redirect("/?error=rate_limited");
+                }
+                else
+                {
+                    logger.LogWarning(context.Failure, "Google OAuth remote failure: {Message}", message);
+                    context.Response.Redirect("/?error=auth_failed");
+                }
             }
 
             context.HandleResponse();
