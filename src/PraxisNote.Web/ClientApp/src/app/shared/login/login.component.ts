@@ -1,4 +1,4 @@
-import { Component, output, inject, signal, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, output, inject, signal, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../auth/auth.service';
 
 @Component({
@@ -8,11 +8,12 @@ import { AuthService } from '../../auth/auth.service';
   templateUrl: './login.component.html',
   host: { class: 'contents' },
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   protected readonly auth = inject(AuthService);
   readonly onLogin = output<void>();
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly cooldownSeconds = signal(0);
+  private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     const params = new URLSearchParams(window.location.search);
@@ -32,6 +33,13 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+      this.cooldownInterval = null;
+    }
+  }
+
   protected login(): void {
     this.errorMessage.set(null);
     this.onLogin.emit();
@@ -40,10 +48,13 @@ export class LoginComponent implements OnInit {
   private startCooldown(): void {
     this.errorMessage.set('Too many sign-in attempts. Please wait before trying again.');
     this.cooldownSeconds.set(30);
-    const interval = setInterval(() => {
+    this.cooldownInterval = setInterval(() => {
       this.cooldownSeconds.update(s => s - 1);
       if (this.cooldownSeconds() <= 0) {
-        clearInterval(interval);
+        if (this.cooldownInterval) {
+          clearInterval(this.cooldownInterval);
+          this.cooldownInterval = null;
+        }
         this.errorMessage.set(null);
       }
     }, 1000);

@@ -157,11 +157,15 @@ if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
             {
                 var message = context.Failure?.Message ?? "Unknown";
                 var isRateLimited = message.Contains("429", StringComparison.OrdinalIgnoreCase)
-                    || message.Contains("Rate", StringComparison.OrdinalIgnoreCase);
+                    || message.Contains("Too Many Requests", StringComparison.OrdinalIgnoreCase)
+                    || message.Contains("rate limit", StringComparison.OrdinalIgnoreCase)
+                    || message.Contains("rate-limited", StringComparison.OrdinalIgnoreCase);
 
                 if (isRateLimited)
                 {
-                    logger.LogWarning("Google OAuth rate limited (429). User should wait before retrying.");
+                    logger.LogWarning(context.Failure,
+                        "Google OAuth rate limited (429). User should wait before retrying. Message: {Message}",
+                        message);
                     context.Response.Redirect("/?error=rate_limited");
                 }
                 else
