@@ -1,6 +1,7 @@
 import { Editor } from '@tiptap/core';
 import { formatShortcut } from '../../shared/keyboard-utils';
 import { normalizeImageUrl } from '../../shared/url-utils';
+import { toISODate } from './insert-date.extension';
 
 export interface SlashCommandItem {
   label: string;
@@ -124,10 +125,28 @@ export const slashCommandItems: SlashCommandItem[] = [
     label: 'Date',
     icon: 'pi pi-calendar',
     group: 'Insert',
-    aliases: ['today'],
     shortcut: formatShortcut({ mod: true, shift: true, key: 'D' }),
     action: (editor) => {
       editor.commands.insertDate();
+    },
+  },
+  {
+    label: 'Today',
+    icon: 'pi pi-calendar',
+    group: 'Insert',
+    action: (editor) => {
+      editor.commands.insertDate();
+    },
+  },
+  {
+    label: 'Tomorrow',
+    icon: 'pi pi-calendar-plus',
+    group: 'Insert',
+    action: (editor) => {
+      const tomorrow = new Date();
+      tomorrow.setHours(0, 0, 0, 0);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      editor.commands.insertDate(toISODate(tomorrow));
     },
   },
 ];

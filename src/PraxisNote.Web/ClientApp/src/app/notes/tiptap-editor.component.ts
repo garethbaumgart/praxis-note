@@ -377,73 +377,26 @@ interface BlockType {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       border-radius: 4px;
       color: var(--color-foreground-secondary);
-      transition: all 0.15s;
-      background: transparent;
-      border: none;
-      cursor: pointer;
+      transition: all .15s;
+      background: transparent; border: none; cursor: pointer;
     }
-
     .toolbar-btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 44px;
-      height: 44px;
+      content: ''; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%); width: 44px; height: 44px;
     }
-
-    .toolbar-btn:hover {
-      background: var(--color-surface-hover);
-      color: var(--color-foreground-default);
-    }
-
-    .toolbar-btn.active {
-      background: var(--color-accent-subtle);
-      color: var(--color-accent-solid);
-    }
-
-    .toolbar-btn.task-list-btn.active {
-      background: var(--color-accent-solid);
-      color: white;
-    }
-
-    .toolbar-btn.color-btn {
-      position: relative;
-      flex-direction: column;
-      gap: 1px;
-      font-weight: 600;
-      font-size: 12px;
-    }
-
+    .toolbar-btn:hover { background: var(--color-surface-hover); color: var(--color-foreground-default); }
+    .toolbar-btn.active { background: var(--color-accent-subtle); color: var(--color-accent-solid); }
+    .toolbar-btn.task-list-btn.active { background: var(--color-accent-solid); color: white; }
+    .toolbar-btn.color-btn { flex-direction: column; gap: 1px; font-weight: 600; font-size: 12px; }
     .color-indicator {
-      position: absolute;
-      bottom: 4px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 14px;
-      height: 3px;
-      border-radius: 1px;
+      position: absolute; bottom: 4px; left: 50%;
+      transform: translateX(-50%); width: 14px; height: 3px; border-radius: 1px;
     }
-
-    .divider {
-      width: 1px;
-      height: 20px;
-      background: var(--color-border);
-      margin: 0 4px;
-    }
-
-    .hidden-color-input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-      width: 0;
-      height: 0;
-    }
+    .divider { width: 1px; height: 20px; background: var(--color-border); margin: 0 4px; }
+    .hidden-color-input { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
 
     .tiptap-editor-wrapper {
       position: relative;
@@ -551,52 +504,21 @@ interface BlockType {
     }
 
     /* Headings */
-    :host ::ng-deep .ProseMirror h1 {
-      font-size: 1.75em;
-      font-weight: 700;
-      margin: 1em 0 0.5em;
-    }
+    :host ::ng-deep .ProseMirror h1,
+    :host ::ng-deep .ProseMirror h2,
+    :host ::ng-deep .ProseMirror h3 { margin: 1em 0 .5em; font-weight: 600; }
+    :host ::ng-deep .ProseMirror h1 { font-size: 1.75em; font-weight: 700; }
+    :host ::ng-deep .ProseMirror h2 { font-size: 1.25em; }
+    :host ::ng-deep .ProseMirror h3 { font-size: 1.1em; }
+    :host ::ng-deep .ProseMirror h1:first-child,
+    :host ::ng-deep .ProseMirror h2:first-child,
+    :host ::ng-deep .ProseMirror h3:first-child { margin-top: 0; }
 
-    :host ::ng-deep .ProseMirror h1:first-child {
-      margin-top: 0;
-    }
-
-    :host ::ng-deep .ProseMirror h2 {
-      font-size: 1.25em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-    }
-
-    :host ::ng-deep .ProseMirror h2:first-child {
-      margin-top: 0;
-    }
-
-    :host ::ng-deep .ProseMirror h3 {
-      font-size: 1.1em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-    }
-
-    :host ::ng-deep .ProseMirror h3:first-child {
-      margin-top: 0;
-    }
-
-    :host ::ng-deep .ProseMirror ul {
-      padding-left: 1.5em;
-      margin: 0.5em 0;
-      list-style-type: disc;
-    }
-
-    :host ::ng-deep .ProseMirror ol {
-      padding-left: 1.5em;
-      margin: 0.5em 0;
-      list-style-type: decimal;
-    }
-
-    :host ::ng-deep .ProseMirror li {
-      margin: 0.25em 0;
-      display: list-item;
-    }
+    :host ::ng-deep .ProseMirror ul,
+    :host ::ng-deep .ProseMirror ol { padding-left: 1.5em; margin: .5em 0; }
+    :host ::ng-deep .ProseMirror ul { list-style-type: disc; }
+    :host ::ng-deep .ProseMirror ol { list-style-type: decimal; }
+    :host ::ng-deep .ProseMirror li { margin: .25em 0; display: list-item; }
 
     :host ::ng-deep .ProseMirror blockquote {
       border-left: 3px solid var(--color-border-default);
@@ -633,11 +555,11 @@ interface BlockType {
     /* Syntax highlighting */
     :host ::ng-deep .ProseMirror pre .hljs-keyword { color: #c678dd; }
     :host ::ng-deep .ProseMirror pre .hljs-string { color: #98c379; }
-    :host ::ng-deep .ProseMirror pre .hljs-number { color: #d19a66; }
+    :host ::ng-deep .ProseMirror pre .hljs-number,
+    :host ::ng-deep .ProseMirror pre .hljs-attr { color: #d19a66; }
     :host ::ng-deep .ProseMirror pre .hljs-comment { color: #5c6370; font-style: italic; }
     :host ::ng-deep .ProseMirror pre .hljs-function { color: #61afef; }
-    :host ::ng-deep .ProseMirror pre .hljs-variable { color: #e06c75; }
-    :host ::ng-deep .ProseMirror pre .hljs-attr { color: #d19a66; }
+    :host ::ng-deep .ProseMirror pre .hljs-variable,
     :host ::ng-deep .ProseMirror pre .hljs-tag { color: #e06c75; }
 
     /* Highlight */
@@ -681,54 +603,20 @@ interface BlockType {
       font-weight: 600;
     }
 
-    /* Text alignment */
-    :host ::ng-deep .ProseMirror [style*="text-align: center"] {
-      text-align: center;
-    }
+    /* Text alignment — TipTap sets inline styles; these selectors
+       reinforce them so specificity wins over element defaults. */
 
-    :host ::ng-deep .ProseMirror [style*="text-align: right"] {
-      text-align: right;
-    }
-
-    :host ::ng-deep .ProseMirror [style*="text-align: justify"] {
-      text-align: justify;
-    }
-
-    /* Task List Styles */
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] {
-      list-style: none;
-      padding-left: 0;
-    }
-
+    /* Task List */
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] { list-style: none; padding-left: 0; }
     :host ::ng-deep .ProseMirror ul[data-type="taskList"] li {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5em;
-      margin: 0.25em 0;
-      position: relative;
+      display: flex; align-items: flex-start; gap: .5em; margin: .25em 0; position: relative;
     }
-
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li > label {
-      flex-shrink: 0;
-      margin-top: 0.2em;
-      user-select: none;
-    }
-
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li > label { flex-shrink: 0; margin-top: .2em; user-select: none; }
     :host ::ng-deep .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: var(--color-accent-solid);
-      cursor: pointer;
+      width: 16px; height: 16px; accent-color: var(--color-accent-solid); cursor: pointer;
     }
-
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
-      text-decoration: line-through;
-      color: var(--color-foreground-muted);
-    }
-
-    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li > div {
-      flex: 1;
-    }
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div { text-decoration: line-through; color: var(--color-foreground-muted); }
+    :host ::ng-deep .ProseMirror ul[data-type="taskList"] li > div { flex: 1; }
 
     /* Placeholder */
     :host ::ng-deep .ProseMirror p.is-editor-empty:first-child::before {
@@ -739,32 +627,15 @@ interface BlockType {
       height: 0;
     }
 
-    /* Selection - ensure text is selectable and disable native drag */
-    :host ::ng-deep .ProseMirror {
-      cursor: text;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
+    /* Selection */
+    :host ::ng-deep .ProseMirror { cursor: text; user-select: text; -webkit-user-select: text; }
     :host ::ng-deep .ProseMirror p,
     :host ::ng-deep .ProseMirror li,
     :host ::ng-deep .ProseMirror h1,
     :host ::ng-deep .ProseMirror h2,
     :host ::ng-deep .ProseMirror h3,
-    :host ::ng-deep .ProseMirror blockquote {
-      -webkit-user-drag: none;
-      user-drag: none;
-    }
-
-    :host ::ng-deep .ProseMirror ::selection {
-      background: var(--color-accent-solid);
-      color: white;
-    }
-
-    :host ::ng-deep .ProseMirror *::selection {
-      background: var(--color-accent-solid);
-      color: white;
-    }
+    :host ::ng-deep .ProseMirror blockquote { -webkit-user-drag: none; }
+    :host ::ng-deep .ProseMirror *::selection { background: var(--color-accent-solid); color: white; }
 
     /* Links */
     :host ::ng-deep .ProseMirror a.note-link {
@@ -779,60 +650,28 @@ interface BlockType {
       color: var(--color-accent-emphasis);
     }
 
-    /* Toggle Section (Details) — targets NodeView DOM: <div data-type="details"> */
+    /* Toggle Section */
     :host ::ng-deep .ProseMirror div[data-type="details"] {
       border: 1px solid var(--color-border);
       border-left: 2px solid var(--color-accent-solid);
       border-radius: 6px;
-      padding: 0.75rem;
-      margin: 0.5em 0;
+      padding: .75rem;
+      margin: .5em 0;
       background: var(--color-surface-subtle);
     }
-
-    /* Toggle button: <button> inside the details wrapper */
     :host ::ng-deep .ProseMirror div[data-type="details"] > button {
-      cursor: pointer;
-      font-weight: 600;
-      user-select: none;
-      background: none;
-      border: none;
-      padding: 0.25em 0;
-      font-size: inherit;
-      font-family: inherit;
-      color: inherit;
-      width: 100%;
-      text-align: left;
+      cursor: pointer; font-weight: 600; user-select: none;
+      background: none; border: none; padding: .25em 0;
+      font: inherit; color: inherit; width: 100%; text-align: left;
     }
-
-    /* Arrow indicator on the toggle button */
     :host ::ng-deep .ProseMirror div[data-type="details"] > button::before {
-      content: "▶";
-      font-size: 0.75em;
-      display: inline-block;
-      margin-right: 0.25em;
-      transition: transform 0.15s;
+      content: "▶"; font-size: .75em; display: inline-block;
+      margin-right: .25em; transition: transform .15s;
     }
-
-    /* Open state arrow — rotate instead of swapping content */
-    :host ::ng-deep .ProseMirror div[data-type="details"].is-open > button::before {
-      transform: rotate(90deg);
-    }
-
-    /* Open state spacing */
-    :host ::ng-deep .ProseMirror div[data-type="details"].is-open > button {
-      margin-bottom: 0.5em;
-    }
-
-    /* Summary element inside contentDOM */
-    :host ::ng-deep .ProseMirror div[data-type="details"] summary {
-      font-weight: 600;
-      outline: none;
-    }
-
-    /* Details content */
-    :host ::ng-deep .ProseMirror div[data-type="detailsContent"] {
-      padding-left: 0.25em;
-    }
+    :host ::ng-deep .ProseMirror div[data-type="details"].is-open > button::before { transform: rotate(90deg); }
+    :host ::ng-deep .ProseMirror div[data-type="details"].is-open > button { margin-bottom: .5em; }
+    :host ::ng-deep .ProseMirror div[data-type="details"] summary { font-weight: 600; outline: none; }
+    :host ::ng-deep .ProseMirror div[data-type="detailsContent"] { padding-left: .25em; }
 
     /* Block type dropdown styling */
     :host ::ng-deep .block-type-dropdown {
@@ -846,6 +685,75 @@ interface BlockType {
     :host ::ng-deep .block-type-dropdown .p-select-overlay {
       min-width: 160px;
     }
+
+    /* Date node inline chip */
+    :host ::ng-deep .date-node {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--color-border-default);
+      padding: 0 7px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--color-primary-text);
+      font-weight: 500;
+      cursor: pointer;
+      vertical-align: baseline;
+      background: var(--color-surface-subtle);
+      position: relative;
+      user-select: none;
+    }
+    :host ::ng-deep .date-node:hover {
+      border-color: var(--color-primary-text);
+      background: var(--color-primary-bg);
+    }
+    :host ::ng-deep .date-node .pi-calendar { font-size: 10px; opacity: .7; }
+    :host ::ng-deep .date-node:hover .pi-calendar { opacity: 1; }
+
+    /* Date node popover */
+    :host ::ng-deep .date-node-popover {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      z-index: 50;
+      background: var(--color-surface-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.12);
+      padding: 8px;
+      min-width: 220px;
+    }
+    :host ::ng-deep .date-node-quick-bar {
+      display: flex;
+      gap: 4px;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--color-border-muted-base);
+    }
+    :host ::ng-deep .date-node-quick-btn {
+      padding: 3px 10px;
+      font-size: 11px;
+      border-radius: 6px;
+      background: var(--color-surface-muted);
+      color: var(--color-foreground-secondary);
+      cursor: pointer;
+      border: none;
+    }
+    :host ::ng-deep .date-node-quick-btn:hover {
+      background: var(--color-primary-bg);
+      color: var(--color-primary-text);
+    }
+    :host ::ng-deep .date-node-picker-input {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 13px;
+      border: 1px solid var(--color-border-default);
+      border-radius: 6px;
+      background: var(--color-surface-subtle);
+      color: var(--color-foreground);
+      outline: none;
+    }
+    :host ::ng-deep .date-node-picker-input:focus { border-color: var(--color-accent-solid); }
   `],
 })
 export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {

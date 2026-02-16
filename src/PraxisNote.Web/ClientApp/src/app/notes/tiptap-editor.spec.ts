@@ -4,6 +4,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { tiptapExtensions } from './tiptap-extensions';
 import { SlashCommandItem, slashCommandItems } from './extensions/slash-command-items';
 import { formatShortDate } from '../shared/date-utils';
+import { toISODate } from './extensions/insert-date.extension';
 
 /**
  * TipTap Editor Test Suite
@@ -69,7 +70,7 @@ describe('TipTap Editor', () => {
       'details',
       'detailsSummary',
       'detailsContent',
-      'insertDate',
+      'dateNode',
     ])('has %s extension registered', (name) => {
       const has = editor.extensionManager.extensions.some((ext) => ext.name === name);
       expect(has).toBe(true);
@@ -393,33 +394,45 @@ describe('TipTap Editor', () => {
   // ── Step 13: Custom Extensions ──────────────────────────────
 
   describe('Custom Extensions', () => {
-    it('insertDate inserts formatted date text', () => {
+    it('insertDate creates dateNode with today\'s date', () => {
       editor.commands.insertDate();
 
-      const text = editor.getText();
-      expect(text).toBeTruthy();
-      expect(text.length).toBeGreaterThan(0);
+      const json = editor.getJSON();
+      const jsonStr = JSON.stringify(json);
+      expect(jsonStr).toContain('"type":"dateNode"');
+
+      const today = toISODate(new Date());
+      expect(jsonStr).toContain(`"date":"${today}"`);
     });
 
-    it('insertDate uses formatShortDate output', () => {
+    it('dateNode renders formatted date in HTML', () => {
       vi.useFakeTimers();
       try {
         vi.setSystemTime(new Date('2026-06-15T10:00:00'));
 
-        // Create fresh editor with faked time
         const timedEditor = createEditor();
         try {
           timedEditor.commands.insertDate();
 
-          const text = timedEditor.getText();
-          const expected = formatShortDate(new Date('2026-06-15T10:00:00'));
-          expect(text).toContain(expected);
+          const html = timedEditor.getHTML();
+          const expected = formatShortDate(new Date('2026-06-15T00:00:00'));
+          expect(html).toContain(expected);
+          expect(html).toContain('data-type="dateNode"');
         } finally {
           timedEditor.destroy();
         }
       } finally {
         vi.useRealTimers();
       }
+    });
+
+    it('insertDate with explicit date stores that date', () => {
+      editor.commands.insertDate('2026-12-25');
+
+      const json = editor.getJSON();
+      const jsonStr = JSON.stringify(json);
+      expect(jsonStr).toContain('"type":"dateNode"');
+      expect(jsonStr).toContain('"date":"2026-12-25"');
     });
   });
 
@@ -536,13 +549,36 @@ describe('TipTap Editor', () => {
       expect(json).toContain('"type":"horizontalRule"');
     });
 
-    it('Date action inserts date text', () => {
+    it('Date action inserts dateNode', () => {
       const item = slashCommandItems.find((i) => i.label === 'Date')!;
       item.action(editor);
 
-      const text = editor.getText();
-      expect(text).toBeTruthy();
-      expect(text.length).toBeGreaterThan(0);
+      const json = JSON.stringify(editor.getJSON());
+      expect(json).toContain('"type":"dateNode"');
+    });
+
+    it('Today action inserts dateNode with today\'s date', () => {
+      const item = slashCommandItems.find((i) => i.label === 'Today')!;
+      item.action(editor);
+
+      const json = JSON.stringify(editor.getJSON());
+      expect(json).toContain('"type":"dateNode"');
+
+      const today = toISODate(new Date());
+      expect(json).toContain(`"date":"${today}"`);
+    });
+
+    it('Tomorrow action inserts dateNode with tomorrow\'s date', () => {
+      const item = slashCommandItems.find((i) => i.label === 'Tomorrow')!;
+      item.action(editor);
+
+      const json = JSON.stringify(editor.getJSON());
+      expect(json).toContain('"type":"dateNode"');
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowISO = toISODate(tomorrow);
+      expect(json).toContain(`"date":"${tomorrowISO}"`);
     });
   });
 
@@ -631,6 +667,8 @@ describe('TipTap Editor', () => {
       'Image',
       'Divider',
       'Date',
+      'Today',
+      'Tomorrow',
     ];
 
     it('every slash command item has a corresponding test', () => {
@@ -663,7 +701,9 @@ describe('TipTap Editor', () => {
       expect(find('Table').aliases).toBeUndefined();
       expect(find('Image').aliases).toEqual(['img', 'pic']);
       expect(find('Divider').aliases).toEqual(['hr', 'line', 'separator']);
-      expect(find('Date').aliases).toEqual(['today']);
+      expect(find('Date').aliases).toBeUndefined();
+      expect(find('Today').aliases).toBeUndefined();
+      expect(find('Tomorrow').aliases).toBeUndefined();
     });
 
     it('aliases are arrays of strings when present', () => {
@@ -720,9 +760,9 @@ describe('TipTap Editor', () => {
       expect(results.some((r) => r.label === 'Bullet List')).toBe(true);
     });
 
-    it('filters by alias "today" returns Date', () => {
+    it('filters by "today" returns Today command', () => {
       const results = filterByQuery('today');
-      expect(results.some((r) => r.label === 'Date')).toBe(true);
+      expect(results.some((r) => r.label === 'Today')).toBe(true);
     });
 
     it('items without aliases are not matched by alias query', () => {
