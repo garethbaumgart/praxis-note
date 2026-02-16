@@ -37,7 +37,12 @@ import { SlashCommandItem } from './extensions/slash-command-items';
               (click)="selectItem.emit(item.flatIndex)"
             >
               <i [class]="item.icon + ' slash-menu-item-icon'" aria-hidden="true"></i>
-              <span class="slash-menu-item-label">{{ item.label }}</span>
+              <span class="slash-menu-item-label">
+                {{ item.label }}
+                @if (item.aliases?.length) {
+                  <span class="slash-menu-item-alias">{{ item.aliases?.[0] }}</span>
+                }
+              </span>
               @if (item.shortcut) {
                 <span class="slash-menu-item-shortcut">{{ item.shortcut }}</span>
               }
@@ -112,6 +117,16 @@ import { SlashCommandItem } from './extensions/slash-command-items';
 
       .slash-menu-item-label {
         flex: 1;
+      }
+
+      .slash-menu-item-alias {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 10px;
+        color: var(--color-foreground-muted);
+        background: var(--color-surface-hover);
+        padding: 1px 5px;
+        border-radius: 3px;
+        margin-left: 4px;
       }
 
       .slash-menu-item-shortcut {
