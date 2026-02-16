@@ -40,7 +40,7 @@ import { SlashCommandItem } from './extensions/slash-command-items';
               <span class="slash-menu-item-label">
                 {{ item.label }}
                 @if (item.aliases?.length) {
-                  <span class="slash-menu-item-alias">{{ item.aliases![0] }}</span>
+                  <span class="slash-menu-item-alias">{{ item.aliases?.[0] }}</span>
                 }
               </span>
               @if (item.shortcut) {
