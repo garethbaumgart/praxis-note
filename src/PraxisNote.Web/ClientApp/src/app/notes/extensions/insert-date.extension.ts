@@ -49,6 +49,9 @@ export const DateNode = Node.create({
       wrapper.classList.add('date-node');
       wrapper.setAttribute('data-type', 'dateNode');
       wrapper.contentEditable = 'false';
+      wrapper.tabIndex = 0;
+      wrapper.setAttribute('role', 'button');
+      wrapper.setAttribute('aria-haspopup', 'dialog');
 
       const icon = document.createElement('i');
       icon.className = 'pi pi-calendar';
@@ -67,7 +70,9 @@ export const DateNode = Node.create({
       }
 
       function updateDisplay() {
-        text.textContent = formatDisplay(node.attrs['date']);
+        const display = formatDisplay(node.attrs['date']);
+        text.textContent = display;
+        wrapper.setAttribute('aria-label', display ? `Date: ${display}` : 'Date');
       }
 
       function updateNodeDate(newDate: string) {
@@ -147,8 +152,9 @@ export const DateNode = Node.create({
         pickerInput.className = 'date-node-picker-input';
         pickerInput.value = node.attrs['date'] || toISODate(new Date());
         pickerInput.addEventListener('change', () => {
-          if (pickerInput?.value) {
-            updateNodeDate(pickerInput.value);
+          const val = pickerInput?.value;
+          if (val && !isNaN(new Date(val + 'T00:00:00').getTime())) {
+            updateNodeDate(val);
             closePopover();
           }
         });
@@ -157,15 +163,24 @@ export const DateNode = Node.create({
         wrapper.appendChild(popover);
 
         setTimeout(() => {
+          if (!popover || !popover.isConnected) return;
           document.addEventListener('click', onDocumentClick);
           document.addEventListener('keydown', onEscapeKey);
         });
       }
 
-      wrapper.addEventListener('click', (e) => {
+      function onWrapperActivate(e: Event) {
         e.stopPropagation();
         e.preventDefault();
         openPopover();
+      }
+
+      wrapper.addEventListener('click', onWrapperActivate);
+      wrapper.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openPopover();
+        }
       });
 
       updateDisplay();
@@ -174,12 +189,14 @@ export const DateNode = Node.create({
         dom: wrapper,
         update(updatedNode) {
           if (updatedNode.type.name !== 'dateNode') return false;
+          // Standard TipTap NodeView pattern: reassign to track latest node state
           node = updatedNode;
           updateDisplay();
           return true;
         },
         destroy() {
           closePopover();
+          wrapper.removeEventListener('click', onWrapperActivate);
         },
       };
     };

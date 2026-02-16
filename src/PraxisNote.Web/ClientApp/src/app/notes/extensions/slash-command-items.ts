@@ -1,6 +1,7 @@
 import { Editor } from '@tiptap/core';
 import { formatShortcut } from '../../shared/keyboard-utils';
 import { normalizeImageUrl } from '../../shared/url-utils';
+import { toISODate } from './insert-date.extension';
 
 export interface SlashCommandItem {
   label: string;
@@ -144,10 +145,7 @@ export const slashCommandItems: SlashCommandItem[] = [
     action: (editor) => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const y = tomorrow.getFullYear();
-      const m = String(tomorrow.getMonth() + 1).padStart(2, '0');
-      const d = String(tomorrow.getDate()).padStart(2, '0');
-      editor.commands.insertDate(`${y}-${m}-${d}`);
+      editor.commands.insertDate(toISODate(tomorrow));
     },
   },
 ];
