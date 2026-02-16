@@ -846,6 +846,91 @@ interface BlockType {
     :host ::ng-deep .block-type-dropdown .p-select-overlay {
       min-width: 160px;
     }
+
+    /* Date node inline chip */
+    :host ::ng-deep .date-node {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--color-border-default);
+      padding: 0 7px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--color-primary-text);
+      font-weight: 500;
+      cursor: pointer;
+      vertical-align: baseline;
+      background: var(--color-bg-subtle);
+      position: relative;
+      user-select: none;
+    }
+
+    :host ::ng-deep .date-node:hover {
+      border-color: var(--color-primary-text);
+      background: var(--color-primary-bg);
+    }
+
+    :host ::ng-deep .date-node .pi-calendar {
+      font-size: 10px;
+      opacity: 0.7;
+    }
+
+    :host ::ng-deep .date-node:hover .pi-calendar {
+      opacity: 1;
+    }
+
+    /* Date node popover */
+    :host ::ng-deep .date-node-popover {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      z-index: 50;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      padding: 8px;
+      min-width: 220px;
+    }
+
+    :host ::ng-deep .date-node-quick-bar {
+      display: flex;
+      gap: 4px;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--color-border-muted-base);
+    }
+
+    :host ::ng-deep .date-node-quick-btn {
+      padding: 3px 10px;
+      font-size: 11px;
+      border-radius: 6px;
+      background: var(--color-bg-muted);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+    }
+
+    :host ::ng-deep .date-node-quick-btn:hover {
+      background: var(--color-primary-bg);
+      color: var(--color-primary-text);
+    }
+
+    :host ::ng-deep .date-node-picker-input {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 13px;
+      border: 1px solid var(--color-border-default);
+      border-radius: 6px;
+      background: var(--color-bg-base);
+      color: var(--color-text-primary);
+      outline: none;
+    }
+
+    :host ::ng-deep .date-node-picker-input:focus {
+      border-color: var(--color-primary-solid);
+    }
   `],
 })
 export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {

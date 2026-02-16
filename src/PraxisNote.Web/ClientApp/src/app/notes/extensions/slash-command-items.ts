@@ -124,10 +124,30 @@ export const slashCommandItems: SlashCommandItem[] = [
     label: 'Date',
     icon: 'pi pi-calendar',
     group: 'Insert',
-    aliases: ['today'],
     shortcut: formatShortcut({ mod: true, shift: true, key: 'D' }),
     action: (editor) => {
       editor.commands.insertDate();
+    },
+  },
+  {
+    label: 'Today',
+    icon: 'pi pi-calendar',
+    group: 'Insert',
+    action: (editor) => {
+      editor.commands.insertDate();
+    },
+  },
+  {
+    label: 'Tomorrow',
+    icon: 'pi pi-calendar-plus',
+    group: 'Insert',
+    action: (editor) => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const y = tomorrow.getFullYear();
+      const m = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const d = String(tomorrow.getDate()).padStart(2, '0');
+      editor.commands.insertDate(`${y}-${m}-${d}`);
     },
   },
 ];
