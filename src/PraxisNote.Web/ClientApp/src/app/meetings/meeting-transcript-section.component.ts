@@ -291,7 +291,7 @@ import { DeepgramTranscriptionService } from './deepgram-transcription.service';
     .transcript-textarea {
       width: 100%; background: var(--color-bg-muted); border: none; border-radius: 6px;
       padding: 12px; font-size: 13px; line-height: 1.7; color: var(--color-text-primary);
-      resize: none; overflow: hidden; outline: none; box-sizing: border-box; min-height: 80px;
+      resize: none; overflow-y: auto; outline: none; box-sizing: border-box; min-height: 80px; max-height: 300px;
     }
     .transcript-textarea::placeholder { color: var(--color-text-muted); }
     .transcript-textarea:focus-visible {
@@ -333,7 +333,10 @@ export class MeetingTranscriptSectionComponent {
       this.transcript();
       afterNextRender(() => {
         const ta = this.transcriptArea()?.nativeElement;
-        if (ta) this.autoResizeTextarea(ta);
+        if (ta) {
+          this.autoResizeTextarea(ta);
+          ta.scrollTop = ta.scrollHeight;
+        }
       }, { injector: this.injector });
     });
   }
@@ -346,6 +349,6 @@ export class MeetingTranscriptSectionComponent {
 
   private autoResizeTextarea(textarea: HTMLTextAreaElement): void {
     textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
+    textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
   }
 }
