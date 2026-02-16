@@ -12,18 +12,24 @@ export class AuthService {
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(true);
   private readonly _initialized = signal(false);
+  private readonly _loginPending = signal(false);
   private authCheckSub?: Subscription;
 
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly isAuthenticated = computed(() => this._user() !== null);
+  readonly loginPending = this._loginPending.asReadonly();
 
   constructor() {
     this.checkAuth();
   }
 
   login(): void {
+    if (this._loginPending()) return;
+    this._loginPending.set(true);
     window.location.href = '/api/auth/login/google';
+    // Reset after 5s in case the redirect fails or user navigates back
+    setTimeout(() => this._loginPending.set(false), 5000);
   }
 
   logout(): void {
