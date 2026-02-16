@@ -699,7 +699,7 @@ interface BlockType {
       font-weight: 500;
       cursor: pointer;
       vertical-align: baseline;
-      background: var(--color-bg-subtle);
+      background: var(--color-surface-subtle);
       position: relative;
       user-select: none;
     }
@@ -716,7 +716,7 @@ interface BlockType {
       top: calc(100% + 4px);
       left: 0;
       z-index: 50;
-      background: var(--color-bg-subtle);
+      background: var(--color-surface-subtle);
       border: 1px solid var(--color-border-default);
       border-radius: 10px;
       box-shadow: 0 8px 30px rgba(0,0,0,.12);
@@ -734,8 +734,8 @@ interface BlockType {
       padding: 3px 10px;
       font-size: 11px;
       border-radius: 6px;
-      background: var(--color-bg-muted);
-      color: var(--color-text-secondary);
+      background: var(--color-surface-muted);
+      color: var(--color-foreground-secondary);
       cursor: pointer;
       border: none;
     }
@@ -749,11 +749,11 @@ interface BlockType {
       font-size: 13px;
       border: 1px solid var(--color-border-default);
       border-radius: 6px;
-      background: var(--color-bg-base);
-      color: var(--color-text-primary);
+      background: var(--color-surface-subtle);
+      color: var(--color-foreground);
       outline: none;
     }
-    :host ::ng-deep .date-node-picker-input:focus { border-color: var(--color-primary-solid); }
+    :host ::ng-deep .date-node-picker-input:focus { border-color: var(--color-accent-solid); }
   `],
 })
 export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
