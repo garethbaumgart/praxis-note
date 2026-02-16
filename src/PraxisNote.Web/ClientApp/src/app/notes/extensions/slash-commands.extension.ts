@@ -25,7 +25,8 @@ export const SlashCommands = Extension.create<SlashCommandsOptions>({
           return slashCommandItems.filter(
             (item) =>
               item.label.toLowerCase().includes(lower) ||
-              item.group.toLowerCase().includes(lower),
+              item.group.toLowerCase().includes(lower) ||
+              (item.aliases?.some((a) => a.toLowerCase().includes(lower)) ?? false),
           );
         },
         command: ({ editor, range, props }) => {

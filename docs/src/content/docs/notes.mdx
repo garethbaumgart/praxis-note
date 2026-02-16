@@ -22,4 +22,24 @@ PraxisNote's note editor is a rich text workspace for capturing ideas, meeting n
 - PDF export for sharing notes outside PraxisNote
 - Automatic saving with last-edited timestamp
 
-{/* TODO: Expand with full documentation covering the editor toolbar, slash commands, checkbox-task sync, PDF export, and formatting options */}
+## Slash Commands
+
+Type `/` in the editor to open the command menu. You can type the command name or a short alias to quickly filter and select a command.
+
+| Command | Aliases | Description |
+|---------|---------|-------------|
+| Heading 1 | `h1` | Large section heading |
+| Heading 2 | `h2` | Medium section heading |
+| Heading 3 | `h3` | Small section heading |
+| Bullet List | `ul`, `bullets` | Unordered bullet list |
+| Numbered List | `ol`, `numbers` | Ordered numbered list |
+| Task List | `task`, `checklist` | Checkbox list (syncs with tasks) |
+| Toggle Section | `toggle`, `collapse`, `details` | Collapsible content section |
+| Blockquote | `quote`, `bq` | Indented quote block |
+| Code Block | `code`, `cb` | Syntax-highlighted code block |
+| Table | | 3x3 table with header row |
+| Image | `img`, `pic` | Insert an image by URL |
+| Divider | `hr`, `line`, `separator` | Horizontal rule |
+| Date | `today` | Insert today's date |
+
+For example, typing `/h1` will filter the menu to show "Heading 1", and typing `/task` will show "Task List".

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Editor } from '@tiptap/core';
 import Placeholder from '@tiptap/extension-placeholder';
 import { tiptapExtensions } from './tiptap-extensions';
-import { slashCommandItems } from './extensions/slash-command-items';
+import { SlashCommandItem, slashCommandItems } from './extensions/slash-command-items';
 import { formatShortDate } from '../shared/date-utils';
 
 /**
@@ -646,6 +646,89 @@ describe('TipTap Editor', () => {
       // Every tested label should correspond to an actual slash command
       const orphanedLabels = testedLabels.filter((label) => !allLabels.includes(label));
       expect(orphanedLabels).toEqual([]);
+    });
+
+    it('aliases are defined for expected commands', () => {
+      const find = (label: string) => slashCommandItems.find((i) => i.label === label)!;
+
+      expect(find('Heading 1').aliases).toEqual(['h1']);
+      expect(find('Heading 2').aliases).toEqual(['h2']);
+      expect(find('Heading 3').aliases).toEqual(['h3']);
+      expect(find('Bullet List').aliases).toEqual(['ul', 'bullets']);
+      expect(find('Numbered List').aliases).toEqual(['ol', 'numbers']);
+      expect(find('Task List').aliases).toEqual(['task', 'checklist']);
+      expect(find('Toggle Section').aliases).toEqual(['toggle', 'collapse', 'details']);
+      expect(find('Blockquote').aliases).toEqual(['quote', 'bq']);
+      expect(find('Code Block').aliases).toEqual(['code', 'cb']);
+      expect(find('Table').aliases).toBeUndefined();
+      expect(find('Image').aliases).toEqual(['img', 'pic']);
+      expect(find('Divider').aliases).toEqual(['hr', 'line', 'separator']);
+      expect(find('Date').aliases).toEqual(['today']);
+    });
+
+    it('aliases are arrays of strings when present', () => {
+      for (const item of slashCommandItems) {
+        if (item.aliases !== undefined) {
+          expect(Array.isArray(item.aliases)).toBe(true);
+          for (const alias of item.aliases) {
+            expect(typeof alias).toBe('string');
+          }
+        }
+      }
+    });
+  });
+
+  // ── Slash Command Alias Filtering ────────────────────────────
+
+  describe('Slash Command Alias Filtering', () => {
+    function filterByQuery(query: string): SlashCommandItem[] {
+      if (!query) return slashCommandItems;
+      const lower = query.toLowerCase();
+      return slashCommandItems.filter(
+        (item) =>
+          item.label.toLowerCase().includes(lower) ||
+          item.group.toLowerCase().includes(lower) ||
+          (item.aliases?.some((a) => a.toLowerCase().includes(lower)) ?? false),
+      );
+    }
+
+    it('filters by alias "h1" returns Heading 1', () => {
+      const results = filterByQuery('h1');
+      expect(results.length).toBe(1);
+      expect(results[0].label).toBe('Heading 1');
+    });
+
+    it('filters by alias "task" returns Task List', () => {
+      const results = filterByQuery('task');
+      // "Task List" matches both the label and the alias
+      expect(results.some((r) => r.label === 'Task List')).toBe(true);
+    });
+
+    it('filters by alias "hr" returns Divider', () => {
+      const results = filterByQuery('hr');
+      expect(results.some((r) => r.label === 'Divider')).toBe(true);
+    });
+
+    it('alias filtering is case-insensitive', () => {
+      const results = filterByQuery('H1');
+      expect(results.length).toBe(1);
+      expect(results[0].label).toBe('Heading 1');
+    });
+
+    it('filters by alias "ul" returns Bullet List', () => {
+      const results = filterByQuery('ul');
+      expect(results.some((r) => r.label === 'Bullet List')).toBe(true);
+    });
+
+    it('filters by alias "today" returns Date', () => {
+      const results = filterByQuery('today');
+      expect(results.some((r) => r.label === 'Date')).toBe(true);
+    });
+
+    it('items without aliases are not matched by alias query', () => {
+      // "Table" has no aliases; searching for "tbl" should not find it
+      const results = filterByQuery('tbl');
+      expect(results.some((r) => r.label === 'Table')).toBe(false);
     });
   });
 });
