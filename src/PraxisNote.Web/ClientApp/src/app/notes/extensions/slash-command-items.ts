@@ -144,6 +144,7 @@ export const slashCommandItems: SlashCommandItem[] = [
     group: 'Insert',
     action: (editor) => {
       const tomorrow = new Date();
+      tomorrow.setHours(0, 0, 0, 0);
       tomorrow.setDate(tomorrow.getDate() + 1);
       editor.commands.insertDate(toISODate(tomorrow));
     },

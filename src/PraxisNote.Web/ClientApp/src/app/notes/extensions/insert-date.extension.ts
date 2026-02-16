@@ -114,6 +114,8 @@ export const DateNode = Node.create({
 
         popover = document.createElement('div');
         popover.className = 'date-node-popover';
+        popover.setAttribute('role', 'dialog');
+        popover.setAttribute('aria-label', 'Date picker');
 
         const quickBar = document.createElement('div');
         quickBar.className = 'date-node-quick-bar';
@@ -166,6 +168,7 @@ export const DateNode = Node.create({
           if (!popover || !popover.isConnected) return;
           document.addEventListener('click', onDocumentClick);
           document.addEventListener('keydown', onEscapeKey);
+          pickerInput?.focus();
         });
       }
 
@@ -175,13 +178,15 @@ export const DateNode = Node.create({
         openPopover();
       }
 
-      wrapper.addEventListener('click', onWrapperActivate);
-      wrapper.addEventListener('keydown', (e: KeyboardEvent) => {
+      function onWrapperKeydown(e: KeyboardEvent) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           openPopover();
         }
-      });
+      }
+
+      wrapper.addEventListener('click', onWrapperActivate);
+      wrapper.addEventListener('keydown', onWrapperKeydown);
 
       updateDisplay();
 
@@ -197,6 +202,7 @@ export const DateNode = Node.create({
         destroy() {
           closePopover();
           wrapper.removeEventListener('click', onWrapperActivate);
+          wrapper.removeEventListener('keydown', onWrapperKeydown);
         },
       };
     };
