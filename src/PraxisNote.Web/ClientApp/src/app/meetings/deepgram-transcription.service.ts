@@ -31,7 +31,6 @@ export class DeepgramTranscriptionService implements OnDestroy {
   private static readonly MAX_DROPPED_CHUNKS_BEFORE_ERROR = 10;
   private static readonly INITIAL_RECONNECT_DELAY_MS = 500;
   private static readonly MAX_RECONNECT_DELAY_MS = 15000;
-  private static readonly MAX_PENDING_CHUNKS = 10;
   private static readonly FLUSH_THROTTLE_MS = 50;
 
   readonly transcript = signal('');
@@ -255,11 +254,6 @@ export class DeepgramTranscriptionService implements OnDestroy {
   }
 
   private flushPendingAudio(): void {
-    // Step 6: Keep only the most recent chunks to avoid flooding the new connection
-    if (this.pendingAudioChunks.length > DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
-      this.pendingAudioChunks = this.pendingAudioChunks.slice(-DeepgramTranscriptionService.MAX_PENDING_CHUNKS);
-    }
-
     const chunks = [...this.pendingAudioChunks];
     this.pendingAudioChunks = [];
 
@@ -434,14 +428,10 @@ export class DeepgramTranscriptionService implements OnDestroy {
   }
 
   /**
-   * Adds an ArrayBuffer to the pending buffer, evicting oldest chunks when at capacity
-   * to keep the most recent audio data.
+   * Adds an ArrayBuffer to the pending buffer for replay after reconnection.
    */
   private addToPendingBuffer(buffer: ArrayBuffer): void {
     this.pendingAudioChunks.push(buffer);
-    if (this.pendingAudioChunks.length > DeepgramTranscriptionService.MAX_PENDING_CHUNKS) {
-      this.pendingAudioChunks = this.pendingAudioChunks.slice(-DeepgramTranscriptionService.MAX_PENDING_CHUNKS);
-    }
   }
 
   stop(): void {

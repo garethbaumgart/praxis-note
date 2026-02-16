@@ -119,7 +119,7 @@ describe('DeepgramTranscriptionService', () => {
   });
 
   describe('flushPendingAudio', () => {
-    it('flushPendingAudio_MoreThan10Chunks_SendsOnly10MostRecent', () => {
+    it('flushPendingAudio_MoreThan10Chunks_SendsAllChunks', () => {
       service.start();
       const ws1 = MockWebSocket.instances[0];
       ws1.simulateOpen();
@@ -139,12 +139,11 @@ describe('DeepgramTranscriptionService', () => {
       ws2.simulateOpen();
 
       // The flush throttles sends via setTimeout, so only the first chunk
-      // is sent synchronously. Verify the pending buffer was trimmed to 10
-      // and the first sent chunk is the oldest of the 10 most recent (size 6).
+      // is sent synchronously. Verify all chunks are flushed (no truncation).
       expect(service['pendingAudioChunks'].length).toBe(0); // buffer was drained
       const sentSizes = ws2.sentData.map(d => (d as ArrayBuffer).byteLength);
       expect(sentSizes.length).toBeGreaterThanOrEqual(1);
-      expect(sentSizes[0]).toBe(6); // oldest of the 10 most recent (sizes 6-15)
+      expect(sentSizes[0]).toBe(1); // oldest chunk (no truncation)
     });
   });
 
