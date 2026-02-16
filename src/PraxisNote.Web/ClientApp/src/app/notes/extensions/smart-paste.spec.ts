@@ -95,7 +95,7 @@ describe('parseStructuredText', () => {
     it('does not treat short ALL CAPS as heading (less than 3 chars after first)', () => {
       const input = 'AB\n\nSome text.';
       const result = parseStructuredText(input);
-      // "AB" is only 2 chars total, regex requires 3-80 after first char
+      // "AB" is only 2 chars total; regex requires at least 3 total (1 initial + 2-78 more characters)
       expect(result).not.toContain('<h2>');
     });
 

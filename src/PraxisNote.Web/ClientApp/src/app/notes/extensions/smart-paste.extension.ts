@@ -10,7 +10,8 @@ function escapeHtml(text: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function extractBulletText(line: string): string {
@@ -62,7 +63,7 @@ export function parseStructuredText(text: string): string {
       continue;
     }
 
-    // ALL CAPS heading: short uppercase line followed by blank line or different content
+    // ALL CAPS heading: short uppercase line followed by blank line or end of input
     if (HEADING_RE.test(line.trim()) && isBlank(lines[i + 1])) {
       html.push(`<h2>${escapeHtml(line.trim())}</h2>`);
       i++;
