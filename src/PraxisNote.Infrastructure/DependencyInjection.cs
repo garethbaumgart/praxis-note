@@ -8,6 +8,7 @@ using PraxisNote.Application.Features.Jira;
 using PraxisNote.Application.Features.Jira.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.Tags.Services;
 using PraxisNote.Application.Features.Transcription;
 using PraxisNote.Domain.Aggregates.ApiKeys;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
@@ -66,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<ICalendarService, GoogleCalendarService>();
         services.Configure<MeetingAnalysisSettings>(configuration.GetSection(MeetingAnalysisSettings.SectionName));
         services.AddScoped<IMeetingAnalyzer, ClaudeMeetingAnalyzer>();
+        services.AddScoped<ITagAiChatService, ClaudeTagAiChatService>();
         services.Configure<DeepgramSettings>(configuration.GetSection(DeepgramSettings.SectionName));
         services.Configure<JiraSettings>(configuration.GetSection(JiraSettings.SectionName));
         services.AddScoped<IJiraService, JiraService>();

@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using System.Text.Json;
 using PraxisNote.Web.Extensions;
 using PraxisNote.Application.Features.Tags;
+using PraxisNote.Application.Features.Tags.Services;
 
 namespace PraxisNote.Web.Endpoints;
 
@@ -18,6 +20,8 @@ public static class TagEndpoints
         group.MapDelete("/{id:guid}", (Delegate)HandleDeleteTag);
         group.MapGet("/{sourceId:guid}/merge-preview/{targetId:guid}", (Delegate)HandlePreviewMerge);
         group.MapPost("/{sourceId:guid}/merge-into/{targetId:guid}", (Delegate)HandleMergeTags);
+        group.MapPost("/{id:guid}/chat", (Delegate)HandleChat);
+        group.MapPost("/{id:guid}/starters", (Delegate)HandleGetStarters);
     }
 
     private static async Task<IResult> HandleGetTags(
@@ -215,7 +219,102 @@ public static class TagEndpoints
             return Results.BadRequest(new { error = "Source and target tags must be different" });
         }
     }
+    private static async Task HandleChat(
+        Guid id,
+        HttpContext context,
+        ClaimsPrincipal user,
+        TagChatRequest request,
+        AskTagAi askTagAi,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            context.Response.StatusCode = 401;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Message))
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("{\"error\":\"Message is required\"}", cancellationToken);
+            return;
+        }
+
+        context.Response.ContentType = "text/event-stream";
+        context.Response.Headers.CacheControl = "no-cache";
+        context.Response.Headers.Connection = "keep-alive";
+
+        try
+        {
+            var history = request.History?
+                .Select(h => new ChatMessage(h.Role, h.Content))
+                .ToList() ?? [];
+
+            var command = new AskTagAi.Command(userId.Value, id, request.Message, history);
+
+            await foreach (var token in askTagAi.ExecuteAsync(command, cancellationToken))
+            {
+                var tokenJson = JsonSerializer.Serialize(new { token });
+                await context.Response.WriteAsync($"data: {tokenJson}\n\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
+            }
+
+            await context.Response.WriteAsync("event: done\ndata: {}\n\n", cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == AskTagAi.NotFoundError)
+        {
+            await context.Response.WriteAsync("event: error\ndata: {\"error\":\"Tag not found\"}\n\n", cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == AskTagAi.NoContentError)
+        {
+            await context.Response.WriteAsync("event: error\ndata: {\"error\":\"This tag has no content to chat about\"}\n\n", cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Client disconnected
+        }
+        catch (Exception)
+        {
+            await context.Response.WriteAsync("event: error\ndata: {\"error\":\"An error occurred while generating a response\"}\n\n", cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+        }
+    }
+
+    private static async Task<IResult> HandleGetStarters(
+        Guid id,
+        ClaimsPrincipal user,
+        GenerateTagStarters generateStarters,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var query = new GenerateTagStarters.Query(userId.Value, id);
+            var starters = await generateStarters.ExecuteAsync(query, cancellationToken);
+
+            return Results.Ok(new { starters });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == GenerateTagStarters.NotFoundError)
+        {
+            return Results.NotFound();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == GenerateTagStarters.NoContentError)
+        {
+            return Results.Ok(new { starters = Array.Empty<string>() });
+        }
+    }
 }
 
 public record CreateTagRequest(string Name);
 public record UpdateTagRequest(string Name);
+public record TagChatRequest(string Message, List<TagChatHistoryItem>? History);
+public record TagChatHistoryItem(string Role, string Content);

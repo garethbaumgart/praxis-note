@@ -18,6 +18,8 @@ import { ContextualHeaderService } from '../shared/services/contextual-header.se
 import { ErrorStateComponent } from '../shared/components/error-state.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
 import { HelpLinkComponent } from '../shared/components/help-link.component';
+import { TagAiChatComponent } from './tag-ai-chat.component';
+import { TagAiChatService } from './tag-ai-chat.service';
 
 interface DateGroup {
   label: string;
@@ -28,7 +30,7 @@ interface DateGroup {
   selector: 'app-tags-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent, PageContentComponent, HelpLinkComponent],
+  imports: [FormsModule, SelectModule, Menu, Dialog, Skeleton, TagListSkeletonComponent, MergeTagDialogComponent, ErrorStateComponent, PageContentComponent, HelpLinkComponent, TagAiChatComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Tags</h1>
@@ -126,6 +128,24 @@ interface DateGroup {
             }
           }
         </div>
+
+        <!-- AI Chat: Ask AI button + inline panel -->
+        @if (selectedTag() && !hub.loading() && hub.items().length > 0) {
+          @if (!aiChat.isOpen()) {
+            <button
+              type="button"
+              class="mb-4 flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-border text-foreground-secondary hover:bg-accent hover:text-accent-foreground transition-colors"
+              (click)="openAiChat()"
+              aria-label="Open AI chat for this tag">
+              <i class="pi pi-sparkles text-xs" aria-hidden="true"></i>
+              Ask AI
+            </button>
+          } @else {
+            <div class="mb-4">
+              <app-tag-ai-chat />
+            </div>
+          }
+        }
 
         @if (!selectedTag()) {
           <!-- No tag selected -->
@@ -334,6 +354,7 @@ interface DateGroup {
 export class TagsPage implements OnInit, OnDestroy {
   readonly tagService = inject(TagService);
   readonly hub = inject(TagHubService);
+  readonly aiChat = inject(TagAiChatService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly headerService = inject(ContextualHeaderService);
@@ -446,6 +467,8 @@ export class TagsPage implements OnInit, OnDestroy {
       } else {
         this.hub.clear();
       }
+      // Close AI chat when tag changes
+      this.aiChat.close();
     });
   }
 
@@ -461,6 +484,7 @@ export class TagsPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.headerService.clearContext();
+    this.aiChat.close();
   }
 
   onTagSelected(tag: Tag | null): void {
@@ -558,6 +582,15 @@ export class TagsPage implements OnInit, OnDestroy {
     // If the merged source tag was selected, clear selection
     if (this.selectedTag()?.id === event.sourceId) {
       this.onTagSelected(null);
+    }
+  }
+
+  // --- AI Chat ---
+
+  openAiChat(): void {
+    const tag = this.selectedTag();
+    if (tag) {
+      this.aiChat.open(tag.id);
     }
   }
 

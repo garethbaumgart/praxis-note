@@ -57,6 +57,8 @@ public static class DependencyInjection
         services.AddScoped<DeleteTag>();
         services.AddScoped<MergeTags>();
         services.AddScoped<PreviewTagMerge>();
+        services.AddScoped<AskTagAi>();
+        services.AddScoped<GenerateTagStarters>();
 
         // User use cases
         services.AddScoped<LoginOrRegisterUser>();
