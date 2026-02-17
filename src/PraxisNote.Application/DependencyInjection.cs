@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PraxisNote.Application.Features.ApiKeys;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Notes;
 using PraxisNote.Application.Features.Notes.Services;
@@ -19,6 +20,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        // API Key use cases
+        services.AddScoped<CreateApiKey>();
+        services.AddScoped<RevokeApiKey>();
+        services.AddScoped<GetUserApiKeys>();
+
         // Task use cases
         services.AddScoped<CreateTask>();
         services.AddScoped<GetUserTasks>();

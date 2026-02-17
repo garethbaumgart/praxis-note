@@ -14,8 +14,9 @@ public sealed class ProfileValidationMiddleware(RequestDelegate next)
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Only apply to authenticated API requests
-        if (!context.Request.Path.StartsWithSegments("/api")
+        // Only apply to authenticated API and MCP requests
+        if (!(context.Request.Path.StartsWithSegments("/api")
+            || context.Request.Path.StartsWithSegments("/mcp"))
             || context.User.Identity?.IsAuthenticated != true)
         {
             await next(context);
@@ -24,6 +25,13 @@ public sealed class ProfileValidationMiddleware(RequestDelegate next)
 
         var userId = context.User.GetUserId();
         if (userId is null)
+        {
+            await next(context);
+            return;
+        }
+
+        // If ProfileId was already set by the auth handler (e.g., API key auth), skip lookup
+        if (context.Items.ContainsKey("ProfileId"))
         {
             await next(context);
             return;

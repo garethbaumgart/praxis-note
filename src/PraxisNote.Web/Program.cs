@@ -10,6 +10,9 @@ using PraxisNote.Application;
 using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Infrastructure;
 using PraxisNote.Infrastructure.Persistence;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using ModelContextProtocol.AspNetCore;
 using PraxisNote.Web.Auth;
 using PraxisNote.Web.Endpoints;
 using PraxisNote.Web.Middleware;
@@ -39,6 +42,9 @@ builder.Services.AddApplication();
 
 // Add Infrastructure services (DbContext, repositories)
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// HttpContextAccessor (needed by MCP tools and API key auth)
+builder.Services.AddHttpContextAccessor();
 
 // SSE Manager for real-time notifications (singleton for connection tracking)
 builder.Services.AddSingleton<NotificationSseManager>();
@@ -92,18 +98,18 @@ var authBuilder = builder.Services.AddAuthentication(options =>
         return Task.CompletedTask;
     };
 
-    // Forward to mock auth if header is present (Dev/E2E only)
-    if (enableMockAuth)
+    // Forward to mock auth or API key auth based on request headers
+    options.ForwardDefaultSelector = context =>
     {
-        options.ForwardDefaultSelector = context =>
-        {
-            if (context.Request.Headers.ContainsKey(MockAuthenticationOptions.HeaderName))
-            {
-                return MockAuthenticationOptions.SchemeName;
-            }
-            return null; // Use default (cookie) scheme
-        };
-    }
+        if (enableMockAuth && context.Request.Headers.ContainsKey(MockAuthenticationOptions.HeaderName))
+            return MockAuthenticationOptions.SchemeName;
+
+        var authHeader = context.Request.Headers.Authorization.ToString();
+        if (authHeader.StartsWith("Bearer pn_", StringComparison.Ordinal))
+            return ApiKeyAuthenticationOptions.SchemeName;
+
+        return null; // Use default (cookie) scheme
+    };
 });
 
 // Add Google authentication only if credentials are configured
@@ -186,6 +192,25 @@ if (enableMockAuth)
 {
     authBuilder.AddMockAuthentication();
 }
+
+// Add API key authentication (always available)
+authBuilder.AddApiKeyAuthentication();
+
+// Rate limiting for MCP endpoint
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("mcp", limiter =>
+    {
+        limiter.PermitLimit = 60;
+        limiter.Window = TimeSpan.FromMinutes(1);
+    });
+});
+
+// MCP Server for OpenClaw and other MCP clients
+builder.Services.AddScoped<PraxisNote.Web.Mcp.McpUserContext>();
+builder.Services.AddMcpServer()
+    .WithHttpTransport()
+    .WithToolsFromAssembly();
 
 var app = builder.Build();
 
@@ -277,6 +302,9 @@ app.UseWebSockets(new WebSocketOptions
     KeepAliveInterval = TimeSpan.FromSeconds(20)
 });
 
+// Rate limiting middleware
+app.UseRateLimiter();
+
 // Authentication & Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
@@ -303,6 +331,10 @@ app.MapCalendarEndpoints();
 app.MapInsightEndpoints();
 app.MapActionItemEndpoints();
 app.MapTranscriptionEndpoints();
+app.MapApiKeyEndpoints();
+
+// MCP endpoint for OpenClaw and other MCP clients
+app.MapMcp().RequireAuthorization().RequireRateLimiting("mcp");
 
 // SPA fallback - serves index.html for client-side routing
 if (angularAppExists)
