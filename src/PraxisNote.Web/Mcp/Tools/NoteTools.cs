@@ -22,7 +22,9 @@ public sealed class NoteTools(McpUserContext userContext)
         GetNoteById getNoteById,
         [Description("The ID of the note")] string noteId)
     {
-        var query = new GetNoteById.Query(Guid.Parse(noteId), userContext.UserId);
+        if (!Guid.TryParse(noteId, out var parsedNoteId))
+            return JsonSerializer.Serialize(new { error = "Invalid note ID format" });
+        var query = new GetNoteById.Query(parsedNoteId, userContext.UserId);
         var note = await getNoteById.ExecuteAsync(query);
         return note is null
             ? JsonSerializer.Serialize(new { error = "Note not found" })
@@ -45,7 +47,9 @@ public sealed class NoteTools(McpUserContext userContext)
         [Description("The ID of the note to update")] string noteId,
         [Description("New content in TipTap JSON format")] string content)
     {
-        var command = new UpdateNoteContent.Command(Guid.Parse(noteId), userContext.UserId, content);
+        if (!Guid.TryParse(noteId, out var parsedNoteId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid note ID format" });
+        var command = new UpdateNoteContent.Command(parsedNoteId, userContext.UserId, content);
         var success = await updateNote.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success });
     }
@@ -55,7 +59,9 @@ public sealed class NoteTools(McpUserContext userContext)
         DeleteNote deleteNote,
         [Description("The ID of the note to delete")] string noteId)
     {
-        var command = new DeleteNote.Command(Guid.Parse(noteId), userContext.UserId);
+        if (!Guid.TryParse(noteId, out var parsedNoteId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid note ID format" });
+        var command = new DeleteNote.Command(parsedNoteId, userContext.UserId);
         var success = await deleteNote.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success });
     }

@@ -22,7 +22,9 @@ public sealed class MeetingTools(McpUserContext userContext)
         GetMeetingById getMeetingById,
         [Description("The ID of the meeting")] string meetingId)
     {
-        var query = new GetMeetingById.Query(Guid.Parse(meetingId), userContext.UserId);
+        if (!Guid.TryParse(meetingId, out var parsedMeetingId))
+            return JsonSerializer.Serialize(new { error = "Invalid meeting ID format" });
+        var query = new GetMeetingById.Query(parsedMeetingId, userContext.UserId);
         var meeting = await getMeetingById.ExecuteAsync(query);
         return meeting is null
             ? JsonSerializer.Serialize(new { error = "Meeting not found" })
@@ -36,7 +38,13 @@ public sealed class MeetingTools(McpUserContext userContext)
         [Description("Optional meeting date in ISO 8601 format")] string? meetingDate = null,
         [Description("Optional comma-separated list of attendees")] string? attendees = null)
     {
-        DateTimeOffset? parsedDate = meetingDate is not null ? DateTimeOffset.Parse(meetingDate) : null;
+        DateTimeOffset? parsedDate = null;
+        if (meetingDate is not null)
+        {
+            if (!DateTimeOffset.TryParse(meetingDate, out var d))
+                return JsonSerializer.Serialize(new { error = "Invalid date format. Use ISO 8601." });
+            parsedDate = d;
+        }
         var command = new CreateMeeting.Command(userContext.UserId, userContext.ProfileId, title, parsedDate, attendees);
         var result = await createMeeting.ExecuteAsync(command);
         return JsonSerializer.Serialize(result);
@@ -50,8 +58,16 @@ public sealed class MeetingTools(McpUserContext userContext)
         [Description("New date in ISO 8601 format (null to keep existing)")] string? meetingDate = null,
         [Description("New comma-separated attendees (null to keep existing)")] string? attendees = null)
     {
-        DateTimeOffset? parsedDate = meetingDate is not null ? DateTimeOffset.Parse(meetingDate) : null;
-        var command = new UpdateMeeting.Command(Guid.Parse(meetingId), userContext.UserId, title, parsedDate, attendees);
+        if (!Guid.TryParse(meetingId, out var parsedMeetingId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid meeting ID format" });
+        DateTimeOffset? parsedDate = null;
+        if (meetingDate is not null)
+        {
+            if (!DateTimeOffset.TryParse(meetingDate, out var d))
+                return JsonSerializer.Serialize(new { success = false, error = "Invalid date format. Use ISO 8601." });
+            parsedDate = d;
+        }
+        var command = new UpdateMeeting.Command(parsedMeetingId, userContext.UserId, title, parsedDate, attendees);
         var success = await updateMeeting.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success });
     }
@@ -61,7 +77,9 @@ public sealed class MeetingTools(McpUserContext userContext)
         DeleteMeeting deleteMeeting,
         [Description("The ID of the meeting to delete")] string meetingId)
     {
-        var command = new DeleteMeeting.Command(Guid.Parse(meetingId), userContext.UserId);
+        if (!Guid.TryParse(meetingId, out var parsedMeetingId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid meeting ID format" });
+        var command = new DeleteMeeting.Command(parsedMeetingId, userContext.UserId);
         var success = await deleteMeeting.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success });
     }

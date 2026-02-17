@@ -35,7 +35,9 @@ public sealed class TaskTools(McpUserContext userContext)
         [Description("The ID of the task to update")] string taskId,
         [Description("The new title for the task")] string title)
     {
-        var command = new UpdateTask.Command(Guid.Parse(taskId), userContext.UserId, title);
+        if (!Guid.TryParse(taskId, out var parsedTaskId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
+        var command = new UpdateTask.Command(parsedTaskId, userContext.UserId, title);
         var success = await updateTask.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success });
     }
@@ -46,7 +48,9 @@ public sealed class TaskTools(McpUserContext userContext)
         [Description("The ID of the task")] string taskId,
         [Description("Target status: Todo, InProgress, or Done")] string status)
     {
-        var command = new ChangeTaskStatus.Command(Guid.Parse(taskId), userContext.UserId, status);
+        if (!Guid.TryParse(taskId, out var parsedTaskId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
+        var command = new ChangeTaskStatus.Command(parsedTaskId, userContext.UserId, status);
         var success = await changeStatus.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success });
     }
@@ -56,7 +60,9 @@ public sealed class TaskTools(McpUserContext userContext)
         ToggleTaskPriority togglePriority,
         [Description("The ID of the task")] string taskId)
     {
-        var command = new ToggleTaskPriority.Command(Guid.Parse(taskId), userContext.UserId);
+        if (!Guid.TryParse(taskId, out var parsedTaskId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
+        var command = new ToggleTaskPriority.Command(parsedTaskId, userContext.UserId);
         var success = await togglePriority.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success });
     }
@@ -66,7 +72,9 @@ public sealed class TaskTools(McpUserContext userContext)
         DeleteTask deleteTask,
         [Description("The ID of the task to delete")] string taskId)
     {
-        var command = new DeleteTask.Command(Guid.Parse(taskId), userContext.UserId);
+        if (!Guid.TryParse(taskId, out var parsedTaskId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
+        var command = new DeleteTask.Command(parsedTaskId, userContext.UserId);
         var success = await deleteTask.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success });
     }
