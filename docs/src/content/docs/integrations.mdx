@@ -1,0 +1,57 @@
+---
+title: Integrations
+description: Connect external services to enhance your PraxisNote workflow.
+---
+
+PraxisNote integrates with external services to bring context into your notes and meetings.
+
+## Google Calendar
+
+Connect your Google Calendar to automatically import upcoming meetings into PraxisNote. Only event titles, times, and attendees are imported — no calendar data is stored beyond what appears in your meetings list.
+
+### Connecting
+
+1. Go to **Settings** and find the **Calendar Integration** section.
+2. Click **Connect Google Calendar**.
+3. Authorize PraxisNote to read your calendar events.
+4. Once connected, click **Sync Now** to import meetings for the next 7 days.
+
+### Disconnecting
+
+Click **Disconnect** in the Calendar Integration section to revoke access. Your previously imported meetings remain in PraxisNote.
+
+---
+
+## Jira
+
+Connect your Jira Cloud account to paste Jira issue URLs into notes and see them rendered as rich inline chips showing the issue type, key, summary, and status.
+
+### Connecting
+
+1. Go to **Settings** and find the **Jira Integration** section.
+2. Click **Connect Jira**.
+3. Authorize PraxisNote to read your Jira issues.
+4. Once connected, you can paste Jira URLs in any note.
+
+### Using Jira links in notes
+
+There are two ways to insert a Jira issue link:
+
+- **Paste a URL** — Copy a Jira issue URL (e.g., `https://myorg.atlassian.net/browse/PROJ-123`) and paste it into a note. It automatically converts into a rich chip.
+- **Slash command** — Type `/jira` in a note, then enter the Jira issue URL when prompted.
+
+Each chip displays:
+- **Issue type icon** (Task, Bug, Story, Epic)
+- **Issue key** (e.g., PROJ-123)
+- **Summary** (truncated to fit inline)
+- **Status badge** (color-coded: To Do, In Progress, Done)
+
+Click any chip to open the issue in Jira in a new tab.
+
+### Disconnecting
+
+Click **Disconnect** in the Jira Integration section of Settings. Existing Jira chips in your notes will remain but won't update if the issue changes in Jira.
+
+### Supported Jira instances
+
+Only **Jira Cloud** (atlassian.net) is supported. Jira Server and Jira Data Center are not supported at this time.

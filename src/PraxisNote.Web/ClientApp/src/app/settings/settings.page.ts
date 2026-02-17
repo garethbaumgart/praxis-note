@@ -4,6 +4,7 @@ import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { CalendarService } from '../shared/services/calendar.service';
+import { JiraService } from '../shared/services/jira.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { PageContentComponent } from '../shared/components/page-content.component';
@@ -221,6 +222,83 @@ const MAX_PROFILES = 5;
             </div>
           }
         </section>
+        <!-- Jira Integration Section -->
+        <section class="bg-surface border border-border rounded-xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-surface-muted flex items-center justify-center">
+              <i class="pi pi-external-link text-lg text-foreground-secondary" aria-hidden="true"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-foreground">Jira Integration</h2>
+              <p class="text-sm text-foreground-secondary">Link Jira issues in your notes as rich inline chips.</p>
+            </div>
+          </div>
+
+          @if (jiraService.loading()) {
+            <div class="flex items-center gap-3 py-4" role="status" aria-label="Loading Jira connection status">
+              <i class="pi pi-spin pi-spinner text-sm text-foreground-muted" aria-hidden="true"></i>
+              <span class="text-sm text-foreground-muted" aria-hidden="true">Loading connection status...</span>
+              <span class="sr-only">Loading Jira connection status...</span>
+            </div>
+          } @else if (jiraService.status()?.isConnected) {
+            <div class="space-y-4">
+              <div class="flex items-center gap-2 py-3 px-4 bg-done/30 border border-done rounded-lg">
+                <i class="pi pi-check-circle text-done-foreground" aria-hidden="true"></i>
+                <span class="text-sm font-medium text-done-foreground">Connected to Jira</span>
+              </div>
+
+              <div class="text-sm">
+                @if (jiraService.status()?.siteUrl) {
+                  <div>
+                    <span class="text-foreground-muted">Site</span>
+                    <p class="font-medium text-foreground">{{ jiraService.status()!.siteUrl }}</p>
+                  </div>
+                }
+                @if (jiraService.status()?.connectedAt) {
+                  <div class="mt-2">
+                    <span class="text-foreground-muted">Connected since</span>
+                    <p class="font-medium text-foreground">{{ jiraService.status()!.connectedAt | date:'mediumDate' }}</p>
+                  </div>
+                }
+              </div>
+
+              @if (jiraService.error()) {
+                <div class="py-2 px-4 bg-danger/10 border border-danger/30 rounded-lg">
+                  <p class="text-sm text-danger">{{ jiraService.error() }}</p>
+                </div>
+              }
+
+              <div class="flex items-center gap-3 pt-2">
+                <p-button
+                  label="Disconnect"
+                  icon="pi pi-times"
+                  (onClick)="disconnectJira()"
+                  severity="danger"
+                  [outlined]="true"
+                  size="small"
+                />
+              </div>
+            </div>
+          } @else {
+            <div class="space-y-4">
+              <p class="text-sm text-foreground-secondary">
+                Connect your Jira Cloud account to paste issue URLs in notes and see them as rich inline chips with status, type, and summary.
+              </p>
+
+              @if (jiraService.error()) {
+                <div class="py-2 px-4 bg-danger/10 border border-danger/30 rounded-lg">
+                  <p class="text-sm text-danger">{{ jiraService.error() }}</p>
+                </div>
+              }
+
+              <p-button
+                label="Connect Jira"
+                icon="pi pi-external-link"
+                (onClick)="connectJira()"
+              />
+            </div>
+          }
+        </section>
       </div>
     </app-page-content>
 
@@ -307,6 +385,7 @@ const MAX_PROFILES = 5;
 })
 export class SettingsPage implements OnInit, OnDestroy {
   readonly calendarService = inject(CalendarService);
+  readonly jiraService = inject(JiraService);
   readonly profileService = inject(ProfileService);
   readonly linkedAccountsService = inject(LinkedAccountsService);
   private readonly route = inject(ActivatedRoute);
@@ -354,11 +433,22 @@ export class SettingsPage implements OnInit, OnDestroy {
         });
       }
     });
+
+    // Show toast when Jira is disconnected successfully
+    effect(() => {
+      if (this.jiraService.lastDisconnected()) {
+        untracked(() => {
+          this.toast.success({ summary: 'Jira disconnected.' });
+          this.jiraService.acknowledgeDisconnected();
+        });
+      }
+    });
   }
 
   ngOnInit(): void {
     this.headerService.breadcrumb.set([{ label: 'Settings' }]);
     this.calendarService.loadConnectionStatus();
+    this.jiraService.loadConnectionStatus();
     this.profileService.loadProfiles();
     this.linkedAccountsService.loadIdentities();
 
@@ -367,6 +457,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (params['connected'] === 'true') {
       this.toast.success({ summary: 'Google Calendar connected successfully!' });
     }
+    if (params['jira_connected'] === 'true') {
+      this.toast.success({ summary: 'Jira connected successfully!' });
+    }
     if (params['error']) {
       const errorMessages: Record<string, string> = {
         auth_denied: 'Calendar access was denied. Please try again.',
@@ -374,6 +467,10 @@ export class SettingsPage implements OnInit, OnDestroy {
         not_authenticated: 'Please log in first, then connect your calendar.',
         token_exchange_failed: 'Failed to connect. Please try again.',
         no_refresh_token: 'Could not get full access. Please revoke PraxisNote access in your Google account settings and try again.',
+        jira_auth_denied: 'Jira access was denied. Please try again.',
+        jira_no_code: 'Jira authorization failed. Please try again.',
+        jira_token_exchange_failed: 'Failed to connect to Jira. Please try again.',
+        jira_no_resources: 'No accessible Jira sites found. Ensure you have access to a Jira Cloud instance.',
       };
       this.toast.error(
         errorMessages[params['error']] ?? 'An error occurred connecting your calendar.',
@@ -459,5 +556,15 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   disconnectCalendar(): void {
     this.calendarService.disconnectCalendar();
+  }
+
+  // --- Jira actions ---
+
+  connectJira(): void {
+    this.jiraService.connectJira();
+  }
+
+  disconnectJira(): void {
+    this.jiraService.disconnectJira();
   }
 }

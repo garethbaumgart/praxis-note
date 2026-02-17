@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Calendar;
 using PraxisNote.Application.Features.Calendar.Services;
+using PraxisNote.Application.Features.Jira;
+using PraxisNote.Application.Features.Jira.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
 using PraxisNote.Application.Features.Transcription;
@@ -11,6 +13,7 @@ using PraxisNote.Domain.Aggregates.ApiKeys;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
+using PraxisNote.Domain.Aggregates.JiraConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Notifications;
@@ -50,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<INoteRepository, NoteRepository>();
         services.AddScoped<IMeetingRepository, MeetingRepository>();
         services.AddScoped<ICalendarConnectionRepository, CalendarConnectionRepository>();
+        services.AddScoped<IJiraConnectionRepository, JiraConnectionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IProfileRepository, ProfileRepository>();
         services.AddScoped<IBehavioralGoalRepository, BehavioralGoalRepository>();
@@ -63,6 +67,8 @@ public static class DependencyInjection
         services.Configure<MeetingAnalysisSettings>(configuration.GetSection(MeetingAnalysisSettings.SectionName));
         services.AddScoped<IMeetingAnalyzer, ClaudeMeetingAnalyzer>();
         services.Configure<DeepgramSettings>(configuration.GetSection(DeepgramSettings.SectionName));
+        services.Configure<JiraSettings>(configuration.GetSection(JiraSettings.SectionName));
+        services.AddScoped<IJiraService, JiraService>();
 
         return services;
     }
