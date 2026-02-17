@@ -268,13 +268,21 @@ public static class TagEndpoints
         }
         catch (InvalidOperationException ex) when (ex.Message == AskTagAi.NotFoundError)
         {
-            await context.Response.WriteAsync("event: error\ndata: {\"error\":\"Tag not found\"}\n\n", cancellationToken);
-            await context.Response.Body.FlushAsync(cancellationToken);
+            try
+            {
+                await context.Response.WriteAsync("event: error\ndata: {\"error\":\"Tag not found\"}\n\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
+            }
+            catch { /* Client likely disconnected */ }
         }
         catch (InvalidOperationException ex) when (ex.Message == AskTagAi.NoContentError)
         {
-            await context.Response.WriteAsync("event: error\ndata: {\"error\":\"This tag has no content to chat about\"}\n\n", cancellationToken);
-            await context.Response.Body.FlushAsync(cancellationToken);
+            try
+            {
+                await context.Response.WriteAsync("event: error\ndata: {\"error\":\"This tag has no content to chat about\"}\n\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
+            }
+            catch { /* Client likely disconnected */ }
         }
         catch (OperationCanceledException)
         {
@@ -283,8 +291,12 @@ public static class TagEndpoints
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error during tag AI chat stream");
-            await context.Response.WriteAsync("event: error\ndata: {\"error\":\"An error occurred while generating a response\"}\n\n", cancellationToken);
-            await context.Response.Body.FlushAsync(cancellationToken);
+            try
+            {
+                await context.Response.WriteAsync("event: error\ndata: {\"error\":\"An error occurred while generating a response\"}\n\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
+            }
+            catch { /* Client likely disconnected */ }
         }
     }
 

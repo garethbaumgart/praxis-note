@@ -90,6 +90,7 @@ export class TagAiChatService {
 
     const tagId = this.currentTagId;
     this._error.set(null);
+    this.stop();
 
     // Add user message
     this._messages.update(msgs => [...msgs, { role: 'user' as const, content: message }]);
