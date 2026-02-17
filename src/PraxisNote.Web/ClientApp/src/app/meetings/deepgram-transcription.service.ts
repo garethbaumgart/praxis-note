@@ -15,9 +15,9 @@ export class DeepgramTranscriptionService implements OnDestroy {
   private ws: WebSocket | null = null;
   private channels = 1;
   private localUserName = 'You';
-  private encoding = '';
-  private rawEncoding = '';
-  private rawSampleRate = 0;
+  private mimeType = '';
+  private pcmEncoding = '';
+  private pcmSampleRate = 0;
   private actualMultichannel: boolean | null = null; // null = not yet received from server
 
   // Reconnection state
@@ -88,9 +88,9 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.error.set(null);
     this.channels = channelCount;
     this.localUserName = userName;
-    this.encoding = mimeType;
-    this.rawEncoding = encoding;
-    this.rawSampleRate = sampleRate;
+    this.mimeType = mimeType;
+    this.pcmEncoding = encoding;
+    this.pcmSampleRate = sampleRate;
     this.actualMultichannel = null;
     this.intentionallyStopped = false;
     this.hasEverConnected = false;
@@ -125,16 +125,16 @@ export class DeepgramTranscriptionService implements OnDestroy {
       params.set('channels', String(this.channels));
     }
 
-    if (this.encoding) {
-      params.set('mimeType', this.encoding);
+    if (this.mimeType) {
+      params.set('mimeType', this.mimeType);
     }
 
-    if (this.rawEncoding) {
-      params.set('encoding', this.rawEncoding);
+    if (this.pcmEncoding) {
+      params.set('encoding', this.pcmEncoding);
     }
 
-    if (this.rawSampleRate > 0) {
-      params.set('sampleRate', String(this.rawSampleRate));
+    if (this.pcmSampleRate > 0) {
+      params.set('sampleRate', String(this.pcmSampleRate));
     }
 
     const qs = params.toString();

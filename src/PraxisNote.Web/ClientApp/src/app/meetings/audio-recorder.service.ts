@@ -497,6 +497,7 @@ export class AudioRecorderService implements OnDestroy {
       await this.mixingContext.audioWorklet.addModule('audio-pcm-processor.js');
     } catch (err) {
       console.error('Failed to load PCM AudioWorklet processor:', err);
+      this.error.set('Multichannel audio capture is unavailable. Recording will continue with single-channel mode.');
       return;
     }
 

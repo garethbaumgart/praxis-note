@@ -186,13 +186,7 @@ public static class TranscriptionEndpoints
         // Skip this check when explicit encoding is provided (raw PCM mode).
         if (!hasExplicitEncoding)
         {
-            var isContainerFormat = string.IsNullOrEmpty(mimeType)
-                || mimeType.Contains("webm", StringComparison.OrdinalIgnoreCase)
-                || mimeType.Contains("opus", StringComparison.OrdinalIgnoreCase)
-                || mimeType.Contains("ogg", StringComparison.OrdinalIgnoreCase)
-                || mimeType.Contains("mp4", StringComparison.OrdinalIgnoreCase);
-
-            if (isMultichannel && isContainerFormat)
+            if (isMultichannel && IsContainerFormat(mimeType))
             {
                 logger.LogInformation(
                     "[{SessionId}] Multichannel requested with container format (mimeType={MimeType}), " +
@@ -230,11 +224,7 @@ public static class TranscriptionEndpoints
         else if (!string.IsNullOrEmpty(mimeType))
         {
             // Legacy path: pass mimeType-based encoding for non-container formats
-            var isContainerMime = mimeType.Contains("webm", StringComparison.OrdinalIgnoreCase)
-                || mimeType.Contains("opus", StringComparison.OrdinalIgnoreCase)
-                || mimeType.Contains("ogg", StringComparison.OrdinalIgnoreCase)
-                || mimeType.Contains("mp4", StringComparison.OrdinalIgnoreCase);
-            if (!isContainerMime)
+            if (!IsContainerFormat(mimeType, treatEmptyAsContainer: false))
             {
                 queryParams.Add($"encoding={Uri.EscapeDataString(mimeType)}");
             }
@@ -646,6 +636,23 @@ public static class TranscriptionEndpoints
         {
             // Expected on shutdown
         }
+    }
+
+    /// <summary>
+    /// Checks if a MIME type corresponds to a container format that Deepgram cannot
+    /// process in multichannel mode (WebM, Opus, OGG, MP4).
+    /// When treatEmptyAsContainer is true (default), null/empty MIME types are treated
+    /// as container formats (safe default for multichannel fallback).
+    /// </summary>
+    private static bool IsContainerFormat(string? mimeType, bool treatEmptyAsContainer = true)
+    {
+        if (string.IsNullOrEmpty(mimeType))
+            return treatEmptyAsContainer;
+
+        return mimeType.Contains("webm", StringComparison.OrdinalIgnoreCase)
+            || mimeType.Contains("opus", StringComparison.OrdinalIgnoreCase)
+            || mimeType.Contains("ogg", StringComparison.OrdinalIgnoreCase)
+            || mimeType.Contains("mp4", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
