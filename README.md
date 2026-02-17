@@ -37,6 +37,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Outstanding Action Items** - Home page widget showing incomplete meeting action items from the last 30 days, cross-referenced with linked task status
 - ✅ **Multi-Profile Support** - Separate data contexts (e.g., Work, Personal) with sidebar profile switcher, per-profile data isolation, and account linking via temporary codes
 - ✅ **MCP Server** - Embedded Model Context Protocol server at `/mcp` for OpenClaw and other MCP clients, with personal API key authentication and read/write access to tasks, notes, meetings, and tags
+- ✅ **Jira Integration** - Connect Jira Cloud via OAuth and paste issue URLs in notes to render rich inline chips with issue type, key, summary, and status badge
 
 ✅ = Implemented | 🚧 = Planned
 
