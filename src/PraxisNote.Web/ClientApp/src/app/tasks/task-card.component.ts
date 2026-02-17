@@ -212,7 +212,7 @@ import { TaskCommentsSectionComponent } from './task-comments-section.component'
         }
 
         <!-- Tab bar - Google Home style -->
-        <div class="mt-2 flex items-center gap-1.5 relative">
+        <div class="mt-2 flex flex-wrap items-center gap-1.5 relative">
           <!-- Due Date tab -->
           <app-task-due-date-section
             [dueDate]="task().dueDate"

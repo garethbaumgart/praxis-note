@@ -6,6 +6,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
   selector: 'app-task-due-date-section',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { style: 'display: contents' },
   imports: [DatePickerPopoverComponent],
   template: `
     <!-- Due Date tab button -->
@@ -46,7 +47,7 @@ import { DatePickerPopoverComponent } from './date-picker-popover.component';
 
     <!-- Due Date expanded content -->
     @if (expanded()) {
-      <div class="mt-2 p-2 bg-duedate-section rounded-lg border border-duedate-section-border relative">
+      <div class="w-full order-last mt-2 p-2 bg-duedate-section rounded-lg border border-duedate-section-border relative">
         <div class="flex items-center gap-1 flex-wrap">
           <button
             type="button"
