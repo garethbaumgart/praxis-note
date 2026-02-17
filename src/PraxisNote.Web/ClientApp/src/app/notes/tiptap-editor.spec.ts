@@ -427,6 +427,27 @@ describe('TipTap Editor', () => {
       }
     });
 
+    it('clicking inside date popover does not close it', () => {
+      editor.commands.insertDate();
+      const dom = editor.view.dom;
+      const chip = dom.querySelector('span[data-type="dateNode"]') as HTMLElement;
+      expect(chip).toBeTruthy();
+
+      // Open the popover
+      chip.click();
+      const popover = dom.querySelector('.date-node-popover') as HTMLElement;
+      expect(popover).toBeTruthy();
+
+      // Click inside the popover (on the date input)
+      const dateInput = popover.querySelector('.date-node-picker-input') as HTMLElement;
+      expect(dateInput).toBeTruthy();
+      dateInput.click();
+
+      // Popover should still be visible
+      const stillOpen = dom.querySelector('.date-node-popover');
+      expect(stillOpen).toBeTruthy();
+    });
+
     it('insertDate with explicit date stores that date', () => {
       editor.commands.insertDate('2026-12-25');
 

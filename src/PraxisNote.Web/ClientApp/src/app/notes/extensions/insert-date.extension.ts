@@ -173,6 +173,7 @@ export const DateNode = Node.create({
       }
 
       function onWrapperActivate(e: Event) {
+        if (popover && popover.contains(e.target as HTMLElement)) return;
         e.stopPropagation();
         e.preventDefault();
         openPopover();
