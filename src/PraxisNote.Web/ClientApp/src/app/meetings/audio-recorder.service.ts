@@ -25,6 +25,10 @@ export class AudioRecorderService implements OnDestroy {
   private lastRecoveryTime = 0;
   private isRecovering = false;
   private contextKeepAliveInterval: ReturnType<typeof setInterval> | null = null;
+  private pcmWorkletNode: AudioWorkletNode | null = null;
+  private pcmBuffer: Int16Array[] = [];
+  private pcmFlushInterval: ReturnType<typeof setInterval> | null = null;
+  private mixingDestination: MediaStreamAudioDestinationNode | null = null;
 
   readonly state = signal<RecordingState>('idle');
   readonly elapsedSeconds = signal(0);
@@ -33,7 +37,11 @@ export class AudioRecorderService implements OnDestroy {
   readonly captureMode = signal<AudioCaptureMode>('microphone');
 
   readonly onAudioChunk = signal<((blob: Blob) => void) | null>(null);
+  readonly onPcmChunk = signal<((data: ArrayBuffer) => void) | null>(null);
   readonly activeMeetingId = signal<string | null>(null);
+
+  /** The sample rate of the AudioContext used for mixing (typically 48000) */
+  readonly sampleRate = signal(48000);
 
   readonly isRecording = computed(() => this.state() === 'recording');
   readonly isPaused = computed(() => this.state() === 'paused');
@@ -135,6 +143,12 @@ export class AudioRecorderService implements OnDestroy {
 
       this.initMediaRecorder(recordingStream, mimeType);
       this.monitorAudioTracks();
+
+      // Start raw PCM capture for transcription when in "both" mode
+      // This runs in parallel with MediaRecorder (which produces the downloadable file)
+      if (this.captureMode() === 'both' && this.mixingDestination) {
+        await this.startPcmCapture(this.mixingDestination);
+      }
 
       // Collect data every 1 second for chunked access
       this.mediaRecorder!.start(1000);
@@ -308,12 +322,14 @@ export class AudioRecorderService implements OnDestroy {
       this.captureMode.set('microphone');
     }
 
-    // Tear down old mixing context and rebuild
+    // Tear down old mixing context, PCM capture, and rebuild
+    this.stopPcmCapture();
     if (this.mixingContext) {
       try { this.mixingContext.close(); } catch { /* ignore */ }
       this.mixingContext = null;
     }
     this.mixedStream = null;
+    this.mixingDestination = null;
 
     const recordingStream = this.createRecordingStream();
     if (!recordingStream) {
@@ -345,6 +361,11 @@ export class AudioRecorderService implements OnDestroy {
     const mimeType = this.getSupportedMimeType();
     this.initMediaRecorder(recordingStream, mimeType);
     this.monitorAudioTracks();
+
+    // Restart PCM capture if in "both" mode with a mixing destination
+    if (this.captureMode() === 'both' && this.mixingDestination) {
+      await this.startPcmCapture(this.mixingDestination);
+    }
 
     try {
       this.mediaRecorder!.start(1000);
@@ -454,12 +475,121 @@ export class AudioRecorderService implements OnDestroy {
     micGain.connect(merger, 0, 0);    // mic -> channel 0 (left)
     systemGain.connect(merger, 0, 1); // system -> channel 1 (right)
 
-    const destination = this.mixingContext.createMediaStreamDestination();
-    merger.connect(destination);
+    this.mixingDestination = this.mixingContext.createMediaStreamDestination();
+    merger.connect(this.mixingDestination);
 
-    this.mixedStream = destination.stream;
+    this.mixedStream = this.mixingDestination.stream;
     this.channelCount.set(2);
-    return destination.stream;
+    return this.mixingDestination.stream;
+  }
+
+  /**
+   * Start capturing raw PCM chunks from the AudioContext's mixed output.
+   * Each chunk is an ArrayBuffer of interleaved 16-bit PCM (little-endian).
+   * The callback fires ~every 250ms via a flush interval.
+   */
+  private async startPcmCapture(destination: MediaStreamAudioDestinationNode): Promise<void> {
+    if (!this.mixingContext) return;
+
+    this.sampleRate.set(this.mixingContext.sampleRate);
+
+    try {
+      await this.mixingContext.audioWorklet.addModule('audio-pcm-processor.js');
+    } catch (err) {
+      console.error('Failed to load PCM AudioWorklet processor:', err);
+      this.error.set('Multichannel audio capture is unavailable. Recording will continue with single-channel mode.');
+      return;
+    }
+
+    this.pcmWorkletNode = new AudioWorkletNode(this.mixingContext, 'pcm-processor', {
+      // Match the channel count of the destination (stereo for "both" mode)
+      channelCount: destination.channelCount,
+      channelCountMode: 'explicit',
+    });
+
+    // Tap the merger output: connect merger -> pcmWorkletNode (for raw PCM) in parallel
+    // The merger is already connected to the destination node.
+    // We need to also connect it to the worklet. The destination's source is the merger.
+    // Instead of re-wiring, connect the destination's stream as a source to the worklet.
+    const workletSource = this.mixingContext.createMediaStreamSource(destination.stream);
+    workletSource.connect(this.pcmWorkletNode);
+    // The worklet node doesn't need to connect to any output (it's a sink)
+
+    this.pcmBuffer = [];
+
+    this.pcmWorkletNode.port.onmessage = (event: MessageEvent) => {
+      const channels = event.data.channels as Float32Array[];
+      if (channels && channels.length > 0 && channels[0]?.length > 0) {
+        const interleaved = this.float32ToInt16Interleaved(channels);
+        this.pcmBuffer.push(new Int16Array(interleaved));
+      }
+    };
+
+    this.startPcmFlushInterval();
+  }
+
+  /** Start the PCM flush interval that merges and sends accumulated chunks every ~250ms */
+  private startPcmFlushInterval(): void {
+    if (this.pcmFlushInterval !== null) return; // Already running
+    this.pcmFlushInterval = setInterval(() => {
+      if (this.pcmBuffer.length === 0) return;
+
+      const chunks = this.pcmBuffer;
+      this.pcmBuffer = [];
+
+      // Calculate total length
+      let totalLength = 0;
+      for (const chunk of chunks) {
+        totalLength += chunk.length;
+      }
+
+      // Merge into a single Int16Array
+      const merged = new Int16Array(totalLength);
+      let offset = 0;
+      for (const chunk of chunks) {
+        merged.set(chunk, offset);
+        offset += chunk.length;
+      }
+
+      this.onPcmChunk()?.(merged.buffer);
+    }, 250);
+  }
+
+  /** Convert Float32 multi-channel samples to interleaved Int16 PCM buffer */
+  private float32ToInt16Interleaved(channels: Float32Array[]): ArrayBuffer {
+    if (!channels || channels.length === 0 || !channels[0] || channels[0].length === 0) {
+      return new ArrayBuffer(0);
+    }
+    const channelCount = channels.length;
+    const sampleCount = channels[0].length;
+    const buffer = new ArrayBuffer(sampleCount * channelCount * 2); // 2 bytes per Int16 sample
+    const view = new DataView(buffer);
+
+    let offset = 0;
+    for (let i = 0; i < sampleCount; i++) {
+      for (let ch = 0; ch < channelCount; ch++) {
+        // Clamp to [-1, 1] and scale to Int16 range
+        const sample = Math.max(-1, Math.min(1, channels[ch][i]));
+        const int16 = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+        view.setInt16(offset, int16, true); // little-endian
+        offset += 2;
+      }
+    }
+
+    return buffer;
+  }
+
+  private stopPcmCapture(): void {
+    if (this.pcmFlushInterval !== null) {
+      clearInterval(this.pcmFlushInterval);
+      this.pcmFlushInterval = null;
+    }
+    if (this.pcmWorkletNode) {
+      this.pcmWorkletNode.port.onmessage = null;
+      this.pcmWorkletNode.disconnect();
+      this.pcmWorkletNode = null;
+    }
+    this.pcmBuffer = [];
   }
 
   private releaseStream(stream: MediaStream | null): void {
@@ -476,6 +606,11 @@ export class AudioRecorderService implements OnDestroy {
       this.mediaRecorder.pause();
       this.state.set('paused');
       this.stopTimer();
+      // Stop PCM flush interval to prevent sending audio during pause
+      if (this.pcmFlushInterval !== null) {
+        clearInterval(this.pcmFlushInterval);
+        this.pcmFlushInterval = null;
+      }
     }
   }
 
@@ -484,6 +619,11 @@ export class AudioRecorderService implements OnDestroy {
       this.mediaRecorder.resume();
       this.state.set('recording');
       this.startTimer();
+      // Resume PCM flush interval if worklet is active
+      if (this.pcmWorkletNode) {
+        this.pcmBuffer = [];  // Discard any stale samples accumulated during pause
+        this.startPcmFlushInterval();
+      }
     }
   }
 
@@ -629,6 +769,7 @@ export class AudioRecorderService implements OnDestroy {
     this.stopTimer();
     this.stopLevelMetering();
     this.stopContextKeepAlive();
+    this.stopPcmCapture();
 
     this.releaseStream(this.micStream);
     this.releaseStream(this.systemStream);
@@ -637,6 +778,7 @@ export class AudioRecorderService implements OnDestroy {
     this.micStream = null;
     this.systemStream = null;
     this.mixedStream = null;
+    this.mixingDestination = null;
 
     if (this.audioContext) {
       this.audioContext.close();
@@ -657,6 +799,7 @@ export class AudioRecorderService implements OnDestroy {
     this.captureMode.set('microphone');
     this.channelCount.set(1);
     this.mimeType.set('');
+    this.sampleRate.set(48000);
     this.activeMeetingId.set(null);
     this.recoveryAttempts = 0;
     this.isRecovering = false;

@@ -15,7 +15,9 @@ export class DeepgramTranscriptionService implements OnDestroy {
   private ws: WebSocket | null = null;
   private channels = 1;
   private localUserName = 'You';
-  private encoding = '';
+  private mimeType = '';
+  private pcmEncoding = '';
+  private pcmSampleRate = 0;
   private actualMultichannel: boolean | null = null; // null = not yet received from server
 
   // Reconnection state
@@ -78,7 +80,7 @@ export class DeepgramTranscriptionService implements OnDestroy {
     }
   }
 
-  start(channelCount = 1, userName = 'You', mimeType = ''): void {
+  start(channelCount = 1, userName = 'You', mimeType = '', encoding = '', sampleRate = 0): void {
     this.transcript.set('');
     this.segments.set([]);
     this.interimText.set('');
@@ -86,7 +88,9 @@ export class DeepgramTranscriptionService implements OnDestroy {
     this.error.set(null);
     this.channels = channelCount;
     this.localUserName = userName;
-    this.encoding = mimeType;
+    this.mimeType = mimeType;
+    this.pcmEncoding = encoding;
+    this.pcmSampleRate = sampleRate;
     this.actualMultichannel = null;
     this.intentionallyStopped = false;
     this.hasEverConnected = false;
@@ -121,8 +125,16 @@ export class DeepgramTranscriptionService implements OnDestroy {
       params.set('channels', String(this.channels));
     }
 
-    if (this.encoding) {
-      params.set('mimeType', this.encoding);
+    if (this.mimeType) {
+      params.set('mimeType', this.mimeType);
+    }
+
+    if (this.pcmEncoding) {
+      params.set('encoding', this.pcmEncoding);
+    }
+
+    if (this.pcmSampleRate > 0) {
+      params.set('sampleRate', String(this.pcmSampleRate));
     }
 
     const qs = params.toString();
@@ -364,6 +376,10 @@ export class DeepgramTranscriptionService implements OnDestroy {
     if (!words || words.length === 0) return 'Speaker';
     const speakerNum = words[0]?.['speaker'] as number | undefined;
     if (speakerNum === undefined || speakerNum === null) return 'Speaker';
+    // In mic-only mode, assume speaker 0 is the local user
+    if (this.channels <= 1 && speakerNum === 0 && this.localUserName) {
+      return this.localUserName;
+    }
     return `Speaker ${speakerNum}`;
   }
 
@@ -387,6 +403,24 @@ export class DeepgramTranscriptionService implements OnDestroy {
     } else if (!this.intentionallyStopped) {
       // WebSocket is not open and not reconnecting — audio is being silently dropped.
       // Surface an error after a threshold of dropped chunks so the user knows.
+      this.droppedAudioChunks++;
+      if (this.droppedAudioChunks >= DeepgramTranscriptionService.MAX_DROPPED_CHUNKS_BEFORE_ERROR && !this.error()) {
+        this.error.set('Transcription connection lost. Audio is not being transcribed.');
+      }
+    }
+  }
+
+  /**
+   * Send raw PCM binary data (ArrayBuffer) directly to the WebSocket.
+   * Used when sending interleaved Int16 PCM instead of container-encoded audio.
+   */
+  sendRawPcm(data: ArrayBuffer): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.droppedAudioChunks = 0;
+      this.ws.send(data);
+    } else if (this.isReconnecting()) {
+      this.addToPendingBuffer(data);
+    } else if (!this.intentionallyStopped) {
       this.droppedAudioChunks++;
       if (this.droppedAudioChunks >= DeepgramTranscriptionService.MAX_DROPPED_CHUNKS_BEFORE_ERROR && !this.error()) {
         this.error.set('Transcription connection lost. Audio is not being transcribed.');
