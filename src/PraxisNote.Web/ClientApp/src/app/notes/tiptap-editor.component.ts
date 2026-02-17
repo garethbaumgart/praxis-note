@@ -27,6 +27,7 @@ import { SlashCommands } from './extensions/slash-commands.extension';
 import { SlashCommandItem } from './extensions/slash-command-items';
 import { SlashCommandMenuComponent } from './slash-command-menu.component';
 import { normalizeLinkUrl, normalizeImageUrl } from '../shared/url-utils';
+import { JiraService } from '../shared/services/jira.service';
 import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion';
 
 // Block type options for the dropdown
@@ -791,6 +792,7 @@ interface BlockType {
 export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly elementRef = inject(ElementRef);
+  private readonly jiraService = inject(JiraService);
 
   /** Initial content (JSON string or empty string for new notes) */
   readonly initialContent = input<string>('');
@@ -955,6 +957,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private isInitializing = true;
   private hasInitialized = false;
 
+  /** Track Jira node keys currently being resolved to avoid duplicate API calls */
+  private readonly jiraResolvingKeys = new Set<string>();
+
   /** Pending setTimeout ID for coalescing button injection calls */
   private pendingButtonInjection: ReturnType<typeof setTimeout> | null = null;
 
@@ -1068,6 +1073,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       if (!this.isInitializing) {
         const json = editor.getJSON();
         this.contentChange.emit(JSON.stringify(json));
+        this.resolveUnresolvedJiraNodes(editor);
       }
       this.scheduleOverlayUpdate();
     },
@@ -1267,6 +1273,74 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(() => {
       this.isInitializing = false;
     }, 0);
+  }
+
+  /**
+   * Scans the editor document for jiraNode nodes with placeholder 'Loading...' summary,
+   * calls the API to resolve issue data, then updates the node attributes in place.
+   */
+  private resolveUnresolvedJiraNodes(editor: Editor): void {
+    const doc = editor.state.doc;
+    const nodesToResolve: Array<{ pos: number; key: string }> = [];
+
+    doc.descendants((node, pos) => {
+      if (node.type.name === 'jiraNode' && node.attrs['summary'] === 'Loading...' && node.attrs['key']) {
+        const key = node.attrs['key'] as string;
+        if (!this.jiraResolvingKeys.has(key)) {
+          nodesToResolve.push({ pos, key });
+        }
+      }
+    });
+
+    for (const { key } of nodesToResolve) {
+      this.jiraResolvingKeys.add(key);
+
+      this.jiraService.resolveIssue(key).then(issue => {
+        // Find the node again by key (position may have shifted)
+        const targetPos = this.findJiraNodePos(editor, key);
+
+        if (targetPos !== null) {
+          const { tr } = editor.state;
+          tr.setNodeMarkup(targetPos, undefined, {
+            key: issue.key,
+            summary: issue.summary,
+            status: issue.status,
+            statusCategory: issue.statusCategory,
+            issueType: issue.issueType,
+            url: issue.url,
+          });
+          editor.view.dispatch(tr);
+        }
+      }).catch(() => {
+        // On failure, update summary to show error
+        const targetPos = this.findJiraNodePos(editor, key);
+
+        if (targetPos !== null) {
+          const { tr } = editor.state;
+          tr.setNodeMarkup(targetPos, undefined, {
+            ...editor.state.doc.nodeAt(targetPos)!.attrs,
+            summary: 'Failed to load',
+          });
+          editor.view.dispatch(tr);
+        }
+      }).finally(() => {
+        this.jiraResolvingKeys.delete(key);
+      });
+    }
+  }
+
+  /** Finds the position of a jiraNode with the given key and 'Loading...' summary */
+  private findJiraNodePos(editor: Editor, key: string): number | null {
+    let targetPos: number | null = null;
+    editor.state.doc.descendants((node, pos) => {
+      if (targetPos !== null) return false;
+      if (node.type.name === 'jiraNode' && node.attrs['key'] === key && node.attrs['summary'] === 'Loading...') {
+        targetPos = pos;
+        return false;
+      }
+      return true;
+    });
+    return targetPos;
   }
 
   ngOnDestroy(): void {

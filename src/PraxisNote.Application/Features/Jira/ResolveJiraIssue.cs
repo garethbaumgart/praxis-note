@@ -24,6 +24,9 @@ public sealed class ResolveJiraIssue(
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        return await jiraService.GetIssueAsync(connection.CloudId, query.IssueKey, connection.AccessToken, cancellationToken);
+        var issue = await jiraService.GetIssueAsync(connection.CloudId, query.IssueKey, connection.AccessToken, cancellationToken);
+
+        // Override URL with the proper browseable URL using the site URL
+        return issue with { Url = $"{connection.SiteUrl.TrimEnd('/')}/browse/{issue.Key}" };
     }
 }

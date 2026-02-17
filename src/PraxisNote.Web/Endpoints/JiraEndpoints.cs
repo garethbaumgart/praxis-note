@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.WebUtilities;
 using PraxisNote.Application.Features.Jira;
 using PraxisNote.Application.Features.Jira.Services;
@@ -8,9 +9,12 @@ using PraxisNote.Web.Extensions;
 
 namespace PraxisNote.Web.Endpoints;
 
-public static class JiraEndpoints
+public static partial class JiraEndpoints
 {
     private const string OAuthStateCookieName = ".JiraOAuthState";
+
+    [GeneratedRegex(@"^[A-Z][A-Z0-9]+-\d+$")]
+    private static partial Regex IssueKeyPattern();
 
     public static void MapJiraEndpoints(this IEndpointRouteBuilder routes)
     {
@@ -216,6 +220,11 @@ public static class JiraEndpoints
     {
         var userId = user.GetUserId();
         if (userId is null) return Results.Unauthorized();
+
+        if (!IssueKeyPattern().IsMatch(issueKey))
+        {
+            return Results.BadRequest(new { error = "Invalid Jira issue key format. Expected: PROJECT-123" });
+        }
 
         try
         {
