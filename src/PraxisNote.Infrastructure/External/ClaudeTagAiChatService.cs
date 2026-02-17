@@ -66,7 +66,9 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
         }
 
         var contextBlock = BuildContextBlock(context);
-        var systemPrompt = string.Format(SystemPromptTemplate, context.TagName, contextBlock);
+        var systemPrompt = SystemPromptTemplate
+            .Replace("{0}", context.TagName)
+            .Replace("{1}", contextBlock);
 
         var messages = new List<Message>();
 
@@ -90,8 +92,7 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
             Stream = true
         };
 
-        _logger.LogInformation("Starting tag AI chat stream for tag '{TagName}' with model {Model}",
-            context.TagName, _settings.Model);
+        _logger.LogDebug("Starting tag AI chat stream with model {Model}", _settings.Model);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
@@ -116,7 +117,9 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
         }
 
         var contextBlock = BuildContextBlock(context);
-        var prompt = string.Format(StarterPrompt, context.TagName, contextBlock);
+        var prompt = StarterPrompt
+            .Replace("{0}", context.TagName)
+            .Replace("{1}", contextBlock);
 
         var parameters = new MessageParameters
         {
@@ -125,7 +128,7 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
             Messages = [new Message(RoleType.User, prompt)]
         };
 
-        _logger.LogInformation("Generating starter prompts for tag '{TagName}'", context.TagName);
+        _logger.LogDebug("Generating starter prompts with model {Model}", _settings.Model);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));

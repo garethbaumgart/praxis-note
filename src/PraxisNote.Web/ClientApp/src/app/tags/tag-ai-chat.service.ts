@@ -147,6 +147,7 @@ export class TagAiChatService {
 
       const decoder = new TextDecoder();
       let buffer = '';
+      let streamDone = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -158,8 +159,8 @@ export class TagAiChatService {
 
         for (const line of lines) {
           if (line.startsWith('event: done')) {
-            this._state.set('ready');
-            return;
+            streamDone = true;
+            continue;
           }
 
           if (line.startsWith('event: error')) {
@@ -181,6 +182,13 @@ export class TagAiChatService {
                 });
               }
               if (data.error) {
+                // Remove the empty assistant message we added for streaming
+                this._messages.update(msgs => {
+                  const last = msgs[msgs.length - 1];
+                  return last?.role === 'assistant' && !last.content
+                    ? msgs.slice(0, -1)
+                    : msgs;
+                });
                 this._error.set(data.error);
                 this._state.set('error');
                 return;
@@ -190,9 +198,14 @@ export class TagAiChatService {
             }
           }
         }
+
+        if (streamDone) {
+          this._state.set('ready');
+          return;
+        }
       }
 
-      // If we exited the loop without a done event, set to ready
+      // If we exited the read loop without a done event, set to ready
       if (this._state() === 'streaming') {
         this._state.set('ready');
       }

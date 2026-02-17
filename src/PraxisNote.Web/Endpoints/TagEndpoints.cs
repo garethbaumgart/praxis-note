@@ -219,12 +219,14 @@ public static class TagEndpoints
             return Results.BadRequest(new { error = "Source and target tags must be different" });
         }
     }
+
     private static async Task HandleChat(
         Guid id,
         HttpContext context,
         ClaimsPrincipal user,
         TagChatRequest request,
         AskTagAi askTagAi,
+        ILogger<Program> logger,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -237,6 +239,7 @@ public static class TagEndpoints
         if (string.IsNullOrWhiteSpace(request.Message))
         {
             context.Response.StatusCode = 400;
+            context.Response.ContentType = "application/json";
             await context.Response.WriteAsync("{\"error\":\"Message is required\"}", cancellationToken);
             return;
         }
@@ -277,8 +280,9 @@ public static class TagEndpoints
         {
             // Client disconnected
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Unexpected error during tag AI chat stream");
             await context.Response.WriteAsync("event: error\ndata: {\"error\":\"An error occurred while generating a response\"}\n\n", cancellationToken);
             await context.Response.Body.FlushAsync(cancellationToken);
         }
