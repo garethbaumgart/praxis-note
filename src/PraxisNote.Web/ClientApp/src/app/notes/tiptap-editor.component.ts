@@ -775,48 +775,17 @@ interface BlockType {
       background: var(--color-primary-bg);
     }
 
-    :host ::ng-deep .jira-node-type-icon {
-      font-size: 11px;
-    }
+    :host ::ng-deep .jira-node-type-icon { font-size: 11px; }
     :host ::ng-deep .jira-type-task { color: var(--color-accent-solid); }
     :host ::ng-deep .jira-type-bug { color: var(--color-danger); }
     :host ::ng-deep .jira-type-story { color: var(--color-done-solid); }
     :host ::ng-deep .jira-type-epic { color: var(--color-inprogress-solid); }
-
-    :host ::ng-deep .jira-node-key {
-      font-weight: 600;
-      color: var(--color-foreground);
-    }
-
-    :host ::ng-deep .jira-node-summary {
-      color: var(--color-foreground-secondary);
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    :host ::ng-deep .jira-node-status {
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
-      padding: 1px 5px;
-      border-radius: 4px;
-      white-space: nowrap;
-    }
-    :host ::ng-deep .jira-status-todo {
-      background: var(--color-todo-solid);
-      color: white;
-    }
-    :host ::ng-deep .jira-status-progress {
-      background: var(--color-inprogress-solid);
-      color: white;
-    }
-    :host ::ng-deep .jira-status-done {
-      background: var(--color-done-solid);
-      color: white;
-    }
+    :host ::ng-deep .jira-node-key { font-weight: 600; color: var(--color-foreground); }
+    :host ::ng-deep .jira-node-summary { color: var(--color-foreground-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    :host ::ng-deep .jira-node-status { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+    :host ::ng-deep .jira-status-todo { background: var(--color-todo-solid); color: white; }
+    :host ::ng-deep .jira-status-progress { background: var(--color-inprogress-solid); color: white; }
+    :host ::ng-deep .jira-status-done { background: var(--color-done-solid); color: white; }
   `],
 })
 export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
