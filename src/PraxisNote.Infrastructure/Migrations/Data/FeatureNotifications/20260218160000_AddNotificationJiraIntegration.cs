@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'Feature',
                     'Jira integration for notes',
                     'Connect Jira Cloud and paste issue URLs in notes to see rich inline chips with type, key, summary, and status badge.',
-                    'https://github.com/garethbaumgart/praxis-note/issues/560',
+                    'https://github.com/garethbaumgart/praxis-note/pull/589',
                     '2026-02-18T16:00:00Z'
                 );
                 """);
