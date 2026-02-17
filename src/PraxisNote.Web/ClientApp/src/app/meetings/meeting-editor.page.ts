@@ -652,7 +652,11 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     // Resume recording UI if returning to the meeting that's being recorded
     if (this.recorder.isActive() && this.recorder.activeMeetingId() === id) {
       this.showTabWarning.set(true);
-      this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
+      if (this.recorder.captureMode() === 'both') {
+        this.recorder.onPcmChunk.set((data) => this.transcription.sendRawPcm(data));
+      } else {
+        this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
+      }
     } else {
       this.showTabWarning.set(false);
     }
@@ -937,8 +941,19 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       this.recorder.activeMeetingId.set(this.meetingId());
       const firstName = this.auth.user()?.name?.trim().split(' ')[0];
       const userName = firstName || 'You';
-      this.transcription.start(this.recorder.channelCount(), userName, this.recorder.mimeType());
-      this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
+
+      if (mode === 'both') {
+        // Raw PCM path — enables true multichannel in Deepgram
+        this.transcription.start(
+          this.recorder.channelCount(), userName, '',
+          'linear16', this.recorder.sampleRate()
+        );
+        this.recorder.onPcmChunk.set((data) => this.transcription.sendRawPcm(data));
+      } else {
+        // Container path — single-channel with diarization (unchanged)
+        this.transcription.start(this.recorder.channelCount(), userName, this.recorder.mimeType());
+        this.recorder.onAudioChunk.set((blob) => this.transcription.sendAudio(blob));
+      }
       this.showTabWarning.set(true);
     }
   }
@@ -946,6 +961,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   async stopRecording(): Promise<void> {
     try {
       this.recorder.onAudioChunk.set(null);
+      this.recorder.onPcmChunk.set(null);
       this.transcription.stop();
       await this.recorder.stop();
       this.showTabWarning.set(false);
@@ -961,6 +977,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       }
     } catch (error) {
       this.recorder.onAudioChunk.set(null);
+      this.recorder.onPcmChunk.set(null);
       this.transcription.stop();
       this.showTabWarning.set(false);
       console.error('Failed to stop audio recording:', error);

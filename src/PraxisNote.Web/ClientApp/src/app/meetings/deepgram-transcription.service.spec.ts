@@ -215,7 +215,8 @@ describe('DeepgramTranscriptionService', () => {
 
       const segments = service.segments();
       expect(segments.length).toBe(1);
-      expect(segments[0].speaker).toBe('Speaker 0');
+      // In single-channel mode, speaker 0 is mapped to the local user name
+      expect(segments[0].speaker).toBe('TestUser');
       expect(segments[0].text).toBe('Hello everyone');
     });
 

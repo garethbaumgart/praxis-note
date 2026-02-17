@@ -173,26 +173,33 @@ public static class TranscriptionEndpoints
         // Build Deepgram streaming URL
         var channels = context.Request.Query["channels"].FirstOrDefault();
         var mimeType = context.Request.Query["mimeType"].FirstOrDefault();
+        var encoding = context.Request.Query["encoding"].FirstOrDefault();
+        var sampleRate = context.Request.Query["sampleRate"].FirstOrDefault();
         var isMultichannel = int.TryParse(channels, out var channelCount) && channelCount > 1;
+        var hasExplicitEncoding = !string.IsNullOrEmpty(encoding);
 
         // Deepgram's multichannel mode requires raw audio with explicit encoding params.
         // Container formats (WebM/Opus, OGG) include their own framing and can only be
         // auto-detected in single-channel mode. When the browser sends a container format
         // (which is always the case with MediaRecorder), we must disable multichannel and
         // fall back to single-channel with diarization for speaker separation.
-        var isContainerFormat = string.IsNullOrEmpty(mimeType)
-            || mimeType.Contains("webm", StringComparison.OrdinalIgnoreCase)
-            || mimeType.Contains("opus", StringComparison.OrdinalIgnoreCase)
-            || mimeType.Contains("ogg", StringComparison.OrdinalIgnoreCase)
-            || mimeType.Contains("mp4", StringComparison.OrdinalIgnoreCase);
-
-        if (isMultichannel && isContainerFormat)
+        // Skip this check when explicit encoding is provided (raw PCM mode).
+        if (!hasExplicitEncoding)
         {
-            logger.LogInformation(
-                "[{SessionId}] Multichannel requested with container format (mimeType={MimeType}), " +
-                "falling back to single-channel with diarization",
-                sessionId, mimeType ?? "auto-detect");
-            isMultichannel = false;
+            var isContainerFormat = string.IsNullOrEmpty(mimeType)
+                || mimeType.Contains("webm", StringComparison.OrdinalIgnoreCase)
+                || mimeType.Contains("opus", StringComparison.OrdinalIgnoreCase)
+                || mimeType.Contains("ogg", StringComparison.OrdinalIgnoreCase)
+                || mimeType.Contains("mp4", StringComparison.OrdinalIgnoreCase);
+
+            if (isMultichannel && isContainerFormat)
+            {
+                logger.LogInformation(
+                    "[{SessionId}] Multichannel requested with container format (mimeType={MimeType}), " +
+                    "falling back to single-channel with diarization",
+                    sessionId, mimeType ?? "auto-detect");
+                isMultichannel = false;
+            }
         }
 
         var queryParams = new List<string>
@@ -211,10 +218,26 @@ public static class TranscriptionEndpoints
             queryParams.Add($"channels={channelCount}");
         }
 
-        // Pass explicit encoding to Deepgram when provided and it's a raw format
-        if (!string.IsNullOrEmpty(mimeType) && !isContainerFormat)
+        // Add explicit encoding params to Deepgram URL when provided (raw PCM mode)
+        if (hasExplicitEncoding)
         {
-            queryParams.Add($"encoding={Uri.EscapeDataString(mimeType)}");
+            queryParams.Add($"encoding={Uri.EscapeDataString(encoding!)}");
+            if (!string.IsNullOrEmpty(sampleRate))
+            {
+                queryParams.Add($"sample_rate={Uri.EscapeDataString(sampleRate)}");
+            }
+        }
+        else if (!string.IsNullOrEmpty(mimeType))
+        {
+            // Legacy path: pass mimeType-based encoding for non-container formats
+            var isContainerMime = mimeType.Contains("webm", StringComparison.OrdinalIgnoreCase)
+                || mimeType.Contains("opus", StringComparison.OrdinalIgnoreCase)
+                || mimeType.Contains("ogg", StringComparison.OrdinalIgnoreCase)
+                || mimeType.Contains("mp4", StringComparison.OrdinalIgnoreCase);
+            if (!isContainerMime)
+            {
+                queryParams.Add($"encoding={Uri.EscapeDataString(mimeType)}");
+            }
         }
 
         // Use ws:// for local/test servers, wss:// for production
