@@ -309,12 +309,12 @@ app.UseWebSockets(new WebSocketOptions
     KeepAliveInterval = TimeSpan.FromSeconds(20)
 });
 
-// Rate limiting middleware
-app.UseRateLimiter();
-
 // Authentication & Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Rate limiting middleware (after auth so context.User is populated for per-key partitioning)
+app.UseRateLimiter();
 
 // Profile validation middleware (extracts X-Profile-Id header, falls back to default profile)
 app.UseMiddleware<ProfileValidationMiddleware>();
