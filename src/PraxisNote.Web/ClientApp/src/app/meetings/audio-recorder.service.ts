@@ -525,7 +525,12 @@ export class AudioRecorderService implements OnDestroy {
       }
     };
 
-    // Flush accumulated PCM data every ~250ms
+    this.startPcmFlushInterval();
+  }
+
+  /** Start the PCM flush interval that merges and sends accumulated chunks every ~250ms */
+  private startPcmFlushInterval(): void {
+    if (this.pcmFlushInterval !== null) return; // Already running
     this.pcmFlushInterval = setInterval(() => {
       if (this.pcmBuffer.length === 0) return;
 
@@ -601,6 +606,11 @@ export class AudioRecorderService implements OnDestroy {
       this.mediaRecorder.pause();
       this.state.set('paused');
       this.stopTimer();
+      // Stop PCM flush interval to prevent sending audio during pause
+      if (this.pcmFlushInterval !== null) {
+        clearInterval(this.pcmFlushInterval);
+        this.pcmFlushInterval = null;
+      }
     }
   }
 
@@ -609,6 +619,11 @@ export class AudioRecorderService implements OnDestroy {
       this.mediaRecorder.resume();
       this.state.set('recording');
       this.startTimer();
+      // Resume PCM flush interval if worklet is active
+      if (this.pcmWorkletNode) {
+        this.pcmBuffer = [];  // Discard any stale samples accumulated during pause
+        this.startPcmFlushInterval();
+      }
     }
   }
 
