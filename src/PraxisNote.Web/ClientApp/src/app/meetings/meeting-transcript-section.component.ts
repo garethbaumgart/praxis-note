@@ -151,7 +151,7 @@ import { DeepgramTranscriptionService } from './deepgram-transcription.service';
 
     <!-- Live transcript preview while recording -->
     @if (recorder.isActive() && (transcription.transcript() || transcription.interimText())) {
-      <div class="live-transcript">
+      <div class="live-transcript" #liveTranscriptContainer>
         <div class="flex items-center gap-1.5 mb-2">
           <i class="pi pi-volume-up text-xs text-accent-solid"></i>
           <span class="text-xs font-medium text-foreground-secondary">Live Transcript</span>
@@ -319,6 +319,7 @@ export class MeetingTranscriptSectionComponent {
   readonly onStopRecording = output<void>();
 
   readonly transcriptArea = viewChild<ElementRef<HTMLTextAreaElement>>('transcriptArea');
+  readonly liveTranscriptContainer = viewChild<ElementRef<HTMLDivElement>>('liveTranscriptContainer');
 
   /** Whether the transcript has enough content to show compact record buttons instead of hero CTA */
   readonly hasSubstantialTranscript = signal(false);
@@ -344,6 +345,22 @@ export class MeetingTranscriptSectionComponent {
 
           if (isNearBottom) {
             ta.scrollTop = ta.scrollHeight;
+          }
+        }
+      }, { injector: this.injector });
+    });
+
+    // Auto-scroll live transcript when new segments arrive
+    effect(() => {
+      this.transcription.segments();
+      this.transcription.interimText();
+      afterNextRender(() => {
+        const container = this.liveTranscriptContainer()?.nativeElement;
+        if (container) {
+          const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
+          const isNearBottom = distanceFromBottom < 30;
+          if (isNearBottom) {
+            container.scrollTop = container.scrollHeight;
           }
         }
       }, { injector: this.injector });
