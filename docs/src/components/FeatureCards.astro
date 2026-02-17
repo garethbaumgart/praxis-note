@@ -1,0 +1,179 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+
+const features = [
+  {
+    title: 'Tasks',
+    description: 'Three-state kanban workflow with priorities, due dates, tags, and comments.',
+    icon: 'approve-check-circle' as const,
+    href: '/tasks/',
+    color: '#88c0d0',
+  },
+  {
+    title: 'Notes',
+    description: 'Rich text editor with slash commands, checkbox-task sync, and PDF export.',
+    icon: 'document' as const,
+    href: '/notes/',
+    color: '#b48ead',
+  },
+  {
+    title: 'Meetings',
+    description: 'Calendar sync, transcript analysis, and action item extraction.',
+    icon: 'comment' as const,
+    href: '/meetings/',
+    color: '#a3be8c',
+  },
+  {
+    title: 'Tags & Insights',
+    description: 'Unified tag system across all features with behavioral analytics.',
+    icon: 'magnifier' as const,
+    href: '/tags/',
+    color: '#d08770',
+  },
+];
+---
+
+<section class="feature-section" aria-label="Features">
+  <div class="feature-inner">
+    <div class="feature-header">
+      <h2 class="feature-heading">Features</h2>
+      <p class="feature-subheading">Powerful tools, beautifully crafted</p>
+    </div>
+    <div class="feature-grid">
+      {features.map((feature) => (
+        <a href={feature.href} class="feature-card">
+          <div
+            class="feature-icon"
+            style={`background: ${feature.color}26; color: ${feature.color};`}
+          >
+            <Icon name={feature.icon} size="1.375rem" />
+            <div
+              class="feature-glow"
+              style={`background: ${feature.color}33;`}
+            />
+          </div>
+          <h3 class="feature-title">{feature.title}</h3>
+          <p class="feature-description">{feature.description}</p>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .feature-section {
+    background: #2e3440;
+    border-radius: 24px;
+    padding: 48px;
+    margin-top: 2rem;
+  }
+
+  .feature-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .feature-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .feature-heading {
+    color: #eceff4;
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 8px;
+  }
+
+  .feature-subheading {
+    color: #4c566a;
+    font-size: 15px;
+    margin: 0;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .feature-card {
+    background: #3b4252;
+    border: 1px solid #434c5e;
+    border-radius: 16px;
+    padding: 28px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    display: block;
+  }
+
+  .feature-card:hover {
+    background: #434c5e;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .feature-card:focus-visible {
+    outline: 2px solid #88c0d0;
+    outline-offset: 2px;
+  }
+
+  .feature-card:hover .feature-glow {
+    opacity: 1;
+  }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .feature-icon :global(svg) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .feature-glow {
+    position: absolute;
+    inset: -8px;
+    border-radius: 20px;
+    filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .feature-title {
+    color: #eceff4;
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+
+  .feature-description {
+    color: #d8dee9;
+    font-size: 14px;
+    opacity: 0.7;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  @media (max-width: 640px) {
+    .feature-section {
+      padding: 32px 20px;
+      border-radius: 16px;
+    }
+
+    .feature-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-heading {
+      font-size: 26px;
+    }
+  }
+</style>

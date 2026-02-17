@@ -14,21 +14,6 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import FeatureCards from '../../components/FeatureCards.astro';
 
-## Features
-
-<CardGrid stagger>
-  <Card title="Tasks" icon="approve-check-circle">
-    Three-state kanban workflow with priorities, due dates, tags, and comments.
-  </Card>
-  <Card title="Notes" icon="document">
-    Rich text editor with slash commands, checkbox-task sync, and PDF export.
-  </Card>
-  <Card title="Meetings" icon="comment">
-    Calendar sync, transcript analysis, and action item extraction.
-  </Card>
-  <Card title="Tags & Insights" icon="magnifier">
-    Unified tag system across all features with behavioral analytics.
-  </Card>
-</CardGrid>
+<FeatureCards />
