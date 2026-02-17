@@ -207,7 +207,7 @@ import { HelpLinkComponent } from '../shared/components/help-link.component';
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: var(--color-bg-default);
+      background: var(--color-bg-base);
     }
 
     :host {
@@ -235,7 +235,7 @@ import { HelpLinkComponent } from '../shared/components/help-link.component';
       margin: 0 auto;         /* center within scroll container */
       padding: 2rem 1.5rem;   /* py-8 px-6 — matches mobile-first base */
       min-height: 100%;
-      background: var(--color-bg-default);
+      background: var(--color-bg-base);
       display: flex;
       flex-direction: column;
     }

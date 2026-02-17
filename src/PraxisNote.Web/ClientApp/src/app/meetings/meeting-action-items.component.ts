@@ -97,7 +97,7 @@ import { ActionItem, ActionItemStatus } from './meeting.model';
     .promote-button:hover:not(:disabled) {
       background: var(--color-primary-bg);
       color: var(--color-primary-text);
-      border-color: var(--color-primary-border);
+      border-color: var(--color-primary-solid);
     }
 
     .promote-button:disabled {
