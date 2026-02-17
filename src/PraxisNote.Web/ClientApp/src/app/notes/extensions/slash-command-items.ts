@@ -2,6 +2,7 @@ import { Editor } from '@tiptap/core';
 import { formatShortcut } from '../../shared/keyboard-utils';
 import { normalizeImageUrl } from '../../shared/url-utils';
 import { toISODate } from './insert-date.extension';
+import { extractJiraKey } from './jira-node.extension';
 
 export interface SlashCommandItem {
   label: string;
@@ -147,6 +148,29 @@ export const slashCommandItems: SlashCommandItem[] = [
       tomorrow.setHours(0, 0, 0, 0);
       tomorrow.setDate(tomorrow.getDate() + 1);
       editor.commands.insertDate(toISODate(tomorrow));
+    },
+  },
+  {
+    label: 'Jira Link',
+    icon: 'pi pi-external-link',
+    group: 'Insert',
+    aliases: ['jira', 'issue', 'ticket'],
+    action: (editor) => {
+      const rawUrl = window.prompt('Enter the Jira issue URL:');
+      if (!rawUrl) return;
+      const key = extractJiraKey(rawUrl);
+      if (!key) {
+        window.alert('Please enter a valid Jira Cloud URL (e.g. https://myorg.atlassian.net/browse/PROJ-123).');
+        return;
+      }
+      editor.commands.insertJiraLink({
+        key,
+        summary: 'Loading...',
+        status: '',
+        statusCategory: 'new',
+        issueType: 'Task',
+        url: rawUrl.trim(),
+      });
     },
   },
 ];

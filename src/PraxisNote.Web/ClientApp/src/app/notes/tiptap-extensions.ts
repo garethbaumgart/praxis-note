@@ -16,6 +16,7 @@ import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details';
 import { common, createLowlight } from 'lowlight';
 import { DateNode } from './extensions/insert-date.extension';
+import { JiraNode } from './extensions/jira-node.extension';
 import { SmartPaste } from './extensions/smart-paste.extension';
 
 const lowlight = createLowlight(common);
@@ -54,5 +55,6 @@ export const tiptapExtensions = [
   DetailsSummary,
   DetailsContent,
   DateNode,
+  JiraNode,
   SmartPaste,
 ];

@@ -5,6 +5,7 @@ import { tiptapExtensions } from './tiptap-extensions';
 import { SlashCommandItem, slashCommandItems } from './extensions/slash-command-items';
 import { formatShortDate } from '../shared/date-utils';
 import { toISODate } from './extensions/insert-date.extension';
+import { extractJiraKey } from './extensions/jira-node.extension';
 
 /**
  * TipTap Editor Test Suite
@@ -71,6 +72,7 @@ describe('TipTap Editor', () => {
       'detailsSummary',
       'detailsContent',
       'dateNode',
+      'jiraNode',
       'smartPaste',
     ])('has %s extension registered', (name) => {
       const has = editor.extensionManager.extensions.some((ext) => ext.name === name);
@@ -448,6 +450,74 @@ describe('TipTap Editor', () => {
       expect(stillOpen).toBeTruthy();
     });
 
+    it('insertJiraLink creates jiraNode with all attributes', () => {
+      editor.commands.insertJiraLink({
+        key: 'PROJ-123',
+        summary: 'Fix login bug',
+        status: 'In Progress',
+        statusCategory: 'indeterminate',
+        issueType: 'Bug',
+        url: 'https://myorg.atlassian.net/browse/PROJ-123',
+      });
+
+      const json = editor.getJSON();
+      const jsonStr = JSON.stringify(json);
+      expect(jsonStr).toContain('"type":"jiraNode"');
+      expect(jsonStr).toContain('"key":"PROJ-123"');
+      expect(jsonStr).toContain('"summary":"Fix login bug"');
+      expect(jsonStr).toContain('"status":"In Progress"');
+      expect(jsonStr).toContain('"statusCategory":"indeterminate"');
+      expect(jsonStr).toContain('"issueType":"Bug"');
+      expect(jsonStr).toContain('"url":"https://myorg.atlassian.net/browse/PROJ-123"');
+    });
+
+    it('jiraNode attributes round-trip through setContent/getJSON', () => {
+      const content = {
+        type: 'doc' as const,
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'jiraNode',
+                attrs: {
+                  key: 'TEST-456',
+                  summary: 'Some task',
+                  status: 'Done',
+                  statusCategory: 'done',
+                  issueType: 'Story',
+                  url: 'https://test.atlassian.net/browse/TEST-456',
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      editor.commands.setContent(content);
+      const output = editor.getJSON();
+      const jiraNode = output.content?.[0]?.content?.[0] as { type: string; attrs?: Record<string, string> } | undefined;
+
+      expect(jiraNode).toBeDefined();
+      expect(jiraNode!.type).toBe('jiraNode');
+      expect(jiraNode!.attrs?.['key']).toBe('TEST-456');
+      expect(jiraNode!.attrs?.['summary']).toBe('Some task');
+      expect(jiraNode!.attrs?.['status']).toBe('Done');
+      expect(jiraNode!.attrs?.['statusCategory']).toBe('done');
+      expect(jiraNode!.attrs?.['issueType']).toBe('Story');
+    });
+
+    it('extractJiraKey extracts key from valid Jira URL', () => {
+      expect(extractJiraKey('https://myorg.atlassian.net/browse/PROJ-123')).toBe('PROJ-123');
+      expect(extractJiraKey('https://company.atlassian.net/browse/ABC-1')).toBe('ABC-1');
+    });
+
+    it('extractJiraKey returns null for invalid URLs', () => {
+      expect(extractJiraKey('https://example.com')).toBeNull();
+      expect(extractJiraKey('not a url')).toBeNull();
+      expect(extractJiraKey('https://myorg.atlassian.net/browse/')).toBeNull();
+    });
+
     it('insertDate with explicit date stores that date', () => {
       editor.commands.insertDate('2026-12-25');
 
@@ -602,6 +672,40 @@ describe('TipTap Editor', () => {
       const tomorrowISO = toISODate(tomorrow);
       expect(json).toContain(`"date":"${tomorrowISO}"`);
     });
+
+    it('Jira Link action inserts jiraNode when user provides valid URL', () => {
+      vi.spyOn(window, 'prompt').mockReturnValue('https://myorg.atlassian.net/browse/PROJ-42');
+      vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+      const item = slashCommandItems.find((i) => i.label === 'Jira Link')!;
+      item.action(editor);
+
+      const json = JSON.stringify(editor.getJSON());
+      expect(json).toContain('"type":"jiraNode"');
+      expect(json).toContain('"key":"PROJ-42"');
+    });
+
+    it('Jira Link action does nothing when user cancels prompt', () => {
+      vi.spyOn(window, 'prompt').mockReturnValue(null);
+
+      const item = slashCommandItems.find((i) => i.label === 'Jira Link')!;
+      item.action(editor);
+
+      const json = JSON.stringify(editor.getJSON());
+      expect(json).not.toContain('"type":"jiraNode"');
+    });
+
+    it('Jira Link action alerts on invalid URL', () => {
+      vi.spyOn(window, 'prompt').mockReturnValue('https://example.com/not-jira');
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+      const item = slashCommandItems.find((i) => i.label === 'Jira Link')!;
+      item.action(editor);
+
+      expect(alertSpy).toHaveBeenCalled();
+      const json = JSON.stringify(editor.getJSON());
+      expect(json).not.toContain('"type":"jiraNode"');
+    });
   });
 
   // ── Step 15: Content Serialization ──────────────────────────
@@ -691,6 +795,7 @@ describe('TipTap Editor', () => {
       'Date',
       'Today',
       'Tomorrow',
+      'Jira Link',
     ];
 
     it('every slash command item has a corresponding test', () => {
@@ -726,6 +831,7 @@ describe('TipTap Editor', () => {
       expect(find('Date').aliases).toBeUndefined();
       expect(find('Today').aliases).toBeUndefined();
       expect(find('Tomorrow').aliases).toBeUndefined();
+      expect(find('Jira Link').aliases).toEqual(['jira', 'issue', 'ticket']);
     });
 
     it('aliases are arrays of strings when present', () => {

@@ -4,6 +4,7 @@ using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Notes;
 using PraxisNote.Application.Features.Notes.Services;
 using PraxisNote.Application.Features.Calendar;
+using PraxisNote.Application.Features.Jira;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
@@ -117,6 +118,12 @@ public static class DependencyInjection
         services.AddScoped<DisconnectGoogleCalendar>();
         services.AddScoped<GetCalendarConnectionStatus>();
         services.AddScoped<SyncCalendarEvents>();
+
+        // Jira use cases
+        services.AddScoped<ConnectJira>();
+        services.AddScoped<DisconnectJira>();
+        services.AddScoped<GetJiraConnectionStatus>();
+        services.AddScoped<ResolveJiraIssue>();
 
         // Insight use cases
         services.AddScoped<GetBehavioralTrends>();

@@ -27,6 +27,7 @@ export default defineConfig({
 						{ label: 'Tags & Tag Hub', slug: 'tags' },
 						{ label: 'Insights', slug: 'insights' },
 						{ label: 'Profiles', slug: 'profiles' },
+						{ label: 'Integrations', slug: 'integrations' },
 					],
 				},
 				{
