@@ -388,7 +388,7 @@ interface BlockType {
       transform: translate(-50%,-50%); width: 44px; height: 44px;
     }
     .toolbar-btn:hover { background: var(--color-surface-muted); color: var(--color-foreground); }
-    .toolbar-btn.active { background: var(--color-accent-subtle); color: var(--color-accent-solid); }
+    .toolbar-btn.active { background: var(--color-primary-bg); color: var(--color-accent-solid); }
     .toolbar-btn.task-list-btn.active { background: var(--color-accent-solid); color: white; }
     .toolbar-btn.color-btn { flex-direction: column; gap: 1px; font-weight: 600; font-size: 12px; }
     .color-indicator {
@@ -447,7 +447,7 @@ interface BlockType {
     }
 
     .promote-overlay-btn:hover {
-      background: var(--color-accent-subtle);
+      background: var(--color-primary-bg);
     }
 
     /* Status badges for linked checkboxes */
@@ -647,7 +647,7 @@ interface BlockType {
     }
 
     :host ::ng-deep .ProseMirror a.note-link:hover {
-      color: var(--color-accent-emphasis);
+      color: var(--color-primary-solid-hover);
     }
 
     /* Toggle Section */
