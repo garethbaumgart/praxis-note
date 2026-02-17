@@ -354,14 +354,15 @@ export class MeetingTranscriptSectionComponent {
     effect(() => {
       this.transcription.segments();
       this.transcription.interimText();
+      // Capture scroll state before DOM updates so large segments don't prevent scrolling
+      const container = this.liveTranscriptContainer()?.nativeElement;
+      const wasNearBottom = container
+        ? (container.scrollHeight - (container.scrollTop + container.clientHeight)) < 30
+        : true;
       afterNextRender(() => {
-        const container = this.liveTranscriptContainer()?.nativeElement;
-        if (container) {
-          const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
-          const isNearBottom = distanceFromBottom < 30;
-          if (isNearBottom) {
-            container.scrollTop = container.scrollHeight;
-          }
+        const el = this.liveTranscriptContainer()?.nativeElement;
+        if (el && wasNearBottom) {
+          el.scrollTop = el.scrollHeight;
         }
       }, { injector: this.injector });
     });
