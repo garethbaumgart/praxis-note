@@ -519,7 +519,7 @@ export class AudioRecorderService implements OnDestroy {
 
     this.pcmWorkletNode.port.onmessage = (event: MessageEvent) => {
       const channels = event.data.channels as Float32Array[];
-      if (channels && channels.length > 0) {
+      if (channels && channels.length > 0 && channels[0]?.length > 0) {
         const interleaved = this.float32ToInt16Interleaved(channels);
         this.pcmBuffer.push(new Int16Array(interleaved));
       }
@@ -552,6 +552,9 @@ export class AudioRecorderService implements OnDestroy {
 
   /** Convert Float32 multi-channel samples to interleaved Int16 PCM buffer */
   private float32ToInt16Interleaved(channels: Float32Array[]): ArrayBuffer {
+    if (!channels || channels.length === 0 || !channels[0] || channels[0].length === 0) {
+      return new ArrayBuffer(0);
+    }
     const channelCount = channels.length;
     const sampleCount = channels[0].length;
     const buffer = new ArrayBuffer(sampleCount * channelCount * 2); // 2 bytes per Int16 sample
