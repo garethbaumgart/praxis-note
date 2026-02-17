@@ -387,7 +387,7 @@ interface BlockType {
       content: ''; position: absolute; top: 50%; left: 50%;
       transform: translate(-50%,-50%); width: 44px; height: 44px;
     }
-    .toolbar-btn:hover { background: var(--color-surface-hover); color: var(--color-foreground-default); }
+    .toolbar-btn:hover { background: var(--color-surface-muted); color: var(--color-foreground); }
     .toolbar-btn.active { background: var(--color-accent-subtle); color: var(--color-accent-solid); }
     .toolbar-btn.task-list-btn.active { background: var(--color-accent-solid); color: white; }
     .toolbar-btn.color-btn { flex-direction: column; gap: 1px; font-weight: 600; font-size: 12px; }
@@ -528,7 +528,7 @@ interface BlockType {
     }
 
     :host ::ng-deep .ProseMirror code {
-      background: var(--color-surface-default);
+      background: var(--color-surface-muted);
       padding: 0.2em 0.4em;
       border-radius: 4px;
       font-family: monospace;
@@ -537,7 +537,7 @@ interface BlockType {
 
     :host ::ng-deep .ProseMirror pre {
       background: var(--color-surface-muted);
-      color: var(--color-foreground-default);
+      color: var(--color-foreground);
       padding: 0.75em 1em;
       border-radius: 6px;
       overflow-x: auto;
@@ -599,7 +599,7 @@ interface BlockType {
     }
 
     :host ::ng-deep .ProseMirror th {
-      background: var(--color-surface-hover);
+      background: var(--color-surface-muted);
       font-weight: 600;
     }
 

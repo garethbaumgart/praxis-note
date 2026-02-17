@@ -63,7 +63,7 @@ import { SlashCommandItem } from './extensions/slash-command-items';
         width: 280px;
         max-height: 320px;
         overflow-y: auto;
-        background: var(--color-surface-default);
+        background: var(--color-surface-subtle);
         border: 1px solid var(--color-border);
         border-radius: 8px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -97,14 +97,14 @@ import { SlashCommandItem } from './extensions/slash-command-items';
         background: transparent;
         cursor: pointer;
         font-size: 13px;
-        color: var(--color-foreground-default);
+        color: var(--color-foreground);
         text-align: left;
         transition: background 0.1s;
       }
 
       .slash-menu-item:hover,
       .slash-menu-item-active {
-        background: var(--color-surface-hover);
+        background: var(--color-surface-muted);
       }
 
       .slash-menu-item-icon {
@@ -123,7 +123,7 @@ import { SlashCommandItem } from './extensions/slash-command-items';
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         font-size: 10px;
         color: var(--color-foreground-muted);
-        background: var(--color-surface-hover);
+        background: var(--color-surface-muted);
         padding: 1px 5px;
         border-radius: 3px;
         margin-left: 4px;

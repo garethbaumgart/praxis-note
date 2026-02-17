@@ -329,7 +329,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
     }
 
     :host ::ng-deep .note-preview code {
-      background: var(--color-surface-default);
+      background: var(--color-surface-muted);
       padding: 0.1em 0.3em;
       border-radius: 3px;
       font-family: monospace;
@@ -386,7 +386,7 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
     }
 
     :host ::ng-deep .note-preview th {
-      background: var(--color-surface-hover);
+      background: var(--color-surface-muted);
       font-weight: 600;
     }
 
