@@ -86,7 +86,7 @@ const features = [
   }
 
   .feature-subheading {
-    color: #4c566a;
+    color: #d8dee9;
     font-size: 15px;
     margin: 0;
   }
@@ -103,7 +103,7 @@ const features = [
     border-radius: 16px;
     padding: 28px;
     text-decoration: none;
-    transition: all 0.25s ease;
+    transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
     display: block;
   }
 
@@ -160,6 +160,16 @@ const features = [
     opacity: 0.7;
     line-height: 1.6;
     margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feature-card {
+      transition: none;
+    }
+
+    .feature-glow {
+      transition: none;
+    }
   }
 
   @media (max-width: 640px) {
