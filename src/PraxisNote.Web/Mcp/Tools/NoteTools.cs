@@ -68,8 +68,10 @@ public sealed class NoteTools(McpUserContext userContext)
         [Description("The ID of the tag")] string tagId,
         [Description("Action: 'add' or 'remove'")] string action)
     {
-        var parsedNoteId = Guid.Parse(noteId);
-        var parsedTagId = Guid.Parse(tagId);
+        if (!Guid.TryParse(noteId, out var parsedNoteId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid note ID format" });
+        if (!Guid.TryParse(tagId, out var parsedTagId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
 
         if (action.Equals("add", StringComparison.OrdinalIgnoreCase))
         {
@@ -77,7 +79,12 @@ public sealed class NoteTools(McpUserContext userContext)
             return JsonSerializer.Serialize(new { success = true, action = "added" });
         }
 
-        await removeTag.ExecuteAsync(new RemoveTagFromNote.Command(userContext.UserId, parsedNoteId, parsedTagId));
-        return JsonSerializer.Serialize(new { success = true, action = "removed" });
+        if (action.Equals("remove", StringComparison.OrdinalIgnoreCase))
+        {
+            await removeTag.ExecuteAsync(new RemoveTagFromNote.Command(userContext.UserId, parsedNoteId, parsedTagId));
+            return JsonSerializer.Serialize(new { success = true, action = "removed" });
+        }
+
+        return JsonSerializer.Serialize(new { success = false, error = $"Invalid action '{action}'. Use 'add' or 'remove'." });
     }
 }

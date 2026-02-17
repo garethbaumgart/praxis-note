@@ -74,8 +74,10 @@ public sealed class MeetingTools(McpUserContext userContext)
         [Description("The ID of the tag")] string tagId,
         [Description("Action: 'add' or 'remove'")] string action)
     {
-        var parsedMeetingId = Guid.Parse(meetingId);
-        var parsedTagId = Guid.Parse(tagId);
+        if (!Guid.TryParse(meetingId, out var parsedMeetingId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid meeting ID format" });
+        if (!Guid.TryParse(tagId, out var parsedTagId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
 
         if (action.Equals("add", StringComparison.OrdinalIgnoreCase))
         {
@@ -83,7 +85,12 @@ public sealed class MeetingTools(McpUserContext userContext)
             return JsonSerializer.Serialize(new { success = true, action = "added" });
         }
 
-        await removeTag.ExecuteAsync(new RemoveTagFromMeeting.Command(userContext.UserId, parsedMeetingId, parsedTagId));
-        return JsonSerializer.Serialize(new { success = true, action = "removed" });
+        if (action.Equals("remove", StringComparison.OrdinalIgnoreCase))
+        {
+            await removeTag.ExecuteAsync(new RemoveTagFromMeeting.Command(userContext.UserId, parsedMeetingId, parsedTagId));
+            return JsonSerializer.Serialize(new { success = true, action = "removed" });
+        }
+
+        return JsonSerializer.Serialize(new { success = false, error = $"Invalid action '{action}'. Use 'add' or 'remove'." });
     }
 }

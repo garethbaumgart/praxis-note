@@ -51,6 +51,11 @@ public static class ApiKeyEndpoints
             return Results.BadRequest(new { error = "Name is required" });
         }
 
+        if (request.ExpiresAt.HasValue && request.ExpiresAt.Value <= DateTimeOffset.UtcNow)
+        {
+            return Results.BadRequest(new { error = "ExpiresAt must be in the future" });
+        }
+
         var profileId = context.GetProfileId();
 
         try

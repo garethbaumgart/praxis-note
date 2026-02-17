@@ -78,14 +78,20 @@ public sealed class TaskTools(McpUserContext userContext)
         [Description("The ID of the task")] string taskId,
         [Description("Due date in yyyy-MM-dd format, or empty string to clear")] string date)
     {
+        if (!Guid.TryParse(taskId, out var parsedTaskId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
+
         if (string.IsNullOrWhiteSpace(date))
         {
-            var clearCommand = new ClearDueDate.Command(Guid.Parse(taskId), userContext.UserId);
+            var clearCommand = new ClearDueDate.Command(parsedTaskId, userContext.UserId);
             var cleared = await clearDueDate.ExecuteAsync(clearCommand);
             return JsonSerializer.Serialize(new { success = cleared });
         }
 
-        var setCommand = new SetDueDate.Command(Guid.Parse(taskId), userContext.UserId, DateOnly.Parse(date));
+        if (!DateOnly.TryParse(date, out var parsedDate))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid date format. Use yyyy-MM-dd." });
+
+        var setCommand = new SetDueDate.Command(parsedTaskId, userContext.UserId, parsedDate);
         var success = await setDueDate.ExecuteAsync(setCommand);
         return JsonSerializer.Serialize(new { success });
     }
@@ -98,8 +104,10 @@ public sealed class TaskTools(McpUserContext userContext)
         [Description("The ID of the tag")] string tagId,
         [Description("Action: 'add' or 'remove'")] string action)
     {
-        var parsedTaskId = Guid.Parse(taskId);
-        var parsedTagId = Guid.Parse(tagId);
+        if (!Guid.TryParse(taskId, out var parsedTaskId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
+        if (!Guid.TryParse(tagId, out var parsedTagId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
 
         if (action.Equals("add", StringComparison.OrdinalIgnoreCase))
         {
@@ -107,7 +115,12 @@ public sealed class TaskTools(McpUserContext userContext)
             return JsonSerializer.Serialize(new { success = true, action = "added" });
         }
 
-        await removeTag.ExecuteAsync(new RemoveTagFromTask.Command(userContext.UserId, parsedTaskId, parsedTagId));
-        return JsonSerializer.Serialize(new { success = true, action = "removed" });
+        if (action.Equals("remove", StringComparison.OrdinalIgnoreCase))
+        {
+            await removeTag.ExecuteAsync(new RemoveTagFromTask.Command(userContext.UserId, parsedTaskId, parsedTagId));
+            return JsonSerializer.Serialize(new { success = true, action = "removed" });
+        }
+
+        return JsonSerializer.Serialize(new { success = false, error = $"Invalid action '{action}'. Use 'add' or 'remove'." });
     }
 }

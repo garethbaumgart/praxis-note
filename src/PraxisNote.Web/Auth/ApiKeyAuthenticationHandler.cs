@@ -38,13 +38,21 @@ public class ApiKeyAuthenticationHandler(
             SHA256.HashData(Encoding.UTF8.GetBytes(rawKey))).ToLowerInvariant();
 
         var apiKey = await apiKeyRepository.GetByKeyHashAsync(keyHash, Context.RequestAborted);
-        if (apiKey is null)
+        if (apiKey is null || !apiKey.IsValid)
             return AuthenticateResult.Fail("Invalid API key");
-        if (!apiKey.IsValid)
-            return AuthenticateResult.Fail("API key is revoked or expired");
 
-        apiKey.RecordUsage();
-        await unitOfWork.SaveChangesAsync(Context.RequestAborted);
+        try
+        {
+            if (apiKey.LastUsedAt is null || apiKey.LastUsedAt.Value < DateTimeOffset.UtcNow.AddMinutes(-5))
+            {
+                apiKey.RecordUsage();
+                await unitOfWork.SaveChangesAsync(Context.RequestAborted);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to record API key usage for key {KeyId}", apiKey.Id);
+        }
 
         Context.SetProfileId(apiKey.ProfileId);
 

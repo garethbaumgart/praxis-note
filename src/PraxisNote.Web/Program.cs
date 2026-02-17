@@ -104,9 +104,12 @@ var authBuilder = builder.Services.AddAuthentication(options =>
         if (enableMockAuth && context.Request.Headers.ContainsKey(MockAuthenticationOptions.HeaderName))
             return MockAuthenticationOptions.SchemeName;
 
-        var authHeader = context.Request.Headers.Authorization.ToString();
-        if (authHeader.StartsWith("Bearer pn_", StringComparison.Ordinal))
-            return ApiKeyAuthenticationOptions.SchemeName;
+        if (context.Request.Path.StartsWithSegments("/mcp"))
+        {
+            var authHeader = context.Request.Headers.Authorization.ToString();
+            if (authHeader.StartsWith("Bearer pn_", StringComparison.Ordinal))
+                return ApiKeyAuthenticationOptions.SchemeName;
+        }
 
         return null; // Use default (cookie) scheme
     };
@@ -196,13 +199,17 @@ if (enableMockAuth)
 // Add API key authentication (always available)
 authBuilder.AddApiKeyAuthentication();
 
-// Rate limiting for MCP endpoint
+// Rate limiting for MCP endpoint (per API key)
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("mcp", limiter =>
+    options.AddPolicy("mcp", context =>
     {
-        limiter.PermitLimit = 60;
-        limiter.Window = TimeSpan.FromMinutes(1);
+        var apiKeyId = context.User?.FindFirst("api_key_id")?.Value ?? "anonymous";
+        return RateLimitPartition.GetFixedWindowLimiter(apiKeyId, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 60,
+            Window = TimeSpan.FromMinutes(1),
+        });
     });
 });
 

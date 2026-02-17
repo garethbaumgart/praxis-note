@@ -33,7 +33,10 @@ public sealed class TagTools(McpUserContext userContext)
         [Description("The ID of the tag to rename")] string tagId,
         [Description("The new name for the tag")] string name)
     {
-        var command = new UpdateTag.Command(userContext.UserId, Guid.Parse(tagId), name);
+        if (!Guid.TryParse(tagId, out var parsedTagId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
+
+        var command = new UpdateTag.Command(userContext.UserId, parsedTagId, name);
         await updateTag.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success = true });
     }
@@ -43,7 +46,10 @@ public sealed class TagTools(McpUserContext userContext)
         DeleteTag deleteTag,
         [Description("The ID of the tag to delete")] string tagId)
     {
-        var command = new DeleteTag.Command(userContext.UserId, Guid.Parse(tagId));
+        if (!Guid.TryParse(tagId, out var parsedTagId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
+
+        var command = new DeleteTag.Command(userContext.UserId, parsedTagId);
         await deleteTag.ExecuteAsync(command);
         return JsonSerializer.Serialize(new { success = true });
     }
@@ -53,7 +59,10 @@ public sealed class TagTools(McpUserContext userContext)
         GetItemsByTag getItemsByTag,
         [Description("The ID of the tag")] string tagId)
     {
-        var query = new GetItemsByTag.Query(userContext.UserId, Guid.Parse(tagId));
+        if (!Guid.TryParse(tagId, out var parsedTagId))
+            return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
+
+        var query = new GetItemsByTag.Query(userContext.UserId, parsedTagId);
         var result = await getItemsByTag.ExecuteAsync(query);
         return JsonSerializer.Serialize(result);
     }
