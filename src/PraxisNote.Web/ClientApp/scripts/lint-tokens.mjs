@@ -10,7 +10,7 @@
  * Exit code: 0 = clean, 1 = invalid tokens found
  */
 
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join, relative } from 'path';
 import { fileURLToPath } from 'url';
 
