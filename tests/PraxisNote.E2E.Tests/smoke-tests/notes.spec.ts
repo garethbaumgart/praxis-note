@@ -183,10 +183,13 @@ test.describe('Notes', () => {
     await expect(popover.getByText('Tomorrow')).toBeVisible();
     await expect(popover.getByText('Next Mon')).toBeVisible();
 
-    // Click "Tomorrow" quick-pick and verify popover closes
+    // Click "Tomorrow" quick-pick and verify popover closes and date changes
     await popover.getByText('Tomorrow').click();
     await expect(popover).not.toBeVisible();
     await expect(dateChip).toBeVisible();
+    const updatedChipText = await dateChip.textContent();
+    expect(updatedChipText).toBeTruthy();
+    expect(updatedChipText).not.toBe(chipText);
 
     // Reopen and dismiss by clicking outside (Escape may be captured by native date input)
     await dateChip.click();
