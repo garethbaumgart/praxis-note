@@ -134,6 +134,66 @@ test.describe('Notes', () => {
     // Verify the note is no longer visible in the main content area
     await expect(main.getByText('Delete me')).not.toBeVisible();
   });
+
+  test('can insert date via slash command and interact with date chip', async ({ page, request }) => {
+    // Create a note via API
+    const createRes = await request.post('/api/notes', {
+      headers: getMockAuthHeaders(testUser),
+      data: { content: '' },
+    });
+    const note = await createRes.json();
+
+    await setupAuth(page, testUser);
+    await page.goto(`/notes/${note.id}`);
+
+    // Wait for TipTap editor to be ready
+    const editor = page.locator('.ProseMirror');
+    await expect(editor).toBeVisible({ timeout: 10000 });
+
+    // Give the editor time to fully initialize
+    await page.waitForTimeout(500);
+
+    // Type /date to trigger slash command menu
+    await editor.click();
+    await page.keyboard.type('/date', { delay: 50 });
+
+    // Wait for slash command menu to appear and select "Date"
+    const slashMenu = page.locator('.slash-menu');
+    await expect(slashMenu).toBeVisible({ timeout: 5000 });
+    const dateOption = slashMenu.locator('.slash-menu-item').filter({ hasText: 'Date' }).first();
+    await expect(dateOption).toBeVisible();
+    await dateOption.click();
+
+    // Verify date node chip rendered in the editor
+    const dateChip = editor.locator('span[data-type="dateNode"]');
+    await expect(dateChip).toBeVisible({ timeout: 5000 });
+
+    // Verify it displays a formatted date
+    const chipText = await dateChip.textContent();
+    expect(chipText).toBeTruthy();
+    expect(chipText!.length).toBeGreaterThan(2);
+
+    // Click the date chip to open the popover
+    await dateChip.click();
+    const popover = page.locator('.date-node-popover');
+    await expect(popover).toBeVisible({ timeout: 3000 });
+
+    // Verify quick-pick buttons are present
+    await expect(popover.getByText('Today')).toBeVisible();
+    await expect(popover.getByText('Tomorrow')).toBeVisible();
+    await expect(popover.getByText('Next Mon')).toBeVisible();
+
+    // Click "Tomorrow" quick-pick and verify popover closes
+    await popover.getByText('Tomorrow').click();
+    await expect(popover).not.toBeVisible();
+    await expect(dateChip).toBeVisible();
+
+    // Reopen and dismiss with Escape
+    await dateChip.click();
+    await expect(popover).toBeVisible({ timeout: 3000 });
+    await page.keyboard.press('Escape');
+    await expect(popover).not.toBeVisible();
+  });
 });
 
 async function setupAuth(page: any, user: MockUser): Promise<void> {
