@@ -14,9 +14,16 @@ public sealed class TaskTools(McpUserContext userContext)
         GetUserTasks getUserTasks,
         [Description("Include archived/completed tasks older than threshold")] bool includeArchived = false)
     {
-        var query = new GetUserTasks.Query(userContext.UserId, userContext.ProfileId, includeArchived);
-        var tasks = await getUserTasks.ExecuteAsync(query);
-        return JsonSerializer.Serialize(tasks);
+        try
+        {
+            var query = new GetUserTasks.Query(userContext.UserId, userContext.ProfileId, includeArchived);
+            var tasks = await getUserTasks.ExecuteAsync(query);
+            return JsonSerializer.Serialize(tasks);
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Create a new task on the board.")]
@@ -24,9 +31,16 @@ public sealed class TaskTools(McpUserContext userContext)
         CreateTask createTask,
         [Description("The title/description of the task")] string title)
     {
-        var command = new CreateTask.Command(userContext.UserId, userContext.ProfileId, title);
-        var result = await createTask.ExecuteAsync(command);
-        return JsonSerializer.Serialize(result);
+        try
+        {
+            var command = new CreateTask.Command(userContext.UserId, userContext.ProfileId, title);
+            var result = await createTask.ExecuteAsync(command);
+            return JsonSerializer.Serialize(result);
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Update the title of an existing task.")]
@@ -37,9 +51,16 @@ public sealed class TaskTools(McpUserContext userContext)
     {
         if (!Guid.TryParse(taskId, out var parsedTaskId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
-        var command = new UpdateTask.Command(parsedTaskId, userContext.UserId, title);
-        var success = await updateTask.ExecuteAsync(command);
-        return JsonSerializer.Serialize(new { success });
+        try
+        {
+            var command = new UpdateTask.Command(parsedTaskId, userContext.UserId, title);
+            var success = await updateTask.ExecuteAsync(command);
+            return JsonSerializer.Serialize(new { success });
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Change the status of a task. Valid statuses: Todo, InProgress, Done.")]
@@ -50,9 +71,16 @@ public sealed class TaskTools(McpUserContext userContext)
     {
         if (!Guid.TryParse(taskId, out var parsedTaskId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
-        var command = new ChangeTaskStatus.Command(parsedTaskId, userContext.UserId, status);
-        var success = await changeStatus.ExecuteAsync(command);
-        return JsonSerializer.Serialize(new { success });
+        try
+        {
+            var command = new ChangeTaskStatus.Command(parsedTaskId, userContext.UserId, status);
+            var success = await changeStatus.ExecuteAsync(command);
+            return JsonSerializer.Serialize(new { success });
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Toggle the priority flag on a task (high priority on/off).")]
@@ -62,9 +90,16 @@ public sealed class TaskTools(McpUserContext userContext)
     {
         if (!Guid.TryParse(taskId, out var parsedTaskId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
-        var command = new ToggleTaskPriority.Command(parsedTaskId, userContext.UserId);
-        var success = await togglePriority.ExecuteAsync(command);
-        return JsonSerializer.Serialize(new { success });
+        try
+        {
+            var command = new ToggleTaskPriority.Command(parsedTaskId, userContext.UserId);
+            var success = await togglePriority.ExecuteAsync(command);
+            return JsonSerializer.Serialize(new { success });
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Delete a task permanently.")]
@@ -74,9 +109,16 @@ public sealed class TaskTools(McpUserContext userContext)
     {
         if (!Guid.TryParse(taskId, out var parsedTaskId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
-        var command = new DeleteTask.Command(parsedTaskId, userContext.UserId);
-        var success = await deleteTask.ExecuteAsync(command);
-        return JsonSerializer.Serialize(new { success });
+        try
+        {
+            var command = new DeleteTask.Command(parsedTaskId, userContext.UserId);
+            var success = await deleteTask.ExecuteAsync(command);
+            return JsonSerializer.Serialize(new { success });
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Set or clear the due date on a task. Pass null/empty date to clear.")]
@@ -89,19 +131,26 @@ public sealed class TaskTools(McpUserContext userContext)
         if (!Guid.TryParse(taskId, out var parsedTaskId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid task ID format" });
 
-        if (string.IsNullOrWhiteSpace(date))
+        try
         {
-            var clearCommand = new ClearDueDate.Command(parsedTaskId, userContext.UserId);
-            var cleared = await clearDueDate.ExecuteAsync(clearCommand);
-            return JsonSerializer.Serialize(new { success = cleared });
+            if (string.IsNullOrWhiteSpace(date))
+            {
+                var clearCommand = new ClearDueDate.Command(parsedTaskId, userContext.UserId);
+                var cleared = await clearDueDate.ExecuteAsync(clearCommand);
+                return JsonSerializer.Serialize(new { success = cleared });
+            }
+
+            if (!DateOnly.TryParse(date, out var parsedDate))
+                return JsonSerializer.Serialize(new { success = false, error = "Invalid date format. Use yyyy-MM-dd." });
+
+            var setCommand = new SetDueDate.Command(parsedTaskId, userContext.UserId, parsedDate);
+            var success = await setDueDate.ExecuteAsync(setCommand);
+            return JsonSerializer.Serialize(new { success });
         }
-
-        if (!DateOnly.TryParse(date, out var parsedDate))
-            return JsonSerializer.Serialize(new { success = false, error = "Invalid date format. Use yyyy-MM-dd." });
-
-        var setCommand = new SetDueDate.Command(parsedTaskId, userContext.UserId, parsedDate);
-        var success = await setDueDate.ExecuteAsync(setCommand);
-        return JsonSerializer.Serialize(new { success });
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Add or remove a tag from a task.")]
@@ -117,18 +166,25 @@ public sealed class TaskTools(McpUserContext userContext)
         if (!Guid.TryParse(tagId, out var parsedTagId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
 
-        if (action.Equals("add", StringComparison.OrdinalIgnoreCase))
+        try
         {
-            await addTag.ExecuteAsync(new AddTagToTask.Command(userContext.UserId, parsedTaskId, parsedTagId));
-            return JsonSerializer.Serialize(new { success = true, action = "added" });
-        }
+            if (action.Equals("add", StringComparison.OrdinalIgnoreCase))
+            {
+                await addTag.ExecuteAsync(new AddTagToTask.Command(userContext.UserId, parsedTaskId, parsedTagId));
+                return JsonSerializer.Serialize(new { success = true, action = "added" });
+            }
 
-        if (action.Equals("remove", StringComparison.OrdinalIgnoreCase))
+            if (action.Equals("remove", StringComparison.OrdinalIgnoreCase))
+            {
+                await removeTag.ExecuteAsync(new RemoveTagFromTask.Command(userContext.UserId, parsedTaskId, parsedTagId));
+                return JsonSerializer.Serialize(new { success = true, action = "removed" });
+            }
+
+            return JsonSerializer.Serialize(new { success = false, error = $"Invalid action '{action}'. Use 'add' or 'remove'." });
+        }
+        catch (Exception ex)
         {
-            await removeTag.ExecuteAsync(new RemoveTagFromTask.Command(userContext.UserId, parsedTaskId, parsedTagId));
-            return JsonSerializer.Serialize(new { success = true, action = "removed" });
+            return McpErrorHelper.Serialize(ex);
         }
-
-        return JsonSerializer.Serialize(new { success = false, error = $"Invalid action '{action}'. Use 'add' or 'remove'." });
     }
 }

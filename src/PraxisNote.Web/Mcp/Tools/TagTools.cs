@@ -12,9 +12,16 @@ public sealed class TagTools(McpUserContext userContext)
     [McpServerTool, Description("List all tags for the current user with usage counts across tasks, notes, and meetings.")]
     public async Task<string> ListTags(GetUserTags getUserTags)
     {
-        var query = new GetUserTags.Query(userContext.UserId, userContext.ProfileId);
-        var tags = await getUserTags.ExecuteAsync(query);
-        return JsonSerializer.Serialize(tags);
+        try
+        {
+            var query = new GetUserTags.Query(userContext.UserId, userContext.ProfileId);
+            var tags = await getUserTags.ExecuteAsync(query);
+            return JsonSerializer.Serialize(tags);
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Create a new tag.")]
@@ -22,9 +29,16 @@ public sealed class TagTools(McpUserContext userContext)
         CreateTag createTag,
         [Description("The name of the tag to create")] string name)
     {
-        var command = new CreateTag.Command(userContext.UserId, userContext.ProfileId, name);
-        var result = await createTag.ExecuteAsync(command);
-        return JsonSerializer.Serialize(result);
+        try
+        {
+            var command = new CreateTag.Command(userContext.UserId, userContext.ProfileId, name);
+            var result = await createTag.ExecuteAsync(command);
+            return JsonSerializer.Serialize(result);
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Rename an existing tag.")]
@@ -36,9 +50,16 @@ public sealed class TagTools(McpUserContext userContext)
         if (!Guid.TryParse(tagId, out var parsedTagId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
 
-        var command = new UpdateTag.Command(userContext.UserId, parsedTagId, name);
-        await updateTag.ExecuteAsync(command);
-        return JsonSerializer.Serialize(new { success = true });
+        try
+        {
+            var command = new UpdateTag.Command(userContext.UserId, parsedTagId, name);
+            await updateTag.ExecuteAsync(command);
+            return JsonSerializer.Serialize(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Delete a tag. Removes it from all tasks, notes, and meetings.")]
@@ -49,9 +70,16 @@ public sealed class TagTools(McpUserContext userContext)
         if (!Guid.TryParse(tagId, out var parsedTagId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
 
-        var command = new DeleteTag.Command(userContext.UserId, parsedTagId);
-        await deleteTag.ExecuteAsync(command);
-        return JsonSerializer.Serialize(new { success = true });
+        try
+        {
+            var command = new DeleteTag.Command(userContext.UserId, parsedTagId);
+            await deleteTag.ExecuteAsync(command);
+            return JsonSerializer.Serialize(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 
     [McpServerTool, Description("Get all items (tasks, notes, meetings) that have a specific tag.")]
@@ -62,8 +90,15 @@ public sealed class TagTools(McpUserContext userContext)
         if (!Guid.TryParse(tagId, out var parsedTagId))
             return JsonSerializer.Serialize(new { success = false, error = "Invalid tag ID format" });
 
-        var query = new GetItemsByTag.Query(userContext.UserId, parsedTagId);
-        var result = await getItemsByTag.ExecuteAsync(query);
-        return JsonSerializer.Serialize(result);
+        try
+        {
+            var query = new GetItemsByTag.Query(userContext.UserId, parsedTagId);
+            var result = await getItemsByTag.ExecuteAsync(query);
+            return JsonSerializer.Serialize(result);
+        }
+        catch (Exception ex)
+        {
+            return McpErrorHelper.Serialize(ex);
+        }
     }
 }
