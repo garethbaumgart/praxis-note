@@ -7,6 +7,7 @@ using PraxisNote.Application.Features.Calendar.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
 using PraxisNote.Application.Features.Transcription;
+using PraxisNote.Domain.Aggregates.ApiKeys;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
@@ -42,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<PraxisNoteDbContext>());
 
         // Repositories
+        services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<ITagRepository, TagRepository>();

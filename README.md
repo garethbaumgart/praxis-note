@@ -36,6 +36,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Tag Hub** - Unified view of all notes, meetings, and tasks for a selected tag with date-grouped timeline, searchable tag selector, direct navigation to items, inline rename/delete with cascading removal, and two-step tag merge with overlap detection
 - ✅ **Outstanding Action Items** - Home page widget showing incomplete meeting action items from the last 30 days, cross-referenced with linked task status
 - ✅ **Multi-Profile Support** - Separate data contexts (e.g., Work, Personal) with sidebar profile switcher, per-profile data isolation, and account linking via temporary codes
+- ✅ **MCP Server** - Embedded Model Context Protocol server at `/mcp` for OpenClaw and other MCP clients, with personal API key authentication and read/write access to tasks, notes, meetings, and tags
 
 ✅ = Implemented | 🚧 = Planned
 

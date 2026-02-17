@@ -10,6 +10,7 @@ using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.Profiles;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
+using PraxisNote.Domain.Aggregates.ApiKeys;
 using PraxisNote.Domain.Aggregates.Users;
 
 namespace PraxisNote.Infrastructure.Persistence;
@@ -28,6 +29,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<BlindSpotNudge> BlindSpotNudges => Set<BlindSpotNudge>();
     public DbSet<LinkedIdentity> LinkedIdentities => Set<LinkedIdentity>();
     public DbSet<AccountLinkCode> AccountLinkCodes => Set<AccountLinkCode>();
+    public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public PraxisNoteDbContext(DbContextOptions<PraxisNoteDbContext> options)
