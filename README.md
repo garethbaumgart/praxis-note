@@ -33,7 +33,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Speaker Identification** - Multichannel audio separation and voice diarization to label who said what in transcripts
 - ✅ **Screenshot Import** - Paste or drop a calendar screenshot to extract and import meetings via Claude Vision with automatic timezone detection
 - ✅ **Behavioral Insights Dashboard** - Compact 2-column sparkline grid with trend indicators for meeting behavioral metrics
-- ✅ **Tag Hub** - Unified view of all notes, meetings, and tasks for a selected tag with date-grouped timeline, searchable tag selector, direct navigation to items, inline rename/delete with cascading removal, and two-step tag merge with overlap detection
+- ✅ **Tag Hub** - Unified view of all notes, meetings, and tasks for a selected tag with date-grouped timeline, searchable tag selector, direct navigation to items, inline rename/delete with cascading removal, two-step tag merge with overlap detection, and AI Chat for conversational Q&A about tag content with SSE streaming
 - ✅ **Outstanding Action Items** - Home page widget showing incomplete meeting action items from the last 30 days, cross-referenced with linked task status
 - ✅ **Multi-Profile Support** - Separate data contexts (e.g., Work, Personal) with sidebar profile switcher, per-profile data isolation, and account linking via temporary codes
 - ✅ **MCP Server** - Embedded Model Context Protocol server at `/mcp` for OpenClaw and other MCP clients, with personal API key authentication and read/write access to tasks, notes, meetings, and tags
