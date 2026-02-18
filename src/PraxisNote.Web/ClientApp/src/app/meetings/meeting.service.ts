@@ -338,8 +338,8 @@ export class MeetingService {
         this.meetingNoteContent.set(result.content);
         this.meetingNoteLoading.set(false);
       },
-      error: (err) => {
-        if (err.status === 404) this.meetingNoteContent.set(null);
+      error: () => {
+        this.meetingNoteContent.set(null);
         this.meetingNoteLoading.set(false);
       },
     });

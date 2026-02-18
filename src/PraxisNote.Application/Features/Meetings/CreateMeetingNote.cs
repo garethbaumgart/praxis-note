@@ -9,7 +9,7 @@ public sealed class CreateMeetingNote(
     INoteRepository noteRepository,
     IUnitOfWork unitOfWork)
 {
-    public record Command(Guid UserId, Guid ProfileId, Guid MeetingId, string Content);
+    public record Command(Guid UserId, Guid MeetingId, string Content);
     public record Result(Guid NoteId);
 
     public const string MeetingNotFoundError = "MEETING_NOT_FOUND";

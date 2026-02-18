@@ -382,7 +382,6 @@ public static class MeetingEndpoints
 
     private static async Task<IResult> HandleCreateMeetingNote(
         Guid id,
-        HttpContext context,
         ClaimsPrincipal user,
         CreateMeetingNoteRequest request,
         [FromServices] CreateMeetingNote createMeetingNote,
@@ -394,11 +393,9 @@ public static class MeetingEndpoints
             return Results.Unauthorized();
         }
 
-        var profileId = context.GetProfileId();
-
         try
         {
-            var command = new CreateMeetingNote.Command(userId.Value, profileId, id, request.Content);
+            var command = new CreateMeetingNote.Command(userId.Value, id, request.Content);
             var result = await createMeetingNote.ExecuteAsync(command, cancellationToken);
             return Results.Created($"/api/meetings/{id}/note", new { noteId = result.NoteId });
         }

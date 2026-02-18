@@ -29,7 +29,7 @@ public class MeetingNotesTests
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
 
         var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _unitOfWork);
-        var command = new CreateMeetingNote.Command(_userId, _profileId, meeting.Id, "Some notes");
+        var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Some notes");
 
         // Act
         var result = await sut.ExecuteAsync(command);
@@ -53,7 +53,7 @@ public class MeetingNotesTests
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
 
         var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _unitOfWork);
-        var command = new CreateMeetingNote.Command(_userId, _profileId, meeting.Id, "Some notes");
+        var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Some notes");
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ExecuteAsync(command));
@@ -67,7 +67,7 @@ public class MeetingNotesTests
         _meetingRepo.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Meeting?)null);
 
         var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _unitOfWork);
-        var command = new CreateMeetingNote.Command(_userId, _profileId, Guid.NewGuid(), "Some notes");
+        var command = new CreateMeetingNote.Command(_userId, Guid.NewGuid(), "Some notes");
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ExecuteAsync(command));
@@ -87,7 +87,7 @@ public class MeetingNotesTests
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
 
         var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _unitOfWork);
-        var command = new CreateMeetingNote.Command(_userId, _profileId, meeting.Id, "Notes");
+        var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Notes");
 
         // Act
         await sut.ExecuteAsync(command);

@@ -345,7 +345,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly metadataChange$ = new Subject<void>();
   private readonly transcriptChange$ = new Subject<void>();
-  private readonly noteChange$ = new Subject<string>();
+  private readonly noteChange$ = new Subject<{ content: string; meetingId: string }>();
 
   // View children
   readonly headerActions = viewChild<TemplateRef<unknown>>('headerActions');
@@ -560,10 +560,14 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       .pipe(debounceTime(2000), takeUntil(this.destroy$))
       .subscribe(() => this.saveTranscript());
 
-    // Auto-save meeting notes with debounce
+    // Auto-save meeting notes with debounce (bind meetingId at emission to prevent cross-meeting contamination)
     this.noteChange$
       .pipe(debounceTime(2000), takeUntil(this.destroy$))
-      .subscribe(content => this.saveMeetingNote(content));
+      .subscribe(({ content, meetingId }) => {
+        if (meetingId === this.meetingId()) {
+          this.saveMeetingNote(content);
+        }
+      });
 
     // Get meeting ID from route
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -747,6 +751,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.determineInitialDateChip(meetingDate);
 
     // Load meeting note if it exists
+    this.isCreatingNote = false;
     this.noteCreated = !!meeting.noteId;
     if (meeting.noteId) {
       this.meetingNoteLoading.set(true);
@@ -807,7 +812,8 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   onNoteContentChange(content: string): void {
     this.meetingNoteContent.set(content);
     this.lastSaved.set(false);
-    this.noteChange$.next(content);
+    const meetingId = this.meetingId();
+    if (meetingId) this.noteChange$.next({ content, meetingId });
   }
 
   private saveMeetingNote(content: string): void {
