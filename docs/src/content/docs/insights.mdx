@@ -1,24 +1,222 @@
 ---
 title: Insights
-description: Behavioral analytics from meeting transcripts
+description: Behavioral analytics and self-awareness tools from your meeting data
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-<Aside type="note">
-This page is under construction. Check back soon for detailed documentation.
-</Aside>
+The Insights dashboard provides behavioral analytics derived from your meeting transcripts. After analyzing several meetings, PraxisNote identifies communication patterns, trends, and blind spots to help you become a more effective communicator.
 
-## Overview
+## Getting Started
 
-Insights provides behavioral analytics derived from your meeting transcripts. After analyzing several meetings, PraxisNote identifies communication patterns and trends to help you improve your meeting effectiveness.
+Insights require meeting data to work:
 
-## Key Capabilities
+<Steps>
+1. [Record and transcribe](/meetings) several meetings (at least 2-3 for basic trends).
+2. Run **AI Analysis** on each meeting to generate behavioral data.
+3. Open **Insights** from the sidebar.
+4. Your communication trends and patterns appear on the dashboard.
+</Steps>
 
-- Automatic behavioral analysis of meeting transcripts
-- Communication pattern detection (e.g., speaking time, question frequency)
-- Trend tracking over multiple meetings
-- Visual charts and summaries on the Insights dashboard
-- Actionable suggestions for improving meeting outcomes
+:::note[Minimum data required]
+Trend charts appear after your first analyzed meeting. The Communication Profile and Johari Window require a minimum number of meetings (typically 3-5) before they have enough data to generate meaningful results. The dashboard will tell you how many more meetings are needed.
+:::
 
-{/* TODO: Expand with full documentation covering how insights are generated, the dashboard layout, trend charts, and how to act on the suggestions */}
+## Date Range
+
+Use the date range selector in the top-right corner to control the time window for all metrics:
+
+| Range | Shows |
+|-------|-------|
+| **7d** | Last 7 days |
+| **30d** | Last 30 days |
+| **90d** | Last 90 days |
+| **All** | All time |
+
+Changing the date range updates all summary cards, charts, and trend calculations.
+
+## Summary Cards
+
+Five metric cards appear at the top of the dashboard, each showing:
+- The **current average** for the metric
+- A **change indicator** showing the trend direction (up/down/stable) compared to the previous period
+
+| Metric | What it measures | Ideal range |
+|--------|-----------------|-------------|
+| **Talk-Time %** | Percentage of meeting time you spent speaking | 30-50% in group settings |
+| **Question Ratio** | Ratio of questions asked to statements made | Higher = more collaborative |
+| **Interruptions** | Average number of times you interrupted others | Lower is generally better |
+| **Sentiment** | Your communication tone score (0-1) | Above 0.6 = constructive |
+| **Red Flags** | Count of detected communication concerns | Zero is ideal |
+
+## Trend Charts
+
+Six trend charts track your metrics over time:
+
+| Chart | Type | What it shows |
+|-------|------|---------------|
+| **Talk-Time %** | Line | Your speaking percentage per meeting |
+| **Question Ratio** | Line | Questions-to-statements ratio per meeting |
+| **Interruptions** | Bar | Interruption count per meeting |
+| **Sentiment** | Line | Sentiment score per meeting |
+| **Red Flags** | Bar | Red flag count per meeting |
+| **Engagement** | Line | Engagement level (1=low, 2=medium, 3=high) per meeting |
+
+Each chart plots one data point per meeting, letting you see patterns and progress over time. Hover over data points to see the exact values and meeting dates.
+
+:::tip[Look for trends, not individual points]
+A single meeting with high interruptions isn't cause for concern — meetings vary. Look for **sustained patterns** over multiple meetings. A downward trend in interruptions over 10+ meetings is a meaningful improvement.
+:::
+
+## Communication Profile
+
+The Communication Profile identifies your communication **archetype** based on patterns across your meetings.
+
+### Archetypes
+
+PraxisNote categorizes your communication style into archetypes (e.g., Facilitator, Driver, Analyst, Collaborator). You receive:
+
+- **Primary archetype** — your dominant communication style, with a description
+- **Secondary archetype** — your secondary style (if one emerges from the data)
+- **Style consistency** — how consistently you exhibit your primary style across meetings (0-100%)
+
+### Archetype Scores
+
+A breakdown shows your score for each archetype, so you can see the full picture beyond just the primary and secondary labels.
+
+### Context Shifts
+
+The profile may detect that you shift communication styles in different contexts. For example, you might be a "Facilitator" in team meetings but a "Driver" in 1:1s. Each context shift shows the context, the archetype you shift to, and a brief description.
+
+### Strengths & Growth Areas
+
+Based on your archetype and behavioral data, the profile highlights:
+- **Strengths** — communication qualities that serve you well
+- **Growth areas** — aspects to develop for more effective communication
+
+:::note[Minimum meetings]
+The Communication Profile requires a minimum number of analyzed meetings before it can generate reliable results. The dashboard shows how many more meetings are needed.
+:::
+
+## Johari Window
+
+The [Johari Window](https://en.wikipedia.org/wiki/Johari_window) is a self-awareness framework that compares your self-perception (from reflections) with AI observations (from behavioral analysis).
+
+### Four Quadrants
+
+| Quadrant | You see it | AI sees it | Meaning |
+|----------|-----------|------------|---------|
+| **Open** | Yes | Yes | Known to you and observable by others |
+| **Blind Spot** | No | Yes | Observable by others but not recognized by you |
+| **Hidden** | Yes | No | Known to you but not observable in meetings |
+| **Unknown** | No | No | Not yet discovered by either |
+
+Each quadrant shows a percentage. The goal is to **increase the Open quadrant** over time by becoming more self-aware and seeking feedback.
+
+### Dimensions
+
+The Johari Window is calculated across multiple behavioral dimensions. For each dimension, you can see:
+- Which quadrant it falls in
+- Your self-assessed value (from reflections)
+- The AI-observed value (from analysis)
+- An explanation of any discrepancy
+
+### Blind Spots
+
+Blind spots are areas where the AI observes something that your self-assessment doesn't recognize. Each blind spot includes a description and the number of meetings where it was detected.
+
+:::tip[Grow the Open quadrant]
+The most effective way to grow self-awareness is to submit honest **reflections** after each meeting and compare them with the AI analysis. Over time, your blind spots shrink and the Open quadrant grows.
+:::
+
+## Blind Spot Nudges
+
+Based on your Johari Window blind spots, PraxisNote generates **nudges** — actionable suggestions to help you address specific blind spots.
+
+Each nudge includes:
+- The **dimension** it relates to
+- A **suggestion** for what to try in your next meeting
+- The **blind spot description** for context
+
+### Responding to Nudges
+
+You can take two actions on each nudge:
+- **Dismiss** — remove the nudge if it's not relevant
+- **Accept as Goal** — convert the nudge into a behavioral goal (see below)
+
+## Behavioral Goals
+
+Set measurable goals for your communication metrics and track your progress over time.
+
+### Creating a Goal
+
+<Steps>
+1. Scroll to the **Goals** section on the Insights dashboard.
+2. Click **Add Goal**.
+3. Choose from **presets** or create a custom goal.
+4. The goal appears with a progress tracker.
+</Steps>
+
+### Goal Presets
+
+| Preset | Metric | Target |
+|--------|--------|--------|
+| Keep talk time under 50% | Talk-Time % | Less than 50% |
+| Ask more questions | Question Ratio | At least 30% questions |
+| Zero red flags | Red Flag Count | 0 or fewer |
+| Stay positive | Sentiment Score | At least 0.6 |
+| Limit interruptions | Interruption Count | 2 or fewer per meeting |
+
+### Custom Goals
+
+Create custom goals by selecting:
+- **Metric** — which behavioral metric to track
+- **Operator** — less than, greater than, between, etc.
+- **Target value** — the threshold to aim for
+
+### Tracking Progress
+
+Each goal card shows:
+- **Current value** — your latest metric reading
+- **Met/not met** — whether you're currently meeting the goal
+- **Streak** — consecutive meetings where the goal was met
+- **Recent results** — a visual indicator of pass/fail for recent meetings
+- **Meetings evaluated** — how many meetings were used
+
+You can **activate/deactivate** goals or **delete** them as your focus areas change.
+
+## Participant Context
+
+When your meetings include multiple participants and the AI detects different speakers, the Insights dashboard shows whose data is being displayed. If multiple participants are available, you'll see a note like "Showing data for **John** across 15 meetings."
+
+## Excluding Meetings
+
+Some meetings may not be representative of your typical communication (e.g., a presentation, a casual social call). You can exclude individual meetings from Insights calculations:
+
+<Steps>
+1. Open the meeting in the [Meeting Editor](/meetings).
+2. Toggle the **Exclude from Insights** option.
+3. The meeting's data is removed from all Insight calculations.
+</Steps>
+
+## Tips & Best Practices
+
+:::tip[Reflect after every meeting]
+Submit a reflection after each analyzed meeting. This feeds the Johari Window and helps you track self-awareness growth. It only takes 1-2 minutes.
+:::
+
+:::tip[Start with one goal]
+Don't set five goals at once. Pick the one metric that matters most to you right now and focus on it. Once you've established a streak, add another goal.
+:::
+
+:::tip[Review weekly]
+Set aside 5 minutes each week to review your Insights dashboard. Look at the trend direction for each metric and celebrate improvements. If something is trending the wrong way, check which recent meetings contributed.
+:::
+
+:::tip[Use the 30-day view for meaningful trends]
+The 7-day view can be too noisy if you only have a couple of meetings per week. The 30-day view smooths out the variation and shows more reliable patterns.
+:::
+
+:::tip[Don't obsess over perfect scores]
+Communication is contextual. A "high" interruption count might be fine in a brainstorming session. Use the data as a guide, not a scorecard. The most valuable insight is **change over time**.
+:::
