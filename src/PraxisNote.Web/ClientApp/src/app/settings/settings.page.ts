@@ -551,6 +551,7 @@ const MAX_API_KEYS = 5;
           <button
             type="button"
             class="px-4 py-1.5 text-sm text-foreground-secondary hover:text-foreground transition-colors"
+            [disabled]="apiKeyService.creating()"
             (click)="showCreateKeyDialog.set(false)"
           >
             Cancel
