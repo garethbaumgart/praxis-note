@@ -19,6 +19,32 @@ These rules cause the most common sub-agent mistakes. They are listed first for 
 [class.active]="isActive()"
 ```
 
+### Auth Interceptor — `fetch()` vs `HttpClient`
+
+The auth interceptor (`auth.interceptor.ts`) catches **any 401 response** from `HttpClient` calls and forces a full page reload (`window.location.href = '/'`). This is by design for session expiry — but it means **non-critical API calls that use `HttpClient` can crash the entire page if auth fails unexpectedly.**
+
+```typescript
+// WRONG: Non-critical call uses HttpClient — 401 causes page refresh
+this.http.post('/api/tags/123/starters', {}).subscribe({ ... });
+
+// CORRECT: Non-critical call uses fetch() — 401 is handled gracefully
+const response = await fetch('/api/tags/123/starters', {
+  method: 'POST',
+  headers,
+  credentials: 'include',
+  body: '{}',
+});
+```
+
+**Rule:** Use `fetch()` (not `HttpClient`) for API calls where a failure should NOT trigger a page-level auth redirect. This includes:
+- AI chat starters, suggestions, and other "nice to have" data
+- Background/fire-and-forget calls
+- SSE streaming endpoints (already required for technical reasons)
+
+Use `HttpClient` for calls where a 401 genuinely means "user needs to re-authenticate" (core CRUD operations like loading tasks, notes, meetings).
+
+When using `fetch()`, you must manually add auth headers (mock auth in dev mode, profile ID). Follow the pattern in `tag-ai-chat.service.ts:send()`.
+
 ### Zoneless Anti-Patterns
 
 Angular 21 is zoneless by default. These patterns **will NOT work**:
