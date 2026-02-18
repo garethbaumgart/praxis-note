@@ -1,25 +1,287 @@
 ---
 title: Meetings
-description: Calendar sync, transcript analysis, and action item extraction
+description: Record, transcribe, analyze, and reflect on your meetings
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-<Aside type="note">
-This page is under construction. Check back soon for detailed documentation.
-</Aside>
+PraxisNote helps you prepare for, capture, and follow up on meetings. Record audio with live transcription, run AI analysis to extract summaries and action items, and reflect on your communication patterns — all in one place.
 
-## Overview
+## Getting Started
 
-PraxisNote helps you prepare for, capture, and follow up on meetings. Connect your calendar, add attendees, record transcripts, and extract action items automatically.
+<Steps>
+1. Open **Meetings** from the sidebar.
+2. Click the **New Meeting** button.
+3. Fill in the title, date/time, and attendees (optional).
+4. Click **Create** — you're taken to the meeting editor.
+5. Record your meeting or paste a transcript, then run **Analyze** to get AI-powered insights.
+</Steps>
 
-## Key Capabilities
+:::tip[Import from calendar]
+If you have Google Calendar connected (see [Integrations](/integrations)), click **Import** on the meetings list to pull in upcoming events with their titles, times, and attendees pre-filled.
+:::
 
-- Create meetings manually or sync from your calendar
-- Add attendees and track participation
-- Record and analyze meeting transcripts
-- Automatic action item extraction from transcripts
-- Tag meetings for cross-feature organization
-- Link meeting notes to related tasks
+## Meeting List
 
-{/* TODO: Expand with full documentation covering calendar sync, manual creation, transcript analysis, action items, and attendee management */}
+The meeting list groups your meetings by date:
+
+| Group | Shows |
+|-------|-------|
+| **Today** | Meetings from today |
+| **Yesterday** | Meetings from yesterday |
+| **Day name** (e.g. "Monday") | Meetings from earlier this week |
+| **Month + Date** (e.g. "Jan 15") | Older meetings |
+
+Within each group, meetings are sorted by time (newest first).
+
+### Search
+
+Type in the search bar to filter meetings by **title** or **attendees** in real time.
+
+## Meeting Editor
+
+The meeting editor is organized into collapsible sections. Click any section header to expand or collapse it.
+
+### Details Section
+
+The details section contains three editable fields:
+
+| Field | Description |
+|-------|-------------|
+| **Title** | The meeting name. Auto-saves as you type. The AI can auto-generate a title from the transcript. |
+| **Date & Time** | When the meeting occurred. Use the quick-pick buttons (Today, Yesterday) or enter a custom date and time. |
+| **Attendees** | Comma-separated list of participant names. Used for behavioral analysis context. |
+
+:::note
+All detail fields auto-save with a short debounce delay. You'll see a "Saving..." indicator in the header while changes are being persisted.
+:::
+
+### Tags
+
+Add tags to meetings for cross-feature organization. Click the tag area to add tags — the same tag system used by tasks and notes.
+
+## Recording & Transcription
+
+PraxisNote supports two recording modes, each optimized for different meeting types.
+
+<Tabs>
+<TabItem label="Microphone">
+**Best for:** In-person meetings, phone calls
+
+Records audio from your device microphone. Place your device where it can pick up all speakers.
+
+<Steps>
+1. In the Transcript section, click **Microphone**.
+2. Grant microphone permission if prompted.
+3. Recording starts with a live waveform indicator.
+4. Speak naturally — transcription happens in real time via Deepgram.
+5. Click **Pause** to temporarily stop, or **Stop** to end the recording.
+6. The transcript appears in the text area as you speak.
+</Steps>
+</TabItem>
+<TabItem label="Online Meeting">
+**Best for:** Zoom, Teams, Google Meet, and other video calls
+
+Records both system audio (the meeting participants) and your microphone simultaneously.
+
+<Steps>
+1. In the Transcript section, click **Online Meeting**.
+2. A screen/tab sharing prompt appears — select the tab or window running your video call.
+3. Recording captures both the meeting audio and your microphone input.
+4. Live transcription runs as the meeting progresses.
+5. Click **Stop** when the meeting ends.
+</Steps>
+
+:::caution[Browser support]
+System audio capture requires a Chromium-based browser (Chrome, Edge, Brave). Safari and Firefox do not support capturing system/tab audio.
+:::
+</TabItem>
+</Tabs>
+
+### Pasting a Transcript
+
+If you already have a transcript from another tool:
+
+<Steps>
+1. Expand the **Transcript** section.
+2. Paste your transcript text into the text area.
+3. The transcript is saved automatically.
+</Steps>
+
+### Clearing a Transcript
+
+Click **Clear** in the transcript section to remove the transcript content. This does not affect any analysis results that were already generated.
+
+## AI Analysis
+
+After recording or pasting a transcript, run the AI analysis to extract structured insights.
+
+<Steps>
+1. Ensure the transcript section has content.
+2. Click the **Analyze** button.
+3. The meeting status changes to **Processing** with a progress indicator.
+4. After 10-60 seconds, the analysis completes and results appear.
+</Steps>
+
+### Analysis Results
+
+The AI produces several types of output:
+
+| Section | What it contains |
+|---------|-----------------|
+| **Summary** | A concise overview of the meeting discussion |
+| **Key Points** | Bullet list of the most important topics discussed |
+| **Decisions** | Any decisions that were made during the meeting |
+| **Action Items** | Tasks identified from the discussion, with assignees when detectable |
+| **Behavioral Analysis** | Communication pattern analysis (see below) |
+| **Suggested Tags** | AI-recommended tags based on the meeting content |
+
+### Meeting Statuses
+
+| Status | Meaning |
+|--------|---------|
+| **Draft** | No analysis has been run yet |
+| **Processing** | AI analysis is currently running |
+| **Ready** | Analysis is complete and results are available |
+| **Reviewed** | You have submitted a reflection for this meeting |
+| **Failed** | Analysis encountered an error — you can retry |
+
+## Behavioral Analysis
+
+When the AI analyzes a transcript, it generates a detailed behavioral analysis covering:
+
+### Speaking Dynamics
+- **Talk time by participant** — percentage of meeting time each person spoke
+- **Interruption patterns** — who interrupted whom and how often
+- **Question vs. statement ratio** — balance between asking questions and making statements
+
+### Sentiment & Tone
+- **Participant sentiments** — positive, neutral, or negative tone for each speaker
+- **Tone shifts** — moments where the conversation tone changed significantly
+- **Emotional indicators** — detected emotional cues in the language
+
+### Communication Patterns
+- **Overall clarity score** — how clear and direct the communication was
+- **Follow-up patterns** — topics that were or weren't followed up on
+- **Engagement levels** — high, medium, or low engagement per participant
+
+### Red Flags
+The AI detects potential communication concerns:
+
+| Type | Description |
+|------|-------------|
+| **Evasive** | Avoiding direct answers to questions |
+| **Hedging** | Excessive qualifiers and non-committal language |
+| **Defensive** | Reactive or self-protective communication |
+| **Inconsistent** | Contradictory statements within the meeting |
+
+Each red flag includes context, the participant involved, and a severity rating (low, medium, high).
+
+## Action Items
+
+Action items are automatically extracted from the transcript during AI analysis.
+
+### Managing Action Items
+
+- **Toggle complete** — click the checkbox to mark an action item as done
+- **View assignee** — if the AI detected who was assigned, their name appears as a badge
+- **Promote to task** — click the promote button to create a task on the kanban board
+
+### Promoting to Tasks
+
+<Steps>
+1. Find an action item you want to track on the kanban board.
+2. Click the **promote button** (arrow icon) next to the item.
+3. A task is created in the **Todo** column with the action item text as the title.
+4. The action item now shows a **status badge** linking to the task.
+5. Click the badge to navigate to the task on the kanban board.
+</Steps>
+
+:::note
+Promoting creates a one-way link. Toggling the action item checkbox does not change the task status, and vice versa.
+:::
+
+## Reflection
+
+After AI analysis is complete, you can submit a self-reflection to build self-awareness about your communication patterns.
+
+<Steps>
+1. Expand the **Reflection** section (appears after analysis completes).
+2. Answer the prompted questions — each has quick-pick options and a freeform text field.
+3. Click **Submit Reflection** to save.
+</Steps>
+
+Reflection prompts are tailored to the behavioral analysis results and may cover:
+- **Talk time** — how much you think you spoke vs. what the AI measured
+- **Engagement** — your self-assessed participation level
+- **Tone** — your perception of your communication tone
+- **Interruptions** — awareness of interruption patterns
+- **General** — open-ended reflection
+
+Reflections feed into the [Insights](/insights) dashboard, helping you track self-awareness over time through the Johari Window.
+
+## Excluding from Insights
+
+If a meeting is atypical (e.g., a casual chat, a presentation where you were the sole speaker), you can exclude it from behavioral trend calculations.
+
+Click the **exclude toggle** in the meeting editor to prevent this meeting from affecting your Insights dashboard metrics.
+
+## Importing Meetings
+
+### Google Calendar Import
+
+With Google Calendar connected:
+<Steps>
+1. Click **Import** on the meetings list page.
+2. A dialog shows upcoming calendar events for the next 7 days.
+3. Select the events you want to import.
+4. Click **Import Selected** — meetings are created with title, date/time, and attendees pre-filled.
+</Steps>
+
+### Screenshot Import
+
+You can also import meetings by taking a screenshot of your calendar:
+<Steps>
+1. Click **Import** on the meetings list page.
+2. Choose the **Screenshot** tab.
+3. Upload or paste a screenshot of your calendar view.
+4. AI extracts event details (title, time, attendees) from the image.
+5. Review and select the events to import.
+</Steps>
+
+## Deleting Meetings
+
+<Steps>
+1. Open a meeting in the editor.
+2. Click the **trash icon** in the header bar.
+3. A confirm button appears with a countdown — click to confirm.
+4. A toast notification appears with an **Undo** button (5-second window).
+</Steps>
+
+## Keyboard Shortcuts
+
+| Shortcut | Context | Action |
+|----------|---------|--------|
+| Escape | Meeting editor (not in a text field) | Navigate back to meetings list |
+
+## Tips & Best Practices
+
+:::tip[Record everything]
+Even for quick meetings, hit record. You can always discard the transcript later, but you can't recover insights from a meeting you didn't capture.
+:::
+
+:::tip[Online Meeting mode for remote calls]
+Use the "Online Meeting" recording mode for Zoom/Teams calls — it captures both sides of the conversation, producing much better transcripts than microphone-only recording.
+:::
+
+:::tip[Promote action items immediately]
+Right after analysis completes, scan the action items and promote any that need tracking to the kanban board. This ensures nothing falls through the cracks.
+:::
+
+:::tip[Reflect honestly]
+The reflection feature is most valuable when you're candid about your self-perception. The gap between self-assessment and AI analysis is what powers the Johari Window insights.
+:::
+
+:::tip[Tag meetings by project]
+Apply consistent tags to meetings, notes, and tasks in the same project. The Tag Hub then gives you a complete view of all project activity.
+:::
