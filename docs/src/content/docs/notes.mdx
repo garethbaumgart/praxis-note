@@ -1,49 +1,266 @@
 ---
 title: Notes
-description: Rich text editor with slash commands and checkbox-task sync
+description: Rich text editor with slash commands, checkbox-task sync, and PDF export
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-<Aside type="note">
-This page is under construction. Check back soon for detailed documentation.
-</Aside>
+PraxisNote's note editor is a rich text workspace for capturing ideas, meeting notes, and documentation. Notes save automatically as you type and support a wide range of formatting options through the toolbar, slash commands, and keyboard shortcuts.
 
-## Overview
+## Getting Started
 
-PraxisNote's note editor is a rich text workspace for capturing ideas, meeting notes, and documentation. Notes save automatically as you type and support a range of formatting options.
+<Steps>
+1. Open **Notes** from the sidebar.
+2. Click the **"Take a note..."** field at the top to create a new note.
+3. Start typing — the editor opens full-screen with a rich text toolbar.
+4. Your note saves automatically. Navigate away at any time and your work is preserved.
+</Steps>
 
-## Key Capabilities
+:::tip[Quick start]
+Press **N** on the Notes list page (when not in a text field) to create a new note instantly.
+:::
 
-- Rich text editing with headings, bold, italic, and lists
-- Slash commands for quick formatting and block insertion
-- Checkbox lists that can sync with your task board
-- Tag support for organizing notes alongside tasks and meetings
-- PDF export for sharing notes outside PraxisNote
-- Automatic saving with last-edited timestamp
+## Notes List
+
+The notes list displays all your notes in a responsive **masonry grid** (4 columns on wide screens, down to 1 column on mobile). Each note card shows a preview of the content with tag chips.
+
+### Search
+
+Type in the search bar to filter notes in real time. Search matches against:
+- Note content text
+- Tag names
+- Checkbox text
+
+| Shortcut | Action |
+|----------|--------|
+| `/` | Focus the search bar (desktop, when not in a text field) |
+| `Escape` | Clear search and blur |
+
+### Tag Filtering
+
+Below the search bar, tag chips appear for any tags used across your notes. Click a tag chip to filter the list to only notes with that tag. You can select multiple tags. Click **Clear** to remove all tag filters.
+
+### Deleting Notes
+
+On each note card, click the trash icon. A **confirm button** with countdown appears — click it to delete. A toast notification with **Undo** appears (5-second window to restore).
+
+## The Editor
+
+When you open a note, you enter the full-screen editor with:
+- A **toolbar** at the top for formatting
+- The **editor canvas** in the center
+- A **footer status bar** at the bottom showing last-edited time and tags
+
+### Auto-Save
+
+Notes save automatically with a 1-second debounce after you stop typing. The header shows:
+- **Saving...** spinner — while a save is in progress
+- **Saved** checkmark — when the latest changes are persisted
+
+You can also press **Cmd/Ctrl+S** to force an immediate save.
+
+### Editor Toolbar
+
+The toolbar adapts to screen width, showing more buttons on wider screens and fewer on narrow screens. All hidden actions remain accessible via slash commands.
+
+**Block type dropdown** — choose between Paragraph, Heading 1/2/3, Bullet List, Numbered List, Task List, Blockquote, and Code Block.
+
+**Text formatting buttons:**
+
+| Button | Action | Shortcut |
+|--------|--------|----------|
+| **B** | Bold | Cmd/Ctrl+B |
+| *I* | Italic | Cmd/Ctrl+I |
+| <u>U</u> | Underline | Cmd/Ctrl+U |
+| ~~S~~ | Strikethrough | Cmd/Ctrl+Shift+X |
+| Link | Insert/edit hyperlink | — |
+| Highlight | Toggle yellow highlight | — |
+| Text color | Open color picker | — |
+
+**Alignment buttons:** Left, Center, Right
+
+**List buttons:** Bullet list, Numbered list, Task list (checkboxes)
+
+**Block buttons:** Blockquote, Code block, Table, Image, Horizontal rule
+
+**Utility buttons:** Undo, Redo
+
+### Overflow Menu
+
+On narrow screens, less-used toolbar buttons move into a **"More" overflow menu** (three dots). This ensures the toolbar remains usable on mobile devices.
 
 ## Slash Commands
 
-Type `/` in the editor to open the command menu. You can type the command name or a short alias to quickly filter and select a command.
+Type `/` anywhere in the editor to open the command menu. Start typing to filter commands by name or alias.
 
-| Command | Aliases | Description |
-|---------|---------|-------------|
-| Heading 1 | `h1` | Large section heading |
-| Heading 2 | `h2` | Medium section heading |
-| Heading 3 | `h3` | Small section heading |
-| Bullet List | `ul`, `bullets` | Unordered bullet list |
-| Numbered List | `ol`, `numbers` | Ordered numbered list |
-| Task List | `task`, `checklist` | Checkbox list (syncs with tasks) |
-| Toggle Section | `toggle`, `collapse`, `details` | Collapsible content section |
-| Blockquote | `quote`, `bq` | Indented quote block |
-| Code Block | `code`, `cb` | Syntax-highlighted code block |
-| Table | | 3x3 table with header row |
-| Image | `img`, `pic` | Insert an image by URL |
-| Divider | `hr`, `line`, `separator` | Horizontal rule |
-| Date | | Insert today's date as an inline date chip |
-| Today | | Insert today's date as an inline date chip |
-| Tomorrow | | Insert tomorrow's date as an inline date chip |
+### Headings
 
-Date chips render as styled inline elements with a calendar icon. Click a date chip to open a popover with quick-pick buttons (Today, Tomorrow, Next Mon) and a date picker to change the date.
+| Command | Aliases | Shortcut | Description |
+|---------|---------|----------|-------------|
+| Heading 1 | `h1` | Cmd/Ctrl+Alt+1 | Large section heading |
+| Heading 2 | `h2` | Cmd/Ctrl+Alt+2 | Medium section heading |
+| Heading 3 | `h3` | Cmd/Ctrl+Alt+3 | Small section heading |
 
-For example, typing `/h1` will filter the menu to show "Heading 1", and typing `/task` will show "Task List".
+### Lists
+
+| Command | Aliases | Shortcut | Description |
+|---------|---------|----------|-------------|
+| Bullet List | `ul`, `bullets` | Cmd/Ctrl+Shift+8 | Unordered bullet list |
+| Numbered List | `ol`, `numbers` | Cmd/Ctrl+Shift+7 | Ordered numbered list |
+| Task List | `task`, `checklist` | Cmd/Ctrl+Shift+9 | Checkbox list (can sync with tasks) |
+
+### Blocks
+
+| Command | Aliases | Shortcut | Description |
+|---------|---------|----------|-------------|
+| Toggle Section | `toggle`, `collapse`, `details` | — | Collapsible content section |
+| Blockquote | `quote`, `bq` | Cmd/Ctrl+Shift+B | Indented quote block |
+| Code Block | `code`, `cb` | Cmd/Ctrl+Alt+C | Syntax-highlighted code block |
+
+### Insert
+
+| Command | Aliases | Shortcut | Description |
+|---------|---------|----------|-------------|
+| Table | — | — | 3×3 table with header row |
+| Image | `img`, `pic` | — | Insert image by URL |
+| Divider | `hr`, `line`, `separator` | — | Horizontal rule |
+| Date | — | Cmd/Ctrl+Shift+D | Insert today's date as inline chip |
+| Today | — | — | Insert today's date as inline chip |
+| Tomorrow | — | — | Insert tomorrow's date as inline chip |
+| Jira Link | `jira`, `issue`, `ticket` | — | Insert a Jira issue chip by URL |
+
+:::tip[Alias shortcuts]
+You don't need to type the full command name. For example, typing `/h1` immediately filters to "Heading 1", and `/task` shows "Task List". This makes slash commands as fast as keyboard shortcuts.
+:::
+
+## Date Chips
+
+Date chips are styled inline elements that display a date with a calendar icon. They render right inside your text flow.
+
+### Inserting a Date
+
+- Type `/date` or `/today` to insert today's date
+- Type `/tomorrow` to insert tomorrow's date
+- Use the keyboard shortcut **Cmd/Ctrl+Shift+D** for today's date
+
+### Editing a Date
+
+Click on any date chip to open a **popover** with:
+- **Quick-pick buttons** — Today, Tomorrow, Next Monday
+- **Date picker** — for selecting any date
+
+The chip updates inline when you pick a new date.
+
+## Checkbox-Task Sync
+
+Task lists (checkboxes) in notes can be **promoted to tasks** on the kanban board.
+
+<Steps>
+1. Create a task list using `/task` or the toolbar checkbox button.
+2. Write your checklist items.
+3. Hover over a checkbox item to reveal a **promote button** (arrow icon).
+4. Click the promote button to create a corresponding task on the kanban board.
+5. A toast confirms the task was created, showing its title.
+</Steps>
+
+Once promoted, the checkbox shows a **status badge** indicating the linked task's current state (Todo, In Progress, or Done). Click the badge to navigate to the task on the kanban board.
+
+:::note
+Promoting a checkbox creates a one-way link. Checking the checkbox in the note does not change the task status, and vice versa. They track independently after creation.
+:::
+
+## Smart Paste
+
+When you paste content into the editor, PraxisNote intelligently handles certain formats:
+
+- **URLs** — pasted URLs are automatically converted into clickable links
+- **Jira issue URLs** — if Jira is connected (see [Integrations](/integrations)), pasting a Jira URL automatically creates a rich inline chip showing the issue type, key, summary, and status
+
+## Tables
+
+Insert a table via `/table` or the toolbar table button. Tables start as 3×3 with a header row and support:
+- Resizable columns (drag column borders)
+- Adding/removing rows and columns via context menu
+
+## Code Blocks
+
+Insert a code block via `/code` or the toolbar. Code blocks feature syntax highlighting powered by lowlight with support for common programming languages.
+
+## Toggle Sections
+
+Insert a collapsible section via `/toggle`. Toggle sections have a summary line (always visible) and expandable content. Click the chevron to expand or collapse.
+
+## Tags
+
+Tags are managed in the **footer bar** at the bottom of the editor.
+
+<Steps>
+1. Click the **"Add tag"** button in the footer.
+2. A search input appears — type to filter existing tags or create a new one.
+3. Press **Enter** to apply the top suggestion, or click a tag from the dropdown.
+4. Applied tags appear as chips in the footer. Click the **×** on any chip to remove it.
+</Steps>
+
+Tags overflow with a **+N** badge when more than 3 are applied. Click to expand, or click **Less** to collapse.
+
+## PDF Export
+
+Export any note to PDF for sharing outside PraxisNote.
+
+<Steps>
+1. Open a note in the editor.
+2. Click the **PDF icon** in the header bar.
+3. A PDF file is generated and downloaded automatically.
+</Steps>
+
+The exported PDF preserves headings, lists, text formatting, and tables.
+
+## Keyboard Shortcuts
+
+### Notes List Page
+
+| Shortcut | Action |
+|----------|--------|
+| `N` | Create a new note |
+| `/` | Focus the search bar |
+| `Escape` | Clear search |
+
+### Note Editor
+
+| Shortcut | Action |
+|----------|--------|
+| Cmd/Ctrl+S | Force save immediately |
+| Cmd/Ctrl+B | Bold |
+| Cmd/Ctrl+I | Italic |
+| Cmd/Ctrl+U | Underline |
+| Cmd/Ctrl+Shift+X | Strikethrough |
+| Cmd/Ctrl+Alt+1 | Heading 1 |
+| Cmd/Ctrl+Alt+2 | Heading 2 |
+| Cmd/Ctrl+Alt+3 | Heading 3 |
+| Cmd/Ctrl+Shift+7 | Numbered list |
+| Cmd/Ctrl+Shift+8 | Bullet list |
+| Cmd/Ctrl+Shift+9 | Task list |
+| Cmd/Ctrl+Shift+B | Blockquote |
+| Cmd/Ctrl+Alt+C | Code block |
+| Cmd/Ctrl+Shift+D | Insert today's date |
+| Cmd/Ctrl+Z | Undo |
+| Cmd/Ctrl+Shift+Z | Redo |
+| Escape | Navigate back to notes list (when not in editor content) |
+
+## Tips & Best Practices
+
+:::tip[Use headings for structure]
+Start each note with a Heading 1 for the title. PraxisNote uses the first heading (or first line of text) as the note's display title in the notes list.
+:::
+
+:::tip[Slash commands are fastest]
+Once you learn the aliases, slash commands are faster than reaching for toolbar buttons. Try `/h1`, `/ul`, `/task`, `/code` — each is just a few keystrokes.
+:::
+
+:::tip[Promote checklists to tasks]
+When your meeting notes contain action items as checkboxes, promote them to the kanban board so they don't get lost. The source link on the resulting task card takes you right back to the note for context.
+:::
+
+:::tip[Tag notes for cross-feature search]
+Apply the same tags to related notes, tasks, and meetings. Then use the **Tag Hub** to see everything for a project in one view.
+:::
