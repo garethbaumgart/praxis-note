@@ -91,7 +91,14 @@ The prompt to the sub-agent MUST include ALL of the following context so it can 
 >
 > 1. **Refine If Needed**: EITHER "Run the /refine NUMBER skill first to create an implementation plan. If /refine asks clarifying questions, use context from the issue body and codebase to answer with your best judgment." OR "Skip — this issue already has an implementation plan."
 >
-> 2. **Create a Feature Branch**: Run `git checkout main && git pull && git checkout -b feat/issue-NUMBER-SHORT_DESCRIPTION`
+> 2. **Create a Worktree**: From the main repo directory, run:
+>    ```bash
+>    cd MAIN_REPO_DIR
+>    git checkout main && git pull
+>    git worktree add ../praxis-note-issue-NUMBER -b feat/issue-NUMBER-SHORT_DESCRIPTION
+>    cd ../praxis-note-issue-NUMBER
+>    ```
+>    All implementation work must be done inside this worktree directory.
 >
 > 3. **Implement**: Follow the implementation plan step by step. Write the code, create tests as specified, and ensure everything compiles.
 >
@@ -101,7 +108,12 @@ The prompt to the sub-agent MUST include ALL of the following context so it can 
 >    - /pr Step 3 (Broadcast): EITHER "Run /broadcast automatically (no user prompt) — this is a user-facing change." OR "Skip broadcast — this is a minor/internal change."
 >    - /pr Step 10 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user.
 >
-> 6. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then run `git checkout main && git pull`.
+> 6. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then clean up the worktree:
+>    ```bash
+>    cd MAIN_REPO_DIR
+>    git worktree remove ../praxis-note-issue-NUMBER
+>    git pull
+>    ```
 >
 > 7. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed). If you created a broadcast notification, mention that too.
 >
@@ -137,7 +149,7 @@ Include links to each merged PR.
 
 - **Sub-agent per issue** — each issue runs in its own sub-agent via the `Task` tool, giving it a fresh context window. The main agent orchestrates and tracks results.
 - **SEQUENTIAL only** — never start issue N+1 until issue N's sub-agent has completed and returned its result
-- **Fresh branch each time** — every issue branches off the latest `main` after pulling
+- **Isolated worktree per issue** — each issue gets its own worktree (`git worktree add`) branching off the latest `main`. The main repo stays on `main` at all times. Worktrees are removed after merge.
 - **Self-contained prompts** — the sub-agent prompt must include the full issue body and all instructions. The sub-agent cannot see the main conversation history.
 - **Self-healing** — if tests or CI fail, the sub-agent should fix and retry. It should only report failure if truly stuck after multiple attempts.
 - **Refine autonomously** — if `/refine` asks a clarifying question, answer with best judgment from the issue body and codebase. Only escalate to the user if genuinely undecidable.
