@@ -1,57 +1,178 @@
 ---
 title: Integrations
-description: Connect external services to enhance your PraxisNote workflow.
+description: Connect Google Calendar and Jira to enhance your PraxisNote workflow
 ---
 
-PraxisNote integrates with external services to bring context into your notes and meetings.
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+PraxisNote integrates with external services to bring context into your notes and meetings. All integrations are managed from the **Settings** page (gear icon in the sidebar).
 
 ## Google Calendar
 
-Connect your Google Calendar to automatically import upcoming meetings into PraxisNote. Only event titles, times, and attendees are imported — no calendar data is stored beyond what appears in your meetings list.
+Connect your Google Calendar to automatically import upcoming meetings into PraxisNote with their titles, times, and attendees pre-filled.
+
+### What Gets Imported
+
+When you sync, PraxisNote imports calendar events for the **next 7 days**:
+- **Event title** — becomes the meeting title
+- **Start time** — becomes the meeting date/time
+- **Attendees** — imported as a comma-separated list
+
+:::note[Privacy]
+Only event titles, times, and attendees are imported. No calendar data is stored beyond what appears in your meetings list. PraxisNote does not access event descriptions, attachments, or recurring event rules.
+:::
 
 ### Connecting
 
-1. Go to **Settings** and find the **Calendar Integration** section.
-2. Click **Connect Google Calendar**.
-3. Authorize PraxisNote to read your calendar events.
-4. Once connected, click **Sync Now** to import meetings for the next 7 days.
+<Steps>
+1. Go to **Settings** from the sidebar.
+2. Find the **Calendar Integration** section.
+3. Click **Connect Google Calendar**.
+4. You'll be redirected to Google to authorize PraxisNote.
+5. Grant permission to read your calendar events.
+6. You're redirected back to Settings with a "Connected" confirmation.
+</Steps>
+
+### Syncing Events
+
+Once connected, the Calendar Integration section shows:
+- **Connected since** — when you first connected
+- **Last synced** — timestamp of the most recent sync
+
+To import meetings:
+
+<Steps>
+1. Click **Sync Now** in the Calendar Integration section.
+2. PraxisNote fetches your events for the next 7 days.
+3. A result summary shows how many meetings were imported and how many were skipped (already existed).
+4. New meetings appear in your meetings list, ready for recording and analysis.
+</Steps>
+
+:::tip
+You can also sync from the **Meetings** page by clicking **Import** and using the Calendar tab. This provides the same functionality with a preview of events before importing.
+:::
 
 ### Disconnecting
 
-Click **Disconnect** in the Calendar Integration section to revoke access. Your previously imported meetings remain in PraxisNote.
+<Steps>
+1. Go to **Settings** > **Calendar Integration**.
+2. Click **Disconnect**.
+3. A confirmation toast appears.
+</Steps>
 
----
+Your previously imported meetings remain in PraxisNote after disconnecting. Only the calendar connection is removed.
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| **"Access denied" during connection** | Make sure you click "Allow" on the Google consent screen. Try again if you accidentally denied access. |
+| **"Authorization failed"** | Clear your browser cookies and try again. This can happen if the OAuth state gets corrupted. |
+| **"Not authenticated"** | Make sure you're logged into PraxisNote first, then connect your calendar. |
+| **"Could not get full access"** | Google didn't provide a refresh token. Go to your [Google Account permissions](https://myaccount.google.com/permissions), revoke PraxisNote access, then reconnect. |
+| **Sync shows 0 new meetings** | Events for the next 7 days may already be imported. Check your meetings list. |
 
 ## Jira
 
-Connect your Jira Cloud account to paste Jira issue URLs into notes and see them rendered as rich inline chips showing the issue type, key, summary, and status.
+Connect your Jira Cloud account to embed rich issue chips directly in your notes.
 
-### Connecting
+### What It Does
 
-1. Go to **Settings** and find the **Jira Integration** section.
-2. Click **Connect Jira**.
-3. Authorize PraxisNote to read your Jira issues.
-4. Once connected, you can paste Jira URLs in any note.
+Once connected, Jira issue URLs in your notes render as **rich inline chips** showing:
 
-### Using Jira links in notes
-
-There are two ways to insert a Jira issue link:
-
-- **Paste a URL** — Copy a Jira issue URL (e.g., `https://myorg.atlassian.net/browse/PROJ-123`) and paste it into a note. It automatically converts into a rich chip.
-- **Slash command** — Type `/jira` in a note, then enter the Jira issue URL when prompted.
-
-Each chip displays:
-- **Issue type icon** (Task, Bug, Story, Epic)
-- **Issue key** (e.g., PROJ-123)
-- **Summary** (truncated to fit inline)
-- **Status badge** (color-coded: To Do, In Progress, Done)
+| Chip element | Description |
+|-------------|-------------|
+| **Issue type icon** | Task, Bug, Story, Epic, etc. |
+| **Issue key** | e.g., PROJ-123 |
+| **Summary** | Issue title (truncated to fit inline) |
+| **Status badge** | Color-coded: To Do (blue), In Progress (yellow), Done (green) |
 
 Click any chip to open the issue in Jira in a new tab.
 
+### Connecting
+
+<Steps>
+1. Go to **Settings** from the sidebar.
+2. Find the **Jira Integration** section.
+3. Click **Connect Jira**.
+4. You'll be redirected to Atlassian to authorize PraxisNote.
+5. Grant permission to read your Jira issues.
+6. You're redirected back to Settings with a "Connected" confirmation showing your Jira site URL.
+</Steps>
+
+### Using Jira Links in Notes
+
+There are two ways to insert a Jira issue link:
+
+<Tabs>
+<TabItem label="Paste a URL">
+Copy a Jira issue URL from your browser (e.g., `https://myorg.atlassian.net/browse/PROJ-123`) and paste it into a note. PraxisNote's smart paste automatically detects the Jira URL and converts it into a rich chip.
+</TabItem>
+<TabItem label="Slash Command">
+Type `/jira` in a note to open a prompt. Enter the Jira issue URL and the chip is inserted at your cursor position.
+</TabItem>
+</Tabs>
+
+The chip initially shows "Loading..." while PraxisNote fetches the issue details from Jira. After a moment, it updates with the full issue information.
+
 ### Disconnecting
 
-Click **Disconnect** in the Jira Integration section of Settings. Existing Jira chips in your notes will remain but won't update if the issue changes in Jira.
+<Steps>
+1. Go to **Settings** > **Jira Integration**.
+2. Click **Disconnect**.
+</Steps>
 
-### Supported Jira instances
+Existing Jira chips in your notes remain visible but won't update if the issue changes in Jira after disconnection.
 
-Only **Jira Cloud** (atlassian.net) is supported. Jira Server and Jira Data Center are not supported at this time.
+### Supported Jira Instances
+
+| Instance type | Supported |
+|--------------|-----------|
+| **Jira Cloud** (atlassian.net) | Yes |
+| **Jira Server** (self-hosted) | No |
+| **Jira Data Center** | No |
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| **"Access denied" during connection** | Make sure you click "Accept" on the Atlassian consent screen. |
+| **"Authorization failed"** | Clear browser cookies and try again. |
+| **"No accessible Jira sites found"** | Your Atlassian account may not have access to any Jira Cloud instances. Check your Atlassian account settings. |
+| **Chip shows "Loading..." indefinitely** | The issue may have been deleted or you may have lost access. Check the URL is still valid in Jira. |
+| **Pasted URL not converting to chip** | Make sure Jira is connected (check Settings). The URL must be a valid Jira Cloud URL in the format `https://[org].atlassian.net/browse/[KEY-123]`. |
+
+## Screenshot Import
+
+In addition to Google Calendar sync, PraxisNote can extract meeting details from a screenshot of your calendar.
+
+<Steps>
+1. Open the **Meetings** page.
+2. Click **Import**.
+3. Select the **Screenshot** tab.
+4. Upload or paste a screenshot showing your calendar view.
+5. AI analyzes the image and extracts events (title, start/end time, attendees, location).
+6. Review the extracted events and select which ones to import.
+7. Click **Import Selected** to create meetings from the selected events.
+</Steps>
+
+:::tip[Best results]
+For the best extraction accuracy:
+- Use a clean, uncluttered calendar view
+- Make sure event titles and times are clearly visible
+- Week or day view works better than month view
+:::
+
+## Tips & Best Practices
+
+:::tip[Sync calendar before meetings]
+Sync your Google Calendar at the start of each day or week. This pre-creates meeting entries so you can jump straight into recording when the meeting starts.
+:::
+
+:::tip[Tag imported meetings]
+Calendar-imported meetings don't have tags by default. Add project or team tags right away so they appear in the Tag Hub alongside related tasks and notes.
+:::
+
+:::tip[Jira links for traceability]
+When discussing Jira issues in meeting notes, paste the URLs to create rich chips. This creates a traceable link between your meeting discussion and the issue tracker.
+:::
