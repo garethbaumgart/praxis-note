@@ -27,6 +27,8 @@ public sealed class GetNoteById(INoteRepository noteRepository, ITagRepository t
                 .Where(id => tagLookup.ContainsKey(id))
                 .Select(id => new NoteTagDto(id, tagLookup[id].Name))
                 .ToList(),
+            null,
+            null,
             note.CreatedAt,
             note.UpdatedAt);
     }

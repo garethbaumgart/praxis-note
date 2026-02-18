@@ -17,6 +17,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { Meeting, MeetingTag, ActionItemStatus, parseJsonArray, hasAnalysisResults } from './meeting.model';
+import { TiptapEditorComponent } from '../notes/tiptap-editor.component';
 import { MeetingService } from './meeting.service';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingReflectionComponent } from './meeting-reflection.component';
@@ -54,6 +55,7 @@ interface DateOption {
     MeetingReflectionComponent,
     DeleteConfirmButtonComponent,
     ButtonModule,
+    TiptapEditorComponent,
   ],
   template: `
     <div class="meeting-editor-page">
@@ -174,6 +176,35 @@ interface DateOption {
             </app-meeting-section>
 
             @if (!isNewMeeting()) {
+              <!-- Notes Section -->
+              <app-meeting-section
+                title="Notes"
+                icon="pi-file-edit"
+                [borderColor]="'var(--color-meeting-notes-border)'"
+                [headerColor]="'var(--color-meeting-notes-text)'"
+                sectionId="notes-section"
+                [collapsible]="true"
+              >
+                <!-- Collapsed summary -->
+                <div summary class="text-xs text-foreground-muted">
+                  @if (meetingNoteContent()) {
+                    <span>Has notes</span>
+                  } @else {
+                    <span>No notes yet</span>
+                  }
+                </div>
+
+                @if (!meetingNoteLoading()) {
+                  <app-tiptap-editor
+                    [initialContent]="meetingNoteInitialContent()"
+                    [expandable]="false"
+                    [resetTrigger]="noteResetCounter()"
+                    placeholder="Start typing your meeting notes..."
+                    (contentChange)="onNoteContentChange($event)"
+                  />
+                }
+              </app-meeting-section>
+
               <!-- Transcript Section (hero element, always expanded) -->
               <app-meeting-section
                 title="Transcript"
@@ -314,6 +345,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly metadataChange$ = new Subject<void>();
   private readonly transcriptChange$ = new Subject<void>();
+  private readonly noteChange$ = new Subject<string>();
 
   // View children
   readonly headerActions = viewChild<TemplateRef<unknown>>('headerActions');
@@ -347,6 +379,13 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   // Time selection
   readonly selectedTimeLabel = signal('10:00 AM');
   readonly timeInputInvalid = signal(false);
+
+  // Note state
+  readonly meetingNoteContent = signal<string | null>(null);
+  readonly meetingNoteInitialContent = signal('');
+  readonly meetingNoteLoading = signal(false);
+  readonly noteResetCounter = signal(0);
+  private noteCreated = false;
 
   // Analysis state
   readonly actionItemStatuses = signal<ActionItemStatus[]>([]);
@@ -520,6 +559,11 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       .pipe(debounceTime(2000), takeUntil(this.destroy$))
       .subscribe(() => this.saveTranscript());
 
+    // Auto-save meeting notes with debounce
+    this.noteChange$
+      .pipe(debounceTime(2000), takeUntil(this.destroy$))
+      .subscribe(content => this.saveMeetingNote(content));
+
     // Get meeting ID from route
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params.get('id');
@@ -548,6 +592,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.headerService.clearContext();
     this.metadataChange$.complete();
     this.transcriptChange$.complete();
+    this.noteChange$.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -700,6 +745,32 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.extractTimeFromDate(meetingDate);
     this.determineInitialDateChip(meetingDate);
 
+    // Load meeting note if it exists
+    this.noteCreated = !!meeting.noteId;
+    if (meeting.noteId) {
+      this.meetingNoteLoading.set(true);
+      this.meetingService.loadMeetingNote(meeting.id);
+      // Watch for note content to be loaded from the service
+      const checkNoteLoaded = () => {
+        if (this.isDestroyed) return;
+        if (!this.meetingService.meetingNoteLoading()) {
+          const content = this.meetingService.meetingNoteContent();
+          this.meetingNoteContent.set(content);
+          this.meetingNoteInitialContent.set(content ?? '');
+          this.noteResetCounter.update(c => c + 1);
+          this.meetingNoteLoading.set(false);
+        } else {
+          setTimeout(checkNoteLoaded, 50);
+        }
+      };
+      setTimeout(checkNoteLoaded, 50);
+    } else {
+      this.meetingNoteContent.set(null);
+      this.meetingNoteInitialContent.set('');
+      this.noteResetCounter.update(c => c + 1);
+      this.meetingNoteLoading.set(false);
+    }
+
     // Collapse details for existing meetings (focus on transcript)
     setTimeout(() => {
       if (this.isDestroyed) return;
@@ -725,6 +796,35 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.transcript.set(value);
     this.lastSaved.set(false);
     this.transcriptChange$.next();
+  }
+
+  onNoteContentChange(content: string): void {
+    this.meetingNoteContent.set(content);
+    this.lastSaved.set(false);
+    this.noteChange$.next(content);
+  }
+
+  private saveMeetingNote(content: string): void {
+    const id = this.meetingId();
+    if (!id) return;
+
+    if (!this.noteCreated && !this.currentMeeting()?.noteId) {
+      // Lazy creation -- first save creates the note
+      this.isSaving.set(true);
+      this.meetingService.createMeetingNote(id, content, () => {
+        this.noteCreated = true;
+        this.isSaving.set(false);
+        this.lastSaved.set(true);
+      });
+    } else {
+      // Subsequent saves update the note
+      this.isSaving.set(true);
+      this.meetingService.updateMeetingNote(id, content);
+      setTimeout(() => {
+        this.isSaving.set(false);
+        this.lastSaved.set(true);
+      }, 300);
+    }
   }
 
   acceptSuggestedTag(tagName: string): void {

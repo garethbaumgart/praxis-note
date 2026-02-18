@@ -1951,4 +1951,77 @@ public class MeetingTests
     }
 
     #endregion
+
+    #region Meeting Notes Tests
+
+    [Fact]
+    public void LinkNote_WithValidGuid_SetsNoteIdAndUpdatesTimestamp()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+        var noteId = Guid.NewGuid();
+        var beforeLink = meeting.UpdatedAt;
+
+        // Act
+        meeting.LinkNote(noteId);
+
+        // Assert
+        Assert.Equal(noteId, meeting.NoteId);
+        Assert.True(meeting.UpdatedAt >= beforeLink);
+    }
+
+    [Fact]
+    public void LinkNote_WithEmptyGuid_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            meeting.LinkNote(Guid.Empty));
+    }
+
+    [Fact]
+    public void UnlinkNote_WhenNoteLinked_ClearsNoteIdAndUpdatesTimestamp()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+        var noteId = Guid.NewGuid();
+        meeting.LinkNote(noteId);
+        var beforeUnlink = meeting.UpdatedAt;
+
+        // Act
+        meeting.UnlinkNote();
+
+        // Assert
+        Assert.Null(meeting.NoteId);
+        Assert.True(meeting.UpdatedAt >= beforeUnlink);
+    }
+
+    [Fact]
+    public void UnlinkNote_WhenNoNoteLinked_IsNoOp()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+        var initialUpdatedAt = meeting.UpdatedAt;
+
+        // Act
+        meeting.UnlinkNote();
+
+        // Assert
+        Assert.Null(meeting.NoteId);
+        Assert.Equal(initialUpdatedAt, meeting.UpdatedAt);
+    }
+
+    [Fact]
+    public void NoteId_DefaultsToNull()
+    {
+        // Act
+        var meeting = Meeting.Create(_validUserId, _validProfileId, _validTitle);
+
+        // Assert
+        Assert.Null(meeting.NoteId);
+    }
+
+    #endregion
 }

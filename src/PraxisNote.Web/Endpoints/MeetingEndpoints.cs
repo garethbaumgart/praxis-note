@@ -28,6 +28,9 @@ public static class MeetingEndpoints
         group.MapPost("/{id:guid}/reflection", (Delegate)HandleSubmitReflection);
         group.MapPost("/extract-from-screenshot", (Delegate)HandleExtractFromScreenshot);
         group.MapPatch("/{id:guid}/exclude-from-insights", (Delegate)HandleUpdateExcludeFromInsights);
+        group.MapPost("/{id:guid}/note", (Delegate)HandleCreateMeetingNote);
+        group.MapPut("/{id:guid}/note", (Delegate)HandleUpdateMeetingNote);
+        group.MapGet("/{id:guid}/note", (Delegate)HandleGetMeetingNote);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -377,6 +380,85 @@ public static class MeetingEndpoints
         return Results.Ok(result);
     }
 
+    private static async Task<IResult> HandleCreateMeetingNote(
+        Guid id,
+        HttpContext context,
+        ClaimsPrincipal user,
+        CreateMeetingNoteRequest request,
+        [FromServices] CreateMeetingNote createMeetingNote,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var profileId = context.GetProfileId();
+
+        try
+        {
+            var command = new CreateMeetingNote.Command(userId.Value, profileId, id, request.Content);
+            var result = await createMeetingNote.ExecuteAsync(command, cancellationToken);
+            return Results.Created($"/api/meetings/{id}/note", new { noteId = result.NoteId });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == CreateMeetingNote.MeetingNotFoundError)
+        {
+            return Results.NotFound();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == CreateMeetingNote.NoteAlreadyExistsError)
+        {
+            return Results.Conflict(new { error = "Meeting already has a note" });
+        }
+    }
+
+    private static async Task<IResult> HandleUpdateMeetingNote(
+        Guid id,
+        ClaimsPrincipal user,
+        CreateMeetingNoteRequest request,
+        [FromServices] UpdateMeetingNote updateMeetingNote,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var command = new UpdateMeetingNote.Command(userId.Value, id, request.Content);
+            await updateMeetingNote.ExecuteAsync(command, cancellationToken);
+            return Results.NoContent();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == UpdateMeetingNote.MeetingNotFoundError)
+        {
+            return Results.NotFound();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == UpdateMeetingNote.NoNoteLinkedError)
+        {
+            return Results.NotFound(new { error = "No note linked to this meeting" });
+        }
+    }
+
+    private static async Task<IResult> HandleGetMeetingNote(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromServices] GetMeetingNote getMeetingNote,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var query = new GetMeetingNote.Query(userId.Value, id);
+        var result = await getMeetingNote.ExecuteAsync(query, cancellationToken);
+
+        return result is not null ? Results.Ok(result) : Results.NotFound();
+    }
+
     private static async Task<IResult> HandleUpdateExcludeFromInsights(
         Guid id,
         ClaimsPrincipal user,
@@ -413,3 +495,4 @@ public record PromptResponseRequest(string PromptId, string PromptText, string R
 
 public record ExcludeFromInsightsRequest(bool Exclude);
 public record ExtractFromScreenshotRequest(string Base64Image, string? MediaType, string? TimeZone);
+public record CreateMeetingNoteRequest(string Content);

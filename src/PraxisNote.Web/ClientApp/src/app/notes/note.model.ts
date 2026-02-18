@@ -14,6 +14,8 @@ export interface Note {
   content: string;
   checkboxes: Checkbox[];
   tags: NoteTag[];
+  meetingId?: string;
+  meetingTitle?: string;
   createdAt: string;
   updatedAt: string;
 }

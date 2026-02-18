@@ -29,6 +29,7 @@ export interface Meeting {
   reflectionData: string | null;
   reflectionSubmittedAt: string | null;
   excludeFromInsights: boolean;
+  noteId: string | null;
   tags: MeetingTag[];
   actionItems: ActionItem[];
   createdAt: string;

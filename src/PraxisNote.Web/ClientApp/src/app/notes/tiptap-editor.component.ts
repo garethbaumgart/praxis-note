@@ -815,6 +815,9 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /** Checkbox status data for showing linked state */
   readonly checkboxStatuses = input<CheckboxStatus[]>([]);
 
+  /** Placeholder text for the editor */
+  readonly placeholder = input<string>('Take a note...');
+
   /** Reference to the editor wrapper for position calculations */
   private readonly editorWrapper = viewChild<ElementRef>('editorWrapper');
 
@@ -988,7 +991,7 @@ export class TiptapEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     extensions: [
       ...tiptapExtensions,
       Placeholder.configure({
-        placeholder: 'Take a note...',
+        placeholder: () => this.placeholder(),
       }),
       SlashCommands.configure({
         suggestion: {
