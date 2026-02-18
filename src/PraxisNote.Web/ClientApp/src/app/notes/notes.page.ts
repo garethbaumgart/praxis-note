@@ -282,7 +282,14 @@ export class NotesPage implements OnInit, OnDestroy {
   }
 
   openNote(note: Note): void {
-    this.router.navigate(['/notes', note.id], { state: this.notesBreadcrumbSource });
+    if (note.meetingId) {
+      // Navigate to the meeting editor for meeting-linked notes
+      this.router.navigate(['/meetings', note.meetingId], {
+        state: { breadcrumbSource: { label: 'Notes', route: '/notes' } },
+      });
+    } else {
+      this.router.navigate(['/notes', note.id], { state: this.notesBreadcrumbSource });
+    }
   }
 
   deleteNote(note: Note): void {

@@ -95,6 +95,7 @@ export class MeetingService {
       reflectionData: null,
       reflectionSubmittedAt: null,
       excludeFromInsights: false,
+      noteId: null,
       tags: [],
       actionItems: [],
       createdAt: now,
@@ -323,6 +324,47 @@ export class MeetingService {
       clearTimeout(pending.timeoutId);
       this.pendingDeletions.delete(id);
     }
+  }
+
+  // --- Meeting Notes ---
+
+  readonly meetingNoteContent = signal<string | null>(null);
+  readonly meetingNoteLoading = signal(false);
+
+  loadMeetingNote(meetingId: string): void {
+    this.meetingNoteLoading.set(true);
+    this.http.get<{ content: string; checkboxes: unknown[] }>(`/api/meetings/${meetingId}/note`).subscribe({
+      next: (result) => {
+        this.meetingNoteContent.set(result.content);
+        this.meetingNoteLoading.set(false);
+      },
+      error: () => {
+        this.meetingNoteContent.set(null);
+        this.meetingNoteLoading.set(false);
+      },
+    });
+  }
+
+  createMeetingNote(meetingId: string, content: string, onCreated?: (noteId: string) => void, onError?: () => void): void {
+    this.http.post<{ noteId: string }>(`/api/meetings/${meetingId}/note`, { content }).subscribe({
+      next: (result) => {
+        // Update meeting in signal array to include noteId
+        this._meetings.update(arr =>
+          arr.map(m => m.id === meetingId ? { ...m, noteId: result.noteId } : m)
+        );
+        onCreated?.(result.noteId);
+      },
+      error: () => {
+        this.toast.error('Failed to create note');
+        onError?.();
+      },
+    });
+  }
+
+  updateMeetingNote(meetingId: string, content: string): void {
+    this.http.put(`/api/meetings/${meetingId}/note`, { content }).subscribe({
+      error: () => this.toast.error('Failed to save note'),
+    });
   }
 
   toggleExcludeFromInsights(id: string, exclude: boolean): void {

@@ -38,6 +38,7 @@ public sealed class GetMeetingById(IMeetingRepository meetingRepository, ITagRep
             meeting.ReflectionData,
             meeting.ReflectionSubmittedAt,
             meeting.ExcludeFromInsights,
+            meeting.NoteId,
             meeting.TagIds
                 .Where(id => tagLookup.ContainsKey(id))
                 .Select(id => new MeetingTagDto(id, tagLookup[id].Name))

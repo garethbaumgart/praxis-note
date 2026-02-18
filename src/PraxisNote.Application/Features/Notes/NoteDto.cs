@@ -5,6 +5,8 @@ public record NoteDto(
     string Content,
     IReadOnlyList<CheckboxDto> Checkboxes,
     IReadOnlyList<NoteTagDto> Tags,
+    Guid? MeetingId,
+    string? MeetingTitle,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
 

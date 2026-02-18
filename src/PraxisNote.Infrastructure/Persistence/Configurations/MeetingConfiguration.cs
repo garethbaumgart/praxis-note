@@ -55,6 +55,9 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.ExcludeFromInsights)
             .HasDefaultValue(false);
 
+        builder.Property(m => m.NoteId)
+            .HasColumnType("uuid");
+
         builder.Property(m => m.SuggestedTags)
             .HasColumnType("text");
 

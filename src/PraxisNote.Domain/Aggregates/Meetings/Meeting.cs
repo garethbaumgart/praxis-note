@@ -121,6 +121,11 @@ public sealed class Meeting : AggregateRoot
     public bool ExcludeFromInsights { get; private set; }
 
     /// <summary>
+    /// Optional linked note for meeting notes.
+    /// </summary>
+    public Guid? NoteId { get; private set; }
+
+    /// <summary>
     /// When this meeting was created.
     /// </summary>
     public DateTimeOffset CreatedAt { get; private init; }
@@ -390,6 +395,30 @@ public sealed class Meeting : AggregateRoot
             return;
 
         ExcludeFromInsights = exclude;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    #endregion
+
+    #region Meeting Notes
+
+    /// <summary>
+    /// Links a note to this meeting.
+    /// </summary>
+    public void LinkNote(Guid noteId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(noteId, Guid.Empty, nameof(noteId));
+        NoteId = noteId;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Unlinks the note from this meeting.
+    /// </summary>
+    public void UnlinkNote()
+    {
+        if (NoteId is null) return;
+        NoteId = null;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

@@ -18,6 +18,7 @@ public record MeetingDto(
     string? ReflectionData,
     DateTimeOffset? ReflectionSubmittedAt,
     bool ExcludeFromInsights,
+    Guid? NoteId,
     IReadOnlyList<MeetingTagDto> Tags,
     IReadOnlyList<ActionItemDto> ActionItems,
     DateTimeOffset CreatedAt,
