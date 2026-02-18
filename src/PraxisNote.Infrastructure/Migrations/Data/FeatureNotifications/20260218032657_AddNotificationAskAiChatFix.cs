@@ -24,7 +24,9 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
         {
             migrationBuilder.Sql("""
                 DELETE FROM "FeatureNotifications"
-                WHERE "Title" = 'Ask AI chat fix in Tag Hub';
+                WHERE "Type" = 'BugFix'
+                  AND "Title" = 'Ask AI chat fix in Tag Hub'
+                  AND "IssueUrl" = 'https://github.com/garethbaumgart/praxis-note/pull/595';
                 """);
         }
     }
