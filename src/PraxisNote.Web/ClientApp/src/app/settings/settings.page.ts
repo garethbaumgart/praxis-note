@@ -338,6 +338,17 @@ const MAX_API_KEYS = 5;
               <span class="text-sm text-foreground-muted" aria-hidden="true">Loading API keys...</span>
               <span class="sr-only">Loading API keys...</span>
             </div>
+          } @else if (apiKeyService.error()) {
+            <div class="py-2 px-4 bg-danger/10 border border-danger/30 rounded-lg mb-4">
+              <p class="text-sm text-danger">{{ apiKeyService.error() }}</p>
+              <button
+                type="button"
+                class="text-sm text-accent underline mt-1"
+                (click)="apiKeyService.loadKeys()"
+              >
+                Try again
+              </button>
+            </div>
           } @else {
             @if (activeKeys().length > 0) {
               <div class="flex flex-col gap-2 mb-4">
@@ -830,15 +841,17 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   copyToClipboard(text: string): void {
-    navigator.clipboard.writeText(text).then(() => {
-      this.toast.success({ summary: 'Copied to clipboard' });
-    });
+    navigator.clipboard.writeText(text).then(
+      () => this.toast.success({ summary: 'Copied to clipboard' }),
+      () => this.toast.error('Failed to copy to clipboard'),
+    );
   }
 
   copyKeyToClipboard(key: string): void {
-    navigator.clipboard.writeText(key).then(() => {
-      this.toast.success({ summary: 'API key copied to clipboard' });
-    });
+    navigator.clipboard.writeText(key).then(
+      () => this.toast.success({ summary: 'API key copied to clipboard' }),
+      () => this.toast.error('Failed to copy to clipboard'),
+    );
   }
 
   dismissNewKey(): void {

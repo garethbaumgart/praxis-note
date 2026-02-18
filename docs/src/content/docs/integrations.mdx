@@ -178,13 +178,13 @@ The MCP endpoint URL and API key are displayed in the **API Keys** section of Se
 
 <Tabs>
 <TabItem label="Claude Code">
-Add to your `claude_desktop_config.json` (or project-level `.mcp.json`):
+Add to your project-level `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "praxisnote": {
-      "type": "url",
+      "type": "http",
       "url": "https://app.praxisnote.app/mcp",
       "headers": {
         "Authorization": "Bearer pn_your_api_key_here"
@@ -201,7 +201,6 @@ Add to your `.cursor/mcp.json`:
 {
   "mcpServers": {
     "praxisnote": {
-      "type": "url",
       "url": "https://app.praxisnote.app/mcp",
       "headers": {
         "Authorization": "Bearer pn_your_api_key_here"
