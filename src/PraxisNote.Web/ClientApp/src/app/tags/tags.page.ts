@@ -624,7 +624,7 @@ export class TagsPage implements OnInit, OnDestroy {
   openInNewTab(item: TagItemDto, event: Event): void {
     event.stopPropagation();
     const url = item.type === 'Task'
-      ? `/tasks?highlight=${item.id}`
+      ? `/tasks?highlight=${encodeURIComponent(item.id)}`
       : this.itemUrl(item);
     window.open(url, '_blank', 'noopener,noreferrer');
   }
