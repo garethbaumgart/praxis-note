@@ -79,6 +79,7 @@ Review the full diff against the base branch using `git diff main...HEAD` and lo
 - Timezone-safe date handling (use `new Date(year, month - 1, day)` for date-only strings, not `new Date(dateString)` which applies timezone offsets)
 - Invalid date guards (check `isNaN(d.getTime())` before using parsed dates)
 - Accessibility issues (missing `aria-label` on icon-only buttons, semantic HTML)
+- **Auth interceptor interaction**: Any new `HttpClient` call will go through the auth interceptor, which forces a full page reload on 401. If the call is non-critical (starters, suggestions, background data), use `fetch()` instead. See CLAUDE.md "Auth Interceptor" section.
 
 ### Backend
 - EF Core: JSON value conversion properties (e.g., `HashSet<Guid>`) cannot use `.Contains()` in LINQ-to-SQL — must filter in memory

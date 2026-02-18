@@ -280,6 +280,7 @@ Append this machine-readable checklist to the end of every refined issue body. E
 - [ ] Verification steps defined for each acceptance criterion
 - [ ] Optimistic update impact assessed
 - [ ] E2E test decision documented (add/skip with reason)
+- [ ] New API calls use correct HTTP client (`HttpClient` for critical CRUD, `fetch()` for non-critical — see CLAUDE.md "Auth Interceptor")
 ```
 
 If a checklist item does not apply (e.g., "Template HTML" for a backend-only change), check it and add "N/A — backend only".
@@ -443,6 +444,7 @@ gh issue edit <number> --body "$(cat <<'ISSUE_BODY'
 - [ ] Verification steps defined for each acceptance criterion
 - [ ] Optimistic update impact assessed
 - [ ] E2E test decision documented (add/skip with reason)
+- [ ] New API calls use correct HTTP client (`HttpClient` for critical CRUD, `fetch()` for non-critical — see CLAUDE.md "Auth Interceptor")
 ISSUE_BODY
 )"
 ```
