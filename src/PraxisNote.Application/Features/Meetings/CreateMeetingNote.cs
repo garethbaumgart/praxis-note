@@ -28,7 +28,7 @@ public sealed class CreateMeetingNote(
             throw new InvalidOperationException(NoteAlreadyExistsError);
         }
 
-        var note = Note.Create(command.UserId, command.ProfileId, command.Content);
+        var note = Note.Create(command.UserId, meeting.ProfileId, command.Content);
 
         // Copy all meeting tags to new note
         foreach (var tagId in meeting.TagIds)

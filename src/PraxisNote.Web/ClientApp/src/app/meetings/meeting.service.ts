@@ -345,7 +345,7 @@ export class MeetingService {
     });
   }
 
-  createMeetingNote(meetingId: string, content: string, onCreated?: (noteId: string) => void): void {
+  createMeetingNote(meetingId: string, content: string, onCreated?: (noteId: string) => void, onError?: () => void): void {
     this.http.post<{ noteId: string }>(`/api/meetings/${meetingId}/note`, { content }).subscribe({
       next: (result) => {
         // Update meeting in signal array to include noteId
@@ -354,7 +354,10 @@ export class MeetingService {
         );
         onCreated?.(result.noteId);
       },
-      error: () => this.toast.error('Failed to create note'),
+      error: () => {
+        this.toast.error('Failed to create note');
+        onError?.();
+      },
     });
   }
 

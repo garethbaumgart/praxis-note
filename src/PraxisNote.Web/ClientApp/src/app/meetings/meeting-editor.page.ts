@@ -386,6 +386,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   readonly meetingNoteLoading = signal(false);
   readonly noteResetCounter = signal(0);
   private noteCreated = false;
+  private isCreatingNote = false;
 
   // Analysis state
   readonly actionItemStatuses = signal<ActionItemStatus[]>([]);
@@ -751,13 +752,18 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       this.meetingNoteLoading.set(true);
       this.meetingService.loadMeetingNote(meeting.id);
       // Watch for note content to be loaded from the service
+      let noteLoadAttempts = 0;
       const checkNoteLoaded = () => {
         if (this.isDestroyed) return;
+        noteLoadAttempts++;
         if (!this.meetingService.meetingNoteLoading()) {
           const content = this.meetingService.meetingNoteContent();
           this.meetingNoteContent.set(content);
           this.meetingNoteInitialContent.set(content ?? '');
           this.noteResetCounter.update(c => c + 1);
+          this.meetingNoteLoading.set(false);
+        } else if (noteLoadAttempts >= 200) {
+          // Timeout after ~10s
           this.meetingNoteLoading.set(false);
         } else {
           setTimeout(checkNoteLoaded, 50);
@@ -808,15 +814,20 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     const id = this.meetingId();
     if (!id) return;
 
-    if (!this.noteCreated && !this.currentMeeting()?.noteId) {
+    if (!this.noteCreated && !this.currentMeeting()?.noteId && !this.isCreatingNote) {
       // Lazy creation -- first save creates the note
+      this.isCreatingNote = true;
       this.isSaving.set(true);
       this.meetingService.createMeetingNote(id, content, () => {
         this.noteCreated = true;
+        this.isCreatingNote = false;
         this.isSaving.set(false);
         this.lastSaved.set(true);
+      }, () => {
+        this.isCreatingNote = false;
+        this.isSaving.set(false);
       });
-    } else {
+    } else if (this.noteCreated || this.currentMeeting()?.noteId) {
       // Subsequent saves update the note
       this.isSaving.set(true);
       this.meetingService.updateMeetingNote(id, content);

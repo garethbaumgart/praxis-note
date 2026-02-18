@@ -182,7 +182,7 @@
   /* Meeting section borders */
   --color-meeting-details-border: rgba(136, 192, 208, 0.8);   /* Cyan - matches todo */
   --color-meeting-notes-border: rgba(208, 135, 112, 0.6);     /* Orange/amber - Aurora orange #d08770 */
-  --color-meeting-notes-text: #bf616a;                          /* Aurora red for header text */
+  --color-meeting-notes-text: #d08770;                          /* Aurora orange for header text */
   --color-meeting-transcript-border: rgba(94, 129, 172, 0.6);  /* Blue - matches accent */
   --color-meeting-analysis-border: rgba(163, 190, 140, 0.6);   /* Green - matches done */
   --color-meeting-reflection-border: rgba(180, 142, 173, 0.6); /* Purple - reflection/introspection */
