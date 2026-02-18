@@ -114,6 +114,9 @@ public static class DependencyInjection
         services.AddScoped<GetMeetingReflection>();
         services.AddScoped<ExtractMeetingsFromScreenshot>();
         services.AddScoped<UpdateMeetingExcludeFromInsights>();
+        services.AddScoped<CreateMeetingNote>();
+        services.AddScoped<UpdateMeetingNote>();
+        services.AddScoped<GetMeetingNote>();
 
         // Calendar use cases
         services.AddScoped<ConnectGoogleCalendar>();
