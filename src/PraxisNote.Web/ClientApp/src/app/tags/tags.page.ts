@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, computed, signal, effect, untracked, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
@@ -467,8 +467,10 @@ export class TagsPage implements OnInit, OnDestroy {
       } else {
         this.hub.clear();
       }
-      // Close AI chat when tag changes
-      this.aiChat.close();
+      // Close AI chat when tag changes — untracked to prevent tracking
+      // aiChat internal signals (e.g. _state read inside close() → stop()),
+      // which would cause this effect to re-run when open() sets _state
+      untracked(() => this.aiChat.close());
     });
   }
 
