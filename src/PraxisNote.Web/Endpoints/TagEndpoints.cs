@@ -328,6 +328,10 @@ public static class TagEndpoints
         {
             return Results.Ok(new { starters = Array.Empty<string>() });
         }
+        catch (OperationCanceledException)
+        {
+            return Results.Ok(new { starters = Array.Empty<string>() });
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error generating starter prompts for tag {TagId}", id);
