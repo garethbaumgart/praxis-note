@@ -1,12 +1,10 @@
 import { Injectable, inject, signal, computed, isDevMode } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { MockAuthService } from '../auth/mock-auth.service';
 import { ProfileService } from '../profiles/profile.service';
-import { ChatMessageItem, TagAiChatState, TagChatHistoryItem, TagChatRequest, TagStartersResponse } from './tag-ai-chat.model';
+import { ChatMessageItem, TagAiChatState, TagChatHistoryItem, TagChatRequest } from './tag-ai-chat.model';
 
 @Injectable({ providedIn: 'root' })
 export class TagAiChatService {
-  private readonly http = inject(HttpClient);
   private readonly mockAuth = inject(MockAuthService);
   private readonly profileService = inject(ProfileService);
 
@@ -225,19 +223,44 @@ export class TagAiChatService {
     }
   }
 
-  private loadStarters(tagId: string): void {
-    this.http.post<TagStartersResponse>(`/api/tags/${tagId}/starters`, {}).subscribe({
-      next: (response) => {
-        if (this.currentTagId !== tagId) return;
-        this._starters.set(response.starters ?? []);
-        this._state.set('ready');
-      },
-      error: () => {
-        if (this.currentTagId !== tagId) return;
-        // Starters are non-critical — proceed without them
+  private async loadStarters(tagId: string): Promise<void> {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+      if (isDevMode()) {
+        const mockHeader = this.mockAuth.getMockHeader();
+        if (mockHeader) {
+          headers['X-Mock-User'] = mockHeader;
+        }
+      }
+
+      const profileId = this.profileService.activeProfileId();
+      if (profileId) {
+        headers['X-Profile-Id'] = profileId;
+      }
+
+      const response = await fetch(`/api/tags/${tagId}/starters`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: '{}',
+      });
+
+      if (this.currentTagId !== tagId) return;
+
+      if (response.ok) {
+        const data = await response.json();
+        this._starters.set(data.starters ?? []);
+      } else {
         this._starters.set([]);
+      }
+    } catch {
+      if (this.currentTagId !== tagId) return;
+      this._starters.set([]);
+    } finally {
+      if (this.currentTagId === tagId) {
         this._state.set('ready');
-      },
-    });
+      }
+    }
   }
 }

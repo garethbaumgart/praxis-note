@@ -1,23 +1,25 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient, HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { TagAiChatService } from './tag-ai-chat.service';
-import { of, throwError } from 'rxjs';
+
+function mockFetchResponse(data: unknown, ok = true): ReturnType<typeof vi.fn> {
+  return vi.fn().mockResolvedValue({
+    ok,
+    json: () => Promise.resolve(data),
+  } as Partial<Response>);
+}
 
 describe('TagAiChatService', () => {
   let service: TagAiChatService;
-  let httpSpy: { post: ReturnType<typeof vi.fn> };
+  let fetchSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    httpSpy = { post: vi.fn().mockReturnValue(of({ starters: [] })) };
+    fetchSpy = mockFetchResponse({ starters: [] });
+    vi.stubGlobal('fetch', fetchSpy);
 
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        { provide: HttpClient, useValue: httpSpy },
-        MessageService,
-      ],
+      providers: [MessageService],
     });
 
     service = TestBed.inject(TagAiChatService);
@@ -26,6 +28,7 @@ describe('TagAiChatService', () => {
   afterEach(() => {
     if (service) service.close();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('should start in idle state', () => {
@@ -61,10 +64,11 @@ describe('TagAiChatService', () => {
     expect(service.isOpen()).toBe(true);
   });
 
-  it('open should transition to ready state after loading starters', () => {
-    httpSpy.post.mockReturnValue(of({ starters: ['q1?'] }));
+  it('open should transition to ready state after loading starters', async () => {
+    fetchSpy = mockFetchResponse({ starters: ['q1?'] });
+    vi.stubGlobal('fetch', fetchSpy);
     service.open('tag-1');
-    expect(service.state()).toBe('ready');
+    await vi.waitFor(() => expect(service.state()).toBe('ready'));
   });
 
   it('open should clear previous messages', () => {
@@ -72,22 +76,37 @@ describe('TagAiChatService', () => {
     expect(service.messages()).toEqual([]);
   });
 
-  it('open should load starters from API', () => {
+  it('open should load starters from API', async () => {
     const mockStarters = ['Question 1?', 'Question 2?'];
-    httpSpy.post.mockReturnValue(of({ starters: mockStarters }));
+    fetchSpy = mockFetchResponse({ starters: mockStarters });
+    vi.stubGlobal('fetch', fetchSpy);
     service.open('tag-1');
-    expect(service.starters()).toEqual(mockStarters);
+    await vi.waitFor(() => expect(service.starters()).toEqual(mockStarters));
   });
 
-  it('open should set empty starters on API error', () => {
-    httpSpy.post.mockReturnValue(throwError(() => new Error('API error')));
+  it('open should set empty starters on API error', async () => {
+    fetchSpy = mockFetchResponse({}, false);
+    vi.stubGlobal('fetch', fetchSpy);
     service.open('tag-1');
-    expect(service.starters()).toEqual([]);
-    expect(service.state()).toBe('ready');
+    await vi.waitFor(() => {
+      expect(service.starters()).toEqual([]);
+      expect(service.state()).toBe('ready');
+    });
   });
 
-  it('open should expand if already open for same tag', () => {
+  it('open should set empty starters on fetch rejection', async () => {
+    fetchSpy = vi.fn().mockRejectedValue(new Error('Network error'));
+    vi.stubGlobal('fetch', fetchSpy);
     service.open('tag-1');
+    await vi.waitFor(() => {
+      expect(service.starters()).toEqual([]);
+      expect(service.state()).toBe('ready');
+    });
+  });
+
+  it('open should expand if already open for same tag', async () => {
+    service.open('tag-1');
+    await vi.waitFor(() => expect(service.state()).toBe('ready'));
     service.collapse();
     expect(service.isCollapsed()).toBe(true);
     service.open('tag-1');
@@ -125,11 +144,12 @@ describe('TagAiChatService', () => {
     expect(service.isCollapsed()).toBe(false);
   });
 
-  it('clearChat should clear messages and reload starters', () => {
+  it('clearChat should clear messages and reload starters', async () => {
     service.open('tag-1');
+    await vi.waitFor(() => expect(service.state()).toBe('ready'));
     service.clearChat();
     expect(service.messages()).toEqual([]);
-    expect(httpSpy.post).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
   });
 
   it('stop should not throw when no stream is active', () => {

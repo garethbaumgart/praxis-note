@@ -21,8 +21,3 @@ export interface TagChatHistoryItem {
   role: string;
   content: string;
 }
-
-/** Response from the starters endpoint */
-export interface TagStartersResponse {
-  starters: string[];
-}

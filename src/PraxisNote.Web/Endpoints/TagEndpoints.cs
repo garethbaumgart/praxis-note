@@ -304,6 +304,7 @@ public static class TagEndpoints
         Guid id,
         ClaimsPrincipal user,
         GenerateTagStarters generateStarters,
+        ILogger<Program> logger,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -325,6 +326,15 @@ public static class TagEndpoints
         }
         catch (InvalidOperationException ex) when (ex.Message == GenerateTagStarters.NoContentError)
         {
+            return Results.Ok(new { starters = Array.Empty<string>() });
+        }
+        catch (OperationCanceledException)
+        {
+            return Results.Ok(new { starters = Array.Empty<string>() });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error generating starter prompts for tag {TagId}", id);
             return Results.Ok(new { starters = Array.Empty<string>() });
         }
     }
