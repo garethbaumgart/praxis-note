@@ -342,7 +342,7 @@ app.MapTranscriptionEndpoints();
 app.MapApiKeyEndpoints();
 
 // MCP endpoint for OpenClaw and other MCP clients
-app.MapMcp().RequireAuthorization().RequireRateLimiting("mcp");
+app.MapMcp("/mcp").RequireAuthorization().RequireRateLimiting("mcp");
 
 // SPA fallback - serves index.html for client-side routing
 if (angularAppExists)
