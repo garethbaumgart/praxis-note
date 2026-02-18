@@ -1,137 +1,249 @@
 ---
 title: Tasks
-description: Three-state kanban workflow with priorities, due dates, tags, and comments
+description: Three-state kanban board with priority flags, due dates, tags, comments, and drag-and-drop
 ---
 
 import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-PraxisNote tasks use a kanban-style board with three columns. Each task can have a priority level, due date, tags, and comments to keep you organized.
+PraxisNote tasks use a kanban-style board with three columns — **Todo**, **In Progress**, and **Done**. Each task can be flagged as a priority, given a due date, tagged, and annotated with comments. Tasks save instantly and support undo on destructive actions.
 
-## Creating Tasks
+## Getting Started
 
 <Steps>
-1. Navigate to the **Tasks** page from the sidebar.
-2. Click the **New Task** button at the top of the page.
-3. Type a descriptive title and press **Enter**.
-4. The task is created in the **To Do** column.
+1. Open **Tasks** from the sidebar.
+2. Click the **+** button at the top of the **Todo** column (or press **N** on desktop).
+3. Type a title and press **Enter**.
+4. Your task appears in the Todo column, ready to be worked on.
 </Steps>
 
-<Aside type="tip">
-Keep task titles short and actionable. Start with a verb: "Review proposal", "Fix login bug", "Draft quarterly report".
-</Aside>
+:::tip[Keep titles actionable]
+Start task titles with a verb: "Review proposal", "Fix login bug", "Draft quarterly report". Short, specific titles are easier to scan on the kanban board.
+:::
 
-## Kanban States
+## Kanban Columns
 
 Every task lives in one of three columns:
 
-| Column | Icon | Meaning |
-|--------|------|---------|
-| **To Do** | Circle | Task is queued but not started |
-| **In Progress** | Half-filled circle | Actively being worked on |
-| **Done** | Checkmark | Completed |
+| Column | Meaning | Time shown |
+|--------|---------|-----------|
+| **Todo** | Queued but not started | — |
+| **In Progress** | Actively being worked on | Elapsed time since started (e.g. "3h", "2d") |
+| **Done** | Completed | Time since completion (e.g. "5m ago", "1d ago") |
 
-### Changing State
+### Moving Tasks Between Columns
 
-You can move tasks between columns in two ways:
+<Tabs>
+<TabItem label="Desktop">
+- **Drag and drop** — grab any task card and drop it into another column. You can also reorder tasks within a column by dragging.
+- **Context menu** — not applicable; use drag-and-drop on desktop.
+</TabItem>
+<TabItem label="Mobile">
+- **Arrow buttons** — each task card shows left/right arrow buttons at the bottom. Tap the right arrow to advance the task (Todo → In Progress → Done) or the left arrow to move it back.
+- **Swipe between columns** — swipe left or right to navigate between the three columns. A colored indicator bar at the top shows which column you are viewing.
+</TabItem>
+</Tabs>
 
-- **Drag and drop** — click and drag a task card to another column
-- **Context menu** — click the three-dot menu on a task card and select the target state
+When a task moves to **In Progress**, PraxisNote records the start timestamp. When it moves to **Done**, the completion timestamp is recorded so you can track when work was finished.
 
-When a task moves to **Done**, it records the completion timestamp so you can track when work was finished.
+## Creating Tasks
+
+You can create a task in any column:
+
+<Steps>
+1. Click the **+** button at the top of the desired column.
+2. An inline text field appears at the top of the column.
+3. Type a title and press **Enter** to save, or **Escape** to cancel.
+</Steps>
+
+On desktop, pressing **N** (when not in a text field) opens the inline creation field in the **Todo** column.
+
+:::note[Tasks from other features]
+Tasks can also be created automatically:
+- **From notes** — promote a checkbox item in a note to a task on the kanban board.
+- **From meetings** — promote an AI-extracted action item to a task.
+
+These tasks display a **source origin pill** on the card linking back to the originating note or meeting.
+:::
+
+## Editing Tasks
+
+Click on a task's title text to edit it inline. Press **Enter** to save or **Escape** to cancel. Use **Shift+Enter** to insert a line break within the title.
+
+## Task Card Anatomy
+
+Each task card contains several interactive elements:
+
+| Element | Location | Description |
+|---------|----------|-------------|
+| **Priority flag** | Left of title | Click to toggle priority on/off. Flagged tasks show a filled red flag. |
+| **Title** | Center | Click to edit inline. Done tasks show strikethrough text. |
+| **Delete button** | Right of title | Appears on hover (desktop) or always visible (mobile). Click once to reveal a confirm button, click again to delete. |
+| **Time label** | Right of title | Shows elapsed time (In Progress) or completion time (Done). Hidden on hover when the delete button appears. |
+| **Tags row** | Below title | Shows tag chips. Click **+** to add a tag. Tags overflow shows a "+N" badge you can click to expand. |
+| **Due Date tab** | Bottom row | Circle icon. Click to expand the date picker. Shows colored badge when a date is set. |
+| **Comments tab** | Bottom row | Speech-bubble icon with badge count. Click to expand the comments section. |
+| **Tags tab** | Bottom row | Tag icon (shown only when no tags exist yet). Click to add the first tag. |
+| **Source pill** | Bottom row | Shows the originating meeting or note (if the task was promoted). Click to navigate to the source. |
+| **Mobile arrows** | Bottom-right (mobile only) | Left/right arrows to move the task between columns. |
 
 ## Priority
 
-Set priority to surface your most important work. Tasks within each column are sorted by priority.
+Priority is a simple on/off flag. Click the flag icon on the left side of any task card to toggle it.
 
-| Priority | Color | When to Use |
-|----------|-------|-------------|
-| **Critical** | Red | Blocking issues, urgent deadlines |
-| **High** | Orange | Important work, do this week |
-| **Medium** | Blue | Normal priority (default) |
-| **Low** | Gray | Nice to have, backlog items |
+- **Flagged tasks** display a filled red flag icon and sort to the top of their column (when using priority sort).
+- **Unflagged tasks** display a faint outline flag icon.
 
-### Setting Priority
+:::tip[Use priority sparingly]
+If everything is a priority, nothing is. Reserve the flag for tasks that genuinely need immediate attention.
+:::
 
-<Steps>
-1. Click the three-dot menu on any task card.
-2. Select **Priority** from the menu.
-3. Choose the desired priority level.
-</Steps>
+## Sort Modes
+
+Each column has an independent sort control. Click the **sort icon** in the column header to choose:
+
+| Sort Mode | Description |
+|-----------|-------------|
+| **Manual order** | Default. Drag tasks to arrange them in any order you want. |
+| **Due date** | Tasks with the earliest due date appear first. Tasks without a due date appear at the end. |
+| **Priority** | Flagged (priority) tasks appear first, followed by unflagged tasks. |
+
+The sort icon highlights when a non-manual sort is active so you can tell at a glance.
 
 ## Due Dates
 
-Add a due date to any task to track deadlines. Tasks with approaching or overdue due dates are visually highlighted.
-
-| Status | Visual Indicator |
-|--------|-----------------|
-| **Overdue** | Red text and badge |
-| **Due today** | Orange/amber highlight |
-| **Due tomorrow** | Yellow highlight |
-| **Upcoming** | Normal display with date shown |
+Add a due date to track deadlines. The due date tab on each task card lets you pick or clear a date.
 
 ### Setting a Due Date
 
 <Steps>
-1. Click the three-dot menu on a task card.
-2. Select **Due Date**.
-3. Pick a date from the calendar picker.
-4. The due date appears on the task card.
+1. Click the **calendar icon** (due date tab) on a task card.
+2. The date picker panel expands inline.
+3. Select a date from the calendar.
+4. The due date badge appears on the tab with color coding.
 </Steps>
 
-<Aside type="note">
+### Visual Indicators
+
+| Status | Appearance |
+|--------|------------|
+| **Overdue** | Red text and badge |
+| **Due today** | Orange/amber highlight |
+| **Due tomorrow** | Yellow highlight |
+| **Upcoming** | Normal display with date text |
+
+:::note
 Due dates are displayed relative to today. A task due tomorrow shows "Tomorrow" instead of the full date, making it easy to scan for urgent items.
-</Aside>
+:::
+
+### Clearing a Due Date
+
+Open the date picker and click **Clear** to remove the due date.
 
 ## Comments
 
-Add comments to tasks for context, updates, or discussion notes.
+Add comments to tasks for context, progress updates, or discussion notes.
 
 <Steps>
-1. Click on a task card to open its detail view.
-2. Type your comment in the text field at the bottom.
-3. Press **Enter** or click the send button.
-4. Comments appear in chronological order with timestamps.
+1. Click the **comments tab** (speech bubble icon) on a task card.
+2. The comments section expands below the task.
+3. Type your comment and press **Enter** to post.
+4. Comments appear in reverse chronological order (newest first) with timestamps.
 </Steps>
 
-Comments support plain text. Each comment shows who wrote it and when.
+- **Edit** — click on a comment's text to edit it inline.
+- **Delete** — click the trash icon on a comment. A toast appears with an **Undo** button (5-second window).
+
+:::tip
+The comments badge on the tab shows the count of comments even when the section is collapsed, so you can see at a glance which tasks have discussion.
+:::
 
 ## Tags
 
-Tags let you categorize tasks and filter across your entire workspace. The same tags work on notes and meetings too.
+Tags let you categorize tasks across your entire workspace. The same tags work on notes and meetings too.
 
-### Adding Tags to a Task
+### Adding Tags
 
 <Steps>
-1. Click the three-dot menu on a task card.
-2. Select **Tags**.
-3. Type a tag name and press **Enter** to create or apply it.
-4. Applied tags appear as colored chips on the task card.
+1. Click the **+** button in the tags row, or click the **tag icon tab** if no tags exist yet.
+2. A search input appears inline on the task card.
+3. Type to filter existing tags, or type a new name and press **Enter** to create and apply it.
+4. The tag appears as a colored chip on the card.
 </Steps>
 
-### Filtering by Tag
+### Removing Tags
 
-Use the search bar at the top of the Tasks page to filter by tag. Click any tag chip to filter the board to only tasks with that tag.
+Click the **×** button on any tag chip to remove it from the task.
+
+### Tag Overflow
+
+When a task has more than 3 tags, a **+N** badge appears. Click it to expand and see all tags. Click **Less** to collapse.
 
 ## Search
 
-The search bar at the top of the Tasks page filters tasks across all columns in real time. Search matches against:
+The search bar at the top of the Tasks page filters tasks across all three columns in real time. Search matches against task titles.
 
-- Task title
-- Tag names
+| Shortcut | Action |
+|----------|--------|
+| `/` | Focus the search bar (desktop only, when not in a text field) |
+| `Escape` | Clear search and blur the search bar |
 
-As you type, task cards that don't match are hidden, making it easy to find specific items.
+The result count appears to the right of the search input (e.g. "3 results").
 
-## Drag and Drop
+:::caution
+Drag-and-drop is disabled while a search filter is active. Clear the search to re-enable reordering.
+:::
 
-Task cards support drag-and-drop between columns. Grab any card and move it to a different column to change its state. The order within each column reflects priority.
+## Archive
 
-<Aside type="tip">
-On mobile devices, you can use the context menu to change task state since drag-and-drop requires a pointer device.
-</Aside>
+The **Done** column offers an archive view for reviewing older completed tasks.
 
-## Tips
+<Steps>
+1. Look for the **archive toggle** in the Done column header.
+2. Click it to switch between **Done** (recent completions) and **Archive** (all completed tasks).
+3. Toggle back to return to the normal Done view.
+</Steps>
 
-- **Batch process**: Review your To Do column at the start of each day. Move items to In Progress to commit to working on them.
-- **Use tags consistently**: Create a small set of project or area tags and apply them to tasks, notes, and meetings for cross-feature filtering.
-- **Set due dates sparingly**: Not every task needs a due date. Reserve them for tasks with real deadlines to avoid due-date fatigue.
-- **Archive done tasks**: Periodically review your Done column. Completed tasks remain visible until you clear them.
+The archive count badge shows how many total completed tasks exist.
+
+## Deleting Tasks
+
+<Steps>
+1. Hover over a task card (desktop) or locate the trash icon (mobile).
+2. Click the trash icon — it changes to a red **confirm** button with a countdown.
+3. Click the confirm button to delete.
+4. A toast notification appears with an **Undo** button. You have 5 seconds to restore the task.
+</Steps>
+
+:::tip[Undo safety net]
+All task and comment deletions support undo. If you accidentally delete something, click **Undo** in the toast notification to restore it instantly.
+:::
+
+## Keyboard Shortcuts
+
+| Shortcut | Context | Action |
+|----------|---------|--------|
+| `N` | Tasks page (not in a text field) | Start creating a new task in the Todo column |
+| `/` | Tasks page (not in a text field) | Focus the search bar |
+| `Escape` | Search bar | Clear search and unfocus |
+| `Enter` | Inline task creation | Save the new task |
+| `Escape` | Inline task creation | Cancel creation |
+| `Enter` | Inline task editing | Save the edited title |
+| `Escape` | Inline task editing | Cancel editing |
+
+## Tips & Best Practices
+
+:::tip[Daily review]
+Review your **Todo** column at the start of each day. Move items to **In Progress** to commit to working on them — this starts the elapsed timer so you can track how long tasks take.
+:::
+
+:::tip[Cross-feature tags]
+Create a small set of project or area tags (e.g. "Q1 Launch", "Backend", "Design Review") and apply them consistently to tasks, notes, and meetings. You can then use the **Tag Hub** to see everything related to a project in one place.
+:::
+
+:::tip[Due dates for real deadlines]
+Not every task needs a due date. Reserve them for tasks with real deadlines to avoid due-date fatigue. Use the **due date sort** to surface upcoming deadlines.
+:::
+
+:::tip[Source tracking]
+When you promote a checkbox from a note or an action item from a meeting, the resulting task keeps a link back to its source. Click the source pill on the task card to jump back to the original context.
+:::
