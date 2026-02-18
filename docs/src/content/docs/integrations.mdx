@@ -1,6 +1,6 @@
 ---
 title: Integrations
-description: Connect Google Calendar and Jira to enhance your PraxisNote workflow
+description: Connect Google Calendar, Jira, and MCP-compatible AI assistants to enhance your PraxisNote workflow
 ---
 
 import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
@@ -141,6 +141,109 @@ Existing Jira chips in your notes remain visible but won't update if the issue c
 | **"No accessible Jira sites found"** | Your Atlassian account may not have access to any Jira Cloud instances. Check your Atlassian account settings. |
 | **Chip shows "Loading..." indefinitely** | The issue may have been deleted or you may have lost access. Check the URL is still valid in Jira. |
 | **Pasted URL not converting to chip** | Make sure Jira is connected (check Settings). The URL must be a valid Jira Cloud URL in the format `https://[org].atlassian.net/browse/[KEY-123]`. |
+
+## MCP Server (AI Assistants)
+
+PraxisNote includes a built-in [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that lets AI assistants like Claude Code, Cursor, and other MCP-compatible tools read and write your PraxisNote data directly.
+
+### What It Enables
+
+Once connected, an AI assistant can:
+- **Read** your tasks, notes, meetings, and tags
+- **Create** new tasks, notes, and meetings
+- **Update** existing items (mark tasks complete, edit note content, etc.)
+- **Search** across your data to answer questions or generate summaries
+
+All operations respect your active profile and authentication, so the AI only accesses data you have permission to see.
+
+### Creating an API Key
+
+<Steps>
+1. Go to **Settings** from the sidebar.
+2. Scroll down to the **API Keys** section.
+3. Click **New API Key**.
+4. Enter a descriptive name (e.g., "Claude Code" or "Cursor").
+5. Optionally select an expiry period (30 days, 90 days, 1 year, or never).
+6. Click **Create**.
+7. **Copy the key immediately** — it starts with `pn_` and will only be shown once.
+</Steps>
+
+:::caution[Save your key]
+The raw API key is displayed only once when you create it. If you lose it, you'll need to revoke the old key and create a new one.
+:::
+
+### Configuring MCP Clients
+
+The MCP endpoint URL and API key are displayed in the **API Keys** section of Settings. Use them to configure your MCP client.
+
+<Tabs>
+<TabItem label="Claude Code">
+Add to your `claude_desktop_config.json` (or project-level `.mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "praxisnote": {
+      "type": "url",
+      "url": "https://app.praxisnote.app/mcp",
+      "headers": {
+        "Authorization": "Bearer pn_your_api_key_here"
+      }
+    }
+  }
+}
+```
+</TabItem>
+<TabItem label="Cursor">
+Add to your `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "praxisnote": {
+      "type": "url",
+      "url": "https://app.praxisnote.app/mcp",
+      "headers": {
+        "Authorization": "Bearer pn_your_api_key_here"
+      }
+    }
+  }
+}
+```
+</TabItem>
+<TabItem label="Other Clients">
+Use these connection details with any MCP-compatible client:
+
+- **Endpoint URL:** `https://app.praxisnote.app/mcp` (shown in Settings)
+- **Authentication:** Bearer token in the `Authorization` header
+- **Token format:** `Bearer pn_your_api_key_here`
+</TabItem>
+</Tabs>
+
+### Security
+
+- API keys are **hashed** before storage — PraxisNote never stores the raw key
+- Each key is scoped to your **user account** and **active profile**
+- You can create up to **5 active keys** per account
+- Keys can be **revoked** at any time from Settings, taking effect immediately
+- Optional **expiry dates** automatically disable keys after the chosen period
+
+### Managing Keys
+
+From the **API Keys** section in Settings you can:
+- **View** all active keys with their name, prefix, creation date, and last-used timestamp
+- **Copy** the MCP endpoint URL with one click
+- **Revoke** any key by clicking the trash icon and confirming
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| **"Unauthorized" or "Invalid API key"** | Verify the key starts with `pn_` and is copied correctly. Check that you're using `Bearer` (with a space) before the key. |
+| **Key expired** | Create a new key from Settings. Expired keys cannot be reactivated. |
+| **"Rate limited" (429 error)** | The MCP server has rate limits to prevent abuse. Wait a moment and retry. |
+| **Wrong data showing** | The API key is tied to the profile that was active when the key was created. Create a new key while the desired profile is active. |
+| **"Maximum number of API keys reached"** | Revoke unused keys first. The limit is 5 active keys per account. |
 
 ## Screenshot Import
 
