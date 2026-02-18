@@ -826,6 +826,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   createApiKey(): void {
+    if (this.apiKeyService.creating()) return;
     const name = this.newKeyName().trim();
     if (!name) return;
 
