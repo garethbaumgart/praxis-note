@@ -38,6 +38,7 @@ PraxisNote is evolving into a note-first task management system. The vision: wri
 - ✅ **Multi-Profile Support** - Separate data contexts (e.g., Work, Personal) with sidebar profile switcher, per-profile data isolation, and account linking via temporary codes
 - ✅ **MCP Server** - Embedded Model Context Protocol server at `/mcp` for OpenClaw and other MCP clients, with personal API key authentication and read/write access to tasks, notes, meetings, and tags
 - ✅ **Jira Integration** - Connect Jira Cloud via OAuth and paste issue URLs in notes to render rich inline chips with issue type, key, summary, and status badge
+- ✅ **Meeting Notes** - Embedded TipTap rich text editor in meetings with lazy note creation, auto-save, one-directional tag sync from meeting to note, and meeting badge on linked notes
 
 ✅ = Implemented | 🚧 = Planned
 
