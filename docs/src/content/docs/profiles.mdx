@@ -1,24 +1,174 @@
 ---
 title: Profiles
-description: Multi-profile support and account linking
+description: Multi-profile support for separate workspaces and account linking
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-<Aside type="note">
-This page is under construction. Check back soon for detailed documentation.
-</Aside>
+PraxisNote supports multiple profiles, allowing you to maintain separate workspaces for different contexts. Each profile has its own tasks, notes, meetings, tags, and insights — completely isolated from other profiles.
 
-## Overview
+## Getting Started
 
-PraxisNote supports multiple profiles, allowing you to maintain separate workspaces for different contexts (e.g., work and personal). You can also link accounts so multiple sign-in methods access the same data.
+When you first sign in, PraxisNote creates a default profile for you. You can start using it immediately or create additional profiles for different contexts.
 
-## Key Capabilities
+<Steps>
+1. Open **Settings** from the sidebar (gear icon).
+2. The **Profiles** section shows your current profiles.
+3. Click **New Profile** to add a workspace.
+4. Enter a name and optionally choose an icon.
+5. Click **Save** — the new profile appears in the list.
+</Steps>
 
-- Create and switch between multiple profiles
-- Link additional accounts to your primary profile
-- Generate link codes for connecting accounts across devices
-- Profile-specific data isolation (tasks, notes, meetings stay separate)
-- Quick profile switcher in the sidebar
+## Understanding Profiles
 
-{/* TODO: Expand with full documentation covering profile creation, switching, account linking via link codes, and data isolation between profiles */}
+### Data Isolation
+
+Each profile is a completely separate workspace:
+
+| What's isolated | Meaning |
+|----------------|---------|
+| **Tasks** | Each profile has its own kanban board |
+| **Notes** | Notes are only visible within their profile |
+| **Meetings** | Meeting recordings, transcripts, and analysis are per-profile |
+| **Tags** | Tags are scoped to the profile — a tag named "backend" in your Work profile is separate from "backend" in your Personal profile |
+| **Insights** | Behavioral analytics are calculated per profile |
+
+:::note
+Switching profiles switches your entire workspace. You won't see tasks from your Work profile when viewing your Personal profile, and vice versa.
+:::
+
+### Use Cases
+
+Common reasons to create multiple profiles:
+
+- **Work vs. Personal** — keep professional tasks and meeting notes separate from personal items
+- **Different teams or clients** — maintain separate workspaces for different projects or clients
+- **Experimentation** — create a sandbox profile to try features without affecting your main data
+
+### Profile Limit
+
+You can create up to **5 profiles** per account. The "New Profile" button is disabled when you reach this limit.
+
+## Creating a Profile
+
+<Steps>
+1. Go to **Settings**.
+2. Click **New Profile**.
+3. In the dialog, enter a **profile name** (e.g., "Work", "Personal", "Side Project").
+4. Optionally select an **icon** to visually distinguish the profile.
+5. Click **Save**.
+</Steps>
+
+The new profile appears in the profiles list on the Settings page.
+
+## Switching Profiles
+
+Switch between profiles using the **profile switcher** in the sidebar:
+
+<Steps>
+1. Look for your current profile name/icon in the sidebar.
+2. Click it to open the profile switcher.
+3. Select the profile you want to switch to.
+4. The entire workspace reloads with the selected profile's data.
+</Steps>
+
+:::tip[Quick visual cues]
+Choose distinct icons for each profile so you can tell at a glance which workspace you're in. The active profile's icon appears in the sidebar.
+:::
+
+## Editing a Profile
+
+<Steps>
+1. Go to **Settings**.
+2. On the profile card, click the **edit button** (pencil icon).
+3. Change the name or icon.
+4. Click **Save**.
+</Steps>
+
+## Deleting a Profile
+
+<Steps>
+1. Go to **Settings**.
+2. On the profile card you want to remove, click the **delete button** (trash icon).
+3. A confirmation dialog appears warning that this cannot be undone.
+4. Click **Delete** to permanently remove the profile and all its data.
+</Steps>
+
+:::caution[Permanent deletion]
+Deleting a profile permanently removes **all** tasks, notes, meetings, tags, and insights within that profile. This cannot be undone.
+:::
+
+:::note
+You cannot delete your currently active profile. Switch to a different profile first, then delete the one you want to remove.
+:::
+
+## Default Profile
+
+One profile is marked as the **default** — this is the profile that loads when you sign in. The default profile shows a badge on its card in Settings.
+
+## Linked Accounts
+
+Linked Accounts let you sign in from multiple Google or OAuth accounts and access the same PraxisNote data.
+
+### Why Link Accounts?
+
+- Sign in from your **work Google account** and your **personal Google account**
+- Access the same profiles and data regardless of which account you use to sign in
+- Share access across devices that use different sign-in methods
+
+### Viewing Linked Accounts
+
+Go to **Settings** and scroll to the **Linked Accounts** section. Each linked identity shows:
+- **Provider** (e.g., Google)
+- **Email address**
+- **Name**
+- **Avatar** (if available)
+- **Linked date**
+
+### Linking a New Account
+
+<Steps>
+1. Go to **Settings**.
+2. In the Linked Accounts section, click **Link Another Account**.
+3. A link panel appears with instructions.
+4. **Generate a link code** on your current account.
+5. Sign in to PraxisNote with the other account (in a different browser or incognito window).
+6. Enter the link code on that account.
+7. The accounts are now linked — both can access the same data.
+</Steps>
+
+:::tip[Cross-device linking]
+If you sign in with different accounts on different devices (e.g., work laptop vs. personal phone), linking them ensures you see the same data everywhere.
+:::
+
+### Unlinking an Account
+
+<Steps>
+1. Go to **Settings** > **Linked Accounts**.
+2. Find the identity you want to unlink.
+3. Click **Unlink**.
+4. A confirmation dialog appears warning that you'll no longer be able to sign in with that account.
+5. Click **Unlink** to confirm.
+</Steps>
+
+:::caution
+You must keep at least one linked account. The unlink button is disabled if you only have one identity — otherwise you'd lock yourself out.
+:::
+
+## Tips & Best Practices
+
+:::tip[Start with two profiles]
+Most people find two profiles sufficient: **Work** and **Personal**. Only create additional profiles if you have genuinely separate contexts that would benefit from data isolation.
+:::
+
+:::tip[Link accounts early]
+If you sign in from multiple devices with different accounts, link them as soon as possible. This prevents accidentally creating separate data silos.
+:::
+
+:::tip[Use distinct icons]
+Give each profile a different icon to make the sidebar profile switcher immediately recognizable. This prevents accidentally adding work items to your personal profile.
+:::
+
+:::tip[Review profile usage periodically]
+If you have profiles you haven't used in months, consider deleting them to keep things tidy. Remember: deletion is permanent and removes all data in that profile.
+:::
