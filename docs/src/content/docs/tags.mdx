@@ -1,24 +1,177 @@
 ---
 title: Tags & Tag Hub
-description: Unified tag system across tasks, notes, and meetings
+description: Unified tag system across tasks, notes, and meetings with a central management hub
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-<Aside type="note">
-This page is under construction. Check back soon for detailed documentation.
-</Aside>
+Tags in PraxisNote work across all features — tasks, notes, and meetings share the same tag system. Create a tag once and apply it anywhere. The **Tag Hub** gives you a bird's-eye view of all your tags and everything associated with them.
 
-## Overview
+## Getting Started
 
-Tags in PraxisNote work across all features. Create a tag once and apply it to tasks, notes, and meetings. The Tag Hub gives you a bird's-eye view of all your tags and where they're used.
+Tags are created inline where you use them:
 
-## Key Capabilities
+<Steps>
+1. Open any **task**, **note**, or **meeting**.
+2. Click the tag area (tag icon, "Add tag" button, or **+** in the tags row).
+3. Type a tag name — if it exists, select it from the dropdown. If it's new, press **Enter** to create it.
+4. The tag appears as a colored chip on the item.
+</Steps>
 
-- Create and apply tags to tasks, notes, and meetings
-- Tag Hub page showing all tags with usage counts
-- Filter any feature by tag to find related items
-- Rename or delete tags from the Tag Hub
-- Color-coded tag chips for visual identification
+Once a tag exists, it's available across all features. Apply it to related tasks, notes, and meetings to create cross-cutting project views.
 
-{/* TODO: Expand with full documentation covering tag creation, the Tag Hub interface, filtering, renaming/deleting, and best practices for tag organization */}
+:::tip[Naming conventions]
+Use lowercase, short tag names. Common patterns:
+- **Projects:** `q1-launch`, `redesign`, `onboarding`
+- **Areas:** `backend`, `design`, `marketing`
+- **Status/type:** `blocker`, `follow-up`, `idea`
+:::
+
+## Adding Tags
+
+Tags can be added from three places:
+
+| Feature | Where to add |
+|---------|-------------|
+| **Tasks** | Click the **+** button in the tags row on the task card, or click the tag icon tab at the bottom |
+| **Notes** | Click **"Add tag"** in the footer bar of the note editor |
+| **Meetings** | Click the tag area in the meeting editor's details section |
+
+In all cases, a search input appears. Type to filter existing tags or create a new one. The dropdown shows tag names with their usage counts to help you pick the right tag.
+
+### Creating a New Tag
+
+If the text you typed doesn't match any existing tag, a **"Create [name]"** option appears at the bottom of the dropdown. Click it or press **Enter** to create the tag and immediately apply it.
+
+:::note
+Tag names are normalized to lowercase. Creating "Backend" and "backend" results in the same tag.
+:::
+
+### Removing Tags
+
+Click the **x** button on any tag chip to remove it from that item. The tag itself is not deleted — it still exists and can be applied to other items.
+
+## Tag Hub
+
+The Tag Hub is a central page for browsing and managing all your tags. Open it from the **Tag Hub** link in the sidebar.
+
+### Selecting a Tag
+
+The Tag Hub features a dropdown selector at the top:
+
+<Steps>
+1. Click the **tag selector dropdown**.
+2. Use the built-in filter to search by name.
+3. Each tag in the dropdown shows its name and total usage count.
+4. Select a tag to view all items associated with it.
+</Steps>
+
+A summary line below the selector shows the breakdown: e.g., "3 meetings · 5 notes · 2 tasks".
+
+### Browsing Tagged Items
+
+Once a tag is selected, all associated items appear in a chronological list grouped by date:
+
+| Date Group | Contents |
+|-----------|----------|
+| **This Week** | Items from Monday of the current week onward |
+| **Last Week** | Items from the previous week |
+| **This Month** | Items from earlier in the current month |
+| **Earlier** | Everything older |
+
+Each item shows:
+- **Type icon** — colored badge (purple for meetings, green for notes, blue for tasks)
+- **Title** — the item name
+- **Metadata** — varies by type:
+  - Meetings: date and attendee count
+  - Notes: "Updated X ago"
+  - Tasks: status badge (Todo, In Progress, Done), priority dot, due date
+- **Relative date** — when the item was created/updated
+
+### Navigating to Items
+
+- **Click** an item row to navigate to it
+- **Open in new tab** — click the external link icon (hover-revealed on desktop, always visible on mobile)
+
+## Managing Tags
+
+Each tag in the dropdown has a **three-dot action menu** with these options:
+
+### Rename
+
+<Steps>
+1. In the tag selector dropdown, hover over a tag and click the **three-dot menu**.
+2. Select **Rename**.
+3. An inline text field appears with the current name.
+4. Edit the name and press **Enter** to save, or **Escape** to cancel.
+</Steps>
+
+Renaming a tag updates it everywhere — all tasks, notes, and meetings that use the tag immediately show the new name.
+
+### Merge Tags
+
+Merge combines two tags into one, transferring all associations from the source tag to the target.
+
+<Steps>
+1. Click the **three-dot menu** on the tag you want to merge away (the source).
+2. Select **Merge into...**.
+3. A dialog opens — choose the **target tag** (the one that will remain).
+4. The dialog shows a preview of what will happen:
+   - Source tag item counts (tasks, notes, meetings)
+   - Target tag item counts
+   - Resulting counts after merge
+   - Overlap count (items that already have both tags)
+5. Click **Merge** to confirm. The source tag is deleted and its associations move to the target.
+</Steps>
+
+:::caution
+Merge cannot be undone. The source tag is permanently deleted. All items that had the source tag will now have the target tag instead.
+:::
+
+### Delete Tag
+
+<Steps>
+1. Click the **three-dot menu** on the tag you want to delete.
+2. Select **Delete**.
+3. A confirmation dialog shows which items will be affected (e.g., "3 meetings · 2 notes · 1 task").
+4. Click **Delete tag** to confirm.
+</Steps>
+
+Deleting a tag removes it from all associated items. The items themselves are not deleted.
+
+:::caution
+Tag deletion cannot be undone.
+:::
+
+## AI Chat
+
+When a tag is selected and has associated items, an **Ask AI** button appears. Click it to open an inline AI chat panel where you can ask questions about the items tagged with the selected tag.
+
+For example, if you select a project tag, you can ask:
+- "Summarize the key decisions from recent meetings"
+- "What tasks are still outstanding?"
+- "What are the main themes across these notes?"
+
+The AI has context about all items with the selected tag and can provide synthesized answers.
+
+## Tips & Best Practices
+
+:::tip[Keep your tag set small]
+A handful of well-chosen tags (5-15) is more useful than dozens of rarely-used ones. If you have too many tags, use **Merge** to consolidate similar ones.
+:::
+
+:::tip[Tag consistently across features]
+The real power of tags emerges when you apply them across tasks, notes, and meetings. Tag a meeting with "q1-launch", then tag the follow-up tasks and related notes with the same tag. The Tag Hub then shows your complete project view.
+:::
+
+:::tip[Use AI Chat for project reviews]
+Select a project tag and use AI Chat to get a quick summary of where things stand — what was discussed in meetings, what tasks are pending, and what's been documented in notes.
+:::
+
+:::tip[Merge instead of rename for synonyms]
+If you discover two tags that mean the same thing (e.g., "backend" and "server"), use **Merge** rather than deleting one. Merge preserves all associations from both tags.
+:::
+
+:::tip[Clean up unused tags]
+Periodically visit the Tag Hub and check for tags with zero usage counts. Delete these to keep your tag list clean and the dropdown easy to navigate.
+:::
