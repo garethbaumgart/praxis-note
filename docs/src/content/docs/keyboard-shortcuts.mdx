@@ -1,22 +1,138 @@
 ---
 title: Keyboard Shortcuts
-description: Speed up your workflow with keyboard shortcuts
+description: Complete keyboard shortcut reference for PraxisNote
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="note">
-This page is under construction. Check back soon for a complete keyboard shortcut reference.
-</Aside>
-
-## Overview
-
 PraxisNote supports keyboard shortcuts for common actions so you can navigate and operate the app without reaching for your mouse.
 
-## Key Shortcuts
+:::note[Modifier key]
+Throughout this page, **Mod** refers to:
+- **Cmd** (⌘) on macOS
+- **Ctrl** on Windows and Linux
 
-- **Escape** — close dialogs, cancel actions, dismiss menus
-- **Enter** — confirm actions, submit forms
-- **Tab** — navigate between interactive elements
+For example, "Mod+B" means Cmd+B on Mac or Ctrl+B on Windows/Linux.
+:::
 
-{/* TODO: Expand with a comprehensive table of all keyboard shortcuts organized by feature (global, tasks, notes, meetings) */}
+## Global
+
+These shortcuts work throughout the application.
+
+| Shortcut | Action |
+|----------|--------|
+| `Escape` | Close dialogs, dismiss menus, cancel actions |
+| `Enter` | Confirm actions, submit forms |
+| `Tab` | Navigate between interactive elements |
+
+## Tasks Page
+
+| Shortcut | Context | Action |
+|----------|---------|--------|
+| `N` | Not in a text field | Create a new task in the Todo column |
+| `/` | Not in a text field | Focus the search bar |
+| `Escape` | In the search bar | Clear search and unfocus |
+| `Enter` | Inline task creation | Save the new task |
+| `Escape` | Inline task creation | Cancel without saving |
+| `Enter` | Inline task editing | Save the edited title |
+| `Shift+Enter` | Inline task editing | Insert a line break in the title |
+| `Escape` | Inline task editing | Cancel editing |
+| `Escape` | Expanded task sections | Close due date, comments, or tags panel |
+
+## Notes List
+
+| Shortcut | Context | Action |
+|----------|---------|--------|
+| `N` | Not in a text field | Create a new note |
+| `/` | Not in a text field | Focus the search bar |
+| `Escape` | In the search bar | Clear search and unfocus |
+
+## Note Editor
+
+### Saving & Navigation
+
+| Shortcut | Action |
+|----------|--------|
+| Mod+S | Save immediately (normally auto-saves with 1s debounce) |
+| Escape | Navigate back to notes list (when not in editor content) |
+
+### Text Formatting
+
+| Shortcut | Action |
+|----------|--------|
+| Mod+B | **Bold** |
+| Mod+I | *Italic* |
+| Mod+U | Underline |
+| Mod+Shift+X | ~~Strikethrough~~ |
+| Mod+Z | Undo |
+| Mod+Shift+Z | Redo |
+
+### Block Types
+
+| Shortcut | Action |
+|----------|--------|
+| Mod+Alt+1 | Heading 1 |
+| Mod+Alt+2 | Heading 2 |
+| Mod+Alt+3 | Heading 3 |
+| Mod+Shift+7 | Numbered list |
+| Mod+Shift+8 | Bullet list |
+| Mod+Shift+9 | Task list (checkboxes) |
+| Mod+Shift+B | Blockquote |
+| Mod+Alt+C | Code block |
+
+### Insert
+
+| Shortcut | Action |
+|----------|--------|
+| Mod+Shift+D | Insert today's date as inline chip |
+| `/` | Open slash command menu |
+
+### Slash Commands
+
+Type `/` followed by a command name or alias:
+
+| Type | Alias | Result |
+|------|-------|--------|
+| `/h1` | Heading 1 | Heading 1 |
+| `/h2` | Heading 2 | Heading 2 |
+| `/h3` | Heading 3 | Heading 3 |
+| `/ul` or `/bullets` | Bullet List | Bullet list |
+| `/ol` or `/numbers` | Numbered List | Numbered list |
+| `/task` or `/checklist` | Task List | Checkbox list |
+| `/toggle` or `/collapse` or `/details` | Toggle Section | Collapsible section |
+| `/quote` or `/bq` | Blockquote | Quote block |
+| `/code` or `/cb` | Code Block | Code block |
+| `/table` | Table | 3x3 table |
+| `/img` or `/pic` | Image | Image by URL |
+| `/hr` or `/line` or `/separator` | Divider | Horizontal rule |
+| `/date` | Date | Today's date chip |
+| `/today` | Today | Today's date chip |
+| `/tomorrow` | Tomorrow | Tomorrow's date chip |
+| `/jira` or `/issue` or `/ticket` | Jira Link | Jira issue chip |
+
+## Meeting Editor
+
+| Shortcut | Context | Action |
+|----------|---------|--------|
+| Escape | Not in a text field | Navigate back to meetings list |
+
+## Tag Hub
+
+| Shortcut | Context | Action |
+|----------|---------|--------|
+| Enter | Renaming a tag | Save the new name |
+| Escape | Renaming a tag | Cancel rename |
+
+## Tips
+
+:::tip[Learn the slash command aliases]
+Slash commands are the fastest way to format content. Memorize the short aliases — `/h1`, `/ul`, `/task`, `/code`, `/hr` — and you'll rarely need the toolbar.
+:::
+
+:::tip[The search shortcut]
+On both the Tasks and Notes pages, pressing `/` when not in a text field focuses the search bar. This is the fastest way to find items.
+:::
+
+:::tip[Mod key display]
+In the note editor, slash commands display their keyboard shortcut in the menu using platform-native symbols: ⌘ for Cmd on Mac, Ctrl+ on Windows/Linux.
+:::
