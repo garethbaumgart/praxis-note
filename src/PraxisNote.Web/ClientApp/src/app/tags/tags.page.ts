@@ -614,12 +614,19 @@ export class TagsPage implements OnInit, OnDestroy {
   }
 
   navigateToItem(item: TagItemDto): void {
-    this.router.navigate([this.itemUrl(item)]);
+    if (item.type === 'Task') {
+      this.router.navigate(['/tasks'], { queryParams: { highlight: item.id } });
+    } else {
+      this.router.navigate([this.itemUrl(item)]);
+    }
   }
 
   openInNewTab(item: TagItemDto, event: Event): void {
     event.stopPropagation();
-    window.open(this.itemUrl(item), '_blank', 'noopener,noreferrer');
+    const url = item.type === 'Task'
+      ? `/tasks?highlight=${encodeURIComponent(item.id)}`
+      : this.itemUrl(item);
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   formatMeetingMeta(item: TagItemDto): string {
