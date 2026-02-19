@@ -27,6 +27,8 @@ import { MeetingTranscriptSectionComponent } from './meeting-transcript-section.
 import { AudioRecorderService } from './audio-recorder.service';
 import { DeepgramTranscriptionService } from './deepgram-transcription.service';
 import { ToastService } from '../shared/services/toast.service';
+import { NoteService } from '../notes/note.service';
+import { CheckboxStatus } from '../notes/note.model';
 import { BreadcrumbItem, ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { TagService } from '../tags/tag.service';
 import { Tag } from '../tags/tag.model';
@@ -199,8 +201,10 @@ interface DateOption {
                     [initialContent]="meetingNoteInitialContent()"
                     [expandable]="false"
                     [resetTrigger]="noteResetCounter()"
+                    [checkboxStatuses]="meetingNoteCheckboxStatuses()"
                     placeholder="Start typing your meeting notes..."
                     (contentChange)="onNoteContentChange($event)"
+                    (promoteCheckbox)="onNotePromoteCheckbox($event)"
                   />
                 }
               </app-meeting-section>
@@ -339,6 +343,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly injector = inject(Injector);
   private readonly deleteConfirmation = inject(DeleteConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly noteService = inject(NoteService);
   readonly recorder = inject(AudioRecorderService);
   readonly transcription = inject(DeepgramTranscriptionService);
 
@@ -387,6 +392,9 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   readonly noteResetCounter = signal(0);
   private noteCreated = false;
   private isCreatingNote = false;
+
+  // Meeting note checkbox status (for promote-to-task feature)
+  readonly meetingNoteCheckboxStatuses = signal<CheckboxStatus[]>([]);
 
   // Analysis state
   readonly actionItemStatuses = signal<ActionItemStatus[]>([]);
@@ -767,6 +775,11 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
           this.meetingNoteInitialContent.set(content ?? '');
           this.noteResetCounter.update(c => c + 1);
           this.meetingNoteLoading.set(false);
+          if (content) {
+            this.loadMeetingNoteCheckboxStatuses(meeting.noteId!);
+          } else {
+            this.meetingNoteCheckboxStatuses.set([]);
+          }
         } else if (noteLoadAttempts >= 200) {
           // Timeout after ~10s
           this.meetingNoteLoading.set(false);
@@ -780,6 +793,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       this.meetingNoteInitialContent.set('');
       this.noteResetCounter.update(c => c + 1);
       this.meetingNoteLoading.set(false);
+      this.meetingNoteCheckboxStatuses.set([]);
     }
 
     // Collapse details for existing meetings (focus on transcript)
@@ -814,6 +828,46 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     this.lastSaved.set(false);
     const meetingId = this.meetingId();
     if (meetingId) this.noteChange$.next({ content, meetingId });
+  }
+
+  onNotePromoteCheckbox(event: { checkboxIndex: number }): void {
+    const meeting = this.currentMeeting();
+    const noteId = meeting?.noteId;
+    const capturedMeetingId = this.meetingId();
+    if (!noteId) {
+      this.toast.error('Save the note first before promoting checkboxes');
+      return;
+    }
+
+    const checkboxId = `cb-${event.checkboxIndex + 1}`;
+
+    this.noteService.promoteCheckbox(noteId, checkboxId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          if (this.meetingId() !== capturedMeetingId) return;
+          this.toast.success({ summary: 'Task created', detail: result.title });
+          this.loadMeetingNoteCheckboxStatuses(noteId);
+        },
+        error: () => {
+          if (this.isDestroyed) return;
+          this.toast.error('Failed to promote checkbox to task');
+        },
+      });
+  }
+
+  private loadMeetingNoteCheckboxStatuses(noteId: string): void {
+    const capturedMeetingId = this.meetingId();
+    this.noteService.getCheckboxStatus(noteId).subscribe({
+      next: (statuses) => {
+        if (this.meetingId() !== capturedMeetingId) return;
+        this.meetingNoteCheckboxStatuses.set(statuses);
+      },
+      error: () => {
+        if (this.meetingId() !== capturedMeetingId) return;
+        this.meetingNoteCheckboxStatuses.set([]);
+      },
+    });
   }
 
   private saveMeetingNote(content: string): void {
