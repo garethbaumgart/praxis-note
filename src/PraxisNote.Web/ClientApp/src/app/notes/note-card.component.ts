@@ -22,17 +22,17 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
       (keydown.space)="handleCardKeydown(asKeyboardEvent($event))"
     >
       <div class="p-3">
-        <!-- Title (extracted from first heading) -->
-        @if (cardTitle()) {
-          <h3 class="card-title">{{ cardTitle() }}</h3>
-        }
-
-        <!-- Meeting badge -->
+        <!-- Meeting badge (shown first for meeting-linked notes) -->
         @if (note().meetingId) {
           <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 bg-surface-muted rounded text-foreground-muted mb-1">
             <i class="pi pi-video text-[9px]"></i>
             {{ note().meetingTitle ?? 'Meeting' }}
           </span>
+        }
+
+        <!-- Title (extracted from first heading) -->
+        @if (cardTitle()) {
+          <h3 class="card-title">{{ cardTitle() }}</h3>
         }
 
         <!-- Rich content preview -->
