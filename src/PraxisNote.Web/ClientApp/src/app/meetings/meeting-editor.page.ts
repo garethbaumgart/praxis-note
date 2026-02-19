@@ -777,6 +777,8 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
           this.meetingNoteLoading.set(false);
           if (content) {
             this.loadMeetingNoteCheckboxStatuses(meeting.noteId!);
+          } else {
+            this.meetingNoteCheckboxStatuses.set([]);
           }
         } else if (noteLoadAttempts >= 200) {
           // Timeout after ~10s
@@ -831,6 +833,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   onNotePromoteCheckbox(event: { checkboxIndex: number }): void {
     const meeting = this.currentMeeting();
     const noteId = meeting?.noteId;
+    const capturedMeetingId = this.meetingId();
     if (!noteId) {
       this.toast.error('Save the note first before promoting checkboxes');
       return;
@@ -838,21 +841,32 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
 
     const checkboxId = `cb-${event.checkboxIndex + 1}`;
 
-    this.noteService.promoteCheckbox(noteId, checkboxId).subscribe({
-      next: (result) => {
-        this.toast.success({ summary: 'Task created', detail: result.title });
-        this.loadMeetingNoteCheckboxStatuses(noteId);
-      },
-      error: () => {
-        this.toast.error('Failed to promote checkbox to task');
-      },
-    });
+    this.noteService.promoteCheckbox(noteId, checkboxId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          if (this.meetingId() !== capturedMeetingId) return;
+          this.toast.success({ summary: 'Task created', detail: result.title });
+          this.loadMeetingNoteCheckboxStatuses(noteId);
+        },
+        error: () => {
+          if (this.isDestroyed) return;
+          this.toast.error('Failed to promote checkbox to task');
+        },
+      });
   }
 
   private loadMeetingNoteCheckboxStatuses(noteId: string): void {
+    const capturedMeetingId = this.meetingId();
     this.noteService.getCheckboxStatus(noteId).subscribe({
-      next: (statuses) => this.meetingNoteCheckboxStatuses.set(statuses),
-      error: () => this.meetingNoteCheckboxStatuses.set([]),
+      next: (statuses) => {
+        if (this.meetingId() !== capturedMeetingId) return;
+        this.meetingNoteCheckboxStatuses.set(statuses);
+      },
+      error: () => {
+        if (this.meetingId() !== capturedMeetingId) return;
+        this.meetingNoteCheckboxStatuses.set([]);
+      },
     });
   }
 
