@@ -94,6 +94,7 @@ public static class DependencyInjection
         // Note services
         services.AddSingleton<ICheckboxExtractor, TiptapCheckboxExtractor>();
         services.AddSingleton<ICheckboxUpdater, TiptapCheckboxUpdater>();
+        services.AddScoped<ICheckboxSyncService, CheckboxSyncService>();
 
         // Meeting use cases
         services.AddScoped<CreateMeeting>();
