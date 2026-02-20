@@ -116,6 +116,34 @@ docker compose --profile dev-stack up
 
 Without these credentials, the app runs normally but the Google Calendar connect button in Settings will show an error.
 
+#### Optional: Cloud Run Log Access
+
+To enable the `/postmortem` skill to query production logs for bug investigations, authenticate with `gcloud`:
+
+1. **Install the gcloud CLI** (if not already installed): https://cloud.google.com/sdk/docs/install
+
+2. **Authenticate**:
+```bash
+gcloud auth login
+```
+
+3. **Set the project**:
+```bash
+gcloud config set project praxis-note-438204
+```
+
+4. **Verify Cloud Run access**:
+```bash
+gcloud run services describe praxis-note --region us-central1
+```
+
+5. **Verify logging access**:
+```bash
+gcloud logging read "resource.type=cloud_run_revision" --limit 10
+```
+
+Without `gcloud` authentication, the `/postmortem` skill can still perform code analysis but won't be able to query production logs or verify deployment status.
+
 To stop:
 ```bash
 docker compose --profile dev-stack down
@@ -189,3 +217,4 @@ Custom slash commands in `.claude/skills/` that automate development workflows:
 | `/pr` | `/pr` | Creates a pull request with build, tests, self-review, browser validation, and AI review monitoring |
 | `/broadcast` | `/broadcast` | Generates an EF Core migration to add a "What's New" notification for user-facing changes |
 | `/execute-issues` | `/execute-issues 340 341 342` | Scans issues for readiness, then sequentially implements each one (refine, branch, implement, PR, broadcast, merge) |
+| `/postmortem` | `/postmortem` | Conducts a structured bug investigation and post-mortem analysis, verifying deployment status, querying production logs, tracing code paths, identifying root causes, and producing bug fix issues with guardrail updates |
