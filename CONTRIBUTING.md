@@ -66,12 +66,12 @@ gcloud auth login
 
 3. **Set the project**:
 ```bash
-gcloud config set project praxis-note-438204
+gcloud config set project praxisnote-prod
 ```
 
 4. **Verify Cloud Run access**:
 ```bash
-gcloud run services describe praxis-note --region us-central1
+gcloud run services describe praxisnote --region australia-southeast1
 ```
 
 5. **Verify logging access**:

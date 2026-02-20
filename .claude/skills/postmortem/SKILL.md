@@ -42,8 +42,8 @@ If using Cloud Run, verify the deployed commit:
 
 ```bash
 # Get the deployed image tag (usually a commit SHA)
-gcloud run services describe praxis-note \
-  --region us-central1 \
+gcloud run services describe praxisnote \
+  --region australia-southeast1 \
   --format 'value(spec.template.spec.containers[0].image)'
 
 # Compare against the fix PR's merge commit
@@ -74,7 +74,7 @@ Query production logs to find the actual error pattern.
 ```bash
 # Query logs for errors on the affected endpoint
 gcloud logging read \
-  "resource.type=cloud_run_revision AND resource.labels.service_name=praxis-note AND httpRequest.status=404 AND httpRequest.requestUrl=~\"api/notes.*promote\"" \
+  "resource.type=cloud_run_revision AND resource.labels.service_name=praxisnote AND httpRequest.status=404 AND httpRequest.requestUrl=~\"api/notes.*promote\"" \
   --limit 50 \
   --format json \
   --freshness 7d

@@ -63,7 +63,7 @@ Open http://localhost:4200. Use the mock auth toolbar at the bottom to log in (n
 **Optional API keys:**
 - **Anthropic** (AI meeting analysis): `dotnet user-secrets set "MeetingAnalysis:ApiKey" "sk-ant-..." --project src/PraxisNote.Web`
 - **Deepgram** (live transcription): `dotnet user-secrets set "Deepgram:ApiKey" "your-key" --project src/PraxisNote.Web`
-- **Google OAuth** (calendar sync): Set `Authentication__Google__ClientId` and `Authentication__Google__ClientSecret` env vars before `docker compose up`
+- **Google OAuth** (calendar sync): The dev Docker stack uses mock Google credentials by default. To enable real OAuth/calendar sync, update the `Authentication__Google__ClientId` and `Authentication__Google__ClientSecret` values for the `api` service in `docker-compose.yml` (or a compose override/env file)
 
 Without these keys, the app runs normally — you just won't get AI analysis, live transcripts, or calendar sync.
 
