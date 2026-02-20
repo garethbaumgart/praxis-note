@@ -217,9 +217,13 @@ After the PR is created, **actively monitor** and address feedback:
    - Keep checking every 5 minutes until BOTH CodeRabbit AND Copilot reviews are complete
 4. **Address all comments immediately**: When comments appear:
    - Read each comment carefully, including **high-level feedback** in comment bodies (not just line-specific suggestions)
-   - **For line comments (have their own ID)**:
-     - **If addressing**: Add a thumbs up reaction using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
-     - **If not addressing**: Reply to the comment explaining why (must be a strong justification - see below)
+
+   **IMPORTANT — Acknowledge Every Comment**:
+   Every line-level review comment MUST receive one of:
+   - A 👍 reaction (if addressing the suggestion) via `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`
+   - A reply explaining why the suggestion was not adopted (if not addressing it)
+   No comment should be left without acknowledgment. This is verified in Step 10.
+
    - **For high-level feedback in PR comments**: Reply to the comment addressing each suggestion
 
    **IMPORTANT - Batch Review Fixes**:
@@ -250,14 +254,23 @@ After the PR is created, **actively monitor** and address feedback:
 
 **Do not stop monitoring until**: CI is green, all line-level comments have been fetched and addressed, and either (a) all AI reviewers have reviewed the latest commit SHA, or (b) the 10-minute polling timeout has elapsed for reviewers whose previous round had no unaddressed comments.
 
-## Step 10: User Approval and Merge
+## Step 10: Pre-Merge Verification (Non-Skippable)
+
+**This step cannot be overridden or skipped — even when merging autonomously.**
 
 Once CI is green and all comments are addressed:
 
-1. **Verify test plan completion**: Before requesting merge approval, verify that ALL test plan checkboxes in the PR description are checked. If any manual verification items remain unchecked, complete them first or convert them to automated checks. Do not proceed until every checkbox is marked done.
-2. **Notify the user**: Tell them the PR is ready for their review and approval
-3. **Wait for approval**: Do NOT merge until the user explicitly approves
-4. **If feedback given**: Make fixes, commit, push, and repeat from Step 4 (build, tests + browser validation)
-5. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
+1. **Verify test plan completion**: Verify that ALL test plan checkboxes in the PR description are checked (`[x]`). If any remain unchecked, complete the verification and check them off — or fix the implementation if the check fails. Do not proceed until every checkbox is marked done.
+2. **Verify acceptance criteria**: If this PR references a GitHub issue, verify ALL acceptance criteria checkboxes on the issue are checked (`[x]`). If any remain unchecked, go back to Step 8.
+3. **Verify all review comments acknowledged**: Fetch all line-level comments with `gh api repos/{owner}/{repo}/pulls/{number}/comments` and verify every comment has either a 👍 reaction or a reply. If any are unacknowledged, go back to Step 9.
+
+**Do NOT proceed to Step 11 until all three checks pass.**
+
+## Step 11: User Approval and Merge
+
+1. **Notify the user**: Tell them the PR is ready for their review and approval
+2. **Wait for approval**: Do NOT merge until the user explicitly approves
+3. **If feedback given**: Make fixes, commit, push, and repeat from Step 4 (build, tests + browser validation)
+4. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
 
 **Exception**: For markdown-only PRs (`.md` files only), merge immediately without waiting for user approval.
