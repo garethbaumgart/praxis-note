@@ -106,16 +106,22 @@ The prompt to the sub-agent MUST include ALL of the following context so it can 
 >
 > 5. **Create PR and Merge**: Run the /pr skill to create a PR, run tests, monitor CI, address review comments, and merge. Override these /pr steps:
 >    - /pr Step 3 (Broadcast): EITHER "Run /broadcast automatically (no user prompt) — this is a user-facing change." OR "Skip broadcast — this is a minor/internal change."
->    - /pr Step 10 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user.
+>    - /pr Step 11 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user. Note: Step 10 (Pre-Merge Verification) is NON-SKIPPABLE — all PR checkboxes, acceptance criteria, and review comment acknowledgments must be verified before merge regardless of autonomous mode.
 >
-> 6. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then clean up the worktree:
+> 6. **Pre-Merge Verification** (after /pr completes CI and reviews but before merge is final):
+>    - Verify ALL checkboxes in the PR body are checked (`[x]`) — test plan items and any other checklists
+>    - Verify ALL acceptance criteria on the linked GitHub issue are checked off
+>    - Verify ALL review comments (CodeRabbit, Copilot, any reviewer) have been acknowledged with a 👍 reaction or a reply
+>    - If any of these are incomplete, address them before the merge proceeds. This is a hard gate — do not merge with unchecked boxes or unacknowledged comments.
+>
+> 7. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then clean up the worktree:
 >    ```bash
 >    cd MAIN_REPO_DIR
 >    git worktree remove ../praxis-note-issue-NUMBER
 >    git pull
 >    ```
 >
-> 7. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed). If you created a broadcast notification, mention that too.
+> 8. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed). If you created a broadcast notification, mention that too.
 >
 > **Critical Rules:**
 > - Do NOT ask the user any questions. Work fully autonomously.
