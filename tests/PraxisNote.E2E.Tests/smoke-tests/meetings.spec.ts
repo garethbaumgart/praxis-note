@@ -80,7 +80,15 @@ test.describe('Meetings', () => {
     });
 
     await setupAuth(page, testUser);
-    await page.goto(`/meetings/${meeting.id}`);
+
+    // Navigate to the meeting page and wait for the note to load
+    await Promise.all([
+      page.waitForResponse(
+        response => response.url().includes(`/api/meetings/${meeting.id}/note`) && response.request().method() === 'GET',
+        { timeout: 10000 }
+      ),
+      page.goto(`/meetings/${meeting.id}`),
+    ]);
 
     // Wait for the editor to load
     const editor = page.locator('.ProseMirror');
