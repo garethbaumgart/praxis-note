@@ -14,7 +14,7 @@ namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
                     'BugFix',
                     'Meeting checkbox promote fix',
                     'Promoting checkboxes to tasks from meeting notes now works correctly.',
-                    'https://github.com/garethbaumgart/praxis-note/issues/624',
+                    'https://github.com/garethbaumgart/praxis-note/pull/628',
                     '2026-02-20T10:46:11Z'
                 );
                 """);
