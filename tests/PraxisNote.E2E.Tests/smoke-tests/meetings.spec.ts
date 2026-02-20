@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { seedTestUser } from '../helpers/db-reset';
 import { getMockAuthHeaders, MockUser } from '../helpers/mock-auth';
 
@@ -100,13 +100,15 @@ test.describe('Meetings', () => {
     // Click the promote to task button
     const promoteButton = checkbox.locator('button[aria-label="Promote to task"]');
     await expect(promoteButton).toBeVisible({ timeout: 3000 });
-    await promoteButton.click();
 
-    // Wait for the promotion API call to complete
-    await page.waitForResponse(
-      response => response.url().includes('/promote') && response.request().method() === 'POST',
-      { timeout: 10000 }
-    );
+    // Start the listener BEFORE the action to avoid a race condition
+    await Promise.all([
+      page.waitForResponse(
+        response => response.url().includes('/promote') && response.request().method() === 'POST',
+        { timeout: 10000 }
+      ),
+      promoteButton.click(),
+    ]);
 
     // Navigate to tasks page
     await page.goto('/tasks');
@@ -168,14 +170,14 @@ test.describe('Meetings', () => {
     await page.waitForTimeout(200);
     await page.keyboard.type('Action item from meeting', { delay: 50 });
 
-    // Save the note (Ctrl+S)
-    await page.keyboard.press('Control+s');
-
-    // Wait for the save API call to complete
-    await page.waitForResponse(
-      response => response.url().includes(`/api/meetings/${meeting.id}/note`) && response.request().method() === 'POST',
-      { timeout: 10000 }
-    );
+    // Save the note (Ctrl+S) - start listener before the action
+    await Promise.all([
+      page.waitForResponse(
+        response => response.url().includes(`/api/meetings/${meeting.id}/note`) && response.request().method() === 'POST',
+        { timeout: 10000 }
+      ),
+      page.keyboard.press('Control+s'),
+    ]);
 
     // Verify note was created by checking the API
     const noteRes = await request.get(`/api/meetings/${meeting.id}/note`, {
@@ -192,13 +194,15 @@ test.describe('Meetings', () => {
 
     const promoteButton = checkbox.locator('button[aria-label="Promote to task"]');
     await expect(promoteButton).toBeVisible({ timeout: 3000 });
-    await promoteButton.click();
 
-    // Wait for the promotion API call
-    await page.waitForResponse(
-      response => response.url().includes('/promote') && response.request().method() === 'POST',
-      { timeout: 10000 }
-    );
+    // Start the listener BEFORE the action to avoid a race condition
+    await Promise.all([
+      page.waitForResponse(
+        response => response.url().includes('/promote') && response.request().method() === 'POST',
+        { timeout: 10000 }
+      ),
+      promoteButton.click(),
+    ]);
 
     // Verify task was created
     await page.goto('/tasks');
@@ -207,7 +211,7 @@ test.describe('Meetings', () => {
   });
 });
 
-async function setupAuth(page: any, user: MockUser): Promise<void> {
+async function setupAuth(page: Page, user: MockUser): Promise<void> {
   // Use setExtraHTTPHeaders to ensure ALL requests get auth headers
   // This is more reliable than page.route() which can have timing issues
   await page.setExtraHTTPHeaders(getMockAuthHeaders(user));
