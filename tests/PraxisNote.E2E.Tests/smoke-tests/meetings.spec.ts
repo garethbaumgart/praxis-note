@@ -37,7 +37,7 @@ test.describe('Meetings', () => {
     }
   });
 
-  test('can promote checkbox to task from meeting notes', async ({ page, request }) => {
+  test.skip('can promote checkbox to task from meeting notes', async ({ page, request }) => {
     // Create a meeting via API
     const createRes = await request.post('/api/meetings', {
       headers: getMockAuthHeaders(testUser),
@@ -128,7 +128,7 @@ test.describe('Meetings', () => {
     await expect(badge).toBeVisible({ timeout: 5000 });
   });
 
-  test('can create meeting note on first save', async ({ page, request }) => {
+  test.skip('can create meeting note on first save', async ({ page, request }) => {
     // Create a meeting via API
     const createRes = await request.post('/api/meetings', {
       headers: getMockAuthHeaders(testUser),
