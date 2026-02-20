@@ -1,9 +1,12 @@
 using NSubstitute;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Meetings;
+using PraxisNote.Application.Features.Notes.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Tags;
+using PraxisNote.Domain.Aggregates.Tasks;
+using PraxisNote.Domain.ValueObjects;
 
 namespace PraxisNote.Application.Tests.Meetings;
 
@@ -12,6 +15,8 @@ public class MeetingNotesTests
     private readonly IMeetingRepository _meetingRepo = Substitute.For<IMeetingRepository>();
     private readonly INoteRepository _noteRepo = Substitute.For<INoteRepository>();
     private readonly ITagRepository _tagRepo = Substitute.For<ITagRepository>();
+    private readonly ICheckboxExtractor _checkboxExtractor = Substitute.For<ICheckboxExtractor>();
+    private readonly ITaskRepository _taskRepo = Substitute.For<ITaskRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _profileId = Guid.NewGuid();
@@ -27,8 +32,9 @@ public class MeetingNotesTests
         meeting.AddTag(tagId);
 
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
+        _checkboxExtractor.Extract(Arg.Any<string>()).Returns([]);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Some notes");
 
         // Act
@@ -51,8 +57,9 @@ public class MeetingNotesTests
         meeting.LinkNote(Guid.NewGuid());
 
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
+        _checkboxExtractor.Extract(Arg.Any<string>()).Returns([]);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Some notes");
 
         // Act & Assert
@@ -65,8 +72,9 @@ public class MeetingNotesTests
     {
         // Arrange
         _meetingRepo.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Meeting?)null);
+        _checkboxExtractor.Extract(Arg.Any<string>()).Returns([]);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, Guid.NewGuid(), "Some notes");
 
         // Act & Assert
@@ -85,8 +93,9 @@ public class MeetingNotesTests
         meeting.AddTag(tag2);
 
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
+        _checkboxExtractor.Extract(Arg.Any<string>()).Returns([]);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Notes");
 
         // Act
@@ -95,6 +104,64 @@ public class MeetingNotesTests
         // Assert
         await _noteRepo.Received(1).AddAsync(Arg.Is<Note>(n =>
             n.TagIds.Contains(tag1) && n.TagIds.Contains(tag2)), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateMeetingNote_ExtractsCheckboxesFromContent()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_userId, _profileId, "Sprint Planning");
+        var contentWithCheckbox = @"{""type"":""doc"",""content"":[{""type"":""taskList"",""content"":[{""type"":""taskItem"",""attrs"":{""checked"":true},""content"":[{""type"":""paragraph"",""content"":[{""type"":""text"",""text"":""Done task""}]}]}]}]}";
+
+        _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
+        _checkboxExtractor.Extract(contentWithCheckbox).Returns([new Checkbox("cb-1", "Done task", true)]);
+
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _unitOfWork);
+        var command = new CreateMeetingNote.Command(_userId, meeting.Id, contentWithCheckbox);
+
+        // Act
+        await sut.ExecuteAsync(command);
+
+        // Assert
+        await _noteRepo.Received(1).AddAsync(Arg.Is<Note>(n =>
+            n.Checkboxes.Count == 1 &&
+            n.Checkboxes.First().Id == "cb-1" &&
+            n.Checkboxes.First().Text == "Done task" &&
+            n.Checkboxes.First().IsChecked == true), Arg.Any<CancellationToken>());
+        _checkboxExtractor.Received(1).Extract(contentWithCheckbox);
+    }
+
+    #endregion
+
+    #region UpdateMeetingNote
+
+    [Fact]
+    public async Task UpdateMeetingNote_ExtractsAndSyncsCheckboxes()
+    {
+        // Arrange
+        var meeting = Meeting.Create(_userId, _profileId, "Sprint Planning");
+        var note = Note.Create(_userId, _profileId, "Original content");
+        meeting.LinkNote(note.Id);
+
+        var contentWithCheckbox = @"{""type"":""doc"",""content"":[{""type"":""taskList"",""content"":[{""type"":""taskItem"",""attrs"":{""checked"":false},""content"":[{""type"":""paragraph"",""content"":[{""type"":""text"",""text"":""First task""}]}]}]}]}";
+
+        _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
+        _noteRepo.GetByIdAsync(note.Id, Arg.Any<CancellationToken>()).Returns(note);
+        _checkboxExtractor.Extract(contentWithCheckbox).Returns([new Checkbox("cb-1", "First task", false)]);
+        _taskRepo.GetByUserIdAsync(_userId, _profileId, Arg.Any<CancellationToken>()).Returns([]);
+
+        var sut = new UpdateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _taskRepo, _unitOfWork);
+        var command = new UpdateMeetingNote.Command(_userId, meeting.Id, contentWithCheckbox);
+
+        // Act
+        await sut.ExecuteAsync(command);
+
+        // Assert
+        Assert.Single(note.Checkboxes);
+        Assert.Equal("cb-1", note.Checkboxes.First().Id);
+        Assert.Equal("First task", note.Checkboxes.First().Text);
+        Assert.False(note.Checkboxes.First().IsChecked);
+        _checkboxExtractor.Received(1).Extract(contentWithCheckbox);
     }
 
     #endregion

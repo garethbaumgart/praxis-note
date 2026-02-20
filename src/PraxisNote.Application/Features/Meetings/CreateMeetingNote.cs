@@ -1,4 +1,5 @@
 using PraxisNote.Application.Common;
+using PraxisNote.Application.Features.Notes.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 
@@ -7,6 +8,7 @@ namespace PraxisNote.Application.Features.Meetings;
 public sealed class CreateMeetingNote(
     IMeetingRepository meetingRepository,
     INoteRepository noteRepository,
+    ICheckboxExtractor checkboxExtractor,
     IUnitOfWork unitOfWork)
 {
     public record Command(Guid UserId, Guid MeetingId, string Content);
@@ -29,6 +31,16 @@ public sealed class CreateMeetingNote(
         }
 
         var note = Note.Create(command.UserId, meeting.ProfileId, command.Content);
+
+        // Extract and add checkboxes from content
+        if (!string.IsNullOrEmpty(command.Content))
+        {
+            var checkboxes = checkboxExtractor.Extract(command.Content);
+            foreach (var checkbox in checkboxes)
+            {
+                note.AddCheckbox(checkbox);
+            }
+        }
 
         // Copy all meeting tags to new note
         foreach (var tagId in meeting.TagIds)
