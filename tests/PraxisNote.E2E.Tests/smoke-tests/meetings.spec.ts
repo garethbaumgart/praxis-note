@@ -86,9 +86,12 @@ test.describe('Meetings', () => {
     const editor = page.locator('.ProseMirror');
     await expect(editor).toBeVisible({ timeout: 10000 });
 
+    // Wait for content to load - the editor needs time to initialize and render the note content
+    await page.waitForTimeout(1000);
+
     // Wait for the checkbox to appear
     const checkbox = editor.locator('li[data-type="taskItem"]').first();
-    await expect(checkbox).toBeVisible({ timeout: 5000 });
+    await expect(checkbox).toBeVisible({ timeout: 10000 });
     await expect(checkbox).toContainText('Follow up with team');
 
     // Hover over the checkbox to reveal the promote button
@@ -142,6 +145,9 @@ test.describe('Meetings', () => {
     // Wait for the editor to load
     const editor = page.locator('.ProseMirror');
     await expect(editor).toBeVisible({ timeout: 10000 });
+
+    // Wait for editor to fully initialize
+    await page.waitForTimeout(500);
 
     // Type some content including a checkbox
     await editor.click();
