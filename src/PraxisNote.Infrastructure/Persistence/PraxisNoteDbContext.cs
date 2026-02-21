@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.ArchetypeSnapshots;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.JiraConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
@@ -32,6 +33,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<LinkedIdentity> LinkedIdentities => Set<LinkedIdentity>();
     public DbSet<AccountLinkCode> AccountLinkCodes => Set<AccountLinkCode>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+    public DbSet<ArchetypeSnapshot> ArchetypeSnapshots => Set<ArchetypeSnapshot>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public PraxisNoteDbContext(DbContextOptions<PraxisNoteDbContext> options)

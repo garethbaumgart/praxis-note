@@ -13,7 +13,9 @@ using PraxisNote.Infrastructure.Persistence;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using ModelContextProtocol.AspNetCore;
+using PraxisNote.Application.Features.Insights;
 using PraxisNote.Web.Auth;
+using PraxisNote.Web.BackgroundServices;
 using PraxisNote.Web.Endpoints;
 using PraxisNote.Web.Middleware;
 using PraxisNote.Web.Services;
@@ -48,6 +50,10 @@ builder.Services.AddHttpContextAccessor();
 
 // SSE Manager for real-time notifications (singleton for connection tracking)
 builder.Services.AddSingleton<NotificationSseManager>();
+
+// Background services
+builder.Services.AddScoped<GenerateWeeklyArchetypeSnapshots>();
+builder.Services.AddHostedService<ArchetypeSnapshotWorker>();
 
 // Configure Data Protection to persist keys to database (survives cold starts)
 builder.Services.AddDataProtection()

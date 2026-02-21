@@ -2,6 +2,7 @@ using System.Text.Json;
 using NSubstitute;
 using PraxisNote.Application.Features.Insights;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Domain.Aggregates.ArchetypeSnapshots;
 using PraxisNote.Domain.Aggregates.Meetings;
 
 namespace PraxisNote.Application.Tests.Insights;
@@ -17,11 +18,14 @@ public sealed class GetCommunicationProfileTests
     };
 
     private readonly IMeetingRepository _meetingRepo = Substitute.For<IMeetingRepository>();
+    private readonly IArchetypeSnapshotRepository _snapshotRepo = Substitute.For<IArchetypeSnapshotRepository>();
     private readonly GetCommunicationProfile _sut;
 
     public GetCommunicationProfileTests()
     {
-        _sut = new GetCommunicationProfile(_meetingRepo);
+        _snapshotRepo.GetByUserIdAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<ArchetypeSnapshot>());
+        _sut = new GetCommunicationProfile(_meetingRepo, _snapshotRepo);
     }
 
     #region Insufficient Data

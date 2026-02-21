@@ -11,6 +11,7 @@ using PraxisNote.Application.Features.Meetings.Services;
 using PraxisNote.Application.Features.Tags.Services;
 using PraxisNote.Application.Features.Transcription;
 using PraxisNote.Domain.Aggregates.ApiKeys;
+using PraxisNote.Domain.Aggregates.ArchetypeSnapshots;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
@@ -48,6 +49,7 @@ public static class DependencyInjection
 
         // Repositories
         services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
+        services.AddScoped<IArchetypeSnapshotRepository, ArchetypeSnapshotRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<ITagRepository, TagRepository>();

@@ -1,10 +1,13 @@
 using System.Text.Json;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Domain.Aggregates.ArchetypeSnapshots;
 using PraxisNote.Domain.Aggregates.Meetings;
 
 namespace PraxisNote.Application.Features.Insights;
 
-public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository)
+public sealed class GetCommunicationProfile(
+    IMeetingRepository meetingRepository,
+    IArchetypeSnapshotRepository snapshotRepository)
 {
     public const int MinimumMeetings = 5;
     public static readonly string[] ValidRanges = ["7d", "30d", "90d", "all"];
@@ -33,6 +36,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
         // Return empty profile with progress if not enough data
         if (meetings.Count < MinimumMeetings)
         {
+            var emptyDimensions = new DimensionScoresDto(0, 0, 0, 0, 0, 0);
             return new CommunicationProfileDto(
                 PrimaryArchetype: "",
                 PrimaryDescription: "",
@@ -44,7 +48,10 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
                 Scores: [],
                 ContextShifts: [],
                 Strengths: [],
-                GrowthAreas: []);
+                GrowthAreas: [],
+                DimensionScores: emptyDimensions,
+                IdealProfile: emptyDimensions,
+                ArchetypeTimeline: []);
         }
 
         // Deserialize meeting analyses
@@ -58,6 +65,7 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
 
         if (meetingAnalyses.Count < MinimumMeetings)
         {
+            var emptyDimensions = new DimensionScoresDto(0, 0, 0, 0, 0, 0);
             return new CommunicationProfileDto(
                 PrimaryArchetype: "",
                 PrimaryDescription: "",
@@ -69,7 +77,10 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
                 Scores: [],
                 ContextShifts: [],
                 Strengths: [],
-                GrowthAreas: []);
+                GrowthAreas: [],
+                DimensionScores: emptyDimensions,
+                IdealProfile: emptyDimensions,
+                ArchetypeTimeline: []);
         }
 
         // Determine target participant (highest average talk time)
@@ -97,6 +108,31 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
         // Determine strengths and growth areas based on profile
         var (strengths, growthAreas) = DetermineStrengthsAndGrowth(sorted, primary.Name);
 
+        // Calculate dimension scores for radar chart
+        var avgTalkTime = CalculateAverageTalkTime(meetingAnalyses, targetParticipant);
+        var avgQuestionRatio = CalculateAverageQuestionRatio(meetingAnalyses, targetParticipant);
+        var avgSentiment = CalculateAverageSentiment(meetingAnalyses, targetParticipant);
+        var avgInterruptions = CalculateAverageInterruptions(meetingAnalyses, targetParticipant);
+        var avgEngagement = CalculateAverageEngagement(meetingAnalyses, targetParticipant);
+        var avgClarity = meetingAnalyses.Average(ma => ma.Analysis.CommunicationPatterns.OverallClarity);
+
+        var dimensionScores = new DimensionScoresDto(
+            TalkTime: Math.Round(avgTalkTime, 1),
+            QuestionRatio: Math.Round(avgQuestionRatio, 2),
+            Sentiment: Math.Round(avgSentiment, 2),
+            Interruptions: Math.Round(avgInterruptions, 1),
+            Engagement: Math.Round(avgEngagement, 1),
+            Clarity: Math.Round(avgClarity, 2));
+
+        var idealProfile = GetIdealProfile(primary.Name);
+
+        // Fetch archetype timeline from snapshots
+        var snapshots = await snapshotRepository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
+        var timeline = snapshots
+            .OrderBy(s => s.WeekStartDate)
+            .Select(s => new ArchetypeTimelinePointDto(s.WeekStartDate, s.PrimaryArchetype, s.Score))
+            .ToList();
+
         return new CommunicationProfileDto(
             PrimaryArchetype: primary.Name,
             PrimaryDescription: GetArchetypeDescription(primary.Name),
@@ -108,7 +144,10 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
             Scores: sorted,
             ContextShifts: contextShifts,
             Strengths: strengths,
-            GrowthAreas: growthAreas);
+            GrowthAreas: growthAreas,
+            DimensionScores: dimensionScores,
+            IdealProfile: idealProfile,
+            ArchetypeTimeline: timeline);
     }
 
     #region Archetype Scoring
@@ -239,6 +278,23 @@ public sealed class GetCommunicationProfile(IMeetingRepository meetingRepository
         var engagementScore = (avgEngagement / 3.0) * 80; // Moderate engagement
 
         return Clamp((sentimentScore * 0.30 + questionScore * 0.20 + talkScore * 0.25 + engagementScore * 0.25));
+    }
+
+    /// <summary>
+    /// Returns the ideal dimension profile for each archetype.
+    /// </summary>
+    internal static DimensionScoresDto GetIdealProfile(string archetype)
+    {
+        return archetype switch
+        {
+            "Facilitator" => new DimensionScoresDto(40, 0.4, 0.7, 1, 2.5, 0.75),
+            "Driver" => new DimensionScoresDto(60, 0.2, 0.6, 3, 3, 0.85),
+            "Observer" => new DimensionScoresDto(20, 0.4, 0.7, 0.5, 2, 0.7),
+            "Mediator" => new DimensionScoresDto(35, 0.3, 0.85, 0.5, 2.5, 0.75),
+            "Challenger" => new DimensionScoresDto(50, 0.5, 0.5, 2.5, 2.5, 0.8),
+            "Supporter" => new DimensionScoresDto(30, 0.35, 0.8, 1, 2, 0.7),
+            _ => new DimensionScoresDto(40, 0.3, 0.7, 1.5, 2.5, 0.75)
+        };
     }
 
     #endregion

@@ -103,6 +103,9 @@ export interface CommunicationProfile {
   contextShifts: ContextShift[];
   strengths: string[];
   growthAreas: string[];
+  dimensionScores: DimensionScores;
+  idealProfile: DimensionScores;
+  archetypeTimeline: ArchetypeTimelinePoint[];
 }
 
 export interface ArchetypeScore {
@@ -115,6 +118,21 @@ export interface ContextShift {
   icon: string;
   archetype: string;
   description: string;
+}
+
+export interface DimensionScores {
+  talkTime: number;
+  questionRatio: number;
+  sentiment: number;
+  interruptions: number;
+  engagement: number;
+  clarity: number;
+}
+
+export interface ArchetypeTimelinePoint {
+  weekStartDate: string;
+  archetype: string;
+  score: number;
 }
 
 export const GOAL_PRESETS: GoalPreset[] = [

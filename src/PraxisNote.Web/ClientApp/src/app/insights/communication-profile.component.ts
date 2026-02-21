@@ -200,6 +200,47 @@ import { ArchetypeScore } from './insights.model';
               </div>
             </div>
           }
+
+          <!-- Dimension Scores Breakdown -->
+          @if (profileService.profile()?.dimensionScores) {
+            <div class="border-t border-border p-5">
+              <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Dimension Breakdown</h4>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                <div class="bg-surface-muted p-3 rounded-lg">
+                  <div class="text-foreground-muted text-xs mb-1">Talk Time</div>
+                  <div class="text-foreground font-semibold">{{ profileService.profile()!.dimensionScores.talkTime }}%</div>
+                </div>
+                <div class="bg-surface-muted p-3 rounded-lg">
+                  <div class="text-foreground-muted text-xs mb-1">Questions</div>
+                  <div class="text-foreground font-semibold">{{ (profileService.profile()!.dimensionScores.questionRatio * 100).toFixed(0) }}%</div>
+                </div>
+                <div class="bg-surface-muted p-3 rounded-lg">
+                  <div class="text-foreground-muted text-xs mb-1">Sentiment</div>
+                  <div class="text-foreground font-semibold">{{ (profileService.profile()!.dimensionScores.sentiment * 100).toFixed(0) }}%</div>
+                </div>
+                <div class="bg-surface-muted p-3 rounded-lg">
+                  <div class="text-foreground-muted text-xs mb-1">Interruptions</div>
+                  <div class="text-foreground font-semibold">{{ profileService.profile()!.dimensionScores.interruptions.toFixed(1) }}</div>
+                </div>
+                <div class="bg-surface-muted p-3 rounded-lg">
+                  <div class="text-foreground-muted text-xs mb-1">Engagement</div>
+                  <div class="text-foreground font-semibold">{{ (profileService.profile()!.dimensionScores.engagement / 3 * 100).toFixed(0) }}%</div>
+                </div>
+                <div class="bg-surface-muted p-3 rounded-lg">
+                  <div class="text-foreground-muted text-xs mb-1">Clarity</div>
+                  <div class="text-foreground font-semibold">{{ (profileService.profile()!.dimensionScores.clarity * 100).toFixed(0) }}%</div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Timeline placeholder (deferred to Issue #2 integration) -->
+          @if (profileService.profile()?.archetypeTimeline && profileService.profile()!.archetypeTimeline.length > 0) {
+            <div class="border-t border-border p-5">
+              <h4 class="text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-3">Archetype Evolution (Last {{ profileService.profile()!.archetypeTimeline.length }} weeks)</h4>
+              <p class="text-xs text-foreground-muted">Timeline visualization coming soon.</p>
+            </div>
+          }
         </div>
       }
     </section>

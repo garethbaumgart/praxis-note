@@ -22,6 +22,11 @@ public sealed class UserRepository(PraxisNoteDbContext context) : IUserRepositor
                 cancellationToken);
     }
 
+    public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await context.Users.ToListAsync(cancellationToken);
+    }
+
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         await context.Users.AddAsync(user, cancellationToken);
