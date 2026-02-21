@@ -58,7 +58,7 @@
     @for (item of navItems; track item.path) {
       <button
         type="button"
-        class="w-full group flex items-center h-9 text-sm rounded-lg"
+        class="w-full group flex items-center h-9 text-sm rounded-lg relative"
         [class.gap-3]="!collapsed()"
         [class.px-3]="!collapsed()"
         [class.text-left]="!collapsed()"
@@ -84,6 +84,13 @@
         ></i>
         @if (!collapsed()) {
           <span>{{ item.label }}</span>
+        }
+        @if (item.path === '/meetings' && hasUnreflectedMeetings()) {
+          <span
+            class="absolute w-1.5 h-1.5 rounded-full"
+            style="background: var(--color-meeting-reflection-border); top: 8px; left: 20px;"
+            [attr.aria-label]="'Unreflected meetings available'"
+          ></span>
         }
       </button>
     }
@@ -371,7 +378,7 @@
         @for (item of navItems; track item.path) {
           <button
             type="button"
-            class="w-full flex items-center gap-3 h-11 px-3 text-sm rounded-lg text-left"
+            class="w-full flex items-center gap-3 h-11 px-3 text-sm rounded-lg text-left relative"
             [class.font-medium]="isActive(item.path)"
             [class.text-foreground]="isActive(item.path)"
             [class.bg-accent]="isActive(item.path)"
@@ -389,6 +396,13 @@
               aria-hidden="true"
             ></i>
             <span>{{ item.label }}</span>
+            @if (item.path === '/meetings' && hasUnreflectedMeetings()) {
+              <span
+                class="absolute w-1.5 h-1.5 rounded-full"
+                style="background: var(--color-meeting-reflection-border); top: 12px; left: 20px;"
+                [attr.aria-label]="'Unreflected meetings available'"
+              ></span>
+            }
           </button>
         }
 

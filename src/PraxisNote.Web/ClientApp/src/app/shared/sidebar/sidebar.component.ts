@@ -8,6 +8,7 @@ import { MenuItem } from 'primeng/api';
 import { SidebarActivityService } from './sidebar-activity.service';
 import { SidebarService } from './sidebar.service';
 import { ProfileService } from '../../profiles/profile.service';
+import { MeetingService } from '../../meetings/meeting.service';
 import { DOCS_URL } from '../constants';
 
 interface NavItem {
@@ -94,6 +95,7 @@ export class SidebarComponent implements OnInit {
   protected readonly activity = inject(SidebarActivityService);
   private readonly sidebarService = inject(SidebarService);
   protected readonly profileService = inject(ProfileService);
+  private readonly meetingService = inject(MeetingService);
 
   readonly collapsed = this.sidebarService.collapsed;
   protected readonly docsUrl = DOCS_URL;
@@ -147,6 +149,15 @@ export class SidebarComponent implements OnInit {
     { path: '/tags', label: 'Tag Hub', icon: 'pi-tags', enabled: true },
     { path: '/insights', label: 'Insights', icon: 'pi-chart-line', enabled: true },
   ];
+
+  readonly hasUnreflectedMeetings = computed(() => {
+    const meetings = this.meetingService.meetings();
+    return meetings.some(m =>
+      (m.status === 'Ready' || m.status === 'Reviewed') &&
+      m.behavioralAnalysis !== null &&
+      m.reflectionData === null
+    );
+  });
 
   ngOnInit(): void {
     // Set initial path

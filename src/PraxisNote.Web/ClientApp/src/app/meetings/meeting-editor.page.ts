@@ -21,6 +21,7 @@ import { TiptapEditorComponent } from '../notes/tiptap-editor.component';
 import { MeetingService } from './meeting.service';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
 import { MeetingReflectionComponent } from './meeting-reflection.component';
+import { QuickReflectComponent } from './quick-reflect.component';
 import { MeetingSectionComponent } from './meeting-section.component';
 import { MeetingDetailsSectionComponent } from './meeting-details-section.component';
 import { MeetingTranscriptSectionComponent } from './meeting-transcript-section.component';
@@ -55,6 +56,7 @@ interface DateOption {
     MeetingTranscriptSectionComponent,
     MeetingAnalysisComponent,
     MeetingReflectionComponent,
+    QuickReflectComponent,
     DeleteConfirmButtonComponent,
     ButtonModule,
     TiptapEditorComponent,
@@ -276,6 +278,16 @@ interface DateOption {
         }
       </main>
 
+      <!-- Quick Reflect Dialog -->
+      @if (currentMeeting()) {
+        <app-quick-reflect
+          [meeting]="currentMeeting()!"
+          [visible]="showQuickReflect()"
+          (visibleChange)="showQuickReflect.set($event)"
+          (onSave)="onQuickReflectSave()"
+        />
+      }
+
       <!-- Footer -->
       <footer class="footer">
         @if (currentMeeting()) {
@@ -368,6 +380,9 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
 
   // Delete confirmation state
   readonly confirmingDelete = signal(false);
+
+  // Quick reflect state
+  readonly showQuickReflect = signal(false);
 
   // Form state
   readonly title = signal('');
@@ -537,6 +552,20 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
         this.analysisSection()?.expand();
       }
       hadAnalysis = hasAnalysis;
+    });
+
+    // Auto-open quick reflect if navigated from toast action
+    effect(() => {
+      const meeting = this.currentMeeting();
+      if (meeting && this.route.snapshot.queryParams['openQuickReflect'] === 'true') {
+        this.showQuickReflect.set(true);
+        // Clear query param
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true,
+        });
+      }
     });
   }
 
@@ -1283,6 +1312,15 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
       });
       this.router.navigate([this.sourceBreadcrumb().route ?? '/meetings']);
     }
+  }
+
+  openQuickReflect(): void {
+    this.showQuickReflect.set(true);
+  }
+
+  onQuickReflectSave(): void {
+    this.showQuickReflect.set(false);
+    this.meetingService.loadMeetings();
   }
 
   // --- Formatting helpers ---

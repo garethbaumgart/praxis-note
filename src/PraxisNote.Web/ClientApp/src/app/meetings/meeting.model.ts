@@ -195,3 +195,86 @@ export function parseReflection(json: string | null): MeetingReflection | null {
     return null;
   }
 }
+
+// Quick Reflection Types
+export type EmojiLevel = 'low' | 'medium' | 'high';
+
+export interface QuickReflectionValue {
+  talkTime: EmojiLevel | null;
+  engagement: EmojiLevel | null;
+  tone: EmojiLevel | null;
+  interruptions: EmojiLevel | null;
+  freeformNote: string | null;
+}
+
+export interface QuickReflectionDimension {
+  id: 'talkTime' | 'engagement' | 'tone' | 'interruptions';
+  label: string;
+  emojis: {
+    low: { emoji: string; label: string };
+    medium: { emoji: string; label: string };
+    high: { emoji: string; label: string };
+  };
+}
+
+export const QUICK_REFLECT_DIMENSIONS: QuickReflectionDimension[] = [
+  {
+    id: 'talkTime',
+    label: 'Talk time',
+    emojis: {
+      low: { emoji: '🤐', label: 'Quiet' },
+      medium: { emoji: '😐', label: 'Balanced' },
+      high: { emoji: '🗣️', label: 'Dominated' },
+    },
+  },
+  {
+    id: 'engagement',
+    label: 'Engagement',
+    emojis: {
+      low: { emoji: '😴', label: 'Low' },
+      medium: { emoji: '😊', label: 'Engaged' },
+      high: { emoji: '🔥', label: 'Highly' },
+    },
+  },
+  {
+    id: 'tone',
+    label: 'Tone',
+    emojis: {
+      low: { emoji: '😠', label: 'Tense' },
+      medium: { emoji: '😐', label: 'Neutral' },
+      high: { emoji: '😊', label: 'Positive' },
+    },
+  },
+  {
+    id: 'interruptions',
+    label: 'Interruptions',
+    emojis: {
+      low: { emoji: '✅', label: 'None' },
+      medium: { emoji: '⚠️', label: 'Some' },
+      high: { emoji: '🚨', label: 'Frequent' },
+    },
+  },
+];
+
+/** Maps emoji level values to Johari classification format */
+export function mapQuickReflectToJohari(quick: QuickReflectionValue): {
+  selfAssessedTalkTime: number | null;
+  selfAssessedEngagement: string | null;
+  selfAssessedTone: string | null;
+  interruptionAwareness: string | null;
+} {
+  return {
+    selfAssessedTalkTime: quick.talkTime
+      ? quick.talkTime === 'low' ? 20 : quick.talkTime === 'medium' ? 50 : 80
+      : null,
+    selfAssessedEngagement: quick.engagement
+      ? quick.engagement === 'low' ? 'Disengaged' : quick.engagement === 'medium' ? 'Moderate' : 'Highly Engaged'
+      : null,
+    selfAssessedTone: quick.tone
+      ? quick.tone === 'low' ? 'Tense' : quick.tone === 'medium' ? 'Neutral' : 'Collaborative'
+      : null,
+    interruptionAwareness: quick.interruptions
+      ? quick.interruptions === 'low' ? 'No' : quick.interruptions === 'medium' ? 'Partially' : 'Yes'
+      : null,
+  };
+}

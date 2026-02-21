@@ -1,6 +1,7 @@
 import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, timer, Subject, exhaustMap, takeUntil, filter, take, tap, catchError, throwError, EMPTY, of } from 'rxjs';
 import { Meeting, MeetingGroup, ActionItemStatus, PromoteActionItemResult, ReflectionPrompt, MeetingReflection } from './meeting.model';
 import { getLocalDateKey } from '../shared/date-utils';
@@ -16,6 +17,7 @@ interface PendingDeletion {
 export class MeetingService {
   private readonly http = inject(HttpClient);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly pendingDeletions = new Map<string, PendingDeletion>();
@@ -229,7 +231,19 @@ export class MeetingService {
             );
 
             if (meeting.status === 'Ready') {
-              this.toast.success({ summary: 'Analysis complete' });
+              const meetingTitle = meeting.title ?? 'Your meeting';
+              this.toast.success({
+                summary: 'Ready to reflect?',
+                detail: `"${meetingTitle}" analysis is done — takes ~15 sec`,
+                action: {
+                  label: 'Reflect now',
+                  callback: () => {
+                    this.router.navigate(['/meetings', id], {
+                      queryParams: { openQuickReflect: 'true' },
+                    });
+                  },
+                },
+              });
             } else if (meeting.status === 'Failed') {
               this.toast.error('Analysis failed');
             }
