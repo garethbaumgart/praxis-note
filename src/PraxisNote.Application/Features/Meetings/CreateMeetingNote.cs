@@ -2,14 +2,12 @@ using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Notes.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
-using PraxisNote.Domain.Aggregates.Tasks;
 
 namespace PraxisNote.Application.Features.Meetings;
 
 public sealed class CreateMeetingNote(
     IMeetingRepository meetingRepository,
     INoteRepository noteRepository,
-    ITaskRepository taskRepository,
     ICheckboxExtractor checkboxExtractor,
     ICheckboxSyncService checkboxSyncService,
     IUnitOfWork unitOfWork)
@@ -37,7 +35,7 @@ public sealed class CreateMeetingNote(
 
         // Extract and sync checkboxes on first save
         var newCheckboxes = checkboxExtractor.Extract(command.Content);
-        checkboxSyncService.SyncCheckboxes(note, newCheckboxes, new List<TaskItem>());
+        checkboxSyncService.SyncCheckboxes(note, newCheckboxes, []);
 
         // Copy all meeting tags to new note
         foreach (var tagId in meeting.TagIds)

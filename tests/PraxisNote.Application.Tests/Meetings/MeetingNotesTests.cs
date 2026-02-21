@@ -34,7 +34,7 @@ public class MeetingNotesTests
 
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _taskRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Some notes");
 
         // Act
@@ -58,7 +58,7 @@ public class MeetingNotesTests
 
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _taskRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Some notes");
 
         // Act & Assert
@@ -72,7 +72,7 @@ public class MeetingNotesTests
         // Arrange
         _meetingRepo.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Meeting?)null);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _taskRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, Guid.NewGuid(), "Some notes");
 
         // Act & Assert
@@ -92,7 +92,7 @@ public class MeetingNotesTests
 
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _taskRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, meeting.Id, "Notes");
 
         // Act
@@ -114,7 +114,7 @@ public class MeetingNotesTests
         _meetingRepo.GetByIdAsync(meeting.Id, Arg.Any<CancellationToken>()).Returns(meeting);
         _checkboxExtractor.Extract(content).Returns(checkboxes);
 
-        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _taskRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
+        var sut = new CreateMeetingNote(_meetingRepo, _noteRepo, _checkboxExtractor, _checkboxSyncService, _unitOfWork);
         var command = new CreateMeetingNote.Command(_userId, meeting.Id, content);
 
         // Act
@@ -125,7 +125,7 @@ public class MeetingNotesTests
         _checkboxSyncService.Received(1).SyncCheckboxes(
             Arg.Any<Note>(),
             Arg.Is<IReadOnlyList<Checkbox>>(list => list.Count == 1 && list[0].Id == "cb-1"),
-            Arg.Is<List<TaskItem>>(list => list.Count == 0));
+            Arg.Is<IEnumerable<TaskItem>>(list => !list.Any()));
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
