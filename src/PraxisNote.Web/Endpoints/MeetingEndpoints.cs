@@ -476,6 +476,7 @@ public static class MeetingEndpoints
 
         return success ? Results.NoContent() : Results.NotFound();
     }
+
     private static async Task<IResult> HandleParseTranscript(
         HttpContext context,
         ClaimsPrincipal user,
