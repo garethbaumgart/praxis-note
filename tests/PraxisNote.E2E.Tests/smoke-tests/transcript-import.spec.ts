@@ -13,7 +13,7 @@ test.describe('Transcript Import', () => {
     testUser = await seedTestUser(USER_SUFFIX);
   });
 
-  test('transcript import tab renders and accepts paste input', async ({ page }) => {
+  test('Should_EnableParseButton_When_TranscriptTextPasted', async ({ page }) => {
     await setupAuth(page, testUser);
     await page.goto('/meetings');
 

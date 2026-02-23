@@ -45,7 +45,7 @@ public class ConfirmTranscriptImportTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_AppliesTranscriptAndAnalysisResults()
+    public async Task ExecuteAsync_WithFullMeetingData_AppliesTranscriptAndAnalysisResults()
     {
         // Arrange
         SetupEmptyTags();
@@ -90,7 +90,7 @@ public class ConfirmTranscriptImportTests
     #region Tag Matching
 
     [Fact]
-    public async Task ExecuteAsync_AddsMatchingTagsFromSuggested()
+    public async Task ExecuteAsync_WithSuggestedTags_AddsMatchingTagsFromUserList()
     {
         // Arrange
         var budgetTagId = Guid.NewGuid();
@@ -128,7 +128,7 @@ public class ConfirmTranscriptImportTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_IgnoresSuggestedTagsNotInUserTagList()
+    public async Task ExecuteAsync_WithSuggestedTagsNotInUserList_IgnoresThem()
     {
         // Arrange - no matching tags exist
         _tagRepo.GetByNamesAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
@@ -178,7 +178,7 @@ public class ConfirmTranscriptImportTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_SetsStatusToReady()
+    public async Task ExecuteAsync_WhenImportComplete_SetsStatusToReady()
     {
         // Arrange
         SetupEmptyTags();
@@ -201,7 +201,7 @@ public class ConfirmTranscriptImportTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_FiltersEmptyActionItemDescriptions()
+    public async Task ExecuteAsync_WithEmptyActionItemDescriptions_FiltersThemOut()
     {
         // Arrange
         SetupEmptyTags();
@@ -240,7 +240,7 @@ public class ConfirmTranscriptImportTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_UsesDefaultSummaryWhenNull()
+    public async Task ExecuteAsync_WhenSummaryNull_UsesDefaultSummary()
     {
         // Arrange
         SetupEmptyTags();

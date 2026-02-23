@@ -36,7 +36,7 @@ public sealed class TagRepository(PraxisNoteDbContext context) : ITagRepository
     {
         var lowerNames = names.Select(n => n.ToLowerInvariant()).ToHashSet();
         return await context.Tags
-            .Where(t => t.UserId == userId && t.ProfileId == profileId && lowerNames.Contains(t.Name.ToLower()))
+            .Where(t => t.UserId == userId && t.ProfileId == profileId && lowerNames.Contains(t.Name.ToLowerInvariant()))
             .ToListAsync(cancellationToken);
     }
 

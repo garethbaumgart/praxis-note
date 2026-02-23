@@ -10,6 +10,7 @@ public class ParseTranscriptForImportTests
     private readonly IMeetingAnalyzer _meetingAnalyzer = Substitute.For<IMeetingAnalyzer>();
     private readonly ITranscriptExtractor _transcriptExtractor = Substitute.For<ITranscriptExtractor>();
     private readonly ParseTranscriptForImport _sut;
+    private readonly Guid _userId = Guid.NewGuid();
 
     public ParseTranscriptForImportTests()
     {
@@ -38,7 +39,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -89,7 +90,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(extractedText, Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(null, stream, contentType, "meeting.docx");
+        var command = new ParseTranscriptForImport.Command(_userId, null, stream, contentType, "meeting.docx");
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -110,7 +111,7 @@ public class ParseTranscriptForImportTests
     [Fact]
     public async Task ExecuteAsync_WhenNoTextOrFile_ThrowsArgumentException()
     {
-        var command = new ParseTranscriptForImport.Command(null, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, null, null);
 
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.ExecuteAsync(command));
     }
@@ -118,7 +119,7 @@ public class ParseTranscriptForImportTests
     [Fact]
     public async Task ExecuteAsync_WhenEmptyText_ThrowsArgumentException()
     {
-        var command = new ParseTranscriptForImport.Command("   ", null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, "   ", null, null, null);
 
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.ExecuteAsync(command));
     }
@@ -127,7 +128,7 @@ public class ParseTranscriptForImportTests
     public async Task ExecuteAsync_WhenUnsupportedFileType_ThrowsInvalidOperationException()
     {
         var stream = new MemoryStream();
-        var command = new ParseTranscriptForImport.Command(null, stream, "application/pdf", "meeting.pdf");
+        var command = new ParseTranscriptForImport.Command(_userId, null, stream, "application/pdf", "meeting.pdf");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExecuteAsync(command));
     }
@@ -156,7 +157,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(extractedText, Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(null, stream, "text/plain", "meeting.txt");
+        var command = new ParseTranscriptForImport.Command(_userId, null, stream, "text/plain", "meeting.txt");
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -177,13 +178,13 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Claude returned an empty response"));
 
-        var command = new ParseTranscriptForImport.Command(transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, transcript, null, null, null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExecuteAsync(command));
     }
 
     [Fact]
-    public async Task ExecuteAsync_TextTakesPriorityOverFile()
+    public async Task ExecuteAsync_WhenTextAndFileProvided_UsesTextInput()
     {
         // Arrange - both text and file provided, text should be used
         var transcript = "Direct text input...";
@@ -204,7 +205,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(transcript, stream, "text/plain", "file.txt");
+        var command = new ParseTranscriptForImport.Command(_userId, transcript, stream, "text/plain", "file.txt");
 
         // Act
         var result = await _sut.ExecuteAsync(command);

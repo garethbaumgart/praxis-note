@@ -308,17 +308,30 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
             ?? throw new InvalidOperationException("Failed to parse transcript import response");
 
         DateTimeOffset? meetingDate = null;
-        if (!string.IsNullOrWhiteSpace(result.MeetingDate))
+        if (!string.IsNullOrWhiteSpace(result.MeetingDate) &&
+            DateTimeOffset.TryParse(result.MeetingDate, out var parsed))
         {
-            if (DateTimeOffset.TryParse(result.MeetingDate, out var parsed))
-                meetingDate = parsed;
+            meetingDate = parsed;
         }
 
+        var title = result.Title?.Trim();
+        var summary = result.Summary?.Trim();
+        var missing = new List<string>();
+        if (string.IsNullOrWhiteSpace(title)) missing.Add("title");
+        if (meetingDate is null) missing.Add("meeting date");
+        if (string.IsNullOrWhiteSpace(summary)) missing.Add("summary");
+        var isComplete = missing.Count == 0;
+        var warning = isComplete
+            ? null
+            : !string.IsNullOrWhiteSpace(result.Warning)
+                ? result.Warning.Trim()
+                : $"Missing {string.Join(", ", missing)}.";
+
         return new TranscriptImportResult(
-            result.Title?.Trim(),
+            title,
             meetingDate,
             result.Attendees?.Trim(),
-            result.Summary ?? "No summary provided",
+            summary ?? "No summary provided",
             result.KeyPoints ?? [],
             result.Decisions ?? [],
             result.ActionItems?
@@ -326,8 +339,8 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
                 .Select(a => new ExtractedActionItem(a.Description!.Trim(), a.Assignee?.Trim()))
                 .ToList() ?? [],
             result.SuggestedTags ?? [],
-            result.IsComplete,
-            result.Warning?.Trim());
+            isComplete,
+            warning);
     }
 
     private static ScreenshotExtractionResult ParseScreenshotExtractionResponse(string jsonResponse)

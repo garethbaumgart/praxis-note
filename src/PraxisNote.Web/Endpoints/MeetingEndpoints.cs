@@ -520,6 +520,7 @@ public static class MeetingEndpoints
             }
 
             var command = new ParseTranscriptForImport.Command(
+                userId.Value,
                 text,
                 fileStream,
                 file?.ContentType,

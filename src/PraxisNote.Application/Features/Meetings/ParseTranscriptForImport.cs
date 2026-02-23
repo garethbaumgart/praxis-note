@@ -9,7 +9,7 @@ public sealed class ParseTranscriptForImport(
     private const string DocxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private const string PlainTextContentType = "text/plain";
 
-    public record Command(string? Text, Stream? FileStream, string? FileContentType, string? FileName);
+    public record Command(Guid UserId, string? Text, Stream? FileStream, string? FileContentType, string? FileName);
 
     public record Result(
         string? Title,

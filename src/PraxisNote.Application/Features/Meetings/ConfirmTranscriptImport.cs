@@ -75,8 +75,11 @@ public sealed class ConfirmTranscriptImport(
             totalActionItems += actionItems.Count;
 
             // 4. Complete analysis with pre-parsed AI results
+            var summary = string.IsNullOrWhiteSpace(item.Summary)
+                ? "Imported meeting"
+                : item.Summary;
             meeting.CompleteAnalysis(
-                item.Summary ?? "Imported meeting",
+                summary,
                 item.KeyPoints,
                 item.Decisions,
                 behavioralAnalysis: null,
