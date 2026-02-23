@@ -4,6 +4,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { FormsModule } from '@angular/forms';
 import { ScreenshotImportService } from './screenshot-import.service';
+import { TranscriptImportService } from './transcript-import.service';
 import { CalendarService } from '../shared/services/calendar.service';
 import { formatDateTime as sharedFormatDateTime, formatLocaleTime, formatShortDate } from '../shared/date-utils';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
@@ -49,6 +50,17 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
         >
           <i class="pi pi-image mr-1.5 text-xs"></i>
           Screenshot
+        </button>
+        <button
+          type="button"
+          class="flex-1 py-3 text-sm font-medium transition-colors"
+          [class.text-accent-foreground]="activeTab() === 'transcript'"
+          [class.text-foreground-muted]="activeTab() !== 'transcript'"
+          [style.border-bottom]="activeTab() === 'transcript' ? '2px solid var(--color-primary-solid)' : '2px solid transparent'"
+          (click)="activeTab.set('transcript')"
+        >
+          <i class="pi pi-file-edit mr-1.5 text-xs"></i>
+          Transcript
         </button>
       </div>
 
@@ -240,22 +252,195 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
             }
           }
         }
+        @case ('transcript') {
+          @switch (transcriptService.state()) {
+            @case ('idle') {
+              <div>
+                <textarea
+                  class="w-full h-40 p-3 text-sm bg-surface border border-border rounded-lg resize-none text-foreground placeholder-foreground-muted focus:outline-none focus:ring-2 focus:ring-accent-solid/50"
+                  placeholder="Paste your meeting transcript here (e.g., Google Gemini meeting notes)..."
+                  [value]="pastedText()"
+                  (input)="pastedText.set($any($event.target).value)"
+                ></textarea>
+                <div class="flex items-center gap-2 mt-3 mb-4">
+                  <span class="text-xs text-foreground-muted">or</span>
+                  <button
+                    type="button"
+                    class="text-xs text-accent-solid hover:underline"
+                    (click)="transcriptFileInput.click()"
+                  >
+                    upload .txt or .docx files
+                  </button>
+                  <input
+                    #transcriptFileInput
+                    type="file"
+                    accept=".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    class="hidden"
+                    multiple
+                    (change)="onTranscriptFilesSelected($event)"
+                    aria-label="Select transcript files"
+                  >
+                </div>
+                <button
+                  type="button"
+                  class="w-full py-2.5 bg-accent-solid text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                  [disabled]="!pastedText().trim()"
+                  (click)="parseTranscript()"
+                >
+                  <i class="pi pi-sparkles text-xs"></i>
+                  Parse with AI
+                </button>
+              </div>
+            }
+
+            @case ('parsing') {
+              <div class="flex flex-col items-center py-8">
+                <p-progressSpinner [style]="{ width: '48px', height: '48px' }" strokeWidth="3" />
+                <p class="text-sm text-foreground-muted mt-4">
+                  @if (transcriptService.parseProgress().total > 1) {
+                    Parsing {{ transcriptService.parseProgress().current }} of {{ transcriptService.parseProgress().total }}...
+                  } @else {
+                    Parsing transcript...
+                  }
+                </p>
+              </div>
+            }
+
+            @case ('preview') {
+              <div>
+                @if (needsReviewCount() > 0) {
+                  <div class="flex items-start gap-2 p-3 mb-3 bg-warning/10 border border-warning/30 rounded-lg">
+                    <i class="pi pi-exclamation-triangle text-sm text-warning-foreground mt-0.5"></i>
+                    <p class="text-xs text-foreground">
+                      {{ needsReviewCount() }} {{ needsReviewCount() === 1 ? 'meeting has' : 'meetings have' }}
+                      incomplete data. Review before importing.
+                    </p>
+                  </div>
+                }
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-sm text-foreground-muted">{{ selectedTranscriptCount() }} of {{ transcriptService.parsedMeetings().length }} selected</span>
+                  <button
+                    type="button"
+                    class="text-xs text-accent-solid hover:underline"
+                    (click)="toggleAllTranscripts()"
+                    aria-label="Toggle all transcripts"
+                  >
+                    {{ allTranscriptsSelected() ? 'Deselect all' : 'Select all' }}
+                  </button>
+                </div>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                  @for (meeting of transcriptService.parsedMeetings(); track $index) {
+                    <label class="flex items-start gap-3 p-3 bg-surface-muted rounded-lg cursor-pointer hover:bg-surface-muted/80 transition-colors"
+                      [class.opacity-50]="meeting.isDuplicate">
+                      <p-checkbox
+                        [ngModel]="meeting.selected"
+                        (ngModelChange)="transcriptService.toggleMeeting($index)"
+                        [binary]="true"
+                        [disabled]="meeting.isDuplicate"
+                        styleClass="mt-0.5"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <p class="text-sm font-medium text-foreground truncate">{{ meeting.title || 'Untitled Meeting' }}</p>
+                          @if (meeting.isDuplicate) {
+                            <span class="text-xs px-1.5 py-0.5 bg-surface border border-border rounded text-foreground-muted shrink-0">Duplicate</span>
+                          } @else if (meeting.isComplete) {
+                            <span class="text-xs px-1.5 py-0.5 bg-done/20 text-done-foreground rounded shrink-0">Complete</span>
+                          } @else {
+                            <span class="text-xs px-1.5 py-0.5 bg-warning/20 text-warning-foreground rounded shrink-0">Needs Review</span>
+                          }
+                        </div>
+                        @if (meeting.meetingDate) {
+                          <p class="text-xs text-foreground-muted">{{ formatDateTime(meeting.meetingDate) }}</p>
+                        }
+                        @if (meeting.attendees) {
+                          <p class="text-xs text-foreground-muted mt-0.5">
+                            <i class="pi pi-users text-xs mr-1"></i>{{ meeting.attendees }}
+                          </p>
+                        }
+                        @if (meeting.warning) {
+                          <p class="text-xs text-warning-foreground mt-1">
+                            <i class="pi pi-info-circle text-xs mr-1"></i>{{ meeting.warning }}
+                          </p>
+                        }
+                      </div>
+                    </label>
+                  }
+                </div>
+                <div class="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    class="px-4 py-2 text-sm text-foreground-secondary bg-surface-muted rounded-md hover:bg-surface-muted/80 transition-colors"
+                    (click)="transcriptService.reset(); pastedText.set('')"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    class="px-4 py-2 text-sm font-medium text-white bg-accent-solid rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
+                    [disabled]="selectedTranscriptCount() === 0"
+                    (click)="confirmTranscriptImport()"
+                    aria-label="Import selected meetings"
+                  >
+                    Import {{ selectedTranscriptCount() }} {{ selectedTranscriptCount() === 1 ? 'Meeting' : 'Meetings' }}
+                  </button>
+                </div>
+              </div>
+            }
+
+            @case ('importing') {
+              <div class="flex flex-col items-center py-8">
+                <p-progressSpinner [style]="{ width: '48px', height: '48px' }" strokeWidth="3" />
+                <p class="text-sm text-foreground-muted mt-4">Importing meetings...</p>
+              </div>
+            }
+
+            @case ('done') {
+              <div class="flex flex-col items-center py-8">
+                <i class="pi pi-check-circle text-4xl text-done-foreground mb-3"></i>
+                <p class="text-sm font-medium text-foreground mb-1">{{ transcriptService.importedCount() }} {{ transcriptService.importedCount() === 1 ? 'meeting' : 'meetings' }} imported</p>
+                @if (transcriptService.totalActionItems() > 0) {
+                  <p class="text-xs text-foreground-muted">{{ transcriptService.totalActionItems() }} action {{ transcriptService.totalActionItems() === 1 ? 'item' : 'items' }} found</p>
+                }
+                <button
+                  type="button"
+                  class="mt-4 px-4 py-2 text-sm font-medium text-white bg-accent-solid rounded-md hover:opacity-90 transition-opacity"
+                  (click)="close()"
+                >
+                  Done
+                </button>
+              </div>
+            }
+
+            @case ('error') {
+              <app-error-state
+                size="sm"
+                title="Something went wrong"
+                [message]="transcriptService.error()!"
+                (retry)="transcriptService.reset()"
+              />
+            }
+          }
+        }
       }
     </p-dialog>
   `,
 })
 export class ImportDialogComponent {
   readonly importService = inject(ScreenshotImportService);
+  readonly transcriptService = inject(TranscriptImportService);
   readonly calendarService = inject(CalendarService);
 
   private readonly supportedTypes = ['image/png', 'image/jpeg', 'image/webp'];
 
   readonly visible = signal(false);
-  readonly activeTab = signal<'calendar' | 'screenshot'>('screenshot');
+  readonly activeTab = signal<'calendar' | 'screenshot' | 'transcript'>('screenshot');
+  readonly pastedText = signal('');
   readonly onImported = output<void>();
 
   readonly closable = computed(() =>
     this.importService.state() !== 'extracting' && this.importService.state() !== 'importing'
+    && this.transcriptService.state() !== 'parsing' && this.transcriptService.state() !== 'importing'
   );
 
   readonly selectedCount = computed(() => this.importService.events().filter(e => e.selected).length);
@@ -263,6 +448,17 @@ export class ImportDialogComponent {
     const events = this.importService.events();
     return events.length > 0 && events.every(e => e.selected);
   });
+
+  readonly selectedTranscriptCount = computed(() =>
+    this.transcriptService.parsedMeetings().filter(m => m.selected && !m.isDuplicate).length
+  );
+  readonly allTranscriptsSelected = computed(() => {
+    const meetings = this.transcriptService.parsedMeetings().filter(m => !m.isDuplicate);
+    return meetings.length > 0 && meetings.every(m => m.selected);
+  });
+  readonly needsReviewCount = computed(() =>
+    this.transcriptService.parsedMeetings().filter(m => !m.isComplete && !m.isDuplicate).length
+  );
 
   readonly syncEndDate = computed(() => {
     const d = new Date();
@@ -278,16 +474,19 @@ export class ImportDialogComponent {
 
   open(): void {
     this.importService.reset();
+    this.transcriptService.reset();
+    this.pastedText.set('');
     this.activeTab.set(this.calendarService.status()?.isConnected ? 'calendar' : 'screenshot');
     this.visible.set(true);
   }
 
   close(): void {
     this.visible.set(false);
-    if (this.importService.state() === 'done') {
+    if (this.importService.state() === 'done' || this.transcriptService.state() === 'done') {
       this.onImported.emit();
     }
     this.importService.reset();
+    this.transcriptService.reset();
   }
 
   onVisibleChange(visible: boolean): void {
@@ -377,5 +576,29 @@ export class ImportDialogComponent {
 
   formatTime(iso: string): string {
     return formatLocaleTime(iso);
+  }
+
+  parseTranscript(): void {
+    const text = this.pastedText().trim();
+    if (text) {
+      this.transcriptService.parseText(text);
+    }
+  }
+
+  onTranscriptFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (files && files.length > 0) {
+      this.transcriptService.parseFiles(files);
+      input.value = '';
+    }
+  }
+
+  confirmTranscriptImport(): void {
+    this.transcriptService.confirmImport();
+  }
+
+  toggleAllTranscripts(): void {
+    this.transcriptService.toggleAll(!this.allTranscriptsSelected());
   }
 }

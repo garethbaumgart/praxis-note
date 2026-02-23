@@ -67,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<ICalendarService, GoogleCalendarService>();
         services.Configure<MeetingAnalysisSettings>(configuration.GetSection(MeetingAnalysisSettings.SectionName));
         services.AddScoped<IMeetingAnalyzer, ClaudeMeetingAnalyzer>();
+        services.AddScoped<ITranscriptExtractor, TranscriptExtractor>();
         services.AddScoped<ITagAiChatService, ClaudeTagAiChatService>();
         services.Configure<DeepgramSettings>(configuration.GetSection(DeepgramSettings.SectionName));
         services.Configure<JiraSettings>(configuration.GetSection(JiraSettings.SectionName));

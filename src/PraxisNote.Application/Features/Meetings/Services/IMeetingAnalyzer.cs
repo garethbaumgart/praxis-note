@@ -4,6 +4,7 @@ public interface IMeetingAnalyzer
 {
     Task<MeetingAnalysisResult> AnalyzeAsync(string transcript, CancellationToken cancellationToken = default);
     Task<ScreenshotExtractionResult> ExtractFromScreenshotAsync(string base64Image, string mediaType, string? timeZone = null, CancellationToken cancellationToken = default);
+    Task<TranscriptImportResult> ParseTranscriptForImportAsync(string transcript, CancellationToken cancellationToken = default);
 }
 
 public record ScreenshotExtractionResult(List<ExtractedCalendarEvent> Events);
@@ -14,6 +15,18 @@ public record ExtractedCalendarEvent(
     DateTimeOffset EndTime,
     string? Attendees,
     string? Location);
+
+public record TranscriptImportResult(
+    string? Title,
+    DateTimeOffset? MeetingDate,
+    string? Attendees,
+    string Summary,
+    List<string> KeyPoints,
+    List<string> Decisions,
+    List<ExtractedActionItem> ActionItems,
+    List<string> SuggestedTags,
+    bool IsComplete,
+    string? Warning);
 
 public record MeetingAnalysisResult(
     string Summary,
