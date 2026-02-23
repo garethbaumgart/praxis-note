@@ -1,6 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { MeetingService } from './meeting.service';
 
 export type TranscriptImportState = 'idle' | 'parsing' | 'preview' | 'importing' | 'done' | 'error';
 
@@ -47,6 +48,7 @@ interface ConfirmResponse {
 @Injectable({ providedIn: 'root' })
 export class TranscriptImportService {
   private readonly http = inject(HttpClient);
+  private readonly meetingService = inject(MeetingService);
 
   readonly state = signal<TranscriptImportState>('idle');
   readonly parsedMeetings = signal<ParsedMeeting[]>([]);
@@ -69,11 +71,14 @@ export class TranscriptImportService {
 
     this.http.post<ParseResponse>('/api/meetings/import/parse', formData).subscribe({
       next: result => {
-        this.parsedMeetings.set([{
+        const meeting: ParsedMeeting = {
           ...result,
           selected: true,
           isDuplicate: false,
-        }]);
+        };
+        meeting.isDuplicate = this.checkDuplicate(meeting);
+        if (meeting.isDuplicate) meeting.selected = false;
+        this.parsedMeetings.set([meeting]);
         this.state.set('preview');
       },
       error: () => {
@@ -104,11 +109,14 @@ export class TranscriptImportService {
           this.http.post<ParseResponse>('/api/meetings/import/parse', formData)
         );
 
-        results.push({
+        const meeting: ParsedMeeting = {
           ...result,
           selected: true,
           isDuplicate: false,
-        });
+        };
+        meeting.isDuplicate = this.checkDuplicate(meeting);
+        if (meeting.isDuplicate) meeting.selected = false;
+        results.push(meeting);
       } catch {
         failures++;
       }
@@ -176,5 +184,31 @@ export class TranscriptImportService {
     this.importedCount.set(0);
     this.totalActionItems.set(0);
     this.parseProgress.set({ current: 0, total: 0 });
+  }
+
+  private checkDuplicate(parsed: ParsedMeeting): boolean {
+    if (!parsed.title) return false;
+
+    const existingMeetings = this.meetingService.meetings();
+    const parsedTitle = parsed.title.toLowerCase().trim();
+
+    return existingMeetings.some(existing => {
+      if (!existing.title) return false;
+      if (existing.title.toLowerCase().trim() !== parsedTitle) return false;
+
+      // If both have dates, check within 1 hour
+      if (parsed.meetingDate && existing.meetingDate) {
+        const parsedDate = new Date(parsed.meetingDate);
+        const existingDate = new Date(existing.meetingDate);
+        if (isNaN(parsedDate.getTime()) || isNaN(existingDate.getTime())) return false;
+        const diffMs = Math.abs(parsedDate.getTime() - existingDate.getTime());
+        return diffMs <= 60 * 60 * 1000; // 1 hour
+      }
+
+      // If neither has a date, title match alone is enough
+      if (!parsed.meetingDate && !existing.meetingDate) return true;
+
+      return false;
+    });
   }
 }
