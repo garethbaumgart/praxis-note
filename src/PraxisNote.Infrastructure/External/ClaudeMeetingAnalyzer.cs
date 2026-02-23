@@ -140,6 +140,34 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         return ParseAnalysisResponse(content);
     }
 
+    private const string TranscriptImportPrompt = """
+        Parse this meeting transcript and extract structured meeting data as JSON.
+
+        Extract the following fields:
+        1. "title": A concise topic-focused title for the meeting (max 60 characters). If identifiable, use format "[Topic] with [Participants]".
+        2. "meetingDate": The meeting date/time as an ISO 8601 string (e.g., "2025-01-15T09:00:00Z"). Look for dates in the document header, "Date:", timestamps, or any date references. If no date can be determined, set to null.
+        3. "attendees": Comma-separated list of participant names found in the transcript. If no names found, set to null.
+        4. "summary": A concise 2-3 sentence summary of the meeting.
+        5. "keyPoints": An array of 3-5 key discussion points (strings).
+        6. "decisions": An array of decisions made during the meeting (strings, can be empty).
+        7. "actionItems": An array of action items, each with:
+           - "description": What needs to be done (string, required)
+           - "assignee": Who is responsible, if mentioned (string or null)
+        8. "suggestedTags": An array of 2-3 short, relevant tags (strings, lowercase).
+        9. "isComplete": Boolean - set to true ONLY if all three of these were successfully extracted: title, meetingDate, and summary. Otherwise false.
+        10. "warning": If isComplete is false, provide a brief description of what fields are missing or could not be extracted. If isComplete is true, set to null.
+
+        IMPORTANT GUIDELINES:
+        - If the transcript is from Google Gemini meeting notes, look for structured sections like "Meeting Title", "Date", "Attendees", "Summary", "Action Items", etc.
+        - If participant names cannot be identified, set attendees to null rather than guessing.
+        - Be thorough in extracting action items - look for phrases like "will do", "needs to", "action:", "TODO:", "follow up", etc.
+        - Tags should categorize the meeting topic (e.g., "budget", "planning", "engineering").
+
+        Respond ONLY with valid JSON, no other text or markdown formatting.
+
+        Transcript:
+        """;
+
     private const string ScreenshotExtractionPromptTemplate = """
         Extract all calendar events/meetings visible in this screenshot. The image is from a calendar application (Google Calendar, Outlook, Apple Calendar, or similar).
 
@@ -235,6 +263,84 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         }
 
         return ParseScreenshotExtractionResponse(content);
+    }
+
+    public async Task<TranscriptImportResult> ParseTranscriptForImportAsync(string transcript, CancellationToken cancellationToken = default)
+    {
+        if (_client is null)
+        {
+            throw new InvalidOperationException(
+                "Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+        }
+
+        var prompt = TranscriptImportPrompt + transcript;
+
+        var parameters = new MessageParameters
+        {
+            Model = _settings.Model,
+            MaxTokens = _settings.MaxTokens,
+            Messages = [new Message(RoleType.User, prompt)]
+        };
+
+        _logger.LogInformation("Parsing transcript for import with model {Model}", _settings.Model);
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
+
+        var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
+        var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            throw new InvalidOperationException("Claude returned an empty response for transcript import parsing");
+        }
+
+        _logger.LogInformation("Received transcript import parse response, parsing JSON");
+
+        return ParseTranscriptImportResponse(content);
+    }
+
+    private static TranscriptImportResult ParseTranscriptImportResponse(string jsonResponse)
+    {
+        var cleanJson = CleanJsonResponse(jsonResponse);
+
+        var result = JsonSerializer.Deserialize<TranscriptImportJsonResponse>(cleanJson, JsonOptions)
+            ?? throw new InvalidOperationException("Failed to parse transcript import response");
+
+        DateTimeOffset? meetingDate = null;
+        if (!string.IsNullOrWhiteSpace(result.MeetingDate) &&
+            DateTimeOffset.TryParse(result.MeetingDate, out var parsed))
+        {
+            meetingDate = parsed;
+        }
+
+        var title = result.Title?.Trim();
+        var summary = result.Summary?.Trim();
+        var missing = new List<string>();
+        if (string.IsNullOrWhiteSpace(title)) missing.Add("title");
+        if (meetingDate is null) missing.Add("meeting date");
+        if (string.IsNullOrWhiteSpace(summary)) missing.Add("summary");
+        var isComplete = missing.Count == 0;
+        var warning = isComplete
+            ? null
+            : !string.IsNullOrWhiteSpace(result.Warning)
+                ? result.Warning.Trim()
+                : $"Missing {string.Join(", ", missing)}.";
+
+        return new TranscriptImportResult(
+            title,
+            meetingDate,
+            result.Attendees?.Trim(),
+            summary ?? "No summary provided",
+            result.KeyPoints ?? [],
+            result.Decisions ?? [],
+            result.ActionItems?
+                .Where(a => !string.IsNullOrWhiteSpace(a.Description))
+                .Select(a => new ExtractedActionItem(a.Description!.Trim(), a.Assignee?.Trim()))
+                .ToList() ?? [],
+            result.SuggestedTags ?? [],
+            isComplete,
+            warning);
     }
 
     private static ScreenshotExtractionResult ParseScreenshotExtractionResponse(string jsonResponse)
@@ -359,6 +465,20 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
     }
 
     #region JSON Response Classes
+
+    private sealed class TranscriptImportJsonResponse
+    {
+        public string? Title { get; set; }
+        public string? MeetingDate { get; set; }
+        public string? Attendees { get; set; }
+        public string? Summary { get; set; }
+        public List<string>? KeyPoints { get; set; }
+        public List<string>? Decisions { get; set; }
+        public List<ActionItemJson>? ActionItems { get; set; }
+        public List<string>? SuggestedTags { get; set; }
+        public bool IsComplete { get; set; }
+        public string? Warning { get; set; }
+    }
 
     private sealed class ScreenshotExtractionJsonResponse
     {

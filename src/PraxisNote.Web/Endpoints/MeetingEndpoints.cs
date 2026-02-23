@@ -31,6 +31,8 @@ public static class MeetingEndpoints
         group.MapPost("/{id:guid}/note", (Delegate)HandleCreateMeetingNote);
         group.MapPut("/{id:guid}/note", (Delegate)HandleUpdateMeetingNote);
         group.MapGet("/{id:guid}/note", (Delegate)HandleGetMeetingNote);
+        group.MapPost("/import/parse", (Delegate)HandleParseTranscript).DisableAntiforgery();
+        group.MapPost("/import/confirm", (Delegate)HandleConfirmTranscriptImport);
     }
 
     private static async Task<IResult> HandleGetMeetings(
@@ -474,6 +476,105 @@ public static class MeetingEndpoints
 
         return success ? Results.NoContent() : Results.NotFound();
     }
+
+    private static async Task<IResult> HandleParseTranscript(
+        HttpContext context,
+        ClaimsPrincipal user,
+        [FromForm] string? text,
+        IFormFile? file,
+        [FromServices] ParseTranscriptForImport parseTranscript,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(text) && file is null)
+        {
+            return Results.BadRequest("Either text or a file must be provided.");
+        }
+
+        // Validate file if provided
+        if (file is not null)
+        {
+            if (file.Length > 10_000_000)
+            {
+                return Results.BadRequest("File is too large. Maximum size is 10MB.");
+            }
+
+            string[] supportedTypes = ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+            if (!supportedTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
+            {
+                return Results.BadRequest("Unsupported file type. Supported types: .txt, .docx");
+            }
+        }
+
+        Stream? fileStream = null;
+        try
+        {
+            if (file is not null)
+            {
+                fileStream = file.OpenReadStream();
+            }
+
+            var command = new ParseTranscriptForImport.Command(
+                userId.Value,
+                text,
+                fileStream,
+                file?.ContentType,
+                file?.FileName);
+
+            var result = await parseTranscript.ExecuteAsync(command, cancellationToken);
+            return Results.Ok(result);
+        }
+        finally
+        {
+            if (fileStream is not null)
+            {
+                await fileStream.DisposeAsync();
+            }
+        }
+    }
+
+    private static async Task<IResult> HandleConfirmTranscriptImport(
+        HttpContext context,
+        ClaimsPrincipal user,
+        ConfirmTranscriptImportRequest request,
+        [FromServices] ConfirmTranscriptImport confirmImport,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (request.Meetings is null || request.Meetings.Count == 0)
+        {
+            return Results.BadRequest("At least one meeting must be provided.");
+        }
+
+        var profileId = context.GetProfileId();
+
+        var meetings = request.Meetings.Select(m => new ConfirmTranscriptImport.ImportItem(
+            m.Title,
+            m.MeetingDate,
+            m.Attendees,
+            m.Transcript,
+            m.Summary,
+            m.KeyPoints,
+            m.Decisions,
+            m.ActionItems?.Select(a => new ConfirmTranscriptImport.ActionItemInput(a.Description, a.Assignee)).ToList() ?? [],
+            m.SuggestedTags ?? []
+        )).ToList();
+
+        var command = new ConfirmTranscriptImport.Command(userId.Value, profileId, meetings);
+        var result = await confirmImport.ExecuteAsync(command, cancellationToken);
+
+        return Results.Ok(result);
+    }
 }
 
 public record CreateMeetingRequest(string? Title, DateTimeOffset? MeetingDate, string? Attendees);
@@ -493,3 +594,18 @@ public record PromptResponseRequest(string PromptId, string PromptText, string R
 public record ExcludeFromInsightsRequest(bool Exclude);
 public record ExtractFromScreenshotRequest(string Base64Image, string? MediaType, string? TimeZone);
 public record CreateMeetingNoteRequest(string Content);
+
+public record ConfirmTranscriptImportRequest(List<ConfirmTranscriptImportMeeting> Meetings);
+
+public record ConfirmTranscriptImportMeeting(
+    string? Title,
+    DateTimeOffset? MeetingDate,
+    string? Attendees,
+    string Transcript,
+    string? Summary,
+    string? KeyPoints,
+    string? Decisions,
+    List<ConfirmTranscriptImportActionItem>? ActionItems,
+    List<string>? SuggestedTags);
+
+public record ConfirmTranscriptImportActionItem(string Description, string? Assignee);

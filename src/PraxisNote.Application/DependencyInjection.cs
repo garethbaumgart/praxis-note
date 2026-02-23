@@ -118,6 +118,8 @@ public static class DependencyInjection
         services.AddScoped<CreateMeetingNote>();
         services.AddScoped<UpdateMeetingNote>();
         services.AddScoped<GetMeetingNote>();
+        services.AddScoped<ParseTranscriptForImport>();
+        services.AddScoped<ConfirmTranscriptImport>();
 
         // Calendar use cases
         services.AddScoped<ConnectGoogleCalendar>();
