@@ -8,7 +8,7 @@ public sealed class TranscriptExtractor : ITranscriptExtractor
 {
     public Task<string> ExtractTextFromDocxAsync(Stream fileStream, CancellationToken cancellationToken = default)
     {
-        using var doc = WordprocessingDocument.Open(fileStream, isEditable: false);
+        using var doc = WordprocessingDocument.Open(fileStream, isEditable: false, new OpenSettings { AutoSave = false });
         var body = doc.MainDocumentPart?.Document?.Body;
         if (body == null) return Task.FromResult(string.Empty);
 
@@ -18,7 +18,7 @@ public sealed class TranscriptExtractor : ITranscriptExtractor
 
     public string ExtractTextFromPlainText(Stream fileStream)
     {
-        using var reader = new StreamReader(fileStream);
+        using var reader = new StreamReader(fileStream, leaveOpen: true);
         return reader.ReadToEnd();
     }
 }
