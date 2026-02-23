@@ -17,8 +17,8 @@ test.describe('Transcript Import', () => {
     await setupAuth(page, testUser);
     await page.goto('/meetings');
 
-    // Click the Import button
-    const importButton = page.locator('button').filter({ hasText: 'Import' });
+    // Click the Import button on the meetings page header
+    const importButton = page.locator('button[aria-label="Import meetings"]');
     await expect(importButton).toBeVisible({ timeout: 10000 });
     await importButton.click();
 
