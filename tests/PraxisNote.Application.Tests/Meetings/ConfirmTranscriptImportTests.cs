@@ -134,7 +134,9 @@ public class ConfirmTranscriptImportTests
         var designTag = Tag.Create(_userId, _profileId, "design");
         var reviewTag = Tag.Create(_userId, _profileId, "code-review");
 
-        _tagRepo.GetByNamesAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+        IEnumerable<string>? capturedNames = null;
+        _tagRepo.GetByNamesAsync(_userId, _profileId,
+                Arg.Do<IEnumerable<string>>(n => capturedNames = n), Arg.Any<CancellationToken>())
             .Returns(new List<Tag> { designTag, reviewTag });
 
         var meetings = new List<ConfirmTranscriptImport.ImportItem>
@@ -158,6 +160,11 @@ public class ConfirmTranscriptImportTests
 
         // Act
         await _sut.ExecuteAsync(command);
+
+        // Assert — mixed-case names forwarded to repository for lookup
+        Assert.NotNull(capturedNames);
+        Assert.Contains("Design", capturedNames!);
+        Assert.Contains("Code-Review", capturedNames!);
 
         // Assert — both tags matched despite case differences
         Assert.NotNull(capturedMeeting);
