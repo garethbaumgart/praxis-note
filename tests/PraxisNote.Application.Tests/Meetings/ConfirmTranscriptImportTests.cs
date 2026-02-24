@@ -128,6 +128,45 @@ public class ConfirmTranscriptImportTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_WithMixedCaseTagNames_MatchesCaseInsensitively()
+    {
+        // Arrange — tag stored as lowercase, suggested tag uses mixed case
+        var designTag = Tag.Create(_userId, _profileId, "design");
+        var reviewTag = Tag.Create(_userId, _profileId, "code-review");
+
+        _tagRepo.GetByNamesAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Tag> { designTag, reviewTag });
+
+        var meetings = new List<ConfirmTranscriptImport.ImportItem>
+        {
+            new(
+                Title: "Design Review",
+                MeetingDate: DateTimeOffset.UtcNow,
+                Attendees: null,
+                Transcript: "Transcript...",
+                Summary: "Review discussion",
+                KeyPoints: null,
+                Decisions: null,
+                ActionItems: [],
+                SuggestedTags: ["Design", "Code-Review"])
+        };
+
+        var command = new ConfirmTranscriptImport.Command(_userId, _profileId, meetings);
+
+        Meeting? capturedMeeting = null;
+        await _meetingRepo.AddAsync(Arg.Do<Meeting>(m => capturedMeeting = m), Arg.Any<CancellationToken>());
+
+        // Act
+        await _sut.ExecuteAsync(command);
+
+        // Assert — both tags matched despite case differences
+        Assert.NotNull(capturedMeeting);
+        Assert.Contains(designTag.Id, capturedMeeting!.TagIds);
+        Assert.Contains(reviewTag.Id, capturedMeeting.TagIds);
+        Assert.Equal(2, capturedMeeting.TagIds.Count);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WithSuggestedTagsNotInUserList_IgnoresThem()
     {
         // Arrange - no matching tags exist

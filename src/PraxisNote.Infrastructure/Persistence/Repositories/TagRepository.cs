@@ -34,9 +34,9 @@ public sealed class TagRepository(PraxisNoteDbContext context) : ITagRepository
 
     public async Task<IReadOnlyList<Tag>> GetByNamesAsync(Guid userId, Guid profileId, IEnumerable<string> names, CancellationToken cancellationToken = default)
     {
-        var lowerNames = names.Select(n => n.ToLowerInvariant()).ToHashSet();
+        var lowerNames = names.Select(n => n.ToLowerInvariant()).ToList();
         return await context.Tags
-            .Where(t => t.UserId == userId && t.ProfileId == profileId && lowerNames.Contains(t.Name.ToLowerInvariant()))
+            .Where(t => t.UserId == userId && t.ProfileId == profileId && lowerNames.Contains(t.Name.ToLower()))
             .ToListAsync(cancellationToken);
     }
 
