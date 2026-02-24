@@ -280,7 +280,8 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         var tz = GetTimeZoneInfo(timeZone);
         var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) ? timeZone : tz.Id;
+        // Use the original IANA ID for the prompt (better AI recognition) but fall back to resolved ID
+        var tzName = !string.IsNullOrWhiteSpace(timeZone) && TryFindTimeZone(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = TranscriptImportPromptTemplate
@@ -476,6 +477,23 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         {
             _logger.LogWarning("Timezone '{TimeZone}' is invalid, falling back to local timezone", ianaTimeZone);
             return TimeZoneInfo.Local;
+        }
+    }
+
+    private static bool TryFindTimeZone(string timeZoneId)
+    {
+        try
+        {
+            TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return true;
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return false;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return false;
         }
     }
 

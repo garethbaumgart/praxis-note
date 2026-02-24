@@ -497,6 +497,12 @@ public static class MeetingEndpoints
             return Results.BadRequest("Either text or a file must be provided.");
         }
 
+        var normalizedTimeZone = string.IsNullOrWhiteSpace(timeZone) ? null : timeZone.Trim();
+        if (normalizedTimeZone is not null && (normalizedTimeZone.Length > 64 || normalizedTimeZone.Any(char.IsControl)))
+        {
+            return Results.BadRequest("Invalid time zone.");
+        }
+
         // Validate file if provided
         if (file is not null)
         {
@@ -523,7 +529,7 @@ public static class MeetingEndpoints
             var command = new ParseTranscriptForImport.Command(
                 userId.Value,
                 user.GetUserName(),
-                timeZone,
+                normalizedTimeZone,
                 text,
                 fileStream,
                 file?.ContentType,
