@@ -39,7 +39,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -90,7 +90,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(extractedText, Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, null, stream, contentType, "meeting.docx");
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, stream, contentType, "meeting.docx");
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -111,7 +111,7 @@ public class ParseTranscriptForImportTests
     [Fact]
     public async Task ExecuteAsync_WhenNoTextOrFile_ThrowsArgumentException()
     {
-        var command = new ParseTranscriptForImport.Command(_userId, null, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, null, null, null);
 
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.ExecuteAsync(command));
     }
@@ -119,7 +119,7 @@ public class ParseTranscriptForImportTests
     [Fact]
     public async Task ExecuteAsync_WhenEmptyText_ThrowsArgumentException()
     {
-        var command = new ParseTranscriptForImport.Command(_userId, "   ", null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, "   ", null, null, null);
 
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.ExecuteAsync(command));
     }
@@ -128,7 +128,7 @@ public class ParseTranscriptForImportTests
     public async Task ExecuteAsync_WhenUnsupportedFileType_ThrowsInvalidOperationException()
     {
         var stream = new MemoryStream();
-        var command = new ParseTranscriptForImport.Command(_userId, null, stream, "application/pdf", "meeting.pdf");
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, stream, "application/pdf", "meeting.pdf");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExecuteAsync(command));
     }
@@ -157,7 +157,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(extractedText, Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, null, stream, "text/plain", "meeting.txt");
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, stream, "text/plain", "meeting.txt");
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -178,7 +178,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Claude returned an empty response"));
 
-        var command = new ParseTranscriptForImport.Command(_userId, transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, transcript, null, null, null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExecuteAsync(command));
     }
@@ -205,7 +205,7 @@ public class ParseTranscriptForImportTests
         _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, transcript, stream, "text/plain", "file.txt");
+        var command = new ParseTranscriptForImport.Command(_userId, null, transcript, stream, "text/plain", "file.txt");
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -213,6 +213,164 @@ public class ParseTranscriptForImportTests
         // Assert - text was used, not the file
         Assert.Equal(transcript, result.Transcript);
         _transcriptExtractor.DidNotReceive().ExtractTextFromPlainText(Arg.Any<Stream>());
+    }
+
+    #endregion
+
+    #region 1:1 Attendee Tag Rule
+
+    [Fact]
+    public async Task ExecuteAsync_WithTwoAttendees_PrependOtherPersonTagToSuggestions()
+    {
+        // Arrange
+        var transcript = "1:1 meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "1:1 with Bob",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Bob Jones",
+            Summary: "1:1 discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["career", "feedback"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — "bob" prepended to AI-suggested tags
+        Assert.Equal(3, result.SuggestedTags.Count);
+        Assert.Equal("bob", result.SuggestedTags[0]);
+        Assert.Equal("career", result.SuggestedTags[1]);
+        Assert.Equal("feedback", result.SuggestedTags[2]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithTwoAttendees_UserNameNotFound_NoExtraTag()
+    {
+        // Arrange
+        var transcript = "Meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Meeting",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Charlie Brown, Diana Prince",
+            Summary: "Discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["planning"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        // User name "Alice" doesn't match either attendee
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — no extra tag added, only AI suggestions
+        Assert.Single(result.SuggestedTags);
+        Assert.Equal("planning", result.SuggestedTags[0]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithThreeAttendees_No1on1Tag()
+    {
+        // Arrange
+        var transcript = "Group meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Team Standup",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice, Bob, Charlie",
+            Summary: "Standup",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["standup"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice", transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — 3 attendees, no 1:1 rule applied
+        Assert.Single(result.SuggestedTags);
+        Assert.Equal("standup", result.SuggestedTags[0]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullAttendees_No1on1Tag()
+    {
+        // Arrange
+        var transcript = "Transcript without attendees...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Meeting",
+            MeetingDate: null,
+            Attendees: null,
+            Summary: "Discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["general"],
+            IsComplete: false,
+            Warning: "Missing attendees");
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice", transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — null attendees, no crash, no extra tag
+        Assert.Single(result.SuggestedTags);
+        Assert.Equal("general", result.SuggestedTags[0]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_With1on1Tag_AlreadySuggested_NoDuplicate()
+    {
+        // Arrange
+        var transcript = "1:1 transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "1:1 with Bob",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice, Bob",
+            Summary: "1:1",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["Bob", "career"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice", transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — "bob" already present (case-insensitive), not duplicated
+        Assert.Equal(2, result.SuggestedTags.Count);
+        Assert.Equal("Bob", result.SuggestedTags[0]);
+        Assert.Equal("career", result.SuggestedTags[1]);
     }
 
     #endregion
