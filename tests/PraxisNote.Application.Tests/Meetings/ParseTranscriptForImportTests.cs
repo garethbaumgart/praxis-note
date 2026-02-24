@@ -381,7 +381,7 @@ public class ParseTranscriptForImportTests
     [Fact]
     public async Task ExecuteAsync_PersonTagAlreadyInAISuggestions_NoDuplicate()
     {
-        // Arrange — AI already suggested "bob-jones"
+        // Arrange — AI already suggested "Bob-Jones" (mixed case) while person tag generates "bob-jones"
         var transcript = "1:1 transcript...";
         var parseResult = new TranscriptImportResult(
             Title: "1:1 with Bob",
@@ -391,7 +391,7 @@ public class ParseTranscriptForImportTests
             KeyPoints: [],
             Decisions: [],
             ActionItems: [],
-            SuggestedTags: ["bob-jones", "career"],
+            SuggestedTags: ["Bob-Jones", "career"],
             IsComplete: true,
             Warning: null);
 
@@ -403,7 +403,7 @@ public class ParseTranscriptForImportTests
         // Act
         var result = await _sut.ExecuteAsync(command);
 
-        // Assert — "bob-jones" already present (case-insensitive), not duplicated
+        // Assert — person tag "bob-jones" added first, AI tag "Bob-Jones" skipped (case-insensitive dedup)
         Assert.Equal(2, result.SuggestedTags.Count);
         Assert.Equal("bob-jones", result.SuggestedTags[0]);
         Assert.Equal("career", result.SuggestedTags[1]);
@@ -502,6 +502,70 @@ public class ParseTranscriptForImportTests
         Assert.Equal(2, result.SuggestedTags.Count);
         Assert.Equal("bob-jones", result.SuggestedTags[0]);
         Assert.Equal("chat", result.SuggestedTags[1]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithAttendees_AndNullUserName_IncludesAllPersonTags()
+    {
+        // Arrange — userName is null, all attendees should be included as person tags
+        var transcript = "Meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Chat",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice, Bob Jones",
+            Summary: "Discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["chat"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — both attendees are included as person tags when userName is unknown
+        Assert.Equal(3, result.SuggestedTags.Count);
+        Assert.Equal("alice", result.SuggestedTags[0]);
+        Assert.Equal("bob-jones", result.SuggestedTags[1]);
+        Assert.Equal("chat", result.SuggestedTags[2]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_DifferentFullNameSameFirstName_NotExcluded()
+    {
+        // Arrange — user "Alice Smith", attendee "Alice Johnson" should NOT be excluded
+        var transcript = "Meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Team Sync",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Alice Johnson, Bob Jones",
+            Summary: "Team sync",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["sync"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — "Alice Smith" excluded (exact match), "Alice Johnson" kept (different full name)
+        Assert.Equal(3, result.SuggestedTags.Count);
+        Assert.Equal("alice-johnson", result.SuggestedTags[0]);
+        Assert.Equal("bob-jones", result.SuggestedTags[1]);
+        Assert.Equal("sync", result.SuggestedTags[2]);
     }
 
     #endregion

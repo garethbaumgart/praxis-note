@@ -40,17 +40,20 @@ public sealed class ParseTranscriptForImport(
         var personTags = GetAttendeePersonTags(parseResult.Attendees, command.UserName);
         var aiTags = parseResult.SuggestedTags;
 
-        // Prepend person tags, deduplicating against AI-suggested tags
+        // Prepend person tags, then AI tags, with global case-insensitive deduplication
         var suggestedTags = new List<string>();
+
         foreach (var pt in personTags)
         {
-            if (!aiTags.Contains(pt, StringComparer.OrdinalIgnoreCase) &&
-                !suggestedTags.Contains(pt, StringComparer.OrdinalIgnoreCase))
-            {
+            if (!suggestedTags.Contains(pt, StringComparer.OrdinalIgnoreCase))
                 suggestedTags.Add(pt);
-            }
         }
-        suggestedTags.AddRange(aiTags);
+
+        foreach (var aiTag in aiTags)
+        {
+            if (!suggestedTags.Contains(aiTag, StringComparer.OrdinalIgnoreCase))
+                suggestedTags.Add(aiTag);
+        }
 
         return new Result(
             parseResult.Title,
@@ -77,22 +80,29 @@ public sealed class ParseTranscriptForImport(
         if (names.Length == 0)
             return [];
 
-        var userFirst = userName?.Trim().Split(' ')[0];
+        var normalizedUser = userName?.Trim();
+        var userFirst = normalizedUser?
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
 
         var personTags = new List<string>();
         foreach (var name in names)
         {
-            // Skip the current user (full-name match or first-name match)
-            if (!string.IsNullOrWhiteSpace(userName) &&
-                (string.Equals(name, userName.Trim(), StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(name.Split(' ')[0], userFirst, StringComparison.OrdinalIgnoreCase)))
+            var nameParts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var attendeeFirst = nameParts.FirstOrDefault();
+
+            // Skip the current user (full-name match, or first-name match only for single-word names)
+            if (!string.IsNullOrWhiteSpace(normalizedUser) &&
+                (string.Equals(name, normalizedUser, StringComparison.OrdinalIgnoreCase) ||
+                 (nameParts.Length == 1 &&
+                  !string.IsNullOrWhiteSpace(attendeeFirst) &&
+                  string.Equals(attendeeFirst, userFirst, StringComparison.OrdinalIgnoreCase))))
             {
                 continue;
             }
 
             // Convert "First Last" → "first-last"
-            var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var tag = string.Join("-", parts).ToLowerInvariant();
+            var tag = string.Join("-", nameParts).ToLowerInvariant();
 
             if (!string.IsNullOrWhiteSpace(tag))
             {
