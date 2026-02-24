@@ -329,12 +329,12 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
                   </button>
                 </div>
                 <div class="space-y-2 max-h-64 overflow-y-auto">
-                  @for (meeting of transcriptService.parsedMeetings(); track $index) {
+                  @for (meeting of transcriptService.parsedMeetings(); track $index; let meetingIdx = $index) {
                     <label class="flex items-start gap-3 p-3 bg-surface-muted rounded-lg cursor-pointer hover:bg-surface-muted/80 transition-colors"
                       [class.opacity-50]="meeting.isDuplicate">
                       <p-checkbox
                         [ngModel]="meeting.selected"
-                        (ngModelChange)="transcriptService.toggleMeeting($index)"
+                        (ngModelChange)="transcriptService.toggleMeeting(meetingIdx)"
                         [binary]="true"
                         [disabled]="meeting.isDuplicate"
                         styleClass="mt-0.5"
@@ -367,7 +367,7 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
                                 <button
                                   type="button"
                                   class="ml-0.5 hover:text-danger transition-colors"
-                                  (click)="transcriptService.removeTag($index, tag)"
+                                  (click)="transcriptService.removeTag(meetingIdx, tag)"
                                   [attr.aria-label]="'Remove tag ' + tag"
                                 >
                                   <i class="pi pi-times text-[8px]"></i>
@@ -379,7 +379,7 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
                                 type="text"
                                 class="w-16 text-[11px] px-1.5 py-0.5 bg-transparent border border-dashed border-border rounded placeholder:text-foreground-muted focus:outline-none focus:border-accent-solid"
                                 placeholder="+ tag"
-                                (keydown.enter)="transcriptService.addTag($index, $any($event.target).value); $any($event.target).value = ''"
+                                (keydown.enter)="transcriptService.addTag(meetingIdx, $any($event.target).value); $any($event.target).value = ''"
                                 (click)="$event.stopPropagation()"
                               />
                             }
