@@ -71,9 +71,11 @@ public sealed class ParseTranscriptForImport(
 
         var userFirst = userName.Trim().Split(' ')[0];
 
-        // Verify the user is one of the two attendees
-        var userMatch = names.FirstOrDefault(n =>
-            string.Equals(n.Split(' ')[0], userFirst, StringComparison.OrdinalIgnoreCase));
+        // Prefer full-name match; fall back to first-name match
+        var userMatch =
+            names.FirstOrDefault(n => string.Equals(n, userName.Trim(), StringComparison.OrdinalIgnoreCase))
+            ?? names.FirstOrDefault(n =>
+                string.Equals(n.Split(' ')[0], userFirst, StringComparison.OrdinalIgnoreCase));
         if (userMatch is null)
             return null;
 
