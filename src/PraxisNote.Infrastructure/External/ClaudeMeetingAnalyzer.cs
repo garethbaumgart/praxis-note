@@ -140,12 +140,15 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         return ParseAnalysisResponse(content);
     }
 
-    private const string TranscriptImportPrompt = """
+    private const string TranscriptImportPromptTemplate = """
         Parse this meeting transcript and extract structured meeting data as JSON.
+
+        User's timezone: <<TIMEZONE>>
+        Current date in user's timezone: <<BASE_DATE>>
 
         Extract the following fields:
         1. "title": A concise topic-focused title for the meeting (max 60 characters). If identifiable, use format "[Topic] with [Participants]".
-        2. "meetingDate": The meeting date/time as an ISO 8601 string (e.g., "2025-01-15T09:00:00Z"). Look for dates in the document header, "Date:", timestamps, or any date references. If no date can be determined, set to null.
+        2. "meetingDate": The meeting date/time as an ISO 8601 string WITH the UTC offset for the user's timezone (e.g., "2025-01-15T09:00:00<<OFFSET_EXAMPLE>>"). Look for dates in the document header, "Date:", timestamps, or any date references. If no date can be determined, set to null.
         3. "attendees": Comma-separated list of participant names found in the transcript. If no names found, set to null.
         4. "summary": A concise 2-3 sentence summary of the meeting.
         5. "keyPoints": An array of 3-5 key discussion points (strings).
@@ -158,6 +161,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         10. "warning": If isComplete is false, provide a brief description of what fields are missing or could not be extracted. If isComplete is true, set to null.
 
         IMPORTANT GUIDELINES:
+        - All times in the transcript are in the <<TIMEZONE>> timezone. Return meetingDate with the UTC offset for this timezone.
         - If the transcript is from Google Gemini meeting notes, look for structured sections like "Meeting Title", "Date", "Attendees", "Summary", "Action Items", etc.
         - If participant names cannot be identified, set attendees to null rather than guessing.
         - Be thorough in extracting action items - look for phrases like "will do", "needs to", "action:", "TODO:", "follow up", etc.
@@ -265,7 +269,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         return ParseScreenshotExtractionResponse(content);
     }
 
-    public async Task<TranscriptImportResult> ParseTranscriptForImportAsync(string transcript, CancellationToken cancellationToken = default)
+    public async Task<TranscriptImportResult> ParseTranscriptForImportAsync(string transcript, string? timeZone = null, CancellationToken cancellationToken = default)
     {
         if (_client is null)
         {
@@ -273,7 +277,19 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
                 "Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
         }
 
-        var prompt = TranscriptImportPrompt + transcript;
+        var tz = GetTimeZoneInfo(timeZone);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var baseDate = userNow.ToString("yyyy-MM-dd");
+        // Use the original IANA ID for the prompt (better AI recognition) but fall back to resolved ID
+        var tzName = !string.IsNullOrWhiteSpace(timeZone) && TryFindTimeZone(timeZone) ? timeZone : tz.Id;
+        var offsetExample = userNow.ToString("zzz");
+
+        var promptText = TranscriptImportPromptTemplate
+            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<BASE_DATE>>", baseDate)
+            .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
+
+        var prompt = promptText + transcript;
 
         var parameters = new MessageParameters
         {
@@ -461,6 +477,23 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         {
             _logger.LogWarning("Timezone '{TimeZone}' is invalid, falling back to local timezone", ianaTimeZone);
             return TimeZoneInfo.Local;
+        }
+    }
+
+    private static bool TryFindTimeZone(string timeZoneId)
+    {
+        try
+        {
+            TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return true;
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return false;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return false;
         }
     }
 

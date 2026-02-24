@@ -70,6 +70,7 @@ export class TranscriptImportService {
 
     const formData = new FormData();
     formData.append('text', text);
+    this.appendTimeZone(formData);
 
     this.http.post<ParseResponse>('/api/meetings/import/parse', formData).subscribe({
       next: result => {
@@ -106,6 +107,7 @@ export class TranscriptImportService {
       try {
         const formData = new FormData();
         formData.append('file', file);
+        this.appendTimeZone(formData);
 
         const result = await firstValueFrom(
           this.http.post<ParseResponse>('/api/meetings/import/parse', formData)
@@ -208,6 +210,13 @@ export class TranscriptImportService {
     this.totalActionItems.set(0);
     this.tagsCreated.set(0);
     this.parseProgress.set({ current: 0, total: 0 });
+  }
+
+  private appendTimeZone(formData: FormData): void {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) formData.append('timeZone', tz);
+    } catch { /* browser doesn't support Intl */ }
   }
 
   private checkDuplicate(parsed: ParsedMeeting): boolean {

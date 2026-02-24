@@ -36,10 +36,10 @@ public class ParseTranscriptForImportTests
             IsComplete: true,
             Warning: null);
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, null, transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -87,10 +87,10 @@ public class ParseTranscriptForImportTests
             IsComplete: false,
             Warning: "Could not extract meeting date or attendees");
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(extractedText, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(extractedText, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, null, null, stream, contentType, "meeting.docx");
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, null, stream, contentType, "meeting.docx");
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -111,7 +111,7 @@ public class ParseTranscriptForImportTests
     [Fact]
     public async Task ExecuteAsync_WhenNoTextOrFile_ThrowsArgumentException()
     {
-        var command = new ParseTranscriptForImport.Command(_userId, null, null, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, null, null, null, null);
 
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.ExecuteAsync(command));
     }
@@ -119,7 +119,7 @@ public class ParseTranscriptForImportTests
     [Fact]
     public async Task ExecuteAsync_WhenEmptyText_ThrowsArgumentException()
     {
-        var command = new ParseTranscriptForImport.Command(_userId, null, "   ", null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, "   ", null, null, null);
 
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.ExecuteAsync(command));
     }
@@ -128,7 +128,7 @@ public class ParseTranscriptForImportTests
     public async Task ExecuteAsync_WhenUnsupportedFileType_ThrowsInvalidOperationException()
     {
         var stream = new MemoryStream();
-        var command = new ParseTranscriptForImport.Command(_userId, null, null, stream, "application/pdf", "meeting.pdf");
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, null, stream, "application/pdf", "meeting.pdf");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExecuteAsync(command));
     }
@@ -154,10 +154,10 @@ public class ParseTranscriptForImportTests
             IsComplete: false,
             Warning: "Missing date and attendees");
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(extractedText, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(extractedText, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, null, null, stream, "text/plain", "meeting.txt");
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, null, stream, "text/plain", "meeting.txt");
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -175,10 +175,10 @@ public class ParseTranscriptForImportTests
     public async Task ExecuteAsync_WhenAIFails_PropagatesException()
     {
         var transcript = "Some transcript text...";
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Claude returned an empty response"));
 
-        var command = new ParseTranscriptForImport.Command(_userId, null, transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, null, null, null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExecuteAsync(command));
     }
@@ -202,10 +202,10 @@ public class ParseTranscriptForImportTests
             IsComplete: false,
             Warning: null);
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, null, transcript, stream, "text/plain", "file.txt");
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, stream, "text/plain", "file.txt");
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -236,10 +236,10 @@ public class ParseTranscriptForImportTests
             IsComplete: true,
             Warning: null);
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -268,11 +268,11 @@ public class ParseTranscriptForImportTests
             IsComplete: true,
             Warning: null);
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
         // User name "Alice" doesn't match either attendee
-        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -299,10 +299,10 @@ public class ParseTranscriptForImportTests
             IsComplete: true,
             Warning: null);
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, "Alice", transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice", null, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -329,10 +329,10 @@ public class ParseTranscriptForImportTests
             IsComplete: false,
             Warning: "Missing attendees");
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, "Alice", transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice", null, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -359,10 +359,10 @@ public class ParseTranscriptForImportTests
             IsComplete: true,
             Warning: null);
 
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<CancellationToken>())
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        var command = new ParseTranscriptForImport.Command(_userId, "Alice", transcript, null, null, null);
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice", null, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
@@ -371,6 +371,69 @@ public class ParseTranscriptForImportTests
         Assert.Equal(2, result.SuggestedTags.Count);
         Assert.Equal("Bob", result.SuggestedTags[0]);
         Assert.Equal("career", result.SuggestedTags[1]);
+    }
+
+    #endregion
+
+    #region Timezone
+
+    [Fact]
+    public async Task ExecuteAsync_WithTimeZone_PassesTimeZoneToAnalyzer()
+    {
+        // Arrange
+        var transcript = "Meeting transcript...";
+        var timeZone = "Australia/Sydney";
+        var parseResult = new TranscriptImportResult(
+            Title: "Meeting",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: null,
+            Summary: "Discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: [],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, timeZone, Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, null, timeZone, transcript, null, null, null);
+
+        // Act
+        await _sut.ExecuteAsync(command);
+
+        // Assert
+        await _meetingAnalyzer.Received(1).ParseTranscriptForImportAsync(transcript, timeZone, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullTimeZone_PassesNullToAnalyzer()
+    {
+        // Arrange
+        var transcript = "Meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Meeting",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: null,
+            Summary: "Discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: [],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, null, Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, null, null, null);
+
+        // Act
+        await _sut.ExecuteAsync(command);
+
+        // Assert
+        await _meetingAnalyzer.Received(1).ParseTranscriptForImportAsync(transcript, null, Arg.Any<CancellationToken>());
     }
 
     #endregion

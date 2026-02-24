@@ -4,7 +4,7 @@ public interface IMeetingAnalyzer
 {
     Task<MeetingAnalysisResult> AnalyzeAsync(string transcript, CancellationToken cancellationToken = default);
     Task<ScreenshotExtractionResult> ExtractFromScreenshotAsync(string base64Image, string mediaType, string? timeZone = null, CancellationToken cancellationToken = default);
-    Task<TranscriptImportResult> ParseTranscriptForImportAsync(string transcript, CancellationToken cancellationToken = default);
+    Task<TranscriptImportResult> ParseTranscriptForImportAsync(string transcript, string? timeZone = null, CancellationToken cancellationToken = default);
 }
 
 public record ScreenshotExtractionResult(List<ExtractedCalendarEvent> Events);

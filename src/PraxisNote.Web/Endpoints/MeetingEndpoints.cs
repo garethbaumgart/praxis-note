@@ -481,6 +481,7 @@ public static class MeetingEndpoints
         HttpContext context,
         ClaimsPrincipal user,
         [FromForm] string? text,
+        [FromForm] string? timeZone,
         IFormFile? file,
         [FromServices] ParseTranscriptForImport parseTranscript,
         CancellationToken cancellationToken)
@@ -494,6 +495,12 @@ public static class MeetingEndpoints
         if (string.IsNullOrWhiteSpace(text) && file is null)
         {
             return Results.BadRequest("Either text or a file must be provided.");
+        }
+
+        var normalizedTimeZone = string.IsNullOrWhiteSpace(timeZone) ? null : timeZone.Trim();
+        if (normalizedTimeZone is not null && (normalizedTimeZone.Length > 64 || normalizedTimeZone.Any(char.IsControl)))
+        {
+            return Results.BadRequest("Invalid time zone.");
         }
 
         // Validate file if provided
@@ -522,6 +529,7 @@ public static class MeetingEndpoints
             var command = new ParseTranscriptForImport.Command(
                 userId.Value,
                 user.GetUserName(),
+                normalizedTimeZone,
                 text,
                 fileStream,
                 file?.ContentType,
