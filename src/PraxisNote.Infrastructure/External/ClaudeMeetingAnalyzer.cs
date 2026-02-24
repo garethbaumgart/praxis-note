@@ -149,7 +149,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         Extract the following fields:
         1. "title": A concise topic-focused title for the meeting (max 60 characters). If identifiable, use format "[Topic] with [Participants]".
         2. "meetingDate": The meeting date/time as an ISO 8601 string WITH the UTC offset for the user's timezone (e.g., "2025-01-15T09:00:00<<OFFSET_EXAMPLE>>"). Look for dates in the document header, "Date:", timestamps, or any date references. If no date can be determined, set to null.
-        3. "attendees": Comma-separated list of participant names found in the transcript. If no names found, set to null.
+        3. "attendees": Comma-separated list of participant names who ACTUALLY SPOKE or were confirmed as present in the meeting. Do NOT include names that only appear on an invite list, calendar event header, or distribution list — only people whose participation is evidenced by speaking, being addressed, or being explicitly noted as attending. Use full names when available (e.g., "Alice Smith, Bob Jones"). If no names can be confirmed, set to null.
         4. "summary": A concise 2-3 sentence summary of the meeting.
         5. "keyPoints": An array of 3-5 key discussion points (strings).
         6. "decisions": An array of decisions made during the meeting (strings, can be empty).
