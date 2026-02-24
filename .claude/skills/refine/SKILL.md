@@ -171,6 +171,22 @@ cat src/PraxisNote.Domain/Aggregates/<Entity>/<Entity>.cs
 - What patterns exist that should be followed
 - What optimistic update hooks exist on the frontend
 
+### Repository Method Patterns (REQUIRED for new repository methods)
+
+When writing a **new repository method**, always check existing repository implementations for established patterns before writing code. EF Core has LINQ translation limitations that are easy to get wrong.
+
+```bash
+# Find existing repository methods that do similar operations
+grep -r "Contains\|ToList\|ToHashSet\|ToLower" src/PraxisNote.Infrastructure/Persistence/Repositories/ --include="*.cs" -B 2 -A 5
+```
+
+**Common mistakes to avoid:**
+- `HashSet<T>.Contains()` is NOT translatable to SQL — use `List<T>.Contains()` (generates `IN (...)`)
+- `.ToLowerInvariant()` is NOT translatable — use `.ToLower()` (generates `LOWER()`)
+- JSON-backed properties (e.g., `TagIds` as `HashSet<Guid>`) cannot be queried with `.Contains()` in LINQ — must filter in-memory after loading
+
+**Reference:** See `MeetingRepository.cs:70` for the correct pattern. See bug #642 for what happens when these rules are violated.
+
 ### Third-Party UI Extensions
 
 When the plan involves integrating a UI library or extension, identify the actual DOM output by reading the library's source code or documentation. Do NOT assume standard HTML elements — many libraries (TipTap, ProseMirror, Slate, etc.) use custom NodeViews that render non-standard DOM structures. Include the actual DOM structure in the plan so CSS selectors, query selectors, and interaction logic are correct from the start.
