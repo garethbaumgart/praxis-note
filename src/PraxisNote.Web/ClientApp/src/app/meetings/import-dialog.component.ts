@@ -358,6 +358,33 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
                             <i class="pi pi-users text-xs mr-1"></i>{{ meeting.attendees }}
                           </p>
                         }
+                        @if (meeting.suggestedTags.length > 0 || !meeting.isDuplicate) {
+                          <div class="flex flex-wrap items-center gap-1 mt-1.5" (click)="$event.stopPropagation()">
+                            @for (tag of meeting.suggestedTags; track tag) {
+                              <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] bg-accent-bg text-accent-foreground rounded">
+                                <i class="pi pi-tag text-[8px]"></i>
+                                {{ tag }}
+                                <button
+                                  type="button"
+                                  class="ml-0.5 hover:text-danger transition-colors"
+                                  (click)="transcriptService.removeTag($index, tag)"
+                                  [attr.aria-label]="'Remove tag ' + tag"
+                                >
+                                  <i class="pi pi-times text-[8px]"></i>
+                                </button>
+                              </span>
+                            }
+                            @if (!meeting.isDuplicate) {
+                              <input
+                                type="text"
+                                class="w-16 text-[11px] px-1.5 py-0.5 bg-transparent border border-dashed border-border rounded placeholder:text-foreground-muted focus:outline-none focus:border-accent-solid"
+                                placeholder="+ tag"
+                                (keydown.enter)="transcriptService.addTag($index, $any($event.target).value); $any($event.target).value = ''"
+                                (click)="$event.stopPropagation()"
+                              />
+                            }
+                          </div>
+                        }
                         @if (meeting.warning) {
                           <p class="text-xs text-warning-foreground mt-1">
                             <i class="pi pi-info-circle text-xs mr-1"></i>{{ meeting.warning }}
@@ -399,8 +426,18 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
               <div class="flex flex-col items-center py-8">
                 <i class="pi pi-check-circle text-4xl text-done-foreground mb-3"></i>
                 <p class="text-sm font-medium text-foreground mb-1">{{ transcriptService.importedCount() }} {{ transcriptService.importedCount() === 1 ? 'meeting' : 'meetings' }} imported</p>
-                @if (transcriptService.totalActionItems() > 0) {
-                  <p class="text-xs text-foreground-muted">{{ transcriptService.totalActionItems() }} action {{ transcriptService.totalActionItems() === 1 ? 'item' : 'items' }} found</p>
+                @if (transcriptService.totalActionItems() > 0 || transcriptService.tagsCreated() > 0) {
+                  <p class="text-xs text-foreground-muted">
+                    @if (transcriptService.totalActionItems() > 0) {
+                      {{ transcriptService.totalActionItems() }} action {{ transcriptService.totalActionItems() === 1 ? 'item' : 'items' }} found
+                    }
+                    @if (transcriptService.totalActionItems() > 0 && transcriptService.tagsCreated() > 0) {
+                      <span class="mx-1">&middot;</span>
+                    }
+                    @if (transcriptService.tagsCreated() > 0) {
+                      {{ transcriptService.tagsCreated() }} {{ transcriptService.tagsCreated() === 1 ? 'tag' : 'tags' }} created
+                    }
+                  </p>
                 }
                 <button
                   type="button"

@@ -24,13 +24,13 @@ public sealed class ConfirmTranscriptImport(
     public record ActionItemInput(string Description, string? Assignee);
 
     public record Command(Guid UserId, Guid ProfileId, List<ImportItem> Meetings);
-    public record Result(int ImportedCount, int TotalActionItems);
+    public record Result(int ImportedCount, int TotalActionItems, int TagsCreated);
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
         if (command.Meetings.Count == 0)
         {
-            return new Result(0, 0);
+            return new Result(0, 0, 0);
         }
 
         // Collect all suggested tag names across all meetings
@@ -49,6 +49,19 @@ public sealed class ConfirmTranscriptImport(
             {
                 tagMap[tag.Name] = tag.Id;
             }
+        }
+
+        // Create missing tags
+        var tagsCreated = 0;
+        foreach (var name in allTagNames)
+        {
+            if (string.IsNullOrWhiteSpace(name) || tagMap.ContainsKey(name))
+                continue;
+
+            var newTag = Tag.Create(command.UserId, command.ProfileId, name);
+            await tagRepository.AddAsync(newTag, cancellationToken);
+            tagMap[name] = newTag.Id;
+            tagsCreated++;
         }
 
         var totalActionItems = 0;
@@ -103,6 +116,6 @@ public sealed class ConfirmTranscriptImport(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new Result(command.Meetings.Count, totalActionItems);
+        return new Result(command.Meetings.Count, totalActionItems, tagsCreated);
     }
 }

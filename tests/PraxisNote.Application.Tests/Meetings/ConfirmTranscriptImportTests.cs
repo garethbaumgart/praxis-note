@@ -119,12 +119,13 @@ public class ConfirmTranscriptImportTests
         await _meetingRepo.AddAsync(Arg.Do<Meeting>(m => capturedMeeting = m), Arg.Any<CancellationToken>());
 
         // Act
-        await _sut.ExecuteAsync(command);
+        var result = await _sut.ExecuteAsync(command);
 
-        // Assert - budget tag should be added, planning tag should be ignored (not found)
+        // Assert - budget tag linked, planning tag auto-created and linked
         Assert.NotNull(capturedMeeting);
         Assert.Contains(budgetTag.Id, capturedMeeting!.TagIds);
-        Assert.Single(capturedMeeting.TagIds);
+        Assert.Equal(2, capturedMeeting.TagIds.Count);
+        Assert.Equal(1, result.TagsCreated);
     }
 
     [Fact]
@@ -174,7 +175,7 @@ public class ConfirmTranscriptImportTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithSuggestedTagsNotInUserList_IgnoresThem()
+    public async Task ExecuteAsync_WithSuggestedTagsNotInUserList_CreatesAndLinksThem()
     {
         // Arrange - no matching tags exist
         _tagRepo.GetByNamesAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
@@ -200,11 +201,92 @@ public class ConfirmTranscriptImportTests
         await _meetingRepo.AddAsync(Arg.Do<Meeting>(m => capturedMeeting = m), Arg.Any<CancellationToken>());
 
         // Act
-        await _sut.ExecuteAsync(command);
+        var result = await _sut.ExecuteAsync(command);
 
-        // Assert - no tags applied
+        // Assert - new tags created and linked
+        Assert.Equal(2, result.TagsCreated);
+        await _tagRepo.Received(2).AddAsync(Arg.Any<Tag>(), Arg.Any<CancellationToken>());
         Assert.NotNull(capturedMeeting);
-        Assert.Empty(capturedMeeting!.TagIds);
+        Assert.Equal(2, capturedMeeting!.TagIds.Count);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithMixOfExistingAndNewTags_CreatesOnlyNewOnes()
+    {
+        // Arrange
+        var existingTag = Tag.Create(_userId, _profileId, "budget");
+
+        _tagRepo.GetByNamesAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Tag> { existingTag });
+
+        var meetings = new List<ConfirmTranscriptImport.ImportItem>
+        {
+            new(
+                Title: "Budget Meeting",
+                MeetingDate: DateTimeOffset.UtcNow,
+                Attendees: null,
+                Transcript: "Transcript...",
+                Summary: "Budget discussion",
+                KeyPoints: null,
+                Decisions: null,
+                ActionItems: [],
+                SuggestedTags: ["budget", "planning", "q3"])
+        };
+
+        var command = new ConfirmTranscriptImport.Command(_userId, _profileId, meetings);
+
+        Meeting? capturedMeeting = null;
+        await _meetingRepo.AddAsync(Arg.Do<Meeting>(m => capturedMeeting = m), Arg.Any<CancellationToken>());
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — budget already exists, planning and q3 are new
+        Assert.Equal(2, result.TagsCreated);
+        Assert.NotNull(capturedMeeting);
+        Assert.Equal(3, capturedMeeting!.TagIds.Count);
+        Assert.Contains(existingTag.Id, capturedMeeting.TagIds);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNewTags_ReturnsCorrectTagsCreatedCount()
+    {
+        // Arrange - no matching tags
+        _tagRepo.GetByNamesAsync(_userId, _profileId, Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Tag>());
+
+        var meetings = new List<ConfirmTranscriptImport.ImportItem>
+        {
+            new(
+                Title: "Meeting 1",
+                MeetingDate: DateTimeOffset.UtcNow,
+                Attendees: null,
+                Transcript: "Transcript...",
+                Summary: "Summary",
+                KeyPoints: null,
+                Decisions: null,
+                ActionItems: [],
+                SuggestedTags: ["alpha", "beta"]),
+            new(
+                Title: "Meeting 2",
+                MeetingDate: DateTimeOffset.UtcNow,
+                Attendees: null,
+                Transcript: "Transcript...",
+                Summary: "Summary",
+                KeyPoints: null,
+                Decisions: null,
+                ActionItems: [],
+                SuggestedTags: ["beta", "gamma"])
+        };
+
+        var command = new ConfirmTranscriptImport.Command(_userId, _profileId, meetings);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — alpha, beta, gamma = 3 unique new tags (beta shared across meetings)
+        Assert.Equal(3, result.TagsCreated);
+        await _tagRepo.Received(3).AddAsync(Arg.Any<Tag>(), Arg.Any<CancellationToken>());
     }
 
     #endregion
@@ -220,6 +302,7 @@ public class ConfirmTranscriptImportTests
 
         Assert.Equal(0, result.ImportedCount);
         Assert.Equal(0, result.TotalActionItems);
+        Assert.Equal(0, result.TagsCreated);
         await _meetingRepo.DidNotReceive().AddAsync(Arg.Any<Meeting>(), Arg.Any<CancellationToken>());
     }
 

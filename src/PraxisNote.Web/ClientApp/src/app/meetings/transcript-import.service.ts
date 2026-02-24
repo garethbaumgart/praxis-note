@@ -43,6 +43,7 @@ interface ParseResponse {
 interface ConfirmResponse {
   importedCount: number;
   totalActionItems: number;
+  tagsCreated: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -55,6 +56,7 @@ export class TranscriptImportService {
   readonly error = signal<string | null>(null);
   readonly importedCount = signal(0);
   readonly totalActionItems = signal(0);
+  readonly tagsCreated = signal(0);
   readonly parseProgress = signal<{ current: number; total: number }>({ current: 0, total: 0 });
 
   readonly needsReviewCount = computed(() =>
@@ -144,6 +146,26 @@ export class TranscriptImportService {
     );
   }
 
+  removeTag(meetingIndex: number, tagName: string): void {
+    this.parsedMeetings.update(meetings =>
+      meetings.map((m, i) => i === meetingIndex
+        ? { ...m, suggestedTags: m.suggestedTags.filter(t => t !== tagName) }
+        : m)
+    );
+  }
+
+  addTag(meetingIndex: number, tagName: string): void {
+    const trimmed = tagName.trim().toLowerCase();
+    if (!trimmed) return;
+    this.parsedMeetings.update(meetings =>
+      meetings.map((m, i) => {
+        if (i !== meetingIndex) return m;
+        if (m.suggestedTags.some(t => t.toLowerCase() === trimmed)) return m;
+        return { ...m, suggestedTags: [...m.suggestedTags, trimmed] };
+      })
+    );
+  }
+
   async confirmImport(): Promise<void> {
     const selected = this.parsedMeetings().filter(m => m.selected && !m.isDuplicate);
     if (selected.length === 0) return;
@@ -170,6 +192,7 @@ export class TranscriptImportService {
 
       this.importedCount.set(result.importedCount);
       this.totalActionItems.set(result.totalActionItems);
+      this.tagsCreated.set(result.tagsCreated);
       this.state.set('done');
     } catch {
       this.error.set('Failed to import meetings. Please try again.');
@@ -183,6 +206,7 @@ export class TranscriptImportService {
     this.error.set(null);
     this.importedCount.set(0);
     this.totalActionItems.set(0);
+    this.tagsCreated.set(0);
     this.parseProgress.set({ current: 0, total: 0 });
   }
 
