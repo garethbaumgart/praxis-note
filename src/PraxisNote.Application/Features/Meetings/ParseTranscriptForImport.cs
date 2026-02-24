@@ -9,7 +9,7 @@ public sealed class ParseTranscriptForImport(
     private const string DocxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private const string PlainTextContentType = "text/plain";
 
-    public record Command(Guid UserId, string? UserName, string? Text, Stream? FileStream, string? FileContentType, string? FileName);
+    public record Command(Guid UserId, string? UserName, string? TimeZone, string? Text, Stream? FileStream, string? FileContentType, string? FileName);
 
     public record Result(
         string? Title,
@@ -35,7 +35,7 @@ public sealed class ParseTranscriptForImport(
             throw new ArgumentException("No text content could be extracted from the provided input.");
         }
 
-        var parseResult = await meetingAnalyzer.ParseTranscriptForImportAsync(text, cancellationToken);
+        var parseResult = await meetingAnalyzer.ParseTranscriptForImportAsync(text, command.TimeZone, cancellationToken);
 
         var suggestedTags = parseResult.SuggestedTags;
         var oneOnOneTag = Get1on1Tag(parseResult.Attendees, command.UserName);

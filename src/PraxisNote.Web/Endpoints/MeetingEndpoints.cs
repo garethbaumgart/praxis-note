@@ -481,6 +481,7 @@ public static class MeetingEndpoints
         HttpContext context,
         ClaimsPrincipal user,
         [FromForm] string? text,
+        [FromForm] string? timeZone,
         IFormFile? file,
         [FromServices] ParseTranscriptForImport parseTranscript,
         CancellationToken cancellationToken)
@@ -522,6 +523,7 @@ public static class MeetingEndpoints
             var command = new ParseTranscriptForImport.Command(
                 userId.Value,
                 user.GetUserName(),
+                timeZone,
                 text,
                 fileStream,
                 file?.ContentType,
