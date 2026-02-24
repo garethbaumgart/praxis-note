@@ -379,6 +379,7 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
                                 type="text"
                                 class="w-16 text-[11px] px-1.5 py-0.5 bg-transparent border border-dashed border-border rounded placeholder:text-foreground-muted focus:outline-none focus:border-accent-solid"
                                 placeholder="+ tag"
+                                aria-label="Add tag to meeting"
                                 (keydown.enter)="transcriptService.addTag(meetingIdx, $any($event.target).value); $any($event.target).value = ''"
                                 (click)="$event.stopPropagation()"
                               />

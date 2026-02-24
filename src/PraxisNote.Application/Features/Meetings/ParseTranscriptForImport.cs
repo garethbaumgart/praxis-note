@@ -78,8 +78,8 @@ public sealed class ParseTranscriptForImport(
             return null;
 
         // Return the other person's first name
-        var otherPerson = names.First(n => n != userMatch);
-        return otherPerson.Split(' ')[0].ToLowerInvariant();
+        var otherPerson = names.FirstOrDefault(n => n != userMatch);
+        return otherPerson?.Split(' ')[0].ToLowerInvariant();
     }
 
     private async Task<string> ExtractTextAsync(Command command, CancellationToken cancellationToken)
