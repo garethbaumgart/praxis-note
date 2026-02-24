@@ -57,7 +57,11 @@ public class ParseTranscriptForImportTests
         Assert.Equal(transcript, result.Transcript);
         Assert.True(result.IsComplete);
         Assert.Null(result.Warning);
-        Assert.Equal(2, result.SuggestedTags.Count);
+        Assert.Equal(4, result.SuggestedTags.Count);
+        Assert.Equal("alice", result.SuggestedTags[0]);
+        Assert.Equal("bob", result.SuggestedTags[1]);
+        Assert.Equal("budget", result.SuggestedTags[2]);
+        Assert.Equal("planning", result.SuggestedTags[3]);
     }
 
     #endregion
@@ -217,12 +221,45 @@ public class ParseTranscriptForImportTests
 
     #endregion
 
-    #region 1:1 Attendee Tag Rule
+    #region Attendee Person Tags
 
     [Fact]
-    public async Task ExecuteAsync_WithTwoAttendees_PrependOtherPersonTagToSuggestions()
+    public async Task ExecuteAsync_WithMultipleAttendees_PrependsPersonTagsExcludingUser()
     {
-        // Arrange
+        // Arrange — 3 attendees including the user
+        var transcript = "Group meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Team Planning",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Bob Jones, Charlie Brown",
+            Summary: "Planning session",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["planning", "sprint"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — 2 person tags prepended in firstname-lastname format, user excluded
+        Assert.Equal(4, result.SuggestedTags.Count);
+        Assert.Equal("bob-jones", result.SuggestedTags[0]);
+        Assert.Equal("charlie-brown", result.SuggestedTags[1]);
+        Assert.Equal("planning", result.SuggestedTags[2]);
+        Assert.Equal("sprint", result.SuggestedTags[3]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithTwoAttendees_PrependsOtherPersonTag()
+    {
+        // Arrange — 1:1 meeting, other person's full-name tag prepended
         var transcript = "1:1 meeting transcript...";
         var parseResult = new TranscriptImportResult(
             Title: "1:1 with Bob",
@@ -244,76 +281,45 @@ public class ParseTranscriptForImportTests
         // Act
         var result = await _sut.ExecuteAsync(command);
 
-        // Assert — "bob" prepended to AI-suggested tags
+        // Assert — "bob-jones" prepended to AI-suggested tags
         Assert.Equal(3, result.SuggestedTags.Count);
-        Assert.Equal("bob", result.SuggestedTags[0]);
+        Assert.Equal("bob-jones", result.SuggestedTags[0]);
         Assert.Equal("career", result.SuggestedTags[1]);
         Assert.Equal("feedback", result.SuggestedTags[2]);
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithTwoAttendees_UserNameNotFound_NoExtraTag()
+    public async Task ExecuteAsync_WithSingleAttendee_MatchingUser_NoPersonTags()
     {
-        // Arrange
-        var transcript = "Meeting transcript...";
+        // Arrange — only attendee is the user
+        var transcript = "Solo transcript...";
         var parseResult = new TranscriptImportResult(
-            Title: "Meeting",
+            Title: "Notes",
             MeetingDate: DateTimeOffset.UtcNow,
-            Attendees: "Charlie Brown, Diana Prince",
-            Summary: "Discussion",
+            Attendees: "Alice Smith",
+            Summary: "Solo notes",
             KeyPoints: [],
             Decisions: [],
             ActionItems: [],
-            SuggestedTags: ["planning"],
+            SuggestedTags: ["notes"],
             IsComplete: true,
             Warning: null);
 
         _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(parseResult);
 
-        // User name "Alice" doesn't match either attendee
         var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
 
         // Act
         var result = await _sut.ExecuteAsync(command);
 
-        // Assert — no extra tag added, only AI suggestions
+        // Assert — no person tags, only AI suggestions
         Assert.Single(result.SuggestedTags);
-        Assert.Equal("planning", result.SuggestedTags[0]);
+        Assert.Equal("notes", result.SuggestedTags[0]);
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithThreeAttendees_No1on1Tag()
-    {
-        // Arrange
-        var transcript = "Group meeting transcript...";
-        var parseResult = new TranscriptImportResult(
-            Title: "Team Standup",
-            MeetingDate: DateTimeOffset.UtcNow,
-            Attendees: "Alice, Bob, Charlie",
-            Summary: "Standup",
-            KeyPoints: [],
-            Decisions: [],
-            ActionItems: [],
-            SuggestedTags: ["standup"],
-            IsComplete: true,
-            Warning: null);
-
-        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(parseResult);
-
-        var command = new ParseTranscriptForImport.Command(_userId, "Alice", null, transcript, null, null, null);
-
-        // Act
-        var result = await _sut.ExecuteAsync(command);
-
-        // Assert — 3 attendees, no 1:1 rule applied
-        Assert.Single(result.SuggestedTags);
-        Assert.Equal("standup", result.SuggestedTags[0]);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_WithNullAttendees_No1on1Tag()
+    public async Task ExecuteAsync_WithNullAttendees_NoPersonTags()
     {
         // Arrange
         var transcript = "Transcript without attendees...";
@@ -337,25 +343,25 @@ public class ParseTranscriptForImportTests
         // Act
         var result = await _sut.ExecuteAsync(command);
 
-        // Assert — null attendees, no crash, no extra tag
+        // Assert — null attendees, no crash, no person tags
         Assert.Single(result.SuggestedTags);
         Assert.Equal("general", result.SuggestedTags[0]);
     }
 
     [Fact]
-    public async Task ExecuteAsync_With1on1Tag_AlreadySuggested_NoDuplicate()
+    public async Task ExecuteAsync_WithEmptyAttendees_NoPersonTags()
     {
         // Arrange
-        var transcript = "1:1 transcript...";
+        var transcript = "Transcript with empty attendees...";
         var parseResult = new TranscriptImportResult(
-            Title: "1:1 with Bob",
+            Title: "Meeting",
             MeetingDate: DateTimeOffset.UtcNow,
-            Attendees: "Alice, Bob",
-            Summary: "1:1",
+            Attendees: "   ",
+            Summary: "Discussion",
             KeyPoints: [],
             Decisions: [],
             ActionItems: [],
-            SuggestedTags: ["Bob", "career"],
+            SuggestedTags: ["general"],
             IsComplete: true,
             Warning: null);
 
@@ -367,10 +373,135 @@ public class ParseTranscriptForImportTests
         // Act
         var result = await _sut.ExecuteAsync(command);
 
-        // Assert — "bob" already present (case-insensitive), not duplicated
+        // Assert — whitespace attendees, no person tags
+        Assert.Single(result.SuggestedTags);
+        Assert.Equal("general", result.SuggestedTags[0]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PersonTagAlreadyInAISuggestions_NoDuplicate()
+    {
+        // Arrange — AI already suggested "bob-jones"
+        var transcript = "1:1 transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "1:1 with Bob",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Bob Jones",
+            Summary: "1:1",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["bob-jones", "career"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — "bob-jones" already present (case-insensitive), not duplicated
         Assert.Equal(2, result.SuggestedTags.Count);
-        Assert.Equal("Bob", result.SuggestedTags[0]);
+        Assert.Equal("bob-jones", result.SuggestedTags[0]);
         Assert.Equal("career", result.SuggestedTags[1]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PersonTagsOrderedBeforeAITags()
+    {
+        // Arrange — verify person tags come first, AI topic tags after
+        var transcript = "Group meeting...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Team Sync",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Bob Jones, Charlie Brown",
+            Summary: "Team sync",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["engineering", "planning"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — person tags first, then AI tags
+        Assert.Equal(4, result.SuggestedTags.Count);
+        Assert.Equal("bob-jones", result.SuggestedTags[0]);
+        Assert.Equal("charlie-brown", result.SuggestedTags[1]);
+        Assert.Equal("engineering", result.SuggestedTags[2]);
+        Assert.Equal("planning", result.SuggestedTags[3]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AttendeeWithSingleName_GeneratesTag()
+    {
+        // Arrange — attendee "Bob" has no surname
+        var transcript = "Meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Chat with Bob",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Bob",
+            Summary: "Quick chat",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["chat"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — single-name attendee generates tag "bob"
+        Assert.Equal(2, result.SuggestedTags.Count);
+        Assert.Equal("bob", result.SuggestedTags[0]);
+        Assert.Equal("chat", result.SuggestedTags[1]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_UserMatchByFirstName_ExcludesUser()
+    {
+        // Arrange — user "Alice Smith", attendee "Alice" (first-name fallback match)
+        var transcript = "Meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Chat",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice, Bob Jones",
+            Summary: "Discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["chat"],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — "Alice" excluded via first-name match, only "bob-jones" added
+        Assert.Equal(2, result.SuggestedTags.Count);
+        Assert.Equal("bob-jones", result.SuggestedTags[0]);
+        Assert.Equal("chat", result.SuggestedTags[1]);
     }
 
     #endregion

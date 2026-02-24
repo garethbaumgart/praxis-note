@@ -37,12 +37,20 @@ public sealed class ParseTranscriptForImport(
 
         var parseResult = await meetingAnalyzer.ParseTranscriptForImportAsync(text, command.TimeZone, cancellationToken);
 
-        var suggestedTags = parseResult.SuggestedTags;
-        var oneOnOneTag = Get1on1Tag(parseResult.Attendees, command.UserName);
-        if (oneOnOneTag is not null && !suggestedTags.Contains(oneOnOneTag, StringComparer.OrdinalIgnoreCase))
+        var personTags = GetAttendeePersonTags(parseResult.Attendees, command.UserName);
+        var aiTags = parseResult.SuggestedTags;
+
+        // Prepend person tags, deduplicating against AI-suggested tags
+        var suggestedTags = new List<string>();
+        foreach (var pt in personTags)
         {
-            suggestedTags = [oneOnOneTag, .. suggestedTags];
+            if (!aiTags.Contains(pt, StringComparer.OrdinalIgnoreCase) &&
+                !suggestedTags.Contains(pt, StringComparer.OrdinalIgnoreCase))
+            {
+                suggestedTags.Add(pt);
+            }
         }
+        suggestedTags.AddRange(aiTags);
 
         return new Result(
             parseResult.Title,
@@ -60,28 +68,39 @@ public sealed class ParseTranscriptForImport(
             parseResult.Warning);
     }
 
-    private static string? Get1on1Tag(string? attendees, string? userName)
+    private static List<string> GetAttendeePersonTags(string? attendees, string? userName)
     {
-        if (string.IsNullOrWhiteSpace(attendees) || string.IsNullOrWhiteSpace(userName))
-            return null;
+        if (string.IsNullOrWhiteSpace(attendees))
+            return [];
 
         var names = attendees.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (names.Length != 2)
-            return null;
+        if (names.Length == 0)
+            return [];
 
-        var userFirst = userName.Trim().Split(' ')[0];
+        var userFirst = userName?.Trim().Split(' ')[0];
 
-        // Prefer full-name match; fall back to first-name match
-        var userMatch =
-            names.FirstOrDefault(n => string.Equals(n, userName.Trim(), StringComparison.OrdinalIgnoreCase))
-            ?? names.FirstOrDefault(n =>
-                string.Equals(n.Split(' ')[0], userFirst, StringComparison.OrdinalIgnoreCase));
-        if (userMatch is null)
-            return null;
+        var personTags = new List<string>();
+        foreach (var name in names)
+        {
+            // Skip the current user (full-name match or first-name match)
+            if (!string.IsNullOrWhiteSpace(userName) &&
+                (string.Equals(name, userName.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(name.Split(' ')[0], userFirst, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
 
-        // Return the other person's first name
-        var otherPerson = names.FirstOrDefault(n => n != userMatch);
-        return otherPerson?.Split(' ')[0].ToLowerInvariant();
+            // Convert "First Last" → "first-last"
+            var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var tag = string.Join("-", parts).ToLowerInvariant();
+
+            if (!string.IsNullOrWhiteSpace(tag))
+            {
+                personTags.Add(tag);
+            }
+        }
+
+        return personTags;
     }
 
     private async Task<string> ExtractTextAsync(Command command, CancellationToken cancellationToken)
