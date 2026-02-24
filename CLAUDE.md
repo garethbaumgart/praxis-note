@@ -161,6 +161,28 @@ When implementing a common pattern, use these real files as references instead o
 - **Style**: Primary constructors, Minimal APIs
 - **Database**: Entity Framework Core with PostgreSQL (all environments)
 
+### EF Core LINQ Translation (Common Pitfalls)
+
+EF Core translates LINQ to SQL. These C# expressions **cannot** be translated and will throw at runtime:
+
+```csharp
+// WRONG: HashSet.Contains() is NOT translatable
+var names = input.ToHashSet();
+query.Where(t => names.Contains(t.Name));  // Runtime error!
+
+// CORRECT: Use List<T>.Contains() — translates to SQL IN (...)
+var names = input.ToList();
+query.Where(t => names.Contains(t.Name));  // Works!
+
+// WRONG: .ToLowerInvariant() is NOT translatable
+query.Where(t => t.Name.ToLowerInvariant() == value);  // Runtime error!
+
+// CORRECT: Use .ToLower() — translates to SQL LOWER()
+query.Where(t => t.Name.ToLower() == value);  // Works!
+```
+
+**Reference:** See `MeetingRepository.cs:70` for the correct `.ToList()` + `.Contains()` pattern. Bug #642 was caused by violating these rules.
+
 ## Frontend (Angular v21)
 
 ### Core Principles
