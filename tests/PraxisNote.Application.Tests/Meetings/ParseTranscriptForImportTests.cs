@@ -663,6 +663,36 @@ public class ParseTranscriptForImportTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_WhenIsAdhoc_AndAISuggestsDifferentCasing_NoDuplicate()
+    {
+        // Arrange — AI suggests "AdHoc-Call" (mixed case) and IsAdhoc is true
+        var transcript = "Ad-hoc meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Quick Chat",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: null,
+            Summary: "Ad-hoc discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["engineering", "AdHoc-Call"],
+            IsComplete: true,
+            Warning: null,
+            IsAdhoc: true);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — only one adhoc-call-equivalent tag (case-insensitive dedup)
+        Assert.Equal(1, result.SuggestedTags.Count(t => string.Equals(t, "adhoc-call", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WhenIsAdhoc_AdhocCallTagAppearsAfterOtherTags()
     {
         // Arrange — verify ordering: person tags → AI tags → adhoc-call
