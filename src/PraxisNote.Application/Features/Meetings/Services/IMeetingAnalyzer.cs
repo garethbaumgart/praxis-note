@@ -26,7 +26,8 @@ public record TranscriptImportResult(
     List<ExtractedActionItem> ActionItems,
     List<string> SuggestedTags,
     bool IsComplete,
-    string? Warning);
+    string? Warning,
+    bool IsAdhoc = false);
 
 public record MeetingAnalysisResult(
     string Summary,

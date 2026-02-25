@@ -570,6 +570,134 @@ public class ParseTranscriptForImportTests
 
     #endregion
 
+    #region Ad-Hoc Detection
+
+    [Fact]
+    public async Task ExecuteAsync_WhenIsAdhoc_AddsAdhocCallTag()
+    {
+        // Arrange
+        var transcript = "Ad-hoc meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Quick Sync",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Bob Jones",
+            Summary: "Impromptu discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["engineering"],
+            IsComplete: true,
+            Warning: null,
+            IsAdhoc: true);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — adhoc-call tag is present
+        Assert.Contains("adhoc-call", result.SuggestedTags);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenNotAdhoc_DoesNotAddAdhocCallTag()
+    {
+        // Arrange
+        var transcript = "Scheduled meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Sprint Planning",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Bob Jones",
+            Summary: "Sprint planning session",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["planning", "sprint"],
+            IsComplete: true,
+            Warning: null,
+            IsAdhoc: false);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — no adhoc-call tag
+        Assert.DoesNotContain("adhoc-call", result.SuggestedTags);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenIsAdhoc_AndAISuggestsAdhocCall_NoDuplicate()
+    {
+        // Arrange — AI already suggests "adhoc-call" and IsAdhoc is true
+        var transcript = "Ad-hoc meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Quick Chat",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: null,
+            Summary: "Ad-hoc discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["engineering", "adhoc-call"],
+            IsComplete: true,
+            Warning: null,
+            IsAdhoc: true);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — only one adhoc-call tag (no duplicate)
+        Assert.Equal(1, result.SuggestedTags.Count(t => string.Equals(t, "adhoc-call", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenIsAdhoc_AdhocCallTagAppearsAfterOtherTags()
+    {
+        // Arrange — verify ordering: person tags → AI tags → adhoc-call
+        var transcript = "Ad-hoc group meeting...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Impromptu Sync",
+            MeetingDate: DateTimeOffset.UtcNow,
+            Attendees: "Alice Smith, Bob Jones",
+            Summary: "Quick sync",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: ["engineering", "sync"],
+            IsComplete: true,
+            Warning: null,
+            IsAdhoc: true);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, "Alice Smith", null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — person tags first, then AI tags, then adhoc-call last
+        Assert.Equal(4, result.SuggestedTags.Count);
+        Assert.Equal("bob-jones", result.SuggestedTags[0]);      // person tag
+        Assert.Equal("engineering", result.SuggestedTags[1]);     // AI tag
+        Assert.Equal("sync", result.SuggestedTags[2]);            // AI tag
+        Assert.Equal("adhoc-call", result.SuggestedTags[3]);      // adhoc-call last
+    }
+
+    #endregion
+
     #region Meeting Date Format
 
     [Fact]
