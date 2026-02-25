@@ -159,6 +159,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         8. "suggestedTags": An array of 2-3 short, relevant tags (strings, lowercase).
         9. "isComplete": Boolean - set to true ONLY if all three of these were successfully extracted: title, meetingDate, and summary. Otherwise false.
         10. "warning": If isComplete is false, provide a brief description of what fields are missing or could not be extracted. If isComplete is true, set to null.
+        11. "isAdhoc": Boolean - set to true if the meeting appears to be an ad-hoc/impromptu call rather than a scheduled calendar event. Key signal: Google Gemini transcripts from scheduled meetings include the calendar event title in the header; ad-hoc calls have no calendar event title (header is generic like "Meeting" or absent). If unsure, default to false.
 
         IMPORTANT GUIDELINES:
         - All times in the transcript are in the <<TIMEZONE>> timezone. Return meetingDate with the UTC offset for this timezone.
@@ -359,7 +360,8 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
                 .ToList() ?? [],
             result.SuggestedTags ?? [],
             isComplete,
-            warning);
+            warning,
+            result.IsAdhoc);
     }
 
     private static ScreenshotExtractionResult ParseScreenshotExtractionResponse(string jsonResponse)
@@ -514,6 +516,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         public List<string>? SuggestedTags { get; set; }
         public bool IsComplete { get; set; }
         public string? Warning { get; set; }
+        public bool IsAdhoc { get; set; }
     }
 
     private sealed class ScreenshotExtractionJsonResponse

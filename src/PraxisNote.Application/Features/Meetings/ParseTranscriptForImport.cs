@@ -56,6 +56,14 @@ public sealed class ParseTranscriptForImport(
                 suggestedTags.Add(aiTag);
         }
 
+        // Auto-tag ad-hoc meetings
+        if (parseResult.IsAdhoc)
+        {
+            const string adhocTag = "adhoc-call";
+            if (!suggestedTags.Contains(adhocTag, StringComparer.OrdinalIgnoreCase))
+                suggestedTags.Add(adhocTag);
+        }
+
         return new Result(
             parseResult.Title,
             parseResult.MeetingDate?.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
