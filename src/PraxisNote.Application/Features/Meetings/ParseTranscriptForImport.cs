@@ -57,7 +57,7 @@ public sealed class ParseTranscriptForImport(
 
         return new Result(
             parseResult.Title,
-            parseResult.MeetingDate?.ToString("o"),
+            parseResult.MeetingDate?.ToString("yyyy-MM-ddTHH:mm:sszzz"),
             parseResult.Attendees,
             parseResult.Summary,
             parseResult.KeyPoints,
