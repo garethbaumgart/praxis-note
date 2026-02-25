@@ -598,8 +598,11 @@ public class ParseTranscriptForImportTests
         // Act
         var result = await _sut.ExecuteAsync(command);
 
-        // Assert — adhoc-call tag is present
-        Assert.Contains("adhoc-call", result.SuggestedTags);
+        // Assert — person tag, AI tag, adhoc-call last; no duplicates
+        Assert.Equal(3, result.SuggestedTags.Count);
+        Assert.Equal("bob-jones", result.SuggestedTags[0]);    // person tag
+        Assert.Equal("engineering", result.SuggestedTags[1]);  // AI tag
+        Assert.Equal("adhoc-call", result.SuggestedTags[2]);   // adhoc-call last
     }
 
     [Fact]
