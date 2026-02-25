@@ -315,7 +315,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 
         var result = ParseTranscriptImportResponse(content);
         _logger.LogDebug("Transcript import parse result — meetingDate: {MeetingDate}, timezone sent: {TimeZone}",
-            result.MeetingDate?.ToString("o"), tzName);
+            result.MeetingDate, tzName);
         return result;
     }
 

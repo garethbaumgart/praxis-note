@@ -1,3 +1,4 @@
+using System.Globalization;
 using PraxisNote.Application.Features.Meetings.Services;
 
 namespace PraxisNote.Application.Features.Meetings;
@@ -57,7 +58,7 @@ public sealed class ParseTranscriptForImport(
 
         return new Result(
             parseResult.Title,
-            parseResult.MeetingDate?.ToString("yyyy-MM-ddTHH:mm:sszzz"),
+            parseResult.MeetingDate?.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
             parseResult.Attendees,
             parseResult.Summary,
             parseResult.KeyPoints,
