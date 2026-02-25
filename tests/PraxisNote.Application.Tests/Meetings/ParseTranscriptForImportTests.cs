@@ -570,6 +570,68 @@ public class ParseTranscriptForImportTests
 
     #endregion
 
+    #region Meeting Date Format
+
+    [Fact]
+    public async Task ExecuteAsync_MeetingDate_FormatsAsJsSafeIso8601WithOffset()
+    {
+        // Arrange — known date with explicit offset
+        var transcript = "Meeting transcript...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Morning Standup",
+            MeetingDate: new DateTimeOffset(2026, 2, 25, 5, 59, 0, TimeSpan.FromHours(11)),
+            Attendees: null,
+            Summary: "Standup",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: [],
+            IsComplete: true,
+            Warning: null);
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert — JS-safe ISO 8601: no fractional seconds, explicit offset
+        Assert.Equal("2026-02-25T05:59:00+11:00", result.MeetingDate);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NullMeetingDate_ReturnsNull()
+    {
+        // Arrange
+        var transcript = "Transcript without date...";
+        var parseResult = new TranscriptImportResult(
+            Title: "Undated Meeting",
+            MeetingDate: null,
+            Attendees: null,
+            Summary: "Discussion",
+            KeyPoints: [],
+            Decisions: [],
+            ActionItems: [],
+            SuggestedTags: [],
+            IsComplete: false,
+            Warning: "No date found");
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(transcript, Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(parseResult);
+
+        var command = new ParseTranscriptForImport.Command(_userId, null, null, transcript, null, null, null);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert
+        Assert.Null(result.MeetingDate);
+    }
+
+    #endregion
+
     #region Timezone
 
     [Fact]

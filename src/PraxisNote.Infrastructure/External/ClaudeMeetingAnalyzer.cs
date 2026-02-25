@@ -313,7 +313,10 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 
         _logger.LogInformation("Received transcript import parse response, parsing JSON");
 
-        return ParseTranscriptImportResponse(content);
+        var result = ParseTranscriptImportResponse(content);
+        _logger.LogDebug("Transcript import parse result — meetingDate: {MeetingDate}, timezone sent: {TimeZone}",
+            result.MeetingDate, tzName);
+        return result;
     }
 
     private static TranscriptImportResult ParseTranscriptImportResponse(string jsonResponse)
