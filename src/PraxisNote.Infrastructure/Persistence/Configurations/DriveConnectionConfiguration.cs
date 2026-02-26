@@ -36,6 +36,7 @@ public sealed class DriveConnectionConfiguration : IEntityTypeConfiguration<Driv
         builder.Property(c => c.InitialImportCutoffDate);
         builder.Property(c => c.SyncFrequencyMinutes).HasDefaultValue(15);
         builder.Property(c => c.AutoAcceptTags).HasDefaultValue(false);
+        builder.Property(c => c.TimeZone).HasMaxLength(100);
 
         // One Drive connection per user per profile
         builder.HasIndex(c => new { c.UserId, c.ProfileId }).IsUnique();

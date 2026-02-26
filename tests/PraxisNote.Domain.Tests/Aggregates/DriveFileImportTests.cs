@@ -103,11 +103,12 @@ public class DriveFileImportTests
         var before = DateTimeOffset.UtcNow;
 
         // Act
-        import.MarkParsed("Parsed document content");
+        import.MarkParsed("Parsed document content", """{"title":"Test"}""");
 
         // Assert
         Assert.Equal(DriveFileImportStatus.Parsed, import.Status);
         Assert.Equal("Parsed document content", import.ParsedContent);
+        Assert.Equal("""{"title":"Test"}""", import.ParsedResultJson);
         Assert.NotNull(import.ParsedAt);
         Assert.InRange(import.ParsedAt.Value, before, DateTimeOffset.UtcNow);
     }
@@ -123,7 +124,7 @@ public class DriveFileImportTests
             _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
 
         // Act & Assert
-        Assert.ThrowsAny<ArgumentException>(() => import.MarkParsed(invalidContent!));
+        Assert.ThrowsAny<ArgumentException>(() => import.MarkParsed(invalidContent!, """{"title":"Test"}"""));
     }
 
     [Fact]
@@ -132,11 +133,11 @@ public class DriveFileImportTests
         // Arrange
         var import = DriveFileImport.Create(
             _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
-        import.MarkParsed("content");
+        import.MarkParsed("content", "{}");
         import.MarkImported(Guid.NewGuid());
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("new content"));
+        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("new content", "{}"));
     }
 
     [Fact]
@@ -145,10 +146,10 @@ public class DriveFileImportTests
         // Arrange
         var import = DriveFileImport.Create(
             _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
-        import.MarkParsed("content");
+        import.MarkParsed("content", "{}");
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("new content"));
+        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("new content", "{}"));
     }
 
     [Fact]
@@ -160,7 +161,7 @@ public class DriveFileImportTests
         import.MarkSkipped("reason");
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("content"));
+        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("content", "{}"));
     }
 
     [Fact]
@@ -172,7 +173,7 @@ public class DriveFileImportTests
         import.MarkError("error");
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("content"));
+        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("content", "{}"));
     }
 
     #endregion
@@ -185,7 +186,7 @@ public class DriveFileImportTests
         // Arrange
         var import = DriveFileImport.Create(
             _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
-        import.MarkParsed("content");
+        import.MarkParsed("content", "{}");
         var meetingId = Guid.NewGuid();
         var before = DateTimeOffset.UtcNow;
 
@@ -205,7 +206,7 @@ public class DriveFileImportTests
         // Arrange
         var import = DriveFileImport.Create(
             _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
-        import.MarkParsed("content");
+        import.MarkParsed("content", "{}");
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => import.MarkImported(Guid.Empty));
@@ -247,7 +248,7 @@ public class DriveFileImportTests
         // Arrange
         var import = DriveFileImport.Create(
             _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
-        import.MarkParsed("content");
+        import.MarkParsed("content", "{}");
 
         // Act
         import.MarkSkipped("User chose to skip");
@@ -262,7 +263,7 @@ public class DriveFileImportTests
         // Arrange
         var import = DriveFileImport.Create(
             _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
-        import.MarkParsed("content");
+        import.MarkParsed("content", "{}");
         import.MarkImported(Guid.NewGuid());
 
         // Act & Assert
@@ -346,7 +347,7 @@ public class DriveFileImportTests
         // Arrange
         var import = DriveFileImport.Create(
             _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
-        import.MarkParsed("parsed content");
+        import.MarkParsed("parsed content", """{"title":"Test"}""");
 
         // Act
         import.MarkError("Processing failed");
@@ -409,6 +410,43 @@ public class DriveFileImportTests
         // Act & Assert
         Assert.ThrowsAny<ArgumentException>(() =>
             import.UpdateFileMetadata(ValidFileName, invalidMime!, DateTimeOffset.UtcNow));
+    }
+
+    #endregion
+
+    #region MarkParsed with ParsedResultJson Tests
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void MarkParsed_WithEmptyResultJson_ThrowsArgumentException(string? invalidJson)
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+
+        // Act & Assert
+        Assert.ThrowsAny<ArgumentException>(() => import.MarkParsed("valid content", invalidJson!));
+    }
+
+    [Fact]
+    public void MarkParsed_WithValidInputs_StoresBothContentAndJson()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        const string content = "Meeting transcript text";
+        const string resultJson = """{"title":"Weekly Standup","summary":"Team discussed progress"}""";
+
+        // Act
+        import.MarkParsed(content, resultJson);
+
+        // Assert
+        Assert.Equal(DriveFileImportStatus.Parsed, import.Status);
+        Assert.Equal(content, import.ParsedContent);
+        Assert.Equal(resultJson, import.ParsedResultJson);
+        Assert.NotNull(import.ParsedAt);
     }
 
     #endregion

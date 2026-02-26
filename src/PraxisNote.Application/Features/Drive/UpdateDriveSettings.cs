@@ -14,7 +14,8 @@ public sealed class UpdateDriveSettings(
         string FolderName,
         DateOnly? InitialImportCutoffDate,
         int SyncFrequencyMinutes,
-        bool AutoAcceptTags);
+        bool AutoAcceptTags,
+        string? TimeZone);
 
     public async Task ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
@@ -26,7 +27,8 @@ public sealed class UpdateDriveSettings(
             command.FolderName,
             command.InitialImportCutoffDate,
             command.SyncFrequencyMinutes,
-            command.AutoAcceptTags);
+            command.AutoAcceptTags,
+            command.TimeZone);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }

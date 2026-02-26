@@ -20,7 +20,8 @@ public sealed class GetDriveFileImports(
         DateTimeOffset? ParsedAt,
         DateTimeOffset? ImportedAt,
         string? ErrorMessage,
-        DateTimeOffset DiscoveredAt);
+        DateTimeOffset DiscoveredAt,
+        string? ParsedResultJson);
 
     public async Task<IReadOnlyList<FileImportDto>> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
@@ -42,6 +43,7 @@ public sealed class GetDriveFileImports(
             f.ParsedAt,
             f.ImportedAt,
             f.ErrorMessage,
-            f.DiscoveredAt)).ToList();
+            f.DiscoveredAt,
+            f.ParsedResultJson)).ToList();
     }
 }
