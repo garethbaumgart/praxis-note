@@ -115,7 +115,8 @@ public sealed class GoogleDriveService : IDriveService
 
         if (modifiedAfter.HasValue)
         {
-            query += $" and modifiedTime > '{modifiedAfter.Value:yyyy-MM-ddTHH:mm:ssZ}'";
+            var modifiedAfterUtc = modifiedAfter.Value.ToUniversalTime();
+            query += $" and modifiedTime > '{modifiedAfterUtc:yyyy-MM-dd'T'HH:mm:ss'Z'}'";
         }
 
         request.Q = query;
