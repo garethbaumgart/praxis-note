@@ -31,7 +31,7 @@ public sealed class DisconnectGoogleDrive(
         {
             using var httpClient = httpClientFactory.CreateClient();
             var response = await httpClient.PostAsync(
-                $"https://oauth2.googleapis.com/revoke?token={accessToken}",
+                $"https://oauth2.googleapis.com/revoke?token={Uri.EscapeDataString(accessToken)}",
                 null,
                 cancellationToken);
 
