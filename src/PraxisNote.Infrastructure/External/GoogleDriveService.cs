@@ -90,6 +90,82 @@ public sealed class GoogleDriveService : IDriveService
         );
     }
 
+    public async Task<DriveFileListResult> ListFilesAsync(
+        string accessToken,
+        string folderId,
+        DateTimeOffset? modifiedAfter,
+        string? pageToken,
+        CancellationToken cancellationToken = default)
+    {
+        using var service = CreateDriveService(accessToken);
+
+        var request = service.Files.List();
+
+        // Build query: files in folder, not trashed, supported types only
+        var supportedTypes = new[]
+        {
+            "text/plain",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.google-apps.document"
+        };
+
+        var typeFilter = string.Join(" or ", supportedTypes.Select(t => $"mimeType='{t}'"));
+        var query = $"'{folderId}' in parents and trashed=false and ({typeFilter})";
+
+        if (modifiedAfter.HasValue)
+        {
+            query += $" and modifiedTime > '{modifiedAfter.Value:yyyy-MM-ddTHH:mm:ssZ}'";
+        }
+
+        request.Q = query;
+        request.Fields = "nextPageToken, files(id, name, mimeType, modifiedTime)";
+        request.PageSize = 100;
+        request.OrderBy = "modifiedTime desc";
+
+        if (!string.IsNullOrEmpty(pageToken))
+            request.PageToken = pageToken;
+
+        var result = await request.ExecuteAsync(cancellationToken);
+
+        var files = result.Files?.Select(f => new DriveFile(
+            f.Id,
+            f.Name,
+            f.MimeType,
+            f.ModifiedTimeDateTimeOffset
+        )).ToList() ?? [];
+
+        _logger.LogInformation("Listed {Count} files in Drive folder {FolderId}", files.Count, folderId);
+
+        return new DriveFileListResult(files, result.NextPageToken);
+    }
+
+    public async Task<Stream> DownloadFileAsync(
+        string accessToken,
+        string fileId,
+        CancellationToken cancellationToken = default)
+    {
+        using var service = CreateDriveService(accessToken);
+        var request = service.Files.Get(fileId);
+        var stream = new MemoryStream();
+        await request.DownloadAsync(stream, cancellationToken);
+        stream.Position = 0;
+        return stream;
+    }
+
+    public async Task<string> ExportGoogleDocAsync(
+        string accessToken,
+        string fileId,
+        CancellationToken cancellationToken = default)
+    {
+        using var service = CreateDriveService(accessToken);
+        var request = service.Files.Export(fileId, "text/plain");
+        var stream = new MemoryStream();
+        await request.DownloadAsync(stream, cancellationToken);
+        stream.Position = 0;
+        using var reader = new StreamReader(stream);
+        return await reader.ReadToEndAsync(cancellationToken);
+    }
+
     private DriveService CreateDriveService(string accessToken)
     {
         var credential = GoogleCredential.FromAccessToken(accessToken);

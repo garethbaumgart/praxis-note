@@ -16,6 +16,7 @@ using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.DriveConnections;
+using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Domain.Aggregates.JiraConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
@@ -57,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IMeetingRepository, MeetingRepository>();
         services.AddScoped<ICalendarConnectionRepository, CalendarConnectionRepository>();
         services.AddScoped<IDriveConnectionRepository, DriveConnectionRepository>();
+        services.AddScoped<IDriveFileImportRepository, DriveFileImportRepository>();
         services.AddScoped<IJiraConnectionRepository, JiraConnectionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IProfileRepository, ProfileRepository>();

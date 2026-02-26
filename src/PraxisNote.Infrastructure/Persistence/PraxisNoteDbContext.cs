@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PraxisNote.Application.Common;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.DriveConnections;
+using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Domain.Aggregates.JiraConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
@@ -27,6 +28,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<Profile> Profiles => Set<Profile>();
     public DbSet<CalendarConnection> CalendarConnections => Set<CalendarConnection>();
     public DbSet<DriveConnection> DriveConnections => Set<DriveConnection>();
+    public DbSet<DriveFileImport> DriveFileImports => Set<DriveFileImport>();
     public DbSet<JiraConnection> JiraConnections => Set<JiraConnection>();
     public DbSet<FeatureNotification> FeatureNotifications => Set<FeatureNotification>();
     public DbSet<BehavioralGoal> BehavioralGoals => Set<BehavioralGoal>();
