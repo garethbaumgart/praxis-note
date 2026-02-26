@@ -27,6 +27,8 @@ public static class DriveEndpoints
         group.MapPost("/discover", HandleDiscover);
         group.MapPost("/parse", HandleParse);
         group.MapGet("/files", HandleListFiles);
+        group.MapPost("/deduplicate", HandleDeduplicate);
+        group.MapPost("/files/{id:guid}/override-duplicate", HandleOverrideDuplicate);
     }
 
     private static async Task<IResult> HandleGetStatus(
@@ -334,6 +336,53 @@ public static class DriveEndpoints
                 new GetDriveFileImports.Query(userId.Value, profileId, statusFilter),
                 cancellationToken);
             return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> HandleDeduplicate(
+        HttpContext context,
+        ClaimsPrincipal user,
+        DeduplicateDriveFiles deduplicateFiles,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        try
+        {
+            var profileId = context.GetProfileId();
+            var result = await deduplicateFiles.ExecuteAsync(
+                new DeduplicateDriveFiles.Command(userId.Value, profileId),
+                cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> HandleOverrideDuplicate(
+        Guid id,
+        HttpContext context,
+        ClaimsPrincipal user,
+        OverrideDuplicate overrideDuplicate,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        try
+        {
+            var profileId = context.GetProfileId();
+            await overrideDuplicate.ExecuteAsync(
+                new OverrideDuplicate.Command(userId.Value, profileId, id),
+                cancellationToken);
+            return Results.Ok(new { message = "Duplicate override applied" });
         }
         catch (InvalidOperationException ex)
         {

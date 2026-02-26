@@ -450,4 +450,144 @@ public class DriveFileImportTests
     }
 
     #endregion
+
+    #region MarkDuplicate Tests
+
+    [Fact]
+    public void MarkDuplicate_WithCalendarEvent_SetsAllProperties()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        var meetingId = Guid.NewGuid();
+
+        // Act
+        import.MarkDuplicate(DeduplicationType.CalendarEvent, meetingId, "Weekly Standup", 1.0m);
+
+        // Assert
+        Assert.Equal(DeduplicationType.CalendarEvent, import.DuplicateType);
+        Assert.Equal(meetingId, import.MatchedMeetingId);
+        Assert.Equal("Weekly Standup", import.DuplicateMatchTitle);
+        Assert.Equal(1.0m, import.DuplicateConfidence);
+    }
+
+    [Fact]
+    public void MarkDuplicate_WithFuzzyMatch_SetsConfidence()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        var meetingId = Guid.NewGuid();
+
+        // Act
+        import.MarkDuplicate(DeduplicationType.FuzzyMatch, meetingId, "Sprint Planning", 0.75m);
+
+        // Assert
+        Assert.Equal(DeduplicationType.FuzzyMatch, import.DuplicateType);
+        Assert.Equal(0.75m, import.DuplicateConfidence);
+        Assert.Equal("Sprint Planning", import.DuplicateMatchTitle);
+    }
+
+    [Fact]
+    public void MarkDuplicate_WithTypeNone_ThrowsArgumentException()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            import.MarkDuplicate(DeduplicationType.None, Guid.NewGuid(), "Title", 1.0m));
+    }
+
+    [Fact]
+    public void MarkDuplicate_WithEmptyMeetingId_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            import.MarkDuplicate(DeduplicationType.CalendarEvent, Guid.Empty, "Title", 1.0m));
+    }
+
+    [Theory]
+    [InlineData(-0.1)]
+    [InlineData(1.1)]
+    public void MarkDuplicate_WithInvalidConfidence_ThrowsArgumentOutOfRangeException(double confidence)
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            import.MarkDuplicate(DeduplicationType.FuzzyMatch, Guid.NewGuid(), "Title", (decimal)confidence));
+    }
+
+    [Fact]
+    public void MarkDuplicate_WithWhitespaceTitle_StoresNull()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        var meetingId = Guid.NewGuid();
+
+        // Act
+        import.MarkDuplicate(DeduplicationType.CalendarEvent, meetingId, "   ", 1.0m);
+
+        // Assert
+        Assert.Null(import.DuplicateMatchTitle);
+    }
+
+    #endregion
+
+    #region ClearDuplicate Tests
+
+    [Fact]
+    public void ClearDuplicate_ResetsAllDuplicateFields()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        var meetingId = Guid.NewGuid();
+        import.MarkDuplicate(DeduplicationType.CalendarEvent, meetingId, "Weekly Standup", 1.0m);
+
+        // Act
+        import.ClearDuplicate();
+
+        // Assert
+        Assert.Equal(DeduplicationType.None, import.DuplicateType);
+        Assert.Null(import.MatchedMeetingId);
+        Assert.Null(import.DuplicateMatchTitle);
+        Assert.Equal(0m, import.DuplicateConfidence);
+    }
+
+    [Fact]
+    public void ClearDuplicate_PreservesOtherFields()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        import.MarkParsed("parsed content", """{"title":"Test"}""");
+        import.MarkDuplicate(DeduplicationType.FuzzyMatch, Guid.NewGuid(), "Some Meeting", 0.8m);
+
+        // Act
+        import.ClearDuplicate();
+
+        // Assert — dedup fields are cleared
+        Assert.Equal(DeduplicationType.None, import.DuplicateType);
+        Assert.Null(import.MatchedMeetingId);
+        Assert.Null(import.DuplicateMatchTitle);
+        Assert.Equal(0m, import.DuplicateConfidence);
+        // Assert — other fields preserved
+        Assert.Equal(DriveFileImportStatus.Parsed, import.Status);
+        Assert.Equal("parsed content", import.ParsedContent);
+        Assert.Equal(ValidFileName, import.FileName);
+        Assert.Equal(ValidMimeType, import.MimeType);
+        Assert.NotNull(import.ParsedAt);
+    }
+
+    #endregion
 }

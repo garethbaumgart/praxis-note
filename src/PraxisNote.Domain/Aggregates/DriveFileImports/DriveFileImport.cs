@@ -75,6 +75,21 @@ public sealed class DriveFileImport : AggregateRoot
     public DateTimeOffset DiscoveredAt { get; private init; }
 
     /// <summary>
+    /// The type of duplicate detection that flagged this file, if any.
+    /// </summary>
+    public DeduplicationType DuplicateType { get; private set; }
+
+    /// <summary>
+    /// Confidence score for the duplicate match (0.0 to 1.0).
+    /// </summary>
+    public decimal DuplicateConfidence { get; private set; }
+
+    /// <summary>
+    /// The title of the matched existing meeting, for display in the preview UI.
+    /// </summary>
+    public string? DuplicateMatchTitle { get; private set; }
+
+    /// <summary>
     /// Required for EF Core.
     /// </summary>
     private DriveFileImport() { }
@@ -185,5 +200,33 @@ public sealed class DriveFileImport : AggregateRoot
         FileName = fileName.Trim();
         MimeType = mimeType.Trim();
         FileModifiedTime = fileModifiedTime;
+    }
+
+    /// <summary>
+    /// Marks this file import as a duplicate of an existing meeting.
+    /// </summary>
+    public void MarkDuplicate(DeduplicationType type, Guid matchedMeetingId, string? matchedMeetingTitle, decimal confidence)
+    {
+        if (type == DeduplicationType.None)
+            throw new ArgumentException("Cannot mark as duplicate with type None", nameof(type));
+        ArgumentOutOfRangeException.ThrowIfEqual(matchedMeetingId, Guid.Empty, nameof(matchedMeetingId));
+        if (confidence < 0 || confidence > 1)
+            throw new ArgumentOutOfRangeException(nameof(confidence), "Confidence must be between 0.0 and 1.0");
+
+        DuplicateType = type;
+        MatchedMeetingId = matchedMeetingId;
+        DuplicateMatchTitle = string.IsNullOrWhiteSpace(matchedMeetingTitle) ? null : matchedMeetingTitle.Trim();
+        DuplicateConfidence = confidence;
+    }
+
+    /// <summary>
+    /// Clears the duplicate flag, allowing the user to override duplicate detection and import anyway.
+    /// </summary>
+    public void ClearDuplicate()
+    {
+        DuplicateType = DeduplicationType.None;
+        MatchedMeetingId = null;
+        DuplicateMatchTitle = null;
+        DuplicateConfidence = 0;
     }
 }

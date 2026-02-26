@@ -75,4 +75,13 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
 
         return existing.ToHashSet();
     }
+
+    public async Task<IReadOnlyList<Meeting>> GetRecentMeetingsForDedupAsync(
+        Guid userId, Guid profileId, DateTimeOffset fromDate, CancellationToken cancellationToken = default)
+    {
+        return await context.Meetings
+            .AsNoTracking()
+            .Where(m => m.UserId == userId && m.ProfileId == profileId && m.MeetingDate >= fromDate)
+            .ToListAsync(cancellationToken);
+    }
 }

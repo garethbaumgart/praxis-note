@@ -5,6 +5,7 @@ using PraxisNote.Application.Features.Notes;
 using PraxisNote.Application.Features.Notes.Services;
 using PraxisNote.Application.Features.Calendar;
 using PraxisNote.Application.Features.Drive;
+using PraxisNote.Application.Features.Drive.Services;
 using PraxisNote.Application.Features.Jira;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
@@ -137,6 +138,9 @@ public static class DependencyInjection
         services.AddScoped<DiscoverDriveFiles>();
         services.AddScoped<GetDriveFileImports>();
         services.AddScoped<ParseDriveFiles>();
+        services.AddScoped<DeduplicateDriveFiles>();
+        services.AddScoped<OverrideDuplicate>();
+        services.AddScoped<IDriveDeduplicationService, DriveDeduplicationService>();
 
         // Jira use cases
         services.AddScoped<ConnectJira>();
