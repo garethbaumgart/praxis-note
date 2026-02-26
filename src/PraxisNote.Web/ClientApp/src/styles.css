@@ -96,6 +96,10 @@
   --color-due-done-bg: #e5e9f0;
   --color-due-done-text: #7b88a1;
 
+  /* Warning - Aurora yellow */
+  --color-warning-bg: rgba(235, 203, 139, 0.15);
+  --color-warning-text: #c9a227;
+
   /* Danger/destructive - Aurora red */
   --color-danger-base: #bf616a;
   --color-danger-hover-base: #d08770;
@@ -276,6 +280,10 @@
   --color-due-later-text: #d8dee9;
   --color-due-done-bg: #3b4252;
   --color-due-done-text: #4c566a;
+
+  /* Warning - Aurora yellow */
+  --color-warning-bg: rgba(235, 203, 139, 0.12);
+  --color-warning-text: #ebcb8b;
 
   /* Danger/destructive - Aurora red */
   --color-danger-base: #bf616a;
@@ -460,6 +468,10 @@
   --color-due-later-foreground: var(--color-due-later-text);
   --color-due-done: var(--color-due-done-bg);
   --color-due-done-foreground: var(--color-due-done-text);
+
+  /* Warning */
+  --color-warning: var(--color-warning-bg);
+  --color-warning-foreground: var(--color-warning-text);
 
   /* Danger/destructive */
   --color-danger: var(--color-danger-base);
