@@ -4,6 +4,7 @@ import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { CalendarService } from '../shared/services/calendar.service';
+import { DriveService } from '../shared/services/drive.service';
 import { JiraService } from '../shared/services/jira.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
@@ -226,6 +227,86 @@ const MAX_API_KEYS = 5;
             </div>
           }
         </section>
+
+        <!-- Google Drive Integration Section -->
+        <section class="bg-surface border border-border rounded-xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-surface-muted flex items-center justify-center">
+              <i class="pi pi-folder text-lg text-foreground-secondary" aria-hidden="true"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-foreground">Google Drive</h2>
+              <p class="text-sm text-foreground-secondary">Import meeting notes and documents from Google Drive.</p>
+            </div>
+          </div>
+
+          @if (driveService.loading()) {
+            <div class="flex items-center gap-3 py-4" role="status" aria-label="Loading Drive connection status">
+              <i class="pi pi-spin pi-spinner text-sm text-foreground-muted" aria-hidden="true"></i>
+              <span class="text-sm text-foreground-muted" aria-hidden="true">Loading connection status...</span>
+              <span class="sr-only">Loading Drive connection status...</span>
+            </div>
+          } @else if (driveService.status()?.isConnected) {
+            <div class="space-y-4">
+              <div class="flex items-center gap-2 py-3 px-4 bg-done/30 border border-done rounded-lg">
+                <i class="pi pi-check-circle text-done-foreground" aria-hidden="true"></i>
+                <span class="text-sm font-medium text-done-foreground">Connected to Google Drive</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                @if (driveService.status()?.connectedAt) {
+                  <div>
+                    <span class="text-foreground-muted">Connected since</span>
+                    <p class="font-medium text-foreground">{{ driveService.status()!.connectedAt | date:'mediumDate' }}</p>
+                  </div>
+                }
+                @if (driveService.status()?.folderName) {
+                  <div>
+                    <span class="text-foreground-muted">Linked folder</span>
+                    <p class="font-medium text-foreground">{{ driveService.status()!.folderName }}</p>
+                  </div>
+                }
+              </div>
+
+              @if (driveService.error()) {
+                <div class="py-2 px-4 bg-danger/10 border border-danger/30 rounded-lg">
+                  <p class="text-sm text-danger">{{ driveService.error() }}</p>
+                </div>
+              }
+
+              <div class="flex items-center gap-3 pt-2">
+                <p-button
+                  label="Disconnect"
+                  icon="pi pi-times"
+                  (onClick)="disconnectDrive()"
+                  severity="danger"
+                  [outlined]="true"
+                  size="small"
+                />
+              </div>
+            </div>
+          } @else {
+            <div class="space-y-4">
+              <p class="text-sm text-foreground-secondary">
+                Connect your Google Drive to import meeting notes and documents.
+                Only read-only access is requested — PraxisNote will never modify your Drive files.
+              </p>
+
+              @if (driveService.error()) {
+                <div class="py-2 px-4 bg-danger/10 border border-danger/30 rounded-lg">
+                  <p class="text-sm text-danger">{{ driveService.error() }}</p>
+                </div>
+              }
+
+              <p-button
+                label="Connect Google Drive"
+                icon="pi pi-google"
+                (onClick)="connectGoogleDrive()"
+              />
+            </div>
+          }
+        </section>
+
         <!-- Jira Integration Section -->
         <section class="bg-surface border border-border rounded-xl p-6">
           <div class="flex items-center gap-3 mb-4">
@@ -609,6 +690,7 @@ const MAX_API_KEYS = 5;
 })
 export class SettingsPage implements OnInit, OnDestroy {
   readonly calendarService = inject(CalendarService);
+  readonly driveService = inject(DriveService);
   readonly jiraService = inject(JiraService);
   readonly profileService = inject(ProfileService);
   readonly linkedAccountsService = inject(LinkedAccountsService);
@@ -671,6 +753,16 @@ export class SettingsPage implements OnInit, OnDestroy {
       }
     });
 
+    // Show toast when Drive is disconnected successfully
+    effect(() => {
+      if (this.driveService.lastDisconnected()) {
+        untracked(() => {
+          this.toast.success({ summary: 'Google Drive disconnected.' });
+          this.driveService.acknowledgeDisconnected();
+        });
+      }
+    });
+
     // Show toast when Jira is disconnected successfully
     effect(() => {
       if (this.jiraService.lastDisconnected()) {
@@ -695,6 +787,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.headerService.breadcrumb.set([{ label: 'Settings' }]);
     this.calendarService.loadConnectionStatus();
+    this.driveService.loadConnectionStatus();
     this.jiraService.loadConnectionStatus();
     this.profileService.loadProfiles();
     this.linkedAccountsService.loadIdentities();
@@ -704,6 +797,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     const params = this.route.snapshot.queryParams;
     if (params['connected'] === 'true') {
       this.toast.success({ summary: 'Google Calendar connected successfully!' });
+    }
+    if (params['drive_connected'] === 'true') {
+      this.toast.success({ summary: 'Google Drive connected successfully!' });
     }
     if (params['jira_connected'] === 'true') {
       this.toast.success({ summary: 'Jira connected successfully!' });
@@ -715,13 +811,17 @@ export class SettingsPage implements OnInit, OnDestroy {
         not_authenticated: 'Please log in first, then connect your calendar.',
         token_exchange_failed: 'Failed to connect. Please try again.',
         no_refresh_token: 'Could not get full access. Please revoke PraxisNote access in your Google account settings and try again.',
+        drive_auth_denied: 'Drive access was denied. Please try again.',
+        drive_no_code: 'Drive authorization failed. Please try again.',
+        drive_token_exchange_failed: 'Failed to connect to Drive. Please try again.',
+        drive_no_refresh_token: 'Could not get full access to Drive. Please revoke PraxisNote access in your Google account settings and try again.',
         jira_auth_denied: 'Jira access was denied. Please try again.',
         jira_no_code: 'Jira authorization failed. Please try again.',
         jira_token_exchange_failed: 'Failed to connect to Jira. Please try again.',
         jira_no_resources: 'No accessible Jira sites found. Ensure you have access to a Jira Cloud instance.',
       };
       this.toast.error(
-        errorMessages[params['error']] ?? 'An error occurred connecting your calendar.',
+        errorMessages[params['error']] ?? 'An error occurred during connection.',
       );
     }
   }
@@ -804,6 +904,16 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   disconnectCalendar(): void {
     this.calendarService.disconnectCalendar();
+  }
+
+  // --- Drive actions ---
+
+  connectGoogleDrive(): void {
+    this.driveService.connectGoogleDrive();
+  }
+
+  disconnectDrive(): void {
+    this.driveService.disconnectDrive();
   }
 
   // --- Jira actions ---

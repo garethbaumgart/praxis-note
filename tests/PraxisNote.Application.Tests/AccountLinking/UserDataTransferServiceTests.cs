@@ -3,6 +3,7 @@ using PraxisNote.Application.Features.AccountLinking;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
+using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Profiles;
@@ -18,6 +19,7 @@ public class UserDataTransferServiceTests
     private readonly IMeetingRepository _meetingRepo = Substitute.For<IMeetingRepository>();
     private readonly ITagRepository _tagRepo = Substitute.For<ITagRepository>();
     private readonly ICalendarConnectionRepository _calendarRepo = Substitute.For<ICalendarConnectionRepository>();
+    private readonly IDriveConnectionRepository _driveRepo = Substitute.For<IDriveConnectionRepository>();
     private readonly IBehavioralGoalRepository _goalRepo = Substitute.For<IBehavioralGoalRepository>();
     private readonly IBlindSpotNudgeRepository _nudgeRepo = Substitute.For<IBlindSpotNudgeRepository>();
     private readonly IProfileRepository _profileRepo = Substitute.For<IProfileRepository>();
@@ -32,7 +34,7 @@ public class UserDataTransferServiceTests
     {
         _sut = new UserDataTransferService(
             _taskRepo, _noteRepo, _meetingRepo, _tagRepo,
-            _calendarRepo, _goalRepo, _nudgeRepo, _profileRepo);
+            _calendarRepo, _driveRepo, _goalRepo, _nudgeRepo, _profileRepo);
     }
 
     #region Transfer All Entity Types
@@ -47,6 +49,8 @@ public class UserDataTransferServiceTests
         var tag = Tag.Create(_sourceUserId, _sourceProfileId, "test-tag");
         var calendarConnection = CalendarConnection.Create(
             _sourceUserId, _sourceProfileId, "Google", "access", "refresh", DateTimeOffset.UtcNow.AddHours(1));
+        var driveConnection = DriveConnection.Create(
+            _sourceUserId, _sourceProfileId, "Google", "drive-access", "drive-refresh", DateTimeOffset.UtcNow.AddHours(1));
         var goal = BehavioralGoal.Create(
             _sourceUserId, _sourceProfileId, MetricType.TalkTimePercentage, GoalOperator.LessThan,
             50, null, "Talk less");
@@ -63,6 +67,8 @@ public class UserDataTransferServiceTests
             .Returns(new List<Tag> { tag });
         _calendarRepo.GetAllByUserIdAsync(_sourceUserId, Arg.Any<CancellationToken>())
             .Returns(new List<CalendarConnection> { calendarConnection });
+        _driveRepo.GetAllByUserIdAsync(_sourceUserId, Arg.Any<CancellationToken>())
+            .Returns(new List<DriveConnection> { driveConnection });
         _goalRepo.GetAllByUserIdAsync(_sourceUserId, Arg.Any<CancellationToken>())
             .Returns(new List<BehavioralGoal> { goal });
         _nudgeRepo.GetAllByUserIdAsync(_sourceUserId, Arg.Any<CancellationToken>())
@@ -90,6 +96,9 @@ public class UserDataTransferServiceTests
 
         Assert.Equal(_targetUserId, calendarConnection.UserId);
         Assert.Equal(_targetProfileId, calendarConnection.ProfileId);
+
+        Assert.Equal(_targetUserId, driveConnection.UserId);
+        Assert.Equal(_targetProfileId, driveConnection.ProfileId);
 
         Assert.Equal(_targetUserId, goal.UserId);
         Assert.Equal(_targetProfileId, goal.ProfileId);
@@ -154,6 +163,8 @@ public class UserDataTransferServiceTests
             .Returns(new List<Tag>());
         _calendarRepo.GetAllByUserIdAsync(_sourceUserId, Arg.Any<CancellationToken>())
             .Returns(new List<CalendarConnection>());
+        _driveRepo.GetAllByUserIdAsync(_sourceUserId, Arg.Any<CancellationToken>())
+            .Returns(new List<DriveConnection>());
         _goalRepo.GetAllByUserIdAsync(_sourceUserId, Arg.Any<CancellationToken>())
             .Returns(new List<BehavioralGoal>());
         _nudgeRepo.GetAllByUserIdAsync(_sourceUserId, Arg.Any<CancellationToken>())
