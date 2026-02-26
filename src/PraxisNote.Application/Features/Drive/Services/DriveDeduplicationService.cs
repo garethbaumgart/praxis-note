@@ -43,6 +43,10 @@ public sealed partial class DriveDeduplicationService(
             if (fileImport.Status != DriveFileImportStatus.Parsed) continue;
             if (string.IsNullOrEmpty(fileImport.ParsedResultJson)) continue;
 
+            // Clear any stale duplicate data from a previous dedup run
+            if (fileImport.DuplicateType != DeduplicationType.None)
+                fileImport.ClearDuplicate();
+
             var parsed = DeserializeParsedResult(fileImport.ParsedResultJson);
             if (parsed is null) continue;
 
@@ -162,13 +166,11 @@ public sealed partial class DriveDeduplicationService(
 
         var parsedSet = parsedAttendees
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(n => n.ToLower())
-            .ToHashSet();
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var existingSet = existingAttendees
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(n => n.ToLower())
-            .ToHashSet();
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         if (parsedSet.Count == 0 || existingSet.Count == 0)
             return 0m;
@@ -188,9 +190,17 @@ public sealed partial class DriveDeduplicationService(
     internal static DateTimeOffset GetEarliestParsedDate(IReadOnlyList<DriveFileImport> files)
     {
         var earliest = DateTimeOffset.UtcNow;
+        var foundDate = false;
 
         foreach (var file in files)
         {
+            // Use FileModifiedTime as a secondary signal for date range
+            if (file.FileModifiedTime < earliest)
+            {
+                earliest = file.FileModifiedTime;
+                foundDate = true;
+            }
+
             if (string.IsNullOrEmpty(file.ParsedResultJson)) continue;
 
             var parsed = DeserializeParsedResult(file.ParsedResultJson);
@@ -199,8 +209,13 @@ public sealed partial class DriveDeduplicationService(
             if (DateTimeOffset.TryParse(parsed.MeetingDate, out var date) && date < earliest)
             {
                 earliest = date;
+                foundDate = true;
             }
         }
+
+        // If no dates could be determined, fall back to 90 days ago for a wider search
+        if (!foundDate)
+            return DateTimeOffset.UtcNow.AddDays(-90);
 
         return earliest;
     }

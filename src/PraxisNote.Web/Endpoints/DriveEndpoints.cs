@@ -368,6 +368,7 @@ public static class DriveEndpoints
 
     private static async Task<IResult> HandleOverrideDuplicate(
         Guid id,
+        HttpContext context,
         ClaimsPrincipal user,
         OverrideDuplicate overrideDuplicate,
         CancellationToken cancellationToken)
@@ -377,8 +378,9 @@ public static class DriveEndpoints
 
         try
         {
+            var profileId = context.GetProfileId();
             await overrideDuplicate.ExecuteAsync(
-                new OverrideDuplicate.Command(id),
+                new OverrideDuplicate.Command(userId.Value, profileId, id),
                 cancellationToken);
             return Results.Ok(new { message = "Duplicate override applied" });
         }

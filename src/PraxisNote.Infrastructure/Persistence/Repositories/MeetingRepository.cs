@@ -80,6 +80,7 @@ public sealed class MeetingRepository(PraxisNoteDbContext context) : IMeetingRep
         Guid userId, Guid profileId, DateTimeOffset fromDate, CancellationToken cancellationToken = default)
     {
         return await context.Meetings
+            .AsNoTracking()
             .Where(m => m.UserId == userId && m.ProfileId == profileId && m.MeetingDate >= fromDate)
             .ToListAsync(cancellationToken);
     }
