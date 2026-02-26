@@ -30,15 +30,13 @@ public class DriveConnectionSyncTests
     }
 
     [Fact]
-    public void IsDueForSync_WhenFrequencyElapsed_ReturnsTrue()
+    public void IsDueForSync_WhenJustSynced_ReturnsFalse()
     {
         var connection = CreateConfiguredConnection(syncFrequencyMinutes: 15);
 
-        // Simulate a sync that happened 20 minutes ago
+        // Just synced — frequency hasn't elapsed yet
         connection.RecordSyncResult(0, 0, 0, 0);
 
-        // IsDueForSync checks against LastSyncAt which was just set,
-        // so it won't be due yet. We need to verify the method works for the "just synced" case.
         Assert.False(connection.IsDueForSync());
     }
 

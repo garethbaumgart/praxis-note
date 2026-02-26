@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using PraxisNote.Application.Common;
@@ -49,10 +50,11 @@ public class DriveSyncOrchestratorTests
             _meetingRepository, _tagRepository, _unitOfWork, _fileImportRepository);
         _confirmDriveImport = new ConfirmDriveImport(confirmTranscriptImport, _fileImportRepository, _connectionRepository);
 
+        var syncSettings = Options.Create(new DriveSyncSettings());
         _sut = new DriveSyncOrchestrator(
             _connectionRepository, _fileImportRepository, _driveService,
             _parseTranscript, _transcriptExtractor, _deduplicationService,
-            _confirmDriveImport, _userRepository, _unitOfWork, _logger);
+            _confirmDriveImport, _userRepository, _unitOfWork, syncSettings, _logger);
     }
 
     private DriveConnection CreateConfiguredConnection(bool autoAcceptTags = false)

@@ -130,6 +130,7 @@ export class DriveService {
   }
 
   syncNow(): void {
+    if (this._syncing()) return;
     this._syncing.set(true);
 
     this.http.post<DriveSyncResult>('/api/drive/sync', {}).subscribe({
@@ -157,12 +158,6 @@ export class DriveService {
         this._syncing.set(false);
         this.toast.error('Sync failed', 'Could not sync with Google Drive. Please try again.');
       },
-    });
-  }
-
-  loadPendingCount(): void {
-    this.http.get<{ count: number }>('/api/drive/pending-count').subscribe({
-      next: result => this._pendingReviewCount.set(result.count),
     });
   }
 

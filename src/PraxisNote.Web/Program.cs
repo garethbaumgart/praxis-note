@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using PraxisNote.Application;
+using PraxisNote.Application.Features.Drive;
 using PraxisNote.Application.Features.Tasks;
 using PraxisNote.Infrastructure;
 using PraxisNote.Infrastructure.Persistence;
@@ -33,6 +34,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 // Configure Task settings
 builder.Services.Configure<TaskSettings>(builder.Configuration.GetSection(TaskSettings.SectionName));
+
+// Configure Drive sync settings
+builder.Services.Configure<DriveSyncSettings>(builder.Configuration.GetSection(DriveSyncSettings.SectionName));
 
 // HttpClient factory (used by external API services)
 builder.Services.AddHttpClient();

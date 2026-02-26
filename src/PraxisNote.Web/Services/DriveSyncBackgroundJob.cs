@@ -54,43 +54,53 @@ public sealed class DriveSyncBackgroundJob(
             {
                 var result = await orchestrator.SyncConnectionAsync(connection.Id, ct);
 
-                // Send SSE notification if new files need review
-                if (result.FilesPendingReview > 0)
-                {
-                    await sseManager.BroadcastToUserAsync(connection.UserId, "drive-sync", new
-                    {
-                        type = "pending_review",
-                        count = result.FilesPendingReview,
-                        message = $"{result.FilesPendingReview} new file{(result.FilesPendingReview == 1 ? "" : "s")} ready for review"
-                    });
-                }
-
-                // Send notification for auto-imported files
-                if (result.FilesImported > 0)
-                {
-                    await sseManager.BroadcastToUserAsync(connection.UserId, "drive-sync", new
-                    {
-                        type = "auto_imported",
-                        count = result.FilesImported,
-                        message = $"{result.FilesImported} meeting{(result.FilesImported == 1 ? "" : "s")} auto-imported from Drive"
-                    });
-                }
-
-                // Send notification for errors
-                if (result.Error is not null)
-                {
-                    await sseManager.BroadcastToUserAsync(connection.UserId, "drive-sync", new
-                    {
-                        type = "error",
-                        message = result.Error
-                    });
-                }
+                // Send SSE notifications (best-effort; failures should not affect sync)
+                await SendSyncNotificationsAsync(connection.UserId, result);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 logger.LogError(ex, "Failed to sync Drive connection {ConnectionId} for user {UserId}",
                     connection.Id, connection.UserId);
             }
+        }
+    }
+
+    private async Task SendSyncNotificationsAsync(Guid userId, DriveSyncOrchestrator.SyncResult result)
+    {
+        try
+        {
+            if (result.FilesPendingReview > 0)
+            {
+                await sseManager.BroadcastToUserAsync(userId, "drive-sync", new
+                {
+                    type = "pending_review",
+                    count = result.FilesPendingReview,
+                    message = $"{result.FilesPendingReview} new file{(result.FilesPendingReview == 1 ? "" : "s")} ready for review"
+                });
+            }
+
+            if (result.FilesImported > 0)
+            {
+                await sseManager.BroadcastToUserAsync(userId, "drive-sync", new
+                {
+                    type = "auto_imported",
+                    count = result.FilesImported,
+                    message = $"{result.FilesImported} meeting{(result.FilesImported == 1 ? "" : "s")} auto-imported from Drive"
+                });
+            }
+
+            if (result.Error is not null)
+            {
+                await sseManager.BroadcastToUserAsync(userId, "drive-sync", new
+                {
+                    type = "error",
+                    message = result.Error
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send SSE notification for Drive sync to user {UserId}", userId);
         }
     }
 }

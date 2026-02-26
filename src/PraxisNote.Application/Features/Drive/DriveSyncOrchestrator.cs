@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Drive.Services;
 using PraxisNote.Application.Features.Meetings;
@@ -20,9 +21,11 @@ public sealed class DriveSyncOrchestrator(
     ConfirmDriveImport confirmDriveImport,
     IUserRepository userRepository,
     IUnitOfWork unitOfWork,
+    IOptions<DriveSyncSettings> syncSettings,
     ILogger<DriveSyncOrchestrator> logger)
 {
-    private const int MaxFilesPerSync = 50;
+    private readonly DriveSyncSettings _settings = syncSettings.Value;
+
     private const int ErrorMessageMaxLength = 2000;
     private const string GoogleDocMimeType = "application/vnd.google-apps.document";
     private const string DocxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -32,8 +35,6 @@ public sealed class DriveSyncOrchestrator(
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-
-    internal static readonly TimeSpan DelayBetweenCalls = TimeSpan.FromSeconds(1);
 
     public record SyncResult(
         int FilesDiscovered,
@@ -65,7 +66,7 @@ public sealed class DriveSyncOrchestrator(
         CancellationToken ct = default)
     {
         var connection = await driveConnectionRepository.GetByIdAsync(connectionId, ct);
-        if (connection is null || connection.UserId != userId)
+        if (connection is null || connection.UserId != userId || connection.ProfileId != profileId)
         {
             return new SyncResult(0, 0, 0, 0, "Connection not found");
         }
@@ -140,7 +141,7 @@ public sealed class DriveSyncOrchestrator(
 
             var newFiles = allFiles
                 .Where(f => !existingIds.Contains(f.Id))
-                .Take(MaxFilesPerSync)
+                .Take(_settings.MaxFilesPerSync)
                 .ToList();
 
             if (newFiles.Count == 0)
@@ -187,7 +188,7 @@ public sealed class DriveSyncOrchestrator(
                     // Rate limiting
                     if (hasIssuedAiCall)
                     {
-                        await Task.Delay(DelayBetweenCalls, ct);
+                        await Task.Delay(TimeSpan.FromMilliseconds(_settings.PerFileDelayMs), ct);
                     }
 
                     // Parse via AI
@@ -302,7 +303,7 @@ public sealed class DriveSyncOrchestrator(
             {
                 // Best-effort save
             }
-            return new SyncResult(0, 0, 0, 0, ex.Message);
+            return new SyncResult(0, 0, 0, 0, "An unexpected error occurred during sync. Please try again later.");
         }
     }
 

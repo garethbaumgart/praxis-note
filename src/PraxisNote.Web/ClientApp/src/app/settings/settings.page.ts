@@ -282,7 +282,7 @@ const MAX_API_KEYS = 5;
                 </div>
 
                 <!-- Last sync result -->
-                @if (driveService.status()?.lastSyncFilesDiscovered) {
+                @if (driveService.status()?.lastSyncAt) {
                   <div class="py-2 px-4 bg-done/20 border border-done/30 rounded-lg mt-3">
                     <p class="text-sm text-foreground">
                       Last sync: {{ driveService.status()!.lastSyncFilesDiscovered }} files found,

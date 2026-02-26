@@ -244,6 +244,11 @@ public sealed class DriveConnection : AggregateRoot
     /// </summary>
     public void RecordSyncResult(int filesDiscovered, int filesImported, int filesPendingReview, int filesErrored)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(filesDiscovered, nameof(filesDiscovered));
+        ArgumentOutOfRangeException.ThrowIfNegative(filesImported, nameof(filesImported));
+        ArgumentOutOfRangeException.ThrowIfNegative(filesPendingReview, nameof(filesPendingReview));
+        ArgumentOutOfRangeException.ThrowIfNegative(filesErrored, nameof(filesErrored));
+
         LastSyncAt = DateTimeOffset.UtcNow;
         LastSyncFilesDiscovered = filesDiscovered;
         LastSyncFilesImported = filesImported;
