@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, inject, signal, output } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { Dialog } from 'primeng/dialog';
 import { DriveService } from '../shared/services/drive.service';
 import { ToastService } from '../shared/services/toast.service';
@@ -9,7 +8,7 @@ import { DriveConnectionStatus, DriveFolder } from '../shared/models/drive-conne
   selector: 'app-drive-setup-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, DatePipe],
+  imports: [Dialog],
   template: `
     <p-dialog
       [visible]="visible()"
@@ -192,22 +191,22 @@ export class DriveSetupDialogComponent {
     const folderName = this.selectedFolderName();
     if (!folderId || !folderName) return;
 
-    this.driveService.saveSettings({
-      folderId,
-      folderName,
-      initialImportCutoffDate: this.cutoffDate() || null,
-      syncFrequencyMinutes: this.syncFrequency(),
-      autoAcceptTags: this.autoAcceptTags(),
-    });
-
-    // Watch for saving to complete, then close and emit
-    const checkSaving = setInterval(() => {
-      if (!this.driveService.saving()) {
-        clearInterval(checkSaving);
+    this.driveService.saveSettings(
+      {
+        folderId,
+        folderName,
+        initialImportCutoffDate: this.cutoffDate() || null,
+        syncFrequencyMinutes: this.syncFrequency(),
+        autoAcceptTags: this.autoAcceptTags(),
+      },
+      () => {
         this.visible.set(false);
         this.onSaved.emit();
-      }
-    }, 100);
+      },
+      () => {
+        this.toast.error('Failed to save settings. Please try again.');
+      },
+    );
   }
 
   private defaultCutoffDate(): string {

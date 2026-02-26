@@ -86,21 +86,27 @@ export class DriveService {
     });
   }
 
-  saveSettings(settings: {
-    folderId: string;
-    folderName: string;
-    initialImportCutoffDate: string | null;
-    syncFrequencyMinutes: number;
-    autoAcceptTags: boolean;
-  }): void {
+  saveSettings(
+    settings: {
+      folderId: string;
+      folderName: string;
+      initialImportCutoffDate: string | null;
+      syncFrequencyMinutes: number;
+      autoAcceptTags: boolean;
+    },
+    onSuccess?: () => void,
+    onError?: () => void,
+  ): void {
     this._saving.set(true);
 
     this.http.put('/api/drive/settings', settings).subscribe({
       next: () => {
         this._saving.set(false);
+        onSuccess?.();
       },
       error: () => {
         this._saving.set(false);
+        onError?.();
       },
     });
   }
