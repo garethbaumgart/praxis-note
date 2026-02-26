@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, inject, signal, output } from '@angular/core';
 import { Dialog } from 'primeng/dialog';
 import { DriveService } from '../shared/services/drive.service';
 import { ToastService } from '../shared/services/toast.service';
@@ -12,7 +12,7 @@ import { DriveConnectionStatus, DriveFolder } from '../shared/models/drive-conne
   template: `
     <p-dialog
       [visible]="visible()"
-      (visibleChange)="visible.set($event)"
+      (visibleChange)="onVisibleChange($event)"
       [modal]="true"
       [draggable]="false"
       [resizable]="false"
@@ -29,6 +29,7 @@ import { DriveConnectionStatus, DriveFolder } from '../shared/models/drive-conne
             type="text"
             class="w-full px-3 py-2 text-sm border border-border rounded-lg bg-surface text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
             placeholder="Search folders..."
+            aria-label="Search folders"
             [value]="searchQuery()"
             (input)="onSearchInput($any($event.target).value)"
           />
@@ -45,10 +46,11 @@ import { DriveConnectionStatus, DriveFolder } from '../shared/models/drive-conne
               <p class="text-sm">No folders found</p>
             </div>
           } @else {
-            <div class="max-h-60 overflow-y-auto space-y-1">
+            <div class="max-h-60 overflow-y-auto space-y-1" role="listbox" aria-label="Drive folders">
               @for (folder of driveService.folders(); track folder.id) {
                 <button
                   type="button"
+                  role="option"
                   class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors"
                   [class.bg-accent]="selectedFolderId() === folder.id"
                   [class.border]="selectedFolderId() === folder.id"
@@ -129,6 +131,7 @@ import { DriveConnectionStatus, DriveFolder } from '../shared/models/drive-conne
 export class DriveSetupDialogComponent {
   readonly driveService = inject(DriveService);
   private readonly toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly visible = signal(false);
   readonly step = signal(1);
@@ -142,6 +145,10 @@ export class DriveSetupDialogComponent {
   readonly onSaved = output<void>();
 
   private searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    this.destroyRef.onDestroy(() => this.clearSearchTimeout());
+  }
 
   open(existingConfig?: DriveConnectionStatus): void {
     this.step.set(1);
@@ -165,6 +172,13 @@ export class DriveSetupDialogComponent {
     this.driveService.loadFolders();
   }
 
+  onVisibleChange(visible: boolean): void {
+    this.visible.set(visible);
+    if (!visible) {
+      this.clearSearchTimeout();
+    }
+  }
+
   toggleAutoAcceptTags(): void {
     this.autoAcceptTags.set(!this.autoAcceptTags());
   }
@@ -176,10 +190,7 @@ export class DriveSetupDialogComponent {
 
   onSearchInput(value: string): void {
     this.searchQuery.set(value);
-
-    if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
-    }
+    this.clearSearchTimeout();
 
     this.searchTimeout = setTimeout(() => {
       this.driveService.loadFolders(value || undefined);
@@ -203,10 +214,17 @@ export class DriveSetupDialogComponent {
         this.visible.set(false);
         this.onSaved.emit();
       },
-      () => {
-        this.toast.error('Failed to save settings. Please try again.');
+      (message) => {
+        this.toast.error(message);
       },
     );
+  }
+
+  private clearSearchTimeout(): void {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = null;
+    }
   }
 
   private defaultCutoffDate(): string {

@@ -29,8 +29,8 @@ public sealed class GoogleDriveService : IDriveService
         var query = "mimeType='application/vnd.google-apps.folder' and trashed=false";
         if (!string.IsNullOrWhiteSpace(searchQuery))
         {
-            // Escape single quotes in user input
-            var sanitized = searchQuery.Replace("'", "\\'");
+            // Escape backslashes and single quotes in user input per Google Drive query requirements
+            var sanitized = searchQuery.Replace("\\", "\\\\").Replace("'", "\\'");
             query += $" and name contains '{sanitized}'";
         }
 

@@ -95,7 +95,7 @@ export class DriveService {
       autoAcceptTags: boolean;
     },
     onSuccess?: () => void,
-    onError?: () => void,
+    onError?: (message: string) => void,
   ): void {
     this._saving.set(true);
 
@@ -104,9 +104,10 @@ export class DriveService {
         this._saving.set(false);
         onSuccess?.();
       },
-      error: () => {
+      error: (err) => {
         this._saving.set(false);
-        onError?.();
+        const message = err?.error?.detail ?? err?.error?.title ?? 'Failed to save settings. Please try again.';
+        onError?.(message);
       },
     });
   }
