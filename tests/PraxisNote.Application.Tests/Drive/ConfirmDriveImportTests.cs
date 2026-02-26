@@ -3,6 +3,7 @@ using NSubstitute;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Drive;
 using PraxisNote.Application.Features.Meetings;
+using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Tags;
@@ -12,6 +13,7 @@ namespace PraxisNote.Application.Tests.Drive;
 public class ConfirmDriveImportTests
 {
     private readonly IDriveFileImportRepository _driveFileImportRepository = Substitute.For<IDriveFileImportRepository>();
+    private readonly IDriveConnectionRepository _driveConnectionRepository = Substitute.For<IDriveConnectionRepository>();
     private readonly IMeetingRepository _meetingRepository = Substitute.For<IMeetingRepository>();
     private readonly ITagRepository _tagRepository = Substitute.For<ITagRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
@@ -19,12 +21,17 @@ public class ConfirmDriveImportTests
 
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _profileId = Guid.NewGuid();
+    private readonly DriveConnection _connection;
 
     public ConfirmDriveImportTests()
     {
+        _connection = DriveConnection.Create(_userId, _profileId, "Google", "token", "refresh", DateTimeOffset.UtcNow.AddHours(1));
+        _driveConnectionRepository.GetByUserIdAsync(_userId, _profileId, Arg.Any<CancellationToken>())
+            .Returns(_connection);
+
         var confirmTranscriptImport = new ConfirmTranscriptImport(
             _meetingRepository, _tagRepository, _unitOfWork, _driveFileImportRepository);
-        _sut = new ConfirmDriveImport(confirmTranscriptImport, _driveFileImportRepository);
+        _sut = new ConfirmDriveImport(confirmTranscriptImport, _driveFileImportRepository, _driveConnectionRepository);
     }
 
     [Fact]
@@ -48,8 +55,7 @@ public class ConfirmDriveImportTests
     public async Task ExecuteAsync_WithValidFiles_CreatesExpectedMeetings()
     {
         // Arrange
-        var connectionId = Guid.NewGuid();
-        var driveImport = DriveFileImport.Create(connectionId, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
+        var driveImport = DriveFileImport.Create(_connection.Id, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
         var parsedResult = new
         {
             Title = "Weekly Standup",
@@ -89,8 +95,7 @@ public class ConfirmDriveImportTests
     public async Task ExecuteAsync_WithEditedTags_UsesUserEditedTags()
     {
         // Arrange
-        var connectionId = Guid.NewGuid();
-        var driveImport = DriveFileImport.Create(connectionId, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
+        var driveImport = DriveFileImport.Create(_connection.Id, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
         var parsedResult = new
         {
             Title = "Team Meeting",
@@ -126,8 +131,7 @@ public class ConfirmDriveImportTests
     public async Task ExecuteAsync_WithAlreadyImportedFiles_SkipsAndCountsThem()
     {
         // Arrange
-        var connectionId = Guid.NewGuid();
-        var driveImport = DriveFileImport.Create(connectionId, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
+        var driveImport = DriveFileImport.Create(_connection.Id, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
         var parsedResult = new { Title = "Test", Summary = "s", Transcript = "t" };
         driveImport.MarkParsed("content", JsonSerializer.Serialize(parsedResult));
         driveImport.MarkImported(Guid.NewGuid());
@@ -150,12 +154,34 @@ public class ConfirmDriveImportTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithMissingParsedResult_ReportsFailure()
+    public async Task ExecuteAsync_WithPendingFile_SkipsIt()
     {
-        // Arrange
-        var connectionId = Guid.NewGuid();
-        var driveImport = DriveFileImport.Create(connectionId, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
-        // File is in Pending state, no ParsedResultJson
+        // Arrange — file is in Pending state (not yet Parsed), should be skipped
+        var driveImport = DriveFileImport.Create(_connection.Id, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
+
+        _driveFileImportRepository.GetByIdAsync(driveImport.Id, Arg.Any<CancellationToken>())
+            .Returns(driveImport);
+
+        var command = new ConfirmDriveImport.Command(_userId, _profileId,
+        [
+            new ConfirmDriveImport.SelectedFile(driveImport.Id, [])
+        ]);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert
+        Assert.Equal(0, result.ImportedCount);
+        Assert.Equal(1, result.SkippedCount);
+        Assert.Empty(result.Failures);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithInvalidParsedJson_ReportsFailure()
+    {
+        // Arrange — file is Parsed but has invalid JSON
+        var driveImport = DriveFileImport.Create(_connection.Id, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
+        driveImport.MarkParsed("content", "not valid json {{{");
 
         _driveFileImportRepository.GetByIdAsync(driveImport.Id, Arg.Any<CancellationToken>())
             .Returns(driveImport);
@@ -172,7 +198,6 @@ public class ConfirmDriveImportTests
         Assert.Equal(0, result.ImportedCount);
         Assert.Single(result.Failures);
         Assert.Equal("notes.txt", result.Failures[0].FileName);
-        Assert.Contains("No parsed result", result.Failures[0].Error);
     }
 
     [Fact]
@@ -186,6 +211,30 @@ public class ConfirmDriveImportTests
         var command = new ConfirmDriveImport.Command(_userId, _profileId,
         [
             new ConfirmDriveImport.SelectedFile(fakeId, [])
+        ]);
+
+        // Act
+        var result = await _sut.ExecuteAsync(command);
+
+        // Assert
+        Assert.Equal(0, result.ImportedCount);
+        Assert.Empty(result.Failures);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithWrongConnectionId_IgnoresFile()
+    {
+        // Arrange — file belongs to a different connection
+        var otherConnectionId = Guid.NewGuid();
+        var driveImport = DriveFileImport.Create(otherConnectionId, "file-1", "notes.txt", "text/plain", DateTimeOffset.UtcNow);
+        driveImport.MarkParsed("content", JsonSerializer.Serialize(new { Title = "Test", Transcript = "t" }));
+
+        _driveFileImportRepository.GetByIdAsync(driveImport.Id, Arg.Any<CancellationToken>())
+            .Returns(driveImport);
+
+        var command = new ConfirmDriveImport.Command(_userId, _profileId,
+        [
+            new ConfirmDriveImport.SelectedFile(driveImport.Id, [])
         ]);
 
         // Act

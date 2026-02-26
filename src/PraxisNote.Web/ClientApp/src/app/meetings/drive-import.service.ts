@@ -1,5 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import {
   DriveFileImportDto,
   DriveImportPreviewFile,
@@ -113,7 +114,9 @@ export class DriveImportService {
     try {
       // Skip unselected non-duplicate files
       if (unselectedNonDuplicates.length > 0) {
-        await this.skipFiles(unselectedNonDuplicates.map(f => f.id));
+        await firstValueFrom(
+          this.http.post('/api/drive/import/skip', { driveFileImportIds: unselectedNonDuplicates.map(f => f.id) }),
+        );
       }
 
       // Confirm selected files
@@ -126,12 +129,9 @@ export class DriveImportService {
 
       this.importProgress.set({ current: 1, total: selectedFiles.length });
 
-      const result = await new Promise<DriveImportConfirmResult>((resolve, reject) => {
-        this.http.post<DriveImportConfirmResult>('/api/drive/import/confirm', body).subscribe({
-          next: (res) => resolve(res),
-          error: (err) => reject(err),
-        });
-      });
+      const result = await firstValueFrom(
+        this.http.post<DriveImportConfirmResult>('/api/drive/import/confirm', body),
+      );
 
       this.importProgress.set({ current: selectedFiles.length, total: selectedFiles.length });
       this.importResult.set(result);
@@ -164,12 +164,9 @@ export class DriveImportService {
 
       this.importProgress.set({ current: 1, total: failedFiles.length });
 
-      const retryResult = await new Promise<DriveImportConfirmResult>((resolve, reject) => {
-        this.http.post<DriveImportConfirmResult>('/api/drive/import/confirm', body).subscribe({
-          next: (res) => resolve(res),
-          error: (err) => reject(err),
-        });
-      });
+      const retryResult = await firstValueFrom(
+        this.http.post<DriveImportConfirmResult>('/api/drive/import/confirm', body),
+      );
 
       this.importProgress.set({ current: failedFiles.length, total: failedFiles.length });
 
@@ -195,15 +192,6 @@ export class DriveImportService {
     this.error.set(null);
     this.importResult.set(null);
     this.importProgress.set({ current: 0, total: 0 });
-  }
-
-  private async skipFiles(ids: string[]): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      this.http.post('/api/drive/import/skip', { driveFileImportIds: ids }).subscribe({
-        next: () => resolve(),
-        error: (err) => reject(err),
-      });
-    });
   }
 
   private mapToPreviewFile(dto: DriveFileImportDto): DriveImportPreviewFile {
@@ -243,13 +231,15 @@ export class DriveImportService {
 
   private mapDuplicateType(type: string): 'none' | 'definite' | 'possible' {
     switch (type) {
+      case 'None':
+        return 'none';
       case 'ExactFile':
       case 'CalendarEvent':
         return 'definite';
       case 'FuzzyMatch':
         return 'possible';
       default:
-        return 'none';
+        return 'possible';
     }
   }
 }

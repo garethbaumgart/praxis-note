@@ -4,7 +4,6 @@ import { Dialog } from 'primeng/dialog';
 import { Checkbox } from 'primeng/checkbox';
 import { Skeleton } from 'primeng/skeleton';
 import { DriveImportService } from './drive-import.service';
-import { MeetingService } from './meeting.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
 import { formatDateTime } from '../shared/date-utils';
@@ -294,7 +293,7 @@ import { formatDateTime } from '../shared/date-utils';
               }
               @if (driveImportService.importResult()!.skippedCount > 0) {
                 <p class="text-xs text-foreground-muted mt-1">
-                  {{ driveImportService.importResult()!.skippedCount }} duplicates skipped
+                  {{ driveImportService.importResult()!.skippedCount }} already imported, skipped
                 </p>
               }
               <button type="button"
@@ -318,7 +317,6 @@ import { formatDateTime } from '../shared/date-utils';
 })
 export class DriveImportDialogComponent {
   readonly driveImportService = inject(DriveImportService);
-  private readonly meetingService = inject(MeetingService);
   private readonly toast = inject(ToastService);
 
   readonly visible = signal(false);

@@ -1,12 +1,14 @@
 using System.Text.Json;
 using PraxisNote.Application.Features.Meetings;
+using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
 
 namespace PraxisNote.Application.Features.Drive;
 
 public sealed class ConfirmDriveImport(
     ConfirmTranscriptImport confirmTranscriptImport,
-    IDriveFileImportRepository driveFileImportRepository)
+    IDriveFileImportRepository driveFileImportRepository,
+    IDriveConnectionRepository connectionRepository)
 {
     public record SelectedFile(
         Guid DriveFileImportId,
@@ -25,17 +27,23 @@ public sealed class ConfirmDriveImport(
             return new Result(0, 0, 0, 0, []);
         }
 
+        // Verify ownership via DriveConnection
+        var connection = await connectionRepository.GetByUserIdAsync(command.UserId, command.ProfileId, ct)
+            ?? throw new InvalidOperationException("No Google Drive connection found.");
+
+        // Build lookup for user-edited tags (deduplicate by ID, last wins)
+        var tagsByFileId = command.Files
+            .GroupBy(f => f.DriveFileImportId)
+            .ToDictionary(g => g.Key, g => g.Last().Tags);
+
         // Load all DriveFileImport entities
         var driveImports = new List<DriveFileImport>();
-        foreach (var file in command.Files)
+        foreach (var fileId in tagsByFileId.Keys)
         {
-            var import = await driveFileImportRepository.GetByIdAsync(file.DriveFileImportId, ct);
-            if (import is not null)
+            var import = await driveFileImportRepository.GetByIdAsync(fileId, ct);
+            if (import is not null && import.DriveConnectionId == connection.Id)
                 driveImports.Add(import);
         }
-
-        // Build lookup for user-edited tags
-        var tagsByFileId = command.Files.ToDictionary(f => f.DriveFileImportId, f => f.Tags);
 
         var skippedCount = 0;
         var importItems = new List<ConfirmTranscriptImport.ImportItem>();
@@ -43,8 +51,8 @@ public sealed class ConfirmDriveImport(
 
         foreach (var driveImport in driveImports)
         {
-            // Skip already-imported files
-            if (driveImport.Status == DriveFileImportStatus.Imported)
+            // Only Parsed files are eligible for import
+            if (driveImport.Status != DriveFileImportStatus.Parsed)
             {
                 skippedCount++;
                 continue;
@@ -93,9 +101,9 @@ public sealed class ConfirmDriveImport(
                     userTags,
                     driveImport.Id));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                failures.Add(new FailedImport(driveImport.Id, driveImport.FileName, ex.Message));
+                failures.Add(new FailedImport(driveImport.Id, driveImport.FileName, "Failed to process file for import"));
             }
         }
 

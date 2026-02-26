@@ -121,7 +121,10 @@ public sealed class ConfirmTranscriptImport(
             {
                 var driveImport = await driveFileImportRepository.GetByIdAsync(
                     item.DriveFileImportId.Value, cancellationToken);
-                driveImport?.MarkImported(meeting.Id);
+                if (driveImport?.Status == DriveFileImportStatus.Parsed)
+                {
+                    driveImport.MarkImported(meeting.Id);
+                }
             }
         }
 

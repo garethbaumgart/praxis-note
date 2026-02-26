@@ -418,6 +418,7 @@ public static class DriveEndpoints
     }
 
     private static async Task<IResult> HandleSkipDriveImports(
+        HttpContext context,
         ClaimsPrincipal user,
         SkipDriveImportsRequest request,
         [FromServices] SkipDriveImports skipDriveImports,
@@ -429,7 +430,8 @@ public static class DriveEndpoints
         if (request.DriveFileImportIds is null || request.DriveFileImportIds.Count == 0)
             return Results.Ok(new { message = "No files to skip." });
 
-        var command = new SkipDriveImports.Command(userId.Value, request.DriveFileImportIds);
+        var profileId = context.GetProfileId();
+        var command = new SkipDriveImports.Command(userId.Value, profileId, request.DriveFileImportIds);
         await skipDriveImports.ExecuteAsync(command, cancellationToken);
 
         return Results.Ok(new { message = "Files skipped." });
