@@ -163,12 +163,12 @@ public sealed class DriveConnection : AggregateRoot
         int syncFrequencyMinutes,
         bool autoAcceptTags)
     {
-        SetFolder(folderId, folderName);
-        InitialImportCutoffDate = initialImportCutoffDate;
-
+        // Validate all inputs before mutating state
         if (syncFrequencyMinutes != 0 && syncFrequencyMinutes != 15 && syncFrequencyMinutes != 30 && syncFrequencyMinutes != 60)
             throw new ArgumentOutOfRangeException(nameof(syncFrequencyMinutes), "Must be 0 (manual), 15, 30, or 60");
 
+        SetFolder(folderId, folderName);
+        InitialImportCutoffDate = initialImportCutoffDate;
         SyncFrequencyMinutes = syncFrequencyMinutes;
         AutoAcceptTags = autoAcceptTags;
     }

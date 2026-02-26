@@ -12,6 +12,7 @@ export class DriveService {
   private readonly _lastDisconnected = signal(false);
   private readonly _folders = signal<DriveFolder[]>([]);
   private readonly _loadingFolders = signal(false);
+  private readonly _folderLoadError = signal<string | null>(null);
   private readonly _saving = signal(false);
 
   readonly status = this._status.asReadonly();
@@ -20,6 +21,7 @@ export class DriveService {
   readonly lastDisconnected = this._lastDisconnected.asReadonly();
   readonly folders = this._folders.asReadonly();
   readonly loadingFolders = this._loadingFolders.asReadonly();
+  readonly folderLoadError = this._folderLoadError.asReadonly();
   readonly saving = this._saving.asReadonly();
 
   loadConnectionStatus(): void {
@@ -72,6 +74,7 @@ export class DriveService {
 
   loadFolders(search?: string): void {
     this._loadingFolders.set(true);
+    this._folderLoadError.set(null);
 
     const params = search ? `?search=${encodeURIComponent(search)}` : '';
     this.http.get<DriveFolder[]>(`/api/drive/folders${params}`).subscribe({
@@ -81,6 +84,7 @@ export class DriveService {
       },
       error: () => {
         this._folders.set([]);
+        this._folderLoadError.set('Failed to load folders. Please try again.');
         this._loadingFolders.set(false);
       },
     });

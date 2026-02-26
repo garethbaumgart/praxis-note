@@ -40,9 +40,15 @@ import { DriveConnectionStatus, DriveFolder } from '../shared/models/drive-conne
               <span class="text-sm text-foreground-muted">Loading folders...</span>
               <span class="sr-only">Loading folders...</span>
             </div>
+          } @else if (driveService.folderLoadError()) {
+            <div class="flex flex-col items-center py-8 text-foreground-muted">
+              <i class="pi pi-exclamation-circle text-2xl mb-2 text-danger" aria-hidden="true"></i>
+              <p class="text-sm text-danger mb-2">{{ driveService.folderLoadError() }}</p>
+              <button type="button" class="text-sm text-accent underline" (click)="driveService.loadFolders(searchQuery() || undefined)">Try again</button>
+            </div>
           } @else if (driveService.folders().length === 0) {
             <div class="flex flex-col items-center py-8 text-foreground-muted">
-              <i class="pi pi-folder text-2xl mb-2" aria-hidden="true"></i>
+              <i class="pi pi-inbox text-2xl mb-2" aria-hidden="true"></i>
               <p class="text-sm">No folders found</p>
             </div>
           } @else {
@@ -230,6 +236,9 @@ export class DriveSetupDialogComponent {
   private defaultCutoffDate(): string {
     const date = new Date();
     date.setDate(date.getDate() - 30);
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

@@ -265,7 +265,7 @@ const MAX_API_KEYS = 5;
                   }
                   <div>
                     <span class="text-foreground-muted">Sync frequency</span>
-                    <p class="font-medium text-foreground">{{ formatSyncFrequency(driveService.status()!.syncFrequencyMinutes!) }}</p>
+                    <p class="font-medium text-foreground">{{ formatSyncFrequency(driveService.status()?.syncFrequencyMinutes) }}</p>
                   </div>
                   @if (driveService.status()?.lastSyncedAt) {
                     <div>
@@ -950,7 +950,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.toast.success({ summary: 'Drive import settings saved', detail: 'Initial import will start shortly.' });
   }
 
-  formatSyncFrequency(minutes: number): string {
+  formatSyncFrequency(minutes: number | null | undefined): string {
+    if (minutes == null) return 'Not set';
     if (minutes === 0) return 'Manual only';
     if (minutes === 60) return 'Every hour';
     return `Every ${minutes} minutes`;
