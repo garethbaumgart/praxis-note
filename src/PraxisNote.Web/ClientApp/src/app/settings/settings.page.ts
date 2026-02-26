@@ -267,13 +267,58 @@ const MAX_API_KEYS = 5;
                     <span class="text-foreground-muted">Sync frequency</span>
                     <p class="font-medium text-foreground">{{ formatSyncFrequency(driveService.status()?.syncFrequencyMinutes) }}</p>
                   </div>
-                  @if (driveService.status()?.lastSyncedAt) {
+                  @if (driveService.status()?.lastSyncAt) {
                     <div>
                       <span class="text-foreground-muted">Last synced</span>
-                      <p class="font-medium text-foreground">{{ driveService.status()!.lastSyncedAt | date:'medium' }}</p>
+                      <p class="font-medium text-foreground">{{ driveService.status()!.lastSyncAt | date:'medium' }}</p>
+                    </div>
+                  }
+                  @if (driveService.status()?.nextSyncAt && driveService.status()?.syncFrequencyMinutes) {
+                    <div>
+                      <span class="text-foreground-muted">Next sync</span>
+                      <p class="font-medium text-foreground">{{ formatTimeUntil(driveService.status()!.nextSyncAt!) }}</p>
                     </div>
                   }
                 </div>
+
+                <!-- Last sync result -->
+                @if (driveService.status()?.lastSyncFilesDiscovered) {
+                  <div class="py-2 px-4 bg-done/20 border border-done/30 rounded-lg mt-3">
+                    <p class="text-sm text-foreground">
+                      Last sync: {{ driveService.status()!.lastSyncFilesDiscovered }} files found,
+                      {{ driveService.status()!.lastSyncFilesImported }} imported,
+                      {{ driveService.status()!.lastSyncFilesPendingReview }} pending review
+                      @if (driveService.status()!.lastSyncFilesErrored > 0) {
+                        , {{ driveService.status()!.lastSyncFilesErrored }} errors
+                      }
+                    </p>
+                  </div>
+                }
+
+                <!-- Sync error / paused state -->
+                @if (driveService.status()?.lastSyncError) {
+                  <div class="py-2 px-4 bg-danger/10 border border-danger/30 rounded-lg mt-3">
+                    <p class="text-sm text-danger">{{ driveService.status()!.lastSyncError }}</p>
+                    @if (driveService.status()?.isSyncPaused) {
+                      <p class="text-xs text-foreground-muted mt-1">
+                        Sync paused due to repeated errors. Click "Sync Now" to retry.
+                      </p>
+                    }
+                  </div>
+                }
+
+                <!-- Pending review badge -->
+                @if (driveService.status()?.pendingReviewCount) {
+                  <div class="py-2 px-4 bg-accent/20 border border-accent/30 rounded-lg mt-3 flex items-center justify-between">
+                    <p class="text-sm text-foreground">
+                      {{ driveService.status()!.pendingReviewCount }} files ready for review
+                    </p>
+                    <button type="button"
+                      class="text-xs text-accent-solid hover:underline"
+                      (click)="navigateToDriveImport()"
+                    >Review now</button>
+                  </div>
+                }
               } @else {
                 <!-- Not yet configured: prompt to set up -->
                 <p class="text-sm text-foreground-secondary">
@@ -296,6 +341,14 @@ const MAX_API_KEYS = 5;
                   size="small"
                 />
                 @if (driveService.status()?.isConfigured) {
+                  <p-button
+                    label="Sync Now"
+                    icon="pi pi-sync"
+                    [loading]="driveService.syncing()"
+                    (onClick)="syncDrive()"
+                    severity="secondary"
+                    size="small"
+                  />
                   <p-button
                     label="Import Now"
                     icon="pi pi-download"
@@ -964,11 +1017,31 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.toast.success({ summary: 'Drive import settings saved', detail: 'Initial import will start shortly.' });
   }
 
+  syncDrive(): void {
+    this.driveService.syncNow();
+  }
+
   formatSyncFrequency(minutes: number | null | undefined): string {
     if (minutes == null) return 'Not set';
     if (minutes === 0) return 'Manual only';
     if (minutes === 60) return 'Every hour';
     return `Every ${minutes} minutes`;
+  }
+
+  formatTimeUntil(isoDate: string): string {
+    const target = new Date(isoDate);
+    const now = new Date();
+    const diffMs = target.getTime() - now.getTime();
+
+    if (diffMs <= 0) return 'Now';
+
+    const minutes = Math.ceil(diffMs / 60000);
+    if (minutes < 60) return `in ${minutes} minute${minutes === 1 ? '' : 's'}`;
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) return `in ${hours} hour${hours === 1 ? '' : 's'}`;
+    return `in ${hours}h ${remainingMinutes}m`;
   }
 
   // --- Jira actions ---

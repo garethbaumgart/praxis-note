@@ -49,6 +49,9 @@ builder.Services.AddHttpContextAccessor();
 // SSE Manager for real-time notifications (singleton for connection tracking)
 builder.Services.AddSingleton<NotificationSseManager>();
 
+// Background service for periodic Drive folder sync
+builder.Services.AddHostedService<DriveSyncBackgroundJob>();
+
 // Configure Data Protection to persist keys to database (survives cold starts)
 builder.Services.AddDataProtection()
     .SetApplicationName("PraxisNote")

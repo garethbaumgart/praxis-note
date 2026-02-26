@@ -43,6 +43,12 @@ public sealed class DriveFileImportRepository(PraxisNoteDbContext context) : IDr
         return existing.ToHashSet();
     }
 
+    public async Task<int> GetPendingCountByConnectionAsync(Guid driveConnectionId, CancellationToken cancellationToken = default)
+    {
+        return await context.DriveFileImports
+            .CountAsync(f => f.DriveConnectionId == driveConnectionId && f.Status == DriveFileImportStatus.Parsed, cancellationToken);
+    }
+
     public async Task AddAsync(DriveFileImport import, CancellationToken cancellationToken = default)
     {
         await context.DriveFileImports.AddAsync(import, cancellationToken);

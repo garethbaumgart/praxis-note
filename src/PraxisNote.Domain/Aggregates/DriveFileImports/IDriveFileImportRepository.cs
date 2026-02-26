@@ -7,6 +7,9 @@ public interface IDriveFileImportRepository
     Task<IReadOnlyList<DriveFileImport>> GetByConnectionIdAsync(Guid driveConnectionId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DriveFileImport>> GetByStatusAsync(Guid driveConnectionId, DriveFileImportStatus status, CancellationToken cancellationToken = default);
     Task<HashSet<string>> GetExistingDriveFileIdsAsync(Guid driveConnectionId, IEnumerable<string> driveFileIds, CancellationToken cancellationToken = default);
+    /// <summary>Gets count of files pending review (status = Parsed) for a connection.</summary>
+    Task<int> GetPendingCountByConnectionAsync(Guid driveConnectionId, CancellationToken cancellationToken = default);
+
     Task AddAsync(DriveFileImport import, CancellationToken cancellationToken = default);
     Task AddRangeAsync(IEnumerable<DriveFileImport> imports, CancellationToken cancellationToken = default);
     void Remove(DriveFileImport import);

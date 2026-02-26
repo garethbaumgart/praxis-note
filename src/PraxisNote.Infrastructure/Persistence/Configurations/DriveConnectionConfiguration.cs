@@ -38,9 +38,19 @@ public sealed class DriveConnectionConfiguration : IEntityTypeConfiguration<Driv
         builder.Property(c => c.AutoAcceptTags).HasDefaultValue(false);
         builder.Property(c => c.TimeZone).HasMaxLength(100);
 
+        // Sync tracking properties
+        builder.Property(c => c.LastSyncAt);
+        builder.Property(c => c.LastSyncFilesDiscovered);
+        builder.Property(c => c.LastSyncFilesImported);
+        builder.Property(c => c.LastSyncFilesPendingReview);
+        builder.Property(c => c.LastSyncFilesErrored);
+        builder.Property(c => c.LastSyncError).HasMaxLength(500);
+        builder.Property(c => c.ConsecutiveFailures);
+
         // One Drive connection per user per profile
         builder.HasIndex(c => new { c.UserId, c.ProfileId }).IsUnique();
 
         builder.Ignore(c => c.DomainEvents);
+        builder.Ignore(c => c.IsSyncPaused);
     }
 }

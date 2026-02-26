@@ -3,18 +3,21 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PraxisNote.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace PraxisNote.Infrastructure.Migrations
+namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
 {
     [DbContext(typeof(PraxisNoteDbContext))]
-    partial class PraxisNoteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260226121812_AddDriveConnectionSyncTracking")]
+    partial class AddDriveConnectionSyncTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

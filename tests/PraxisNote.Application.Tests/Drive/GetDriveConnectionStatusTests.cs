@@ -1,12 +1,14 @@
 using NSubstitute;
 using PraxisNote.Application.Features.Drive;
 using PraxisNote.Domain.Aggregates.DriveConnections;
+using PraxisNote.Domain.Aggregates.DriveFileImports;
 
 namespace PraxisNote.Application.Tests.Drive;
 
 public class GetDriveConnectionStatusTests
 {
     private readonly IDriveConnectionRepository _repository = Substitute.For<IDriveConnectionRepository>();
+    private readonly IDriveFileImportRepository _fileImportRepository = Substitute.For<IDriveFileImportRepository>();
     private readonly GetDriveConnectionStatus _sut;
 
     private readonly Guid _userId = Guid.NewGuid();
@@ -14,7 +16,7 @@ public class GetDriveConnectionStatusTests
 
     public GetDriveConnectionStatusTests()
     {
-        _sut = new GetDriveConnectionStatus(_repository);
+        _sut = new GetDriveConnectionStatus(_repository, _fileImportRepository);
     }
 
     [Fact]
