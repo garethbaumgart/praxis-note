@@ -275,7 +275,7 @@ export class MeetingsPage implements OnInit, OnDestroy {
     const params = this.route.snapshot.queryParams;
     if (params['driveImport'] === 'true') {
       setTimeout(() => this.driveImportDialog()?.open(), 0);
-      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      this.router.navigate([], { relativeTo: this.route, queryParams: { driveImport: undefined }, queryParamsHandling: 'merge', replaceUrl: true });
     }
   }
 

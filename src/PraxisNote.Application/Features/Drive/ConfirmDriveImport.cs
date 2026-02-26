@@ -89,11 +89,18 @@ public sealed class ConfirmDriveImport(
                     .Select(a => new ConfirmTranscriptImport.ActionItemInput(a.Description, a.Assignee))
                     .ToList() ?? [];
 
+                var transcript = parsed.Transcript ?? driveImport.ParsedContent ?? "";
+                if (string.IsNullOrWhiteSpace(transcript))
+                {
+                    failures.Add(new FailedImport(driveImport.Id, driveImport.FileName, "No transcript content available"));
+                    continue;
+                }
+
                 importItems.Add(new ConfirmTranscriptImport.ImportItem(
                     parsed.Title,
                     meetingDate,
                     parsed.Attendees,
-                    parsed.Transcript ?? driveImport.ParsedContent ?? "",
+                    transcript,
                     parsed.Summary,
                     parsed.KeyPoints is not null ? string.Join("\n", parsed.KeyPoints) : null,
                     parsed.Decisions is not null ? string.Join("\n", parsed.Decisions) : null,
@@ -107,18 +114,32 @@ public sealed class ConfirmDriveImport(
             }
         }
 
-        var importResult = new ConfirmTranscriptImport.Result(0, 0, 0);
+        // Import files one at a time for per-file failure isolation
+        var totalImported = 0;
+        var totalActionItems = 0;
+        var totalTagsCreated = 0;
 
-        if (importItems.Count > 0)
+        foreach (var item in importItems)
         {
-            var importCommand = new ConfirmTranscriptImport.Command(command.UserId, command.ProfileId, importItems);
-            importResult = await confirmTranscriptImport.ExecuteAsync(importCommand, ct);
+            try
+            {
+                var singleCommand = new ConfirmTranscriptImport.Command(command.UserId, command.ProfileId, [item]);
+                var singleResult = await confirmTranscriptImport.ExecuteAsync(singleCommand, ct);
+                totalImported += singleResult.ImportedCount;
+                totalActionItems += singleResult.TotalActionItems;
+                totalTagsCreated += singleResult.TagsCreated;
+            }
+            catch (Exception)
+            {
+                var fileName = driveImports.FirstOrDefault(d => d.Id == item.DriveFileImportId)?.FileName ?? "Unknown";
+                failures.Add(new FailedImport(item.DriveFileImportId ?? Guid.Empty, fileName, "Failed to import meeting"));
+            }
         }
 
         return new Result(
-            importResult.ImportedCount,
-            importResult.TotalActionItems,
-            importResult.TagsCreated,
+            totalImported,
+            totalActionItems,
+            totalTagsCreated,
             skippedCount,
             failures);
     }

@@ -405,16 +405,23 @@ public static class DriveEndpoints
         if (request.Files is null || request.Files.Count == 0)
             return Results.BadRequest(new { error = "At least one file must be provided." });
 
-        var profileId = context.GetProfileId();
-        var files = request.Files.Select(f => new ConfirmDriveImport.SelectedFile(
-            f.DriveFileImportId,
-            f.Tags ?? []
-        )).ToList();
+        try
+        {
+            var profileId = context.GetProfileId();
+            var files = request.Files.Select(f => new ConfirmDriveImport.SelectedFile(
+                f.DriveFileImportId,
+                f.Tags ?? []
+            )).ToList();
 
-        var command = new ConfirmDriveImport.Command(userId.Value, profileId, files);
-        var result = await confirmDriveImport.ExecuteAsync(command, cancellationToken);
+            var command = new ConfirmDriveImport.Command(userId.Value, profileId, files);
+            var result = await confirmDriveImport.ExecuteAsync(command, cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     private static async Task<IResult> HandleSkipDriveImports(
@@ -430,11 +437,18 @@ public static class DriveEndpoints
         if (request.DriveFileImportIds is null || request.DriveFileImportIds.Count == 0)
             return Results.Ok(new { message = "No files to skip." });
 
-        var profileId = context.GetProfileId();
-        var command = new SkipDriveImports.Command(userId.Value, profileId, request.DriveFileImportIds);
-        await skipDriveImports.ExecuteAsync(command, cancellationToken);
+        try
+        {
+            var profileId = context.GetProfileId();
+            var command = new SkipDriveImports.Command(userId.Value, profileId, request.DriveFileImportIds);
+            await skipDriveImports.ExecuteAsync(command, cancellationToken);
 
-        return Results.Ok(new { message = "Files skipped." });
+            return Results.Ok(new { message = "Files skipped." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     public record UpdateDriveSettingsRequest(
