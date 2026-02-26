@@ -1,5 +1,6 @@
 using System.Text.Json;
 using PraxisNote.Application.Common;
+using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Tags;
 
@@ -8,7 +9,8 @@ namespace PraxisNote.Application.Features.Meetings;
 public sealed class ConfirmTranscriptImport(
     IMeetingRepository meetingRepository,
     ITagRepository tagRepository,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IDriveFileImportRepository? driveFileImportRepository = null)
 {
     public record ImportItem(
         string? Title,
@@ -19,7 +21,8 @@ public sealed class ConfirmTranscriptImport(
         string? KeyPoints,
         string? Decisions,
         List<ActionItemInput> ActionItems,
-        List<string> SuggestedTags);
+        List<string> SuggestedTags,
+        Guid? DriveFileImportId = null);
 
     public record ActionItemInput(string Description, string? Assignee);
 
@@ -112,6 +115,17 @@ public sealed class ConfirmTranscriptImport(
             }
 
             await meetingRepository.AddAsync(meeting, cancellationToken);
+
+            // Mark Drive file import as imported if applicable
+            if (item.DriveFileImportId.HasValue && driveFileImportRepository is not null)
+            {
+                var driveImport = await driveFileImportRepository.GetByIdAsync(
+                    item.DriveFileImportId.Value, cancellationToken);
+                if (driveImport?.Status == DriveFileImportStatus.Parsed)
+                {
+                    driveImport.MarkImported(meeting.Id);
+                }
+            }
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

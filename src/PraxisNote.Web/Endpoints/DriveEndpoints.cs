@@ -29,6 +29,8 @@ public static class DriveEndpoints
         group.MapGet("/files", HandleListFiles);
         group.MapPost("/deduplicate", HandleDeduplicate);
         group.MapPost("/files/{id:guid}/override-duplicate", HandleOverrideDuplicate);
+        group.MapPost("/import/confirm", HandleConfirmDriveImport);
+        group.MapPost("/import/skip", HandleSkipDriveImports);
     }
 
     private static async Task<IResult> HandleGetStatus(
@@ -390,6 +392,65 @@ public static class DriveEndpoints
         }
     }
 
+    private static async Task<IResult> HandleConfirmDriveImport(
+        HttpContext context,
+        ClaimsPrincipal user,
+        ConfirmDriveImportRequest request,
+        [FromServices] ConfirmDriveImport confirmDriveImport,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        if (request.Files is null || request.Files.Count == 0)
+            return Results.BadRequest(new { error = "At least one file must be provided." });
+
+        try
+        {
+            var profileId = context.GetProfileId();
+            var files = request.Files.Select(f => new ConfirmDriveImport.SelectedFile(
+                f.DriveFileImportId,
+                f.Tags ?? []
+            )).ToList();
+
+            var command = new ConfirmDriveImport.Command(userId.Value, profileId, files);
+            var result = await confirmDriveImport.ExecuteAsync(command, cancellationToken);
+
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> HandleSkipDriveImports(
+        HttpContext context,
+        ClaimsPrincipal user,
+        SkipDriveImportsRequest request,
+        [FromServices] SkipDriveImports skipDriveImports,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        if (request.DriveFileImportIds is null || request.DriveFileImportIds.Count == 0)
+            return Results.Ok(new { message = "No files to skip." });
+
+        try
+        {
+            var profileId = context.GetProfileId();
+            var command = new SkipDriveImports.Command(userId.Value, profileId, request.DriveFileImportIds);
+            await skipDriveImports.ExecuteAsync(command, cancellationToken);
+
+            return Results.Ok(new { message = "Files skipped." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
     public record UpdateDriveSettingsRequest(
         string FolderId,
         string FolderName,
@@ -397,4 +458,9 @@ public static class DriveEndpoints
         int SyncFrequencyMinutes,
         bool AutoAcceptTags,
         string? TimeZone);
+
+    public record ConfirmDriveImportRequest(List<ConfirmDriveImportFile> Files);
+    public record ConfirmDriveImportFile(Guid DriveFileImportId, List<string>? Tags);
+
+    public record SkipDriveImportsRequest(List<Guid> DriveFileImportIds);
 }
