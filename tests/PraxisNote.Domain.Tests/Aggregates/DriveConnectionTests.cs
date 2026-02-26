@@ -300,6 +300,100 @@ public class DriveConnectionTests
 
     #endregion
 
+    #region Configure Tests
+
+    [Fact]
+    public void Configure_WithValidInputs_SetsAllProperties()
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+        var cutoffDate = new DateOnly(2026, 1, 1);
+
+        // Act
+        connection.Configure("folder-abc", "My Folder", cutoffDate, 30, true);
+
+        // Assert
+        Assert.Equal("folder-abc", connection.FolderId);
+        Assert.Equal("My Folder", connection.FolderName);
+        Assert.Equal(cutoffDate, connection.InitialImportCutoffDate);
+        Assert.Equal(30, connection.SyncFrequencyMinutes);
+        Assert.True(connection.AutoAcceptTags);
+    }
+
+    [Fact]
+    public void Configure_WithNullCutoffDate_AllowsNull()
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        // Act
+        connection.Configure("folder-abc", "My Folder", null, 15, false);
+
+        // Assert
+        Assert.Null(connection.InitialImportCutoffDate);
+    }
+
+    [Fact]
+    public void Configure_WithManualFrequency_SetsZero()
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        // Act
+        connection.Configure("folder-abc", "My Folder", null, 0, false);
+
+        // Assert
+        Assert.Equal(0, connection.SyncFrequencyMinutes);
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(45)]
+    [InlineData(120)]
+    [InlineData(-1)]
+    public void Configure_WithInvalidFrequency_ThrowsArgumentOutOfRangeException(int invalidFrequency)
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            connection.Configure("folder-abc", "My Folder", null, invalidFrequency, false));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Configure_WithEmptyFolderId_ThrowsArgumentException(string? folderId)
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        Assert.ThrowsAny<ArgumentException>(() =>
+            connection.Configure(folderId!, "My Folder", null, 15, false));
+    }
+
+    [Fact]
+    public void Configure_CalledTwice_OverwritesPreviousValues()
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        connection.Configure("folder-1", "First Folder", new DateOnly(2026, 1, 1), 15, true);
+
+        // Act
+        connection.Configure("folder-2", "Second Folder", new DateOnly(2026, 2, 1), 60, false);
+
+        // Assert
+        Assert.Equal("folder-2", connection.FolderId);
+        Assert.Equal("Second Folder", connection.FolderName);
+        Assert.Equal(new DateOnly(2026, 2, 1), connection.InitialImportCutoffDate);
+        Assert.Equal(60, connection.SyncFrequencyMinutes);
+        Assert.False(connection.AutoAcceptTags);
+    }
+
+    #endregion
+
     #region Reassign Tests
 
     [Fact]

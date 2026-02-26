@@ -19,6 +19,7 @@ import { LinkAccountPanelComponent } from './link-account-panel.component';
 import { ApiKeyService } from './api-key.service';
 import { ApiKeyDto } from './api-key.model';
 import { ApiKeyCardComponent } from './api-key-card.component';
+import { DriveSetupDialogComponent } from './drive-setup-dialog.component';
 
 const MAX_PROFILES = 5;
 const MAX_API_KEYS = 5;
@@ -27,7 +28,7 @@ const MAX_API_KEYS = 5;
   selector: 'app-settings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, DatePipe, Dialog, PageContentComponent, ProfileCardComponent, CreateProfileDialogComponent, LinkedAccountCardComponent, LinkAccountPanelComponent, ApiKeyCardComponent],
+  imports: [Button, DatePipe, Dialog, PageContentComponent, ProfileCardComponent, CreateProfileDialogComponent, LinkedAccountCardComponent, LinkAccountPanelComponent, ApiKeyCardComponent, DriveSetupDialogComponent],
   template: `
     <app-page-content maxWidth="narrow">
       <h1 class="sr-only">Settings</h1>
@@ -253,20 +254,32 @@ const MAX_API_KEYS = 5;
                 <span class="text-sm font-medium text-done-foreground">Connected to Google Drive</span>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                @if (driveService.status()?.connectedAt) {
+              @if (driveService.status()?.isConfigured) {
+                <!-- Configured state: show folder, sync frequency, last sync -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  @if (driveService.status()?.folderName) {
+                    <div>
+                      <span class="text-foreground-muted">Linked folder</span>
+                      <p class="font-medium text-foreground">{{ driveService.status()!.folderName }}</p>
+                    </div>
+                  }
                   <div>
-                    <span class="text-foreground-muted">Connected since</span>
-                    <p class="font-medium text-foreground">{{ driveService.status()!.connectedAt | date:'mediumDate' }}</p>
+                    <span class="text-foreground-muted">Sync frequency</span>
+                    <p class="font-medium text-foreground">{{ formatSyncFrequency(driveService.status()!.syncFrequencyMinutes!) }}</p>
                   </div>
-                }
-                @if (driveService.status()?.folderName) {
-                  <div>
-                    <span class="text-foreground-muted">Linked folder</span>
-                    <p class="font-medium text-foreground">{{ driveService.status()!.folderName }}</p>
-                  </div>
-                }
-              </div>
+                  @if (driveService.status()?.lastSyncedAt) {
+                    <div>
+                      <span class="text-foreground-muted">Last synced</span>
+                      <p class="font-medium text-foreground">{{ driveService.status()!.lastSyncedAt | date:'medium' }}</p>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <!-- Not yet configured: prompt to set up -->
+                <p class="text-sm text-foreground-secondary">
+                  Select a folder and configure import settings to get started.
+                </p>
+              }
 
               @if (driveService.error()) {
                 <div class="py-2 px-4 bg-danger/10 border border-danger/30 rounded-lg">
@@ -275,6 +288,13 @@ const MAX_API_KEYS = 5;
               }
 
               <div class="flex items-center gap-3 pt-2">
+                <p-button
+                  [label]="driveService.status()?.isConfigured ? 'Configure' : 'Set Up Folder'"
+                  [icon]="driveService.status()?.isConfigured ? 'pi pi-cog' : 'pi pi-folder'"
+                  (onClick)="openDriveSetup()"
+                  severity="secondary"
+                  size="small"
+                />
                 <p-button
                   label="Disconnect"
                   icon="pi pi-times"
@@ -465,6 +485,8 @@ const MAX_API_KEYS = 5;
         </section>
       </div>
     </app-page-content>
+
+    <app-drive-setup-dialog (onSaved)="onDriveSetupSaved()" />
 
     <!-- Create/Edit Profile Dialog -->
     <app-create-profile-dialog
@@ -700,6 +722,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   private readonly headerService = inject(ContextualHeaderService);
 
   private readonly profileDialog = viewChild(CreateProfileDialogComponent);
+  private readonly driveSetupDialog = viewChild(DriveSetupDialogComponent);
 
   readonly maxProfiles = MAX_PROFILES;
   readonly atMaxProfiles = computed(() => this.profileService.profiles().length >= MAX_PROFILES);
@@ -800,6 +823,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     }
     if (params['drive_connected'] === 'true') {
       this.toast.success({ summary: 'Google Drive connected successfully!' });
+      // Auto-open folder picker after initial connection
+      setTimeout(() => this.openDriveSetup(), 500);
     }
     if (params['jira_connected'] === 'true') {
       this.toast.success({ summary: 'Jira connected successfully!' });
@@ -914,6 +939,21 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   disconnectDrive(): void {
     this.driveService.disconnectDrive();
+  }
+
+  openDriveSetup(): void {
+    this.driveSetupDialog()?.open(this.driveService.status() ?? undefined);
+  }
+
+  onDriveSetupSaved(): void {
+    this.driveService.loadConnectionStatus();
+    this.toast.success({ summary: 'Drive import settings saved', detail: 'Initial import will start shortly.' });
+  }
+
+  formatSyncFrequency(minutes: number): string {
+    if (minutes === 0) return 'Manual only';
+    if (minutes === 60) return 'Every hour';
+    return `Every ${minutes} minutes`;
   }
 
   // --- Jira actions ---

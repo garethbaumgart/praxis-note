@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Calendar;
 using PraxisNote.Application.Features.Calendar.Services;
+using PraxisNote.Application.Features.Drive.Services;
 using PraxisNote.Application.Features.Jira;
 using PraxisNote.Application.Features.Jira.Services;
 using PraxisNote.Application.Features.Meetings;
@@ -74,6 +75,7 @@ public static class DependencyInjection
         services.Configure<DeepgramSettings>(configuration.GetSection(DeepgramSettings.SectionName));
         services.Configure<JiraSettings>(configuration.GetSection(JiraSettings.SectionName));
         services.AddScoped<IJiraService, JiraService>();
+        services.AddScoped<IDriveService, GoogleDriveService>();
 
         return services;
     }

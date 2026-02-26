@@ -59,6 +59,21 @@ public sealed class DriveConnection : AggregateRoot
     public string? FolderName { get; private set; }
 
     /// <summary>
+    /// Files older than this date are skipped during import.
+    /// </summary>
+    public DateOnly? InitialImportCutoffDate { get; private set; }
+
+    /// <summary>
+    /// How often to sync files from the linked folder (0 = manual only, 15, 30, 60).
+    /// </summary>
+    public int SyncFrequencyMinutes { get; private set; } = 15;
+
+    /// <summary>
+    /// Whether to automatically apply AI-suggested tags to imported files.
+    /// </summary>
+    public bool AutoAcceptTags { get; private set; }
+
+    /// <summary>
     /// Required for EF Core.
     /// </summary>
     private DriveConnection() { }
@@ -136,6 +151,26 @@ public sealed class DriveConnection : AggregateRoot
     {
         FolderId = null;
         FolderName = null;
+    }
+
+    /// <summary>
+    /// Sets all configuration properties in one call: folder, cutoff date, sync frequency, and auto-accept tags.
+    /// </summary>
+    public void Configure(
+        string folderId,
+        string folderName,
+        DateOnly? initialImportCutoffDate,
+        int syncFrequencyMinutes,
+        bool autoAcceptTags)
+    {
+        SetFolder(folderId, folderName);
+        InitialImportCutoffDate = initialImportCutoffDate;
+
+        if (syncFrequencyMinutes != 0 && syncFrequencyMinutes != 15 && syncFrequencyMinutes != 30 && syncFrequencyMinutes != 60)
+            throw new ArgumentOutOfRangeException(nameof(syncFrequencyMinutes), "Must be 0 (manual), 15, 30, or 60");
+
+        SyncFrequencyMinutes = syncFrequencyMinutes;
+        AutoAcceptTags = autoAcceptTags;
     }
 
     /// <summary>

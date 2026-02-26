@@ -5,15 +5,36 @@ namespace PraxisNote.Application.Features.Drive;
 public sealed class GetDriveConnectionStatus(IDriveConnectionRepository repository)
 {
     public record Query(Guid UserId, Guid ProfileId);
-    public record Result(bool IsConnected, string? Provider, DateTimeOffset? ConnectedAt, DateTimeOffset? LastSyncedAt, string? FolderName);
+
+    public record Result(
+        bool IsConnected,
+        string? Provider,
+        DateTimeOffset? ConnectedAt,
+        DateTimeOffset? LastSyncedAt,
+        string? FolderName,
+        string? FolderId,
+        DateOnly? InitialImportCutoffDate,
+        int? SyncFrequencyMinutes,
+        bool AutoAcceptTags,
+        bool IsConfigured);
 
     public async Task<Result> ExecuteAsync(Query query, CancellationToken cancellationToken = default)
     {
         var connection = await repository.GetByUserIdAsync(query.UserId, query.ProfileId, cancellationToken);
 
         if (connection is null)
-            return new Result(false, null, null, null, null);
+            return new Result(false, null, null, null, null, null, null, null, false, false);
 
-        return new Result(true, connection.Provider, connection.ConnectedAt, connection.LastSyncedAt, connection.FolderName);
+        return new Result(
+            true,
+            connection.Provider,
+            connection.ConnectedAt,
+            connection.LastSyncedAt,
+            connection.FolderName,
+            connection.FolderId,
+            connection.InitialImportCutoffDate,
+            connection.SyncFrequencyMinutes,
+            connection.AutoAcceptTags,
+            connection.FolderId is not null);
     }
 }
