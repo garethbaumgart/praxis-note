@@ -4,6 +4,7 @@ using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Notes;
 using PraxisNote.Application.Features.Notes.Services;
 using PraxisNote.Application.Features.Calendar;
+using PraxisNote.Application.Features.Drive;
 using PraxisNote.Application.Features.Jira;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
@@ -126,6 +127,11 @@ public static class DependencyInjection
         services.AddScoped<DisconnectGoogleCalendar>();
         services.AddScoped<GetCalendarConnectionStatus>();
         services.AddScoped<SyncCalendarEvents>();
+
+        // Drive use cases
+        services.AddScoped<ConnectGoogleDrive>();
+        services.AddScoped<DisconnectGoogleDrive>();
+        services.AddScoped<GetDriveConnectionStatus>();
 
         // Jira use cases
         services.AddScoped<ConnectJira>();

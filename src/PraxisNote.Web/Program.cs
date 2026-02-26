@@ -335,6 +335,7 @@ app.MapMeetingEndpoints();
 app.MapMeetingTagEndpoints();
 app.MapNotificationEndpoints();
 app.MapCalendarEndpoints();
+app.MapDriveEndpoints();
 app.MapJiraEndpoints();
 app.MapInsightEndpoints();
 app.MapActionItemEndpoints();

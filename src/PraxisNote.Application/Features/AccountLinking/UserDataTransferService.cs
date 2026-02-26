@@ -1,6 +1,7 @@
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
+using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Profiles;
@@ -19,6 +20,7 @@ public class UserDataTransferService(
     IMeetingRepository meetingRepository,
     ITagRepository tagRepository,
     ICalendarConnectionRepository calendarConnectionRepository,
+    IDriveConnectionRepository driveConnectionRepository,
     IBehavioralGoalRepository behavioralGoalRepository,
     IBlindSpotNudgeRepository blindSpotNudgeRepository,
     IProfileRepository profileRepository)
@@ -44,6 +46,7 @@ public class UserDataTransferService(
         var meetings = await meetingRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
         var tags = await tagRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
         var calendarConnections = await calendarConnectionRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
+        var driveConnections = await driveConnectionRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
         var goals = await behavioralGoalRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
         var nudges = await blindSpotNudgeRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
 
@@ -62,6 +65,9 @@ public class UserDataTransferService(
 
         foreach (var connection in calendarConnections)
             connection.Reassign(targetUserId, targetProfileId);
+
+        foreach (var driveConnection in driveConnections)
+            driveConnection.Reassign(targetUserId, targetProfileId);
 
         foreach (var goal in goals)
             goal.Reassign(targetUserId, targetProfileId);
