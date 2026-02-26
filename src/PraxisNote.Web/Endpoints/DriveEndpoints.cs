@@ -54,8 +54,8 @@ public static class DriveEndpoints
         var request = context.Request;
         var callbackUrl = $"{request.Scheme}://{request.Host}/api/drive/callback/google";
 
-        // Generate cryptographically random state for CSRF protection
-        var state = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        // Generate cryptographically random, URL-safe state for CSRF protection
+        var state = WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32));
         context.Response.Cookies.Append(OAuthStateCookieName, state, new CookieOptions
         {
             HttpOnly = true,
@@ -144,7 +144,7 @@ public static class DriveEndpoints
 
         if (!tokenResponse.IsSuccessStatusCode)
         {
-            logger.LogError("Google Drive token exchange failed: {Response}", tokenJson);
+            logger.LogError("Google Drive token exchange failed with status {StatusCode}", tokenResponse.StatusCode);
             return Results.Redirect("/settings?error=drive_token_exchange_failed");
         }
 

@@ -51,7 +51,7 @@ public class DisconnectGoogleDriveTests
         // Mock HttpClient for token revocation (best-effort, we don't care if it fails)
         var mockHttpMessageHandler = new MockHttpMessageHandler();
         using var httpClient = new HttpClient(mockHttpMessageHandler);
-        _httpClientFactory.CreateClient().Returns(httpClient);
+        _httpClientFactory.CreateClient(Arg.Any<string>()).Returns(httpClient);
 
         var command = new DisconnectGoogleDrive.Command(_userId, _profileId);
 

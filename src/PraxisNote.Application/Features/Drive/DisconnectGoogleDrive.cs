@@ -18,22 +18,29 @@ public sealed class DisconnectGoogleDrive(
         if (connection is null)
             return;
 
-        // Best-effort token revocation with Google
-        await TryRevokeTokenAsync(connection.AccessToken, cancellationToken);
+        // Best-effort token revocation with Google: prefer refresh token to invalidate the long-lived grant
+        var tokenToRevoke = !string.IsNullOrWhiteSpace(connection.RefreshToken)
+            ? connection.RefreshToken
+            : connection.AccessToken;
+        await TryRevokeTokenAsync(tokenToRevoke, cancellationToken);
 
         repository.Remove(connection);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task TryRevokeTokenAsync(string accessToken, CancellationToken cancellationToken)
+    private async Task TryRevokeTokenAsync(string token, CancellationToken cancellationToken)
     {
         try
         {
             using var httpClient = httpClientFactory.CreateClient();
             httpClient.Timeout = TimeSpan.FromSeconds(10);
+            using var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["token"] = token
+            });
             var response = await httpClient.PostAsync(
-                $"https://oauth2.googleapis.com/revoke?token={Uri.EscapeDataString(accessToken)}",
-                null,
+                "https://oauth2.googleapis.com/revoke",
+                content,
                 cancellationToken);
 
             if (!response.IsSuccessStatusCode)
