@@ -258,6 +258,22 @@ public class DriveFileImportTests
     }
 
     [Fact]
+    public void MarkSkipped_DoesNotSetMeetingId()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        import.MarkParsed("content", "{}");
+
+        // Act
+        import.MarkSkipped("Skipped by user during import review");
+
+        // Assert
+        Assert.Null(import.ImportedAt);
+        Assert.Null(import.MatchedMeetingId);
+    }
+
+    [Fact]
     public void MarkSkipped_FromImported_ThrowsInvalidOperationException()
     {
         // Arrange

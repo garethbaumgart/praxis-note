@@ -1,12 +1,14 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, HostListener, ElementRef, viewChild, computed, effect, untracked } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Tooltip } from 'primeng/tooltip';
 import { MeetingService } from './meeting.service';
 import { Meeting } from './meeting.model';
 import { MeetingRowComponent } from './meeting-row.component';
 import { MeetingRowSkeletonComponent } from './meeting-row-skeleton.component';
 import { ImportDialogComponent } from './import-dialog.component';
+import { DriveImportDialogComponent } from './drive-import-dialog.component';
 import { CalendarService } from '../shared/services/calendar.service';
+import { DriveService } from '../shared/services/drive.service';
 import { ToastService } from '../shared/services/toast.service';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
 import { formatTimeAgo, formatShortDate } from '../shared/date-utils';
@@ -17,7 +19,7 @@ import { HelpLinkComponent } from '../shared/components/help-link.component';
   selector: 'app-meetings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ImportDialogComponent, Tooltip, PageContentComponent, HelpLinkComponent],
+  imports: [MeetingRowComponent, MeetingRowSkeletonComponent, ImportDialogComponent, DriveImportDialogComponent, Tooltip, PageContentComponent, HelpLinkComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Meetings</h1>
@@ -63,6 +65,17 @@ import { HelpLinkComponent } from '../shared/components/help-link.component';
             } @else {
               <i class="pi pi-sync text-sm text-done-foreground"></i>
             }
+          </button>
+        }
+        @if (isDriveConfigured()) {
+          <button
+            type="button"
+            class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted text-foreground-secondary rounded-md text-sm font-medium hover:bg-surface-muted/80 transition-colors shrink-0"
+            (click)="openDriveImport()"
+            aria-label="Import from Google Drive"
+          >
+            <i class="pi pi-folder text-xs"></i>
+            <span class="hidden sm:inline">Drive</span>
           </button>
         }
         <button
@@ -191,6 +204,7 @@ import { HelpLinkComponent } from '../shared/components/help-link.component';
     </app-page-content>
 
     <app-import-dialog #importDialog (onImported)="meetingService.loadMeetings()" />
+    <app-drive-import-dialog (onImported)="onDriveImported()" />
   `,
   styles: [`
     .day-header {
@@ -205,16 +219,23 @@ import { HelpLinkComponent } from '../shared/components/help-link.component';
 export class MeetingsPage implements OnInit, OnDestroy {
   readonly meetingService = inject(MeetingService);
   readonly calendarService = inject(CalendarService);
+  private readonly driveService = inject(DriveService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly headerService = inject(ContextualHeaderService);
 
   private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   readonly importDialog = viewChild.required<ImportDialogComponent>('importDialog');
+  private readonly driveImportDialog = viewChild(DriveImportDialogComponent);
 
   readonly skeletonArray = Array.from({ length: 4 }, (_, i) => i);
 
   readonly isCalendarConnected = computed(() => this.calendarService.status()?.isConnected ?? false);
+  readonly isDriveConfigured = computed(() => {
+    const status = this.driveService.status();
+    return status?.isConnected && status?.isConfigured;
+  });
 
   readonly syncTooltip = computed(() => {
     const status = this.calendarService.status();
@@ -249,6 +270,12 @@ export class MeetingsPage implements OnInit, OnDestroy {
     this.headerService.breadcrumb.set([{ label: 'Meetings' }]);
     this.meetingService.loadMeetings();
     this.calendarService.loadConnectionStatus();
+    this.driveService.loadConnectionStatus();
+
+    const params = this.route.snapshot.queryParams;
+    if (params['driveImport'] === 'true') {
+      setTimeout(() => this.driveImportDialog()?.open(), 0);
+    }
   }
 
   ngOnDestroy(): void {
@@ -313,6 +340,14 @@ export class MeetingsPage implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  openDriveImport(): void {
+    this.driveImportDialog()?.open();
+  }
+
+  onDriveImported(): void {
+    this.meetingService.loadMeetings();
   }
 
   asInput(event: Event): HTMLInputElement {

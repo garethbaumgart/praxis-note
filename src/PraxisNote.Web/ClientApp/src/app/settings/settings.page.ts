@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, effect, untracked, signal, computed, viewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -295,6 +295,15 @@ const MAX_API_KEYS = 5;
                   severity="secondary"
                   size="small"
                 />
+                @if (driveService.status()?.isConfigured) {
+                  <p-button
+                    label="Import Now"
+                    icon="pi pi-download"
+                    (onClick)="navigateToDriveImport()"
+                    severity="secondary"
+                    size="small"
+                  />
+                }
                 <p-button
                   label="Disconnect"
                   icon="pi pi-times"
@@ -718,6 +727,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   readonly linkedAccountsService = inject(LinkedAccountsService);
   readonly apiKeyService = inject(ApiKeyService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly headerService = inject(ContextualHeaderService);
 
@@ -943,6 +953,10 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   openDriveSetup(): void {
     this.driveSetupDialog()?.open(this.driveService.status() ?? undefined);
+  }
+
+  navigateToDriveImport(): void {
+    this.router.navigate(['/meetings'], { queryParams: { driveImport: 'true' } });
   }
 
   onDriveSetupSaved(): void {

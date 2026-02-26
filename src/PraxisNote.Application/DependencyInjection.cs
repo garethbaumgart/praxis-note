@@ -140,6 +140,8 @@ public static class DependencyInjection
         services.AddScoped<ParseDriveFiles>();
         services.AddScoped<DeduplicateDriveFiles>();
         services.AddScoped<OverrideDuplicate>();
+        services.AddScoped<ConfirmDriveImport>();
+        services.AddScoped<SkipDriveImports>();
         services.AddScoped<IDriveDeduplicationService, DriveDeduplicationService>();
 
         // Jira use cases
