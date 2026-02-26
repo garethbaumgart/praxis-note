@@ -3,18 +3,21 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PraxisNote.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace PraxisNote.Infrastructure.Migrations
+namespace PraxisNote.Infrastructure.Migrations.Data.FeatureNotifications
 {
     [DbContext(typeof(PraxisNoteDbContext))]
-    partial class PraxisNoteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260226090140_AddNotificationDriveFolderPicker")]
+    partial class AddNotificationDriveFolderPicker
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -232,71 +235,6 @@ namespace PraxisNote.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("CalendarConnections");
-                });
-
-            modelBuilder.Entity("PraxisNote.Domain.Aggregates.DriveConnections.DriveConnection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AccessToken")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<bool>("AutoAcceptTags")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTimeOffset>("ConnectedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FolderId")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("FolderName")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateOnly?>("InitialImportCutoffDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateTimeOffset?>("LastSyncedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("RefreshToken")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<int>("SyncFrequencyMinutes")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(15);
-
-                    b.Property<DateTimeOffset>("TokenExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "ProfileId")
-                        .IsUnique();
-
-                    b.ToTable("DriveConnections");
                 });
 
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.JiraConnections.JiraConnection", b =>

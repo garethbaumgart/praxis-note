@@ -132,6 +132,8 @@ public static class DependencyInjection
         services.AddScoped<ConnectGoogleDrive>();
         services.AddScoped<DisconnectGoogleDrive>();
         services.AddScoped<GetDriveConnectionStatus>();
+        services.AddScoped<ListDriveFolders>();
+        services.AddScoped<UpdateDriveSettings>();
 
         // Jira use cases
         services.AddScoped<ConnectJira>();

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using PraxisNote.Application.Features.Drive;
 using PraxisNote.Web.Extensions;
@@ -20,6 +21,8 @@ public static class DriveEndpoints
         group.MapGet("/connect/google", HandleConnectGoogle);
         group.MapGet("/callback/google", (Delegate)HandleGoogleCallback).AllowAnonymous();
         group.MapPost("/disconnect", (Delegate)HandleDisconnect);
+        group.MapGet("/folders", HandleListFolders);
+        group.MapPut("/settings", HandleUpdateSettings);
     }
 
     private static async Task<IResult> HandleGetStatus(
@@ -211,4 +214,54 @@ public static class DriveEndpoints
 
         return Results.Ok(new { message = "Drive disconnected" });
     }
+
+    private static async Task<IResult> HandleListFolders(
+        HttpContext context,
+        ClaimsPrincipal user,
+        ListDriveFolders listFolders,
+        [FromQuery] string? search,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        var profileId = context.GetProfileId();
+        var result = await listFolders.ExecuteAsync(
+            new ListDriveFolders.Query(userId.Value, profileId, search),
+            cancellationToken);
+
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> HandleUpdateSettings(
+        HttpContext context,
+        ClaimsPrincipal user,
+        UpdateDriveSettings updateSettings,
+        UpdateDriveSettingsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        var profileId = context.GetProfileId();
+        await updateSettings.ExecuteAsync(
+            new UpdateDriveSettings.Command(
+                userId.Value,
+                profileId,
+                request.FolderId,
+                request.FolderName,
+                request.InitialImportCutoffDate,
+                request.SyncFrequencyMinutes,
+                request.AutoAcceptTags),
+            cancellationToken);
+
+        return Results.Ok(new { message = "Settings saved" });
+    }
+
+    public record UpdateDriveSettingsRequest(
+        string FolderId,
+        string FolderName,
+        DateOnly? InitialImportCutoffDate,
+        int SyncFrequencyMinutes,
+        bool AutoAcceptTags);
 }
