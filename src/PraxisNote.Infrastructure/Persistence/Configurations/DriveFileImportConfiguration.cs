@@ -23,6 +23,9 @@ public sealed class DriveFileImportConfiguration : IEntityTypeConfiguration<Driv
         builder.Property(f => f.ImportedAt);
         builder.Property(f => f.ErrorMessage).HasMaxLength(2000);
         builder.Property(f => f.DiscoveredAt);
+        builder.Property(f => f.DuplicateType).HasConversion<int>().HasDefaultValue(DeduplicationType.None);
+        builder.Property(f => f.DuplicateConfidence).HasPrecision(3, 2).HasDefaultValue(0m);
+        builder.Property(f => f.DuplicateMatchTitle).HasMaxLength(500);
 
         // Unique: one tracking record per file per connection
         builder.HasIndex(f => new { f.DriveConnectionId, f.DriveFileId }).IsUnique();
