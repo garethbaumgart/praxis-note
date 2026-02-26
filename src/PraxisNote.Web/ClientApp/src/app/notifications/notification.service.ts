@@ -1,11 +1,13 @@
 import { Injectable, inject, signal, computed, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Notification } from './notification.model';
+import { DriveService } from '../shared/services/drive.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private readonly http = inject(HttpClient);
   private readonly ngZone = inject(NgZone);
+  private readonly driveService = inject(DriveService);
 
   private eventSource: EventSource | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -59,6 +61,18 @@ export class NotificationService {
             this._notifications.update(list => [notification, ...list]);
             this._unseenCount.update(c => c + 1);
             this.reconnectAttempts = 0; // Reset on successful message
+          } catch {
+            // Ignore malformed JSON
+          }
+        });
+      });
+
+      this.eventSource.addEventListener('drive-sync', (event: MessageEvent) => {
+        this.ngZone.run(() => {
+          try {
+            const data = JSON.parse(event.data);
+            this.driveService.handleDriveSyncEvent(data);
+            this.reconnectAttempts = 0;
           } catch {
             // Ignore malformed JSON
           }

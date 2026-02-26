@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using PraxisNote.Application.Features.Drive;
+using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Web.Extensions;
 
@@ -31,6 +32,8 @@ public static class DriveEndpoints
         group.MapPost("/files/{id:guid}/override-duplicate", HandleOverrideDuplicate);
         group.MapPost("/import/confirm", HandleConfirmDriveImport);
         group.MapPost("/import/skip", HandleSkipDriveImports);
+        group.MapPost("/sync", HandleTriggerSync);
+        group.MapGet("/pending-count", HandleGetPendingCount);
     }
 
     private static async Task<IResult> HandleGetStatus(
@@ -449,6 +452,48 @@ public static class DriveEndpoints
         {
             return Results.BadRequest(new { error = ex.Message });
         }
+    }
+
+    private static async Task<IResult> HandleTriggerSync(
+        HttpContext context,
+        ClaimsPrincipal user,
+        [FromServices] DriveSyncOrchestrator orchestrator,
+        [FromServices] IDriveConnectionRepository connRepo,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        var profileId = context.GetProfileId();
+        var connection = await connRepo.GetByUserIdAsync(userId.Value, profileId, cancellationToken);
+        if (connection is null) return Results.NotFound(new { error = "No Drive connection found." });
+
+        var result = await orchestrator.ManualSyncAsync(userId.Value, profileId, connection.Id, cancellationToken);
+
+        return Results.Ok(new
+        {
+            filesDiscovered = result.FilesDiscovered,
+            filesImported = result.FilesImported,
+            filesPendingReview = result.FilesPendingReview,
+            filesErrored = result.FilesErrored,
+            error = result.Error
+        });
+    }
+
+    private static async Task<IResult> HandleGetPendingCount(
+        HttpContext context,
+        ClaimsPrincipal user,
+        [FromServices] GetPendingDriveImportCount getPendingCount,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        var profileId = context.GetProfileId();
+        var count = await getPendingCount.ExecuteAsync(
+            new GetPendingDriveImportCount.Query(userId.Value, profileId), cancellationToken);
+
+        return Results.Ok(new { count });
     }
 
     public record UpdateDriveSettingsRequest(

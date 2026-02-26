@@ -70,12 +70,17 @@ import { HelpLinkComponent } from '../shared/components/help-link.component';
         @if (isDriveConfigured()) {
           <button
             type="button"
-            class="flex items-center gap-2 px-3 py-1.5 bg-surface-muted text-foreground-secondary rounded-md text-sm font-medium hover:bg-surface-muted/80 transition-colors shrink-0"
+            class="relative flex items-center gap-2 px-3 py-1.5 bg-surface-muted text-foreground-secondary rounded-md text-sm font-medium hover:bg-surface-muted/80 transition-colors shrink-0"
             (click)="openDriveImport()"
             aria-label="Import from Google Drive"
           >
             <i class="pi pi-folder text-xs"></i>
             <span class="hidden sm:inline">Drive</span>
+            @if (driveService.pendingReviewCount() > 0) {
+              <span class="absolute -top-1.5 -right-1.5 min-w-4 h-4 bg-accent-solid text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+                {{ driveService.pendingReviewCount() }}
+              </span>
+            }
           </button>
         }
         <button
@@ -219,7 +224,7 @@ import { HelpLinkComponent } from '../shared/components/help-link.component';
 export class MeetingsPage implements OnInit, OnDestroy {
   readonly meetingService = inject(MeetingService);
   readonly calendarService = inject(CalendarService);
-  private readonly driveService = inject(DriveService);
+  readonly driveService = inject(DriveService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);

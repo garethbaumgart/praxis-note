@@ -80,6 +80,46 @@ public sealed class DriveConnection : AggregateRoot
     public string? TimeZone { get; private set; }
 
     /// <summary>
+    /// When the last background sync cycle completed (success or failure).
+    /// </summary>
+    public DateTimeOffset? LastSyncAt { get; private set; }
+
+    /// <summary>
+    /// Number of new files found in the last successful sync cycle.
+    /// </summary>
+    public int LastSyncFilesDiscovered { get; private set; }
+
+    /// <summary>
+    /// Number of files auto-imported in the last successful sync cycle.
+    /// </summary>
+    public int LastSyncFilesImported { get; private set; }
+
+    /// <summary>
+    /// Number of files queued for manual review in the last successful sync cycle.
+    /// </summary>
+    public int LastSyncFilesPendingReview { get; private set; }
+
+    /// <summary>
+    /// Number of files that errored during the last sync cycle.
+    /// </summary>
+    public int LastSyncFilesErrored { get; private set; }
+
+    /// <summary>
+    /// Error message from the last sync cycle, if the entire cycle failed.
+    /// </summary>
+    public string? LastSyncError { get; private set; }
+
+    /// <summary>
+    /// Number of consecutive sync failures. Sync pauses at 5.
+    /// </summary>
+    public int ConsecutiveFailures { get; private set; }
+
+    /// <summary>
+    /// Whether sync is paused due to repeated failures (max 5 consecutive).
+    /// </summary>
+    public bool IsSyncPaused => ConsecutiveFailures >= 5;
+
+    /// <summary>
     /// Required for EF Core.
     /// </summary>
     private DriveConnection() { }
@@ -197,6 +237,59 @@ public sealed class DriveConnection : AggregateRoot
     {
         ArgumentOutOfRangeException.ThrowIfNegative(bufferMinutes, nameof(bufferMinutes));
         return DateTimeOffset.UtcNow >= TokenExpiresAt.AddMinutes(-bufferMinutes);
+    }
+
+    /// <summary>
+    /// Records a completed sync cycle with results.
+    /// </summary>
+    public void RecordSyncResult(int filesDiscovered, int filesImported, int filesPendingReview, int filesErrored)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(filesDiscovered, nameof(filesDiscovered));
+        ArgumentOutOfRangeException.ThrowIfNegative(filesImported, nameof(filesImported));
+        ArgumentOutOfRangeException.ThrowIfNegative(filesPendingReview, nameof(filesPendingReview));
+        ArgumentOutOfRangeException.ThrowIfNegative(filesErrored, nameof(filesErrored));
+
+        LastSyncAt = DateTimeOffset.UtcNow;
+        LastSyncFilesDiscovered = filesDiscovered;
+        LastSyncFilesImported = filesImported;
+        LastSyncFilesPendingReview = filesPendingReview;
+        LastSyncFilesErrored = filesErrored;
+        LastSyncError = null;
+        ConsecutiveFailures = filesErrored > 0 && filesImported == 0 && filesPendingReview == 0
+            ? ConsecutiveFailures + 1
+            : 0;
+    }
+
+    /// <summary>
+    /// Records a sync-level failure (e.g., OAuth expired, folder not found).
+    /// </summary>
+    public void RecordSyncFailure(string errorMessage)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage, nameof(errorMessage));
+
+        LastSyncAt = DateTimeOffset.UtcNow;
+        LastSyncError = errorMessage.Trim();
+        ConsecutiveFailures++;
+    }
+
+    /// <summary>
+    /// Whether the connection is due for a sync based on configured frequency.
+    /// Manual-only connections (SyncFrequencyMinutes == 0) are never due.
+    /// </summary>
+    public bool IsDueForSync()
+    {
+        if (SyncFrequencyMinutes == 0) return false;
+        if (LastSyncAt is null) return true;
+        return DateTimeOffset.UtcNow - LastSyncAt.Value >= TimeSpan.FromMinutes(SyncFrequencyMinutes);
+    }
+
+    /// <summary>
+    /// Clear error state when user manually reconnects or triggers sync.
+    /// </summary>
+    public void ClearSyncError()
+    {
+        LastSyncError = null;
+        ConsecutiveFailures = 0;
     }
 
     /// <summary>

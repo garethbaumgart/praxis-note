@@ -9,10 +9,28 @@ export interface DriveConnectionStatus {
   syncFrequencyMinutes: number | null;
   autoAcceptTags: boolean;
   isConfigured: boolean;
+  // Sync tracking fields
+  lastSyncAt: string | null;
+  nextSyncAt: string | null;
+  lastSyncFilesDiscovered: number;
+  lastSyncFilesImported: number;
+  lastSyncFilesPendingReview: number;
+  lastSyncFilesErrored: number;
+  lastSyncError: string | null;
+  isSyncPaused: boolean;
+  pendingReviewCount: number;
 }
 
 export interface DriveFolder {
   id: string;
   name: string;
   modifiedTime: string | null;
+}
+
+export interface DriveSyncResult {
+  filesDiscovered: number;
+  filesImported: number;
+  filesPendingReview: number;
+  filesErrored: number;
+  error: string | null;
 }
