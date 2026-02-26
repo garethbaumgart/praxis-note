@@ -821,7 +821,7 @@ export class SettingsPage implements OnInit, OnDestroy {
         jira_no_resources: 'No accessible Jira sites found. Ensure you have access to a Jira Cloud instance.',
       };
       this.toast.error(
-        errorMessages[params['error']] ?? 'An error occurred connecting your calendar.',
+        errorMessages[params['error']] ?? 'An error occurred during connection.',
       );
     }
   }

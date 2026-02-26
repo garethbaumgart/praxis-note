@@ -44,7 +44,8 @@ public static class DriveEndpoints
         IConfiguration configuration)
     {
         var clientId = configuration["Authentication:Google:ClientId"];
-        if (string.IsNullOrEmpty(clientId))
+        var clientSecret = configuration["Authentication:Google:ClientSecret"];
+        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
         {
             return Results.Problem("Google OAuth is not configured.", statusCode: 503);
         }
@@ -107,7 +108,7 @@ public static class DriveEndpoints
 
         if (string.IsNullOrEmpty(expectedState) || !string.Equals(returnedState, expectedState, StringComparison.Ordinal))
         {
-            logger.LogWarning("Drive OAuth state mismatch. Expected: {Expected}, Received: {Received}", expectedState, returnedState);
+            logger.LogWarning("Drive OAuth state mismatch.");
             return Results.Redirect("/settings?error=drive_auth_denied");
         }
 
@@ -118,8 +119,13 @@ public static class DriveEndpoints
             return Results.Redirect("/settings?error=not_authenticated");
         }
 
-        var clientId = configuration["Authentication:Google:ClientId"]!;
-        var clientSecret = configuration["Authentication:Google:ClientSecret"]!;
+        var clientId = configuration["Authentication:Google:ClientId"];
+        var clientSecret = configuration["Authentication:Google:ClientSecret"];
+        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+        {
+            logger.LogError("Google OAuth credentials are not configured.");
+            return Results.Redirect("/settings?error=drive_token_exchange_failed");
+        }
         var callbackUrl = $"{context.Request.Scheme}://{context.Request.Host}/api/drive/callback/google";
 
         // Exchange auth code for tokens

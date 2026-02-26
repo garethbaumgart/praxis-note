@@ -132,13 +132,16 @@ public class DriveConnectionTests
         Assert.Equal(newExpiry, connection.TokenExpiresAt);
     }
 
-    [Fact]
-    public void UpdateTokens_WithNullRefreshToken_PreservesExistingRefreshToken()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void UpdateTokens_WithNullOrWhitespaceRefreshToken_PreservesExistingRefreshToken(string? refreshToken)
     {
         var connection = DriveConnection.Create(
             _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
 
-        connection.UpdateTokens("new-access", DateTimeOffset.UtcNow.AddHours(2), null);
+        connection.UpdateTokens("new-access", DateTimeOffset.UtcNow.AddHours(2), refreshToken);
 
         Assert.Equal(ValidRefreshToken, connection.RefreshToken);
     }
