@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using PraxisNote.Application.Features.Drive;
+using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Web.Extensions;
 
 namespace PraxisNote.Web.Endpoints;
@@ -23,6 +24,8 @@ public static class DriveEndpoints
         group.MapPost("/disconnect", (Delegate)HandleDisconnect);
         group.MapGet("/folders", HandleListFolders);
         group.MapPut("/settings", HandleUpdateSettings);
+        group.MapPost("/discover", HandleDiscover);
+        group.MapGet("/files", HandleListFiles);
     }
 
     private static async Task<IResult> HandleGetStatus(
@@ -256,6 +259,61 @@ public static class DriveEndpoints
             cancellationToken);
 
         return Results.Ok(new { message = "Settings saved" });
+    }
+
+    private static async Task<IResult> HandleDiscover(
+        HttpContext context,
+        ClaimsPrincipal user,
+        DiscoverDriveFiles discoverFiles,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        try
+        {
+            var profileId = context.GetProfileId();
+            var result = await discoverFiles.ExecuteAsync(
+                new DiscoverDriveFiles.Command(userId.Value, profileId),
+                cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> HandleListFiles(
+        HttpContext context,
+        ClaimsPrincipal user,
+        GetDriveFileImports getFiles,
+        [FromQuery] string? status,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        DriveFileImportStatus? statusFilter = null;
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (!Enum.TryParse<DriveFileImportStatus>(status, true, out var parsed))
+                return Results.BadRequest(new { error = $"Invalid status '{status}'." });
+            statusFilter = parsed;
+        }
+
+        try
+        {
+            var profileId = context.GetProfileId();
+            var result = await getFiles.ExecuteAsync(
+                new GetDriveFileImports.Query(userId.Value, profileId, statusFilter),
+                cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     public record UpdateDriveSettingsRequest(
