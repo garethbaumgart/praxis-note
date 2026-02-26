@@ -136,6 +136,7 @@ public static class DependencyInjection
         services.AddScoped<UpdateDriveSettings>();
         services.AddScoped<DiscoverDriveFiles>();
         services.AddScoped<GetDriveFileImports>();
+        services.AddScoped<ParseDriveFiles>();
 
         // Jira use cases
         services.AddScoped<ConnectJira>();

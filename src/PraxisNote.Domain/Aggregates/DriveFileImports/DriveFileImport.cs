@@ -49,6 +49,12 @@ public sealed class DriveFileImport : AggregateRoot
     public string? ParsedContent { get; private set; }
 
     /// <summary>
+    /// The full AI-parsed result as JSON (ParseTranscriptForImport.Result).
+    /// Stored for the preview UI before final import.
+    /// </summary>
+    public string? ParsedResultJson { get; private set; }
+
+    /// <summary>
     /// When the file was successfully parsed.
     /// </summary>
     public DateTimeOffset? ParsedAt { get; private set; }
@@ -109,17 +115,19 @@ public sealed class DriveFileImport : AggregateRoot
     }
 
     /// <summary>
-    /// Marks the file as parsed with extracted content.
+    /// Marks the file as parsed with extracted content and AI-parsed result JSON.
     /// Only valid from Pending status.
     /// </summary>
-    public void MarkParsed(string parsedContent)
+    public void MarkParsed(string parsedContent, string parsedResultJson)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(parsedContent, nameof(parsedContent));
+        ArgumentException.ThrowIfNullOrWhiteSpace(parsedResultJson, nameof(parsedResultJson));
 
         if (Status != DriveFileImportStatus.Pending)
             throw new InvalidOperationException($"Cannot mark as parsed from status '{Status}'. Must be Pending.");
 
         ParsedContent = parsedContent;
+        ParsedResultJson = parsedResultJson;
         Status = DriveFileImportStatus.Parsed;
         ParsedAt = DateTimeOffset.UtcNow;
     }

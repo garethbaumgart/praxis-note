@@ -392,6 +392,60 @@ public class DriveConnectionTests
         Assert.False(connection.AutoAcceptTags);
     }
 
+    [Fact]
+    public void Configure_WithTimeZone_StoresTimeZone()
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        // Act
+        connection.Configure("folder-abc", "My Folder", null, 15, false, "America/New_York");
+
+        // Assert
+        Assert.Equal("America/New_York", connection.TimeZone);
+    }
+
+    [Fact]
+    public void Configure_WithNullTimeZone_SetsNull()
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        // Act
+        connection.Configure("folder-abc", "My Folder", null, 15, false, null);
+
+        // Assert
+        Assert.Null(connection.TimeZone);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Configure_WithWhitespaceTimeZone_SetsNull(string whitespace)
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        // Act
+        connection.Configure("folder-abc", "My Folder", null, 15, false, whitespace);
+
+        // Assert
+        Assert.Null(connection.TimeZone);
+    }
+
+    [Fact]
+    public void Configure_WithTimeZone_TrimsWhitespace()
+    {
+        var connection = DriveConnection.Create(
+            _validUserId, _validProfileId, ValidProvider, ValidAccessToken, ValidRefreshToken, _validExpiresAt);
+
+        // Act
+        connection.Configure("folder-abc", "My Folder", null, 15, false, "  Europe/London  ");
+
+        // Assert
+        Assert.Equal("Europe/London", connection.TimeZone);
+    }
+
     #endregion
 
     #region Reassign Tests

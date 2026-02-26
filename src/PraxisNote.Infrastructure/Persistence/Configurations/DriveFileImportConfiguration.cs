@@ -18,6 +18,7 @@ public sealed class DriveFileImportConfiguration : IEntityTypeConfiguration<Driv
         builder.Property(f => f.Status).HasConversion<int>().IsRequired();
         builder.Property(f => f.MatchedMeetingId);
         builder.Property(f => f.ParsedContent); // No max length — full document text
+        builder.Property(f => f.ParsedResultJson); // No max length — full JSON document
         builder.Property(f => f.ParsedAt);
         builder.Property(f => f.ImportedAt);
         builder.Property(f => f.ErrorMessage).HasMaxLength(2000);

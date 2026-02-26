@@ -31,7 +31,7 @@ public class UpdateDriveSettingsTests
 
         var command = new UpdateDriveSettings.Command(
             _userId, _profileId, "folder-123", "Meeting Notes",
-            new DateOnly(2026, 1, 15), 30, true);
+            new DateOnly(2026, 1, 15), 30, true, "America/New_York");
 
         // Act
         await _sut.ExecuteAsync(command);
@@ -42,6 +42,7 @@ public class UpdateDriveSettingsTests
         Assert.Equal(new DateOnly(2026, 1, 15), connection.InitialImportCutoffDate);
         Assert.Equal(30, connection.SyncFrequencyMinutes);
         Assert.True(connection.AutoAcceptTags);
+        Assert.Equal("America/New_York", connection.TimeZone);
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -53,7 +54,7 @@ public class UpdateDriveSettingsTests
             .Returns((DriveConnection?)null);
 
         var command = new UpdateDriveSettings.Command(
-            _userId, _profileId, "folder-123", "Meeting Notes", null, 15, false);
+            _userId, _profileId, "folder-123", "Meeting Notes", null, 15, false, null);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExecuteAsync(command));
@@ -70,7 +71,7 @@ public class UpdateDriveSettingsTests
             .Returns(connection);
 
         var command = new UpdateDriveSettings.Command(
-            _userId, _profileId, "folder-123", "Meeting Notes", null, 45, false);
+            _userId, _profileId, "folder-123", "Meeting Notes", null, 45, false, null);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _sut.ExecuteAsync(command));

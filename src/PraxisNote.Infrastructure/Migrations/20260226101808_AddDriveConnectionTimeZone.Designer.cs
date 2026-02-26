@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PraxisNote.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using PraxisNote.Infrastructure.Persistence;
 namespace PraxisNote.Infrastructure.Migrations
 {
     [DbContext(typeof(PraxisNoteDbContext))]
-    partial class PraxisNoteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260226101808_AddDriveConnectionTimeZone")]
+    partial class AddDriveConnectionTimeZone
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -347,9 +350,6 @@ namespace PraxisNote.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ParsedContent")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ParsedResultJson")
                         .HasColumnType("text");
 
                     b.Property<int>("Status")

@@ -25,6 +25,7 @@ public static class DriveEndpoints
         group.MapGet("/folders", HandleListFolders);
         group.MapPut("/settings", HandleUpdateSettings);
         group.MapPost("/discover", HandleDiscover);
+        group.MapPost("/parse", HandleParse);
         group.MapGet("/files", HandleListFiles);
     }
 
@@ -255,7 +256,8 @@ public static class DriveEndpoints
                 request.FolderName,
                 request.InitialImportCutoffDate,
                 request.SyncFrequencyMinutes,
-                request.AutoAcceptTags),
+                request.AutoAcceptTags,
+                request.TimeZone),
             cancellationToken);
 
         return Results.Ok(new { message = "Settings saved" });
@@ -275,6 +277,29 @@ public static class DriveEndpoints
             var profileId = context.GetProfileId();
             var result = await discoverFiles.ExecuteAsync(
                 new DiscoverDriveFiles.Command(userId.Value, profileId),
+                cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> HandleParse(
+        HttpContext context,
+        ClaimsPrincipal user,
+        ParseDriveFiles parseDriveFiles,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        try
+        {
+            var profileId = context.GetProfileId();
+            var result = await parseDriveFiles.ExecuteAsync(
+                new ParseDriveFiles.Command(userId.Value, profileId),
                 cancellationToken);
             return Results.Ok(result);
         }
@@ -321,5 +346,6 @@ public static class DriveEndpoints
         string FolderName,
         DateOnly? InitialImportCutoffDate,
         int SyncFrequencyMinutes,
-        bool AutoAcceptTags);
+        bool AutoAcceptTags,
+        string? TimeZone);
 }

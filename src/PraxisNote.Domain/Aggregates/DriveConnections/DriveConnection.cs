@@ -74,6 +74,12 @@ public sealed class DriveConnection : AggregateRoot
     public bool AutoAcceptTags { get; private set; }
 
     /// <summary>
+    /// The user's IANA timezone (e.g., "America/New_York"). Used for AI parsing of Drive files.
+    /// Stored on the connection during setup so background processing doesn't need the browser.
+    /// </summary>
+    public string? TimeZone { get; private set; }
+
+    /// <summary>
     /// Required for EF Core.
     /// </summary>
     private DriveConnection() { }
@@ -161,7 +167,8 @@ public sealed class DriveConnection : AggregateRoot
         string folderName,
         DateOnly? initialImportCutoffDate,
         int syncFrequencyMinutes,
-        bool autoAcceptTags)
+        bool autoAcceptTags,
+        string? timeZone = null)
     {
         // Validate all inputs before mutating state
         if (syncFrequencyMinutes != 0 && syncFrequencyMinutes != 15 && syncFrequencyMinutes != 30 && syncFrequencyMinutes != 60)
@@ -171,6 +178,7 @@ public sealed class DriveConnection : AggregateRoot
         InitialImportCutoffDate = initialImportCutoffDate;
         SyncFrequencyMinutes = syncFrequencyMinutes;
         AutoAcceptTags = autoAcceptTags;
+        TimeZone = string.IsNullOrWhiteSpace(timeZone) ? null : timeZone.Trim();
     }
 
     /// <summary>
