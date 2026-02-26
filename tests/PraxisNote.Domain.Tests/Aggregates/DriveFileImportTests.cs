@@ -139,6 +139,42 @@ public class DriveFileImportTests
         Assert.Throws<InvalidOperationException>(() => import.MarkParsed("new content"));
     }
 
+    [Fact]
+    public void MarkParsed_FromParsed_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        import.MarkParsed("content");
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("new content"));
+    }
+
+    [Fact]
+    public void MarkParsed_FromSkipped_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        import.MarkSkipped("reason");
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("content"));
+    }
+
+    [Fact]
+    public void MarkParsed_FromError_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        import.MarkError("error");
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => import.MarkParsed("content"));
+    }
+
     #endregion
 
     #region MarkImported Tests
@@ -233,6 +269,44 @@ public class DriveFileImportTests
         Assert.Throws<InvalidOperationException>(() => import.MarkSkipped("reason"));
     }
 
+    [Fact]
+    public void MarkSkipped_FromError_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        import.MarkError("error");
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => import.MarkSkipped("reason"));
+    }
+
+    [Fact]
+    public void MarkSkipped_FromSkipped_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+        import.MarkSkipped("first reason");
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => import.MarkSkipped("second reason"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void MarkSkipped_WithEmptyReason_ThrowsArgumentException(string? invalidReason)
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+
+        // Act & Assert
+        Assert.ThrowsAny<ArgumentException>(() => import.MarkSkipped(invalidReason!));
+    }
+
     #endregion
 
     #region MarkError Tests
@@ -250,6 +324,20 @@ public class DriveFileImportTests
         // Assert
         Assert.Equal(DriveFileImportStatus.Error, import.Status);
         Assert.Equal("Download failed", import.ErrorMessage);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void MarkError_WithEmptyMessage_ThrowsArgumentException(string? invalidMessage)
+    {
+        // Arrange
+        var import = DriveFileImport.Create(
+            _validConnectionId, ValidDriveFileId, ValidFileName, ValidMimeType, _validModifiedTime);
+
+        // Act & Assert
+        Assert.ThrowsAny<ArgumentException>(() => import.MarkError(invalidMessage!));
     }
 
     [Fact]

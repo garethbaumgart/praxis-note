@@ -146,10 +146,12 @@ public sealed class DriveFileImport : AggregateRoot
     /// </summary>
     public void MarkSkipped(string reason)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
+
         if (Status != DriveFileImportStatus.Pending && Status != DriveFileImportStatus.Parsed)
             throw new InvalidOperationException($"Cannot skip from status '{Status}'. Must be Pending or Parsed.");
 
-        ErrorMessage = reason;
+        ErrorMessage = reason.Trim();
         Status = DriveFileImportStatus.Skipped;
     }
 
@@ -158,7 +160,9 @@ public sealed class DriveFileImport : AggregateRoot
     /// </summary>
     public void MarkError(string errorMessage)
     {
-        ErrorMessage = errorMessage;
+        ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage, nameof(errorMessage));
+
+        ErrorMessage = errorMessage.Trim();
         Status = DriveFileImportStatus.Error;
     }
 

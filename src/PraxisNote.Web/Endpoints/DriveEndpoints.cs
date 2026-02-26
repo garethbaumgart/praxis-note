@@ -295,15 +295,25 @@ public static class DriveEndpoints
         if (userId is null) return Results.Unauthorized();
 
         DriveFileImportStatus? statusFilter = null;
-        if (!string.IsNullOrEmpty(status) && Enum.TryParse<DriveFileImportStatus>(status, true, out var parsed))
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (!Enum.TryParse<DriveFileImportStatus>(status, true, out var parsed))
+                return Results.BadRequest(new { error = $"Invalid status '{status}'." });
             statusFilter = parsed;
+        }
 
-        var profileId = context.GetProfileId();
-        var result = await getFiles.ExecuteAsync(
-            new GetDriveFileImports.Query(userId.Value, profileId, statusFilter),
-            cancellationToken);
-
-        return Results.Ok(result);
+        try
+        {
+            var profileId = context.GetProfileId();
+            var result = await getFiles.ExecuteAsync(
+                new GetDriveFileImports.Query(userId.Value, profileId, statusFilter),
+                cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     public record UpdateDriveSettingsRequest(

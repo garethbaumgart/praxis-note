@@ -14,7 +14,7 @@ public sealed class DiscoverDriveFiles(
     ILogger<DiscoverDriveFiles> logger)
 {
     public record Command(Guid UserId, Guid ProfileId);
-    public record Result(int NewFilesDiscovered, int AlreadyTracked, int TotalInFolder);
+    public record Result(int NewFilesDiscovered, int AlreadyTracked, int TotalFilesMatched);
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {

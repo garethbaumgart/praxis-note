@@ -1,5 +1,6 @@
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Download;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Microsoft.Extensions.Configuration;
@@ -147,7 +148,10 @@ public sealed class GoogleDriveService : IDriveService
         using var service = CreateDriveService(accessToken);
         var request = service.Files.Get(fileId);
         var stream = new MemoryStream();
-        await request.DownloadAsync(stream, cancellationToken);
+        var progress = await request.DownloadAsync(stream, cancellationToken);
+        if (progress.Status != DownloadStatus.Completed)
+            throw new InvalidOperationException(
+                $"Drive file download failed for '{fileId}'. Status: {progress.Status}");
         stream.Position = 0;
         return stream;
     }
@@ -160,7 +164,10 @@ public sealed class GoogleDriveService : IDriveService
         using var service = CreateDriveService(accessToken);
         var request = service.Files.Export(fileId, "text/plain");
         var stream = new MemoryStream();
-        await request.DownloadAsync(stream, cancellationToken);
+        var progress = await request.DownloadAsync(stream, cancellationToken);
+        if (progress.Status != DownloadStatus.Completed)
+            throw new InvalidOperationException(
+                $"Drive Google Doc export failed for '{fileId}'. Status: {progress.Status}");
         stream.Position = 0;
         using var reader = new StreamReader(stream);
         return await reader.ReadToEndAsync(cancellationToken);

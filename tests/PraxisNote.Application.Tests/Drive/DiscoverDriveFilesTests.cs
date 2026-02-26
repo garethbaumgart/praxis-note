@@ -115,7 +115,7 @@ public class DiscoverDriveFilesTests
         // Assert
         Assert.Equal(2, result.NewFilesDiscovered);
         Assert.Equal(0, result.AlreadyTracked);
-        Assert.Equal(2, result.TotalInFolder);
+        Assert.Equal(2, result.TotalFilesMatched);
         await _fileImportRepository.Received(1).AddRangeAsync(
             Arg.Is<IEnumerable<DriveFileImport>>(imports => imports.Count() == 2),
             Arg.Any<CancellationToken>());
@@ -150,7 +150,7 @@ public class DiscoverDriveFilesTests
         // Assert
         Assert.Equal(1, result.NewFilesDiscovered);
         Assert.Equal(1, result.AlreadyTracked);
-        Assert.Equal(2, result.TotalInFolder);
+        Assert.Equal(2, result.TotalFilesMatched);
         await _fileImportRepository.Received(1).AddRangeAsync(
             Arg.Is<IEnumerable<DriveFileImport>>(imports => imports.Count() == 1),
             Arg.Any<CancellationToken>());
@@ -175,7 +175,7 @@ public class DiscoverDriveFilesTests
         // Assert
         Assert.Equal(0, result.NewFilesDiscovered);
         Assert.Equal(0, result.AlreadyTracked);
-        Assert.Equal(0, result.TotalInFolder);
+        Assert.Equal(0, result.TotalFilesMatched);
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -266,7 +266,7 @@ public class DiscoverDriveFilesTests
 
         // Assert
         Assert.Equal(2, result.NewFilesDiscovered);
-        Assert.Equal(2, result.TotalInFolder);
+        Assert.Equal(2, result.TotalFilesMatched);
         await _driveService.Received(2).ListFilesAsync(
             "access-token", "folder-123", Arg.Any<DateTimeOffset?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
