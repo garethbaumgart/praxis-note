@@ -37,6 +37,7 @@ It's grown into a productivity tool for people who think in notes, meet with hum
 - **Google Calendar Sync** to import upcoming events as meetings
 - **Screenshot Import** — paste a calendar screenshot, Claude Vision extracts and imports meetings
 - **Transcript Import** — paste Google Gemini meeting notes or upload .txt/.docx files, AI extracts structured meeting data
+- **Google Drive Connection** — link your Google Drive with read-only access for importing meeting notes and documents
 - **Jira Integration** — paste issue URLs in notes to render rich inline chips with status badges
 - **MCP Server** at `/mcp` for OpenClaw and other MCP clients, with personal API key auth and full read/write access
 
