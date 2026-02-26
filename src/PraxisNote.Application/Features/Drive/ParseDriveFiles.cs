@@ -22,9 +22,16 @@ public sealed class ParseDriveFiles(
     private const int MaxFilesPerCycle = 50;
     internal static readonly TimeSpan DelayBetweenCalls = TimeSpan.FromSeconds(1);
 
+    private const int ErrorMessageMaxLength = 2000;
+
     private const string GoogleDocMimeType = "application/vnd.google-apps.document";
     private const string DocxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private const string PlainTextMimeType = "text/plain";
+
+    private static readonly System.Text.Json.JsonSerializerOptions CamelCaseOptions = new()
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+    };
 
     public record Command(Guid UserId, Guid ProfileId);
     public record Result(int Parsed, int Errors, int Remaining);
@@ -56,6 +63,7 @@ public sealed class ParseDriveFiles(
 
         var parsed = 0;
         var errors = 0;
+        var hasIssuedAiCall = false;
 
         foreach (var fileImport in filesToProcess)
         {
@@ -72,6 +80,12 @@ public sealed class ParseDriveFiles(
                     continue;
                 }
 
+                // Rate limiting: wait between AI calls (only after a previous AI call)
+                if (hasIssuedAiCall)
+                {
+                    await Task.Delay(DelayBetweenCalls, cancellationToken);
+                }
+
                 // 2. Parse through existing AI pipeline
                 var parseCommand = new ParseTranscriptForImport.Command(
                     command.UserId,
@@ -83,9 +97,10 @@ public sealed class ParseDriveFiles(
                     fileImport.FileName);
 
                 var parseResult = await parseTranscript.ExecuteAsync(parseCommand, cancellationToken);
+                hasIssuedAiCall = true;
 
-                // 3. Serialize result as JSON for preview
-                var resultJson = System.Text.Json.JsonSerializer.Serialize(parseResult);
+                // 3. Serialize result as camelCase JSON for frontend preview
+                var resultJson = System.Text.Json.JsonSerializer.Serialize(parseResult, CamelCaseOptions);
 
                 // 4. Update file import with parsed result
                 fileImport.MarkParsed(text, resultJson);
@@ -93,9 +108,16 @@ public sealed class ParseDriveFiles(
 
                 logger.LogInformation("Parsed Drive file {FileName} ({FileId})", fileImport.FileName, fileImport.DriveFileId);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                fileImport.MarkError(ex.Message);
+                var errorMessage = ex.Message.Length > ErrorMessageMaxLength
+                    ? ex.Message[..ErrorMessageMaxLength]
+                    : ex.Message;
+                fileImport.MarkError(errorMessage);
                 errors++;
                 logger.LogWarning(ex, "Failed to parse Drive file {FileName} ({FileId})", fileImport.FileName, fileImport.DriveFileId);
             }
@@ -103,9 +125,7 @@ public sealed class ParseDriveFiles(
             // Save after each file to avoid losing progress on failure
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Rate limiting: wait between AI calls
             if (cancellationToken.IsCancellationRequested) break;
-            await Task.Delay(DelayBetweenCalls, cancellationToken);
         }
 
         return new Result(parsed, errors, remaining);
