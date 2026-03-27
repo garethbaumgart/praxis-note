@@ -75,6 +75,9 @@ public static class DependencyInjection
         services.AddScoped<ICalendarService, GoogleCalendarService>();
         services.Configure<MeetingAnalysisSettings>(configuration.GetSection(MeetingAnalysisSettings.SectionName));
         services.Configure<AiProviderSettings>(configuration.GetSection(AiProviderSettings.SectionName));
+        services.AddScoped<IAiProviderFactory, AiProviderFactory>();
+        services.AddHttpClient();
+        // Default scoped registrations use Anthropic config — replaced by per-user resolution in #681
         services.AddScoped<IMeetingAnalyzer, AnthropicMeetingAnalyzer>();
         services.AddScoped<ITranscriptExtractor, TranscriptExtractor>();
         services.AddScoped<ITagAiChatService, AnthropicTagAiChatService>();
