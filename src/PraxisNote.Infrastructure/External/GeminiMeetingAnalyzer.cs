@@ -108,7 +108,8 @@ public sealed class GeminiMeetingAnalyzer(
             ?? throw new InvalidOperationException("Gemini returned an empty response");
 
         var text = string.Concat(
-            geminiResponse.Candidates?.FirstOrDefault()?.Content?.Parts?
+            geminiResponse.Candidates?
+                .SelectMany(c => c.Content?.Parts ?? [])
                 .Select(p => p.Text ?? string.Empty) ?? []);
 
         if (string.IsNullOrWhiteSpace(text))

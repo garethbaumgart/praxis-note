@@ -88,7 +88,8 @@ public sealed class GeminiTagAiChatService(
 
             var chunk = JsonSerializer.Deserialize<GeminiResponse>(json, Options);
             var text = string.Concat(
-                chunk?.Candidates?.FirstOrDefault()?.Content?.Parts?
+                chunk?.Candidates?
+                    .SelectMany(c => c.Content?.Parts ?? [])
                     .Select(p => p.Text ?? string.Empty) ?? []);
 
             if (!string.IsNullOrEmpty(text))
@@ -134,7 +135,8 @@ public sealed class GeminiTagAiChatService(
 
         var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token);
         var content = string.Concat(
-            geminiResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?
+            geminiResponse?.Candidates?
+                .SelectMany(c => c.Content?.Parts ?? [])
                 .Select(p => p.Text ?? string.Empty) ?? []);
 
         if (string.IsNullOrWhiteSpace(content))
