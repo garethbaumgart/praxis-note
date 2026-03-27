@@ -3,6 +3,7 @@ using System.Text.Json;
 using PraxisNote.Web.Extensions;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tags.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 
 namespace PraxisNote.Web.Endpoints;
 
@@ -284,6 +285,15 @@ public static class TagEndpoints
             }
             catch { /* Client likely disconnected */ }
         }
+        catch (NoAiKeyConfiguredException)
+        {
+            try
+            {
+                await context.Response.WriteAsync($"event: error\ndata: {AiKeyErrorResults.NoAiKeySsePayload()}\n\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
+            }
+            catch { /* Client likely disconnected */ }
+        }
         catch (OperationCanceledException)
         {
             // Client disconnected
@@ -327,6 +337,10 @@ public static class TagEndpoints
         catch (InvalidOperationException ex) when (ex.Message == GenerateTagStarters.NoContentError)
         {
             return Results.Ok(new { starters = Array.Empty<string>() });
+        }
+        catch (NoAiKeyConfiguredException)
+        {
+            return AiKeyErrorResults.NoAiKeyResult();
         }
         catch (OperationCanceledException)
         {

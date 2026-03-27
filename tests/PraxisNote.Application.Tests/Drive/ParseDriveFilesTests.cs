@@ -6,6 +6,7 @@ using PraxisNote.Application.Features.Drive;
 using PraxisNote.Application.Features.Drive.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Domain.Aggregates.Users;
@@ -31,7 +32,10 @@ public class ParseDriveFilesTests
 
     public ParseDriveFilesTests()
     {
-        _parseTranscript = new ParseTranscriptForImport(_meetingAnalyzer, _transcriptExtractor);
+        var aiServices = Substitute.For<IResolvedAiServices>();
+        aiServices.GetMeetingAnalyzerAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(_meetingAnalyzer);
+        _parseTranscript = new ParseTranscriptForImport(aiServices, _transcriptExtractor);
         _sut = new ParseDriveFiles(
             _connectionRepository, _fileImportRepository, _driveService,
             _parseTranscript, _transcriptExtractor, _userRepository, _unitOfWork, _logger);

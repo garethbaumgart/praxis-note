@@ -2,13 +2,14 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
 
 namespace PraxisNote.Application.Features.Meetings;
 
 public sealed class AnalyzeMeeting(
     IMeetingRepository meetingRepository,
-    IMeetingAnalyzer meetingAnalyzer,
+    IResolvedAiServices aiServices,
     IUnitOfWork unitOfWork,
     ILogger<AnalyzeMeeting> logger)
 {
@@ -34,6 +35,7 @@ public sealed class AnalyzeMeeting(
 
         try
         {
+            var meetingAnalyzer = await aiServices.GetMeetingAnalyzerAsync(command.UserId, cancellationToken);
             var result = await meetingAnalyzer.AnalyzeAsync(meeting.TranscriptContent, cancellationToken);
 
             var camelCaseOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -58,6 +60,12 @@ public sealed class AnalyzeMeeting(
                 result.SuggestedTags.Count > 0
                     ? JsonSerializer.Serialize(result.SuggestedTags)
                     : null);
+        }
+        catch (NoAiKeyConfiguredException)
+        {
+            meeting.FailAnalysis();
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            throw;
         }
         catch (OperationCanceledException)
         {

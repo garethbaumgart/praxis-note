@@ -7,6 +7,7 @@ using PraxisNote.Application.Features.Drive;
 using PraxisNote.Application.Features.Drive.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Domain.Aggregates.Meetings;
@@ -44,7 +45,10 @@ public class DriveSyncOrchestratorTests
                 [new ExtractedActionItem("Action 1", "Alice")],
                 ["tag1"], true, null));
 
-        _parseTranscript = new ParseTranscriptForImport(meetingAnalyzer, _transcriptExtractor);
+        var aiServices = Substitute.For<IResolvedAiServices>();
+        aiServices.GetMeetingAnalyzerAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(meetingAnalyzer);
+        _parseTranscript = new ParseTranscriptForImport(aiServices, _transcriptExtractor);
 
         var confirmTranscriptImport = new ConfirmTranscriptImport(
             _meetingRepository, _tagRepository, _unitOfWork, _fileImportRepository);

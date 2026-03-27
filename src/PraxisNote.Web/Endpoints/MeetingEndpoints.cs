@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using PraxisNote.Application.Features.Meetings;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Web.Extensions;
 
 namespace PraxisNote.Web.Endpoints;
@@ -193,10 +194,17 @@ public static class MeetingEndpoints
             return Results.Unauthorized();
         }
 
-        var command = new AnalyzeMeeting.Command(id, userId.Value);
-        var success = await analyzeMeeting.ExecuteAsync(command, cancellationToken);
+        try
+        {
+            var command = new AnalyzeMeeting.Command(id, userId.Value);
+            var success = await analyzeMeeting.ExecuteAsync(command, cancellationToken);
 
-        return success ? Results.NoContent() : Results.NotFound();
+            return success ? Results.NoContent() : Results.NotFound();
+        }
+        catch (NoAiKeyConfiguredException)
+        {
+            return AiKeyErrorResults.NoAiKeyResult();
+        }
     }
 
     private static async Task<IResult> HandleToggleActionItem(
@@ -375,11 +383,18 @@ public static class MeetingEndpoints
             return Results.BadRequest("Invalid time zone.");
         }
 
-        var command = new ExtractMeetingsFromScreenshot.Command(
-            userId.Value, request.Base64Image, mediaType, timeZone);
-        var result = await extractMeetings.ExecuteAsync(command, cancellationToken);
+        try
+        {
+            var command = new ExtractMeetingsFromScreenshot.Command(
+                userId.Value, request.Base64Image, mediaType, timeZone);
+            var result = await extractMeetings.ExecuteAsync(command, cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        }
+        catch (NoAiKeyConfiguredException)
+        {
+            return AiKeyErrorResults.NoAiKeyResult();
+        }
     }
 
     private static async Task<IResult> HandleCreateMeetingNote(
@@ -537,6 +552,10 @@ public static class MeetingEndpoints
 
             var result = await parseTranscript.ExecuteAsync(command, cancellationToken);
             return Results.Ok(result);
+        }
+        catch (NoAiKeyConfiguredException)
+        {
+            return AiKeyErrorResults.NoAiKeyResult();
         }
         finally
         {
