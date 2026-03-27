@@ -1,6 +1,8 @@
+using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.UserAiKeys;
@@ -142,6 +144,104 @@ public class AiKeyResolverTests
         Assert.NotNull(result);
         Assert.Equal(AiProvider.Gemini, result.Provider);
         Assert.Equal("gemini-free-key", result.ApiKey);
+        Assert.Equal("gemini-1.5-flash", result.Model);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_UserKeyDecryptionFails_FallsBackToNextProvider()
+    {
+        var anthropicKey = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_bad", "****", "claude-4");
+        var openAiKey = UserAiKey.Create(_userId, AiProvider.OpenAI, "enc_good", "****", "gpt-4o");
+        _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns([anthropicKey, openAiKey]);
+        _encryption.Decrypt("enc_bad").Throws(new CryptographicException("corrupt key"));
+        _encryption.Decrypt("enc_good").Returns("sk-openai-real");
+
+        var sut = CreateSut();
+        var result = await sut.ResolveAsync(_userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(AiProvider.OpenAI, result.Provider);
+        Assert.Equal("sk-openai-real", result.ApiKey);
+        Assert.Equal("gpt-4o", result.Model);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_UserGeminiKeyBeatsAppDefaults_ReturnsUserGeminiKey()
+    {
+        var geminiKey = UserAiKey.Create(_userId, AiProvider.Gemini, "enc_gemini", "****", "gemini-2.0-flash");
+        _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns([geminiKey]);
+        _encryption.Decrypt("enc_gemini").Returns("sk-gemini-user");
+
+        var settings = new AiProviderSettings
+        {
+            Anthropic = new AnthropicProviderConfig { ApiKey = "app-anthropic", DefaultModel = "claude-sonnet-4-6" },
+            OpenAI = new OpenAiProviderConfig { ApiKey = "app-openai", DefaultModel = "gpt-4o" }
+        };
+        var sut = CreateSut(settings);
+        var result = await sut.ResolveAsync(_userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(AiProvider.Gemini, result.Provider);
+        Assert.Equal("sk-gemini-user", result.ApiKey);
+        Assert.Equal("gemini-2.0-flash", result.Model);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_UserOpenAiPreferredOverGemini_WhenBothUserKeysPresent_ReturnsOpenAiKey()
+    {
+        var openAiKey = UserAiKey.Create(_userId, AiProvider.OpenAI, "enc_openai", "****", "gpt-4o");
+        var geminiKey = UserAiKey.Create(_userId, AiProvider.Gemini, "enc_gemini", "****", "gemini-2.0-flash");
+        _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns([geminiKey, openAiKey]);
+        _encryption.Decrypt("enc_openai").Returns("sk-openai-real");
+
+        var sut = CreateSut();
+        var result = await sut.ResolveAsync(_userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(AiProvider.OpenAI, result.Provider);
+        Assert.Equal("sk-openai-real", result.ApiKey);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_AnthropicUserKeyWithNoPreferredModel_UsesAnthropicDefaultModel()
+    {
+        var userKey = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_key", "****", null);
+        _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns([userKey]);
+        _encryption.Decrypt("enc_key").Returns("sk-anthropic-key");
+
+        var settings = new AiProviderSettings
+        {
+            Anthropic = new AnthropicProviderConfig { DefaultModel = "claude-sonnet-4-6" }
+        };
+        var sut = CreateSut(settings);
+        var result = await sut.ResolveAsync(_userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(AiProvider.Anthropic, result.Provider);
+        Assert.Equal("claude-sonnet-4-6", result.Model);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_GeminiUserKeyWithNoPreferredModel_UsesGeminiDefaultModel()
+    {
+        var userKey = UserAiKey.Create(_userId, AiProvider.Gemini, "enc_key", "****", null);
+        _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns([userKey]);
+        _encryption.Decrypt("enc_key").Returns("sk-gemini-key");
+
+        var settings = new AiProviderSettings
+        {
+            Gemini = new GeminiProviderConfig { DefaultModel = "gemini-1.5-flash" }
+        };
+        var sut = CreateSut(settings);
+        var result = await sut.ResolveAsync(_userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(AiProvider.Gemini, result.Provider);
         Assert.Equal("gemini-1.5-flash", result.Model);
     }
 

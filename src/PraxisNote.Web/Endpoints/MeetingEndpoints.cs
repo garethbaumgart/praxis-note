@@ -203,7 +203,7 @@ public static class MeetingEndpoints
         }
         catch (NoAiKeyConfiguredException)
         {
-            return Results.UnprocessableEntity(new { error = "no_ai_key", message = "No AI key is configured. Add your own API key in Settings → AI Keys, or ask your administrator to configure a default key.", settingsUrl = "/settings/ai-keys" });
+            return AiKeyErrorResults.NoAiKeyResult();
         }
     }
 
@@ -393,7 +393,7 @@ public static class MeetingEndpoints
         }
         catch (NoAiKeyConfiguredException)
         {
-            return Results.UnprocessableEntity(new { error = "no_ai_key", message = "No AI key is configured. Add your own API key in Settings → AI Keys, or ask your administrator to configure a default key.", settingsUrl = "/settings/ai-keys" });
+            return AiKeyErrorResults.NoAiKeyResult();
         }
     }
 
@@ -555,7 +555,7 @@ public static class MeetingEndpoints
         }
         catch (NoAiKeyConfiguredException)
         {
-            return Results.UnprocessableEntity(new { error = "no_ai_key", message = "No AI key is configured. Add your own API key in Settings → AI Keys, or ask your administrator to configure a default key.", settingsUrl = "/settings/ai-keys" });
+            return AiKeyErrorResults.NoAiKeyResult();
         }
         finally
         {

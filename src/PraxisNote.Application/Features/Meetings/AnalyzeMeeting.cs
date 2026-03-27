@@ -61,6 +61,12 @@ public sealed class AnalyzeMeeting(
                     ? JsonSerializer.Serialize(result.SuggestedTags)
                     : null);
         }
+        catch (NoAiKeyConfiguredException)
+        {
+            meeting.FailAnalysis();
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            throw;
+        }
         catch (OperationCanceledException)
         {
             // Mark as failed before propagating so meeting isn't stuck in Processing

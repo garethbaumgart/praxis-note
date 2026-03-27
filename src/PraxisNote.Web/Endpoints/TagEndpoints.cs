@@ -341,7 +341,7 @@ public static class TagEndpoints
         }
         catch (NoAiKeyConfiguredException)
         {
-            return Results.Ok(new { starters = Array.Empty<string>() });
+            return AiKeyErrorResults.NoAiKeyResult();
         }
         catch (OperationCanceledException)
         {
