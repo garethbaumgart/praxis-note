@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\PraxisNote.Application\PraxisNote.Application.csproj" />
     <ProjectReference Include="..\..\src\PraxisNote.Domain\PraxisNote.Domain.csproj" />
+    <ProjectReference Include="..\..\src\PraxisNote.Infrastructure\PraxisNote.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
