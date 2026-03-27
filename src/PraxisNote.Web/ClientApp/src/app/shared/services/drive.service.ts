@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, NgZone } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DriveConnectionStatus, DriveFolder, DriveSyncResult } from '../models/drive-connection.model';
 import { ToastService } from './toast.service';
@@ -6,7 +6,6 @@ import { ToastService } from './toast.service';
 @Injectable({ providedIn: 'root' })
 export class DriveService {
   private readonly http = inject(HttpClient);
-  private readonly ngZone = inject(NgZone);
   private readonly toast = inject(ToastService);
 
   private readonly _status = signal<DriveConnectionStatus | null>(null);
@@ -161,19 +160,4 @@ export class DriveService {
     });
   }
 
-  /** Called from NotificationService SSE listener when a drive-sync event arrives. */
-  handleDriveSyncEvent(data: { type: string; count?: number; message?: string }): void {
-    if (data.type === 'pending_review') {
-      this._pendingReviewCount.update(c => c + (data.count ?? 0));
-    } else if (data.type === 'auto_imported') {
-      this.toast.success({
-        summary: 'Drive sync complete',
-        detail: data.message ?? 'Files auto-imported from Drive',
-      });
-      // Reload status to reflect new counts
-      this.loadConnectionStatus();
-    } else if (data.type === 'error') {
-      this.toast.error('Drive sync error', data.message ?? 'An error occurred during Drive sync.');
-    }
-  }
 }
