@@ -61,7 +61,11 @@ export class AiKeyProviderService {
           error: (err: HttpErrorResponse) => {
             this._saving.set(false);
             if (err.status === 422) {
-              reject(err.error?.error ?? 'Invalid API key');
+              const code = err.error?.error;
+              const message = code === 'ai_key_invalid'
+                ? 'This API key was rejected by the provider. Please check the key and try again.'
+                : (code ?? 'Invalid API key');
+              reject(message);
             } else {
               const message = err.error?.error ?? `Failed to save ${provider} key`;
               this.toast.error(message);

@@ -1,7 +1,7 @@
 export type AiProvider = 'Anthropic' | 'OpenAI' | 'Gemini';
 
 export interface AiKeyDto {
-  provider: string;
+  provider: AiProvider;
   hasKey: boolean;
   keyHint: string | null;
   preferredModel: string | null;

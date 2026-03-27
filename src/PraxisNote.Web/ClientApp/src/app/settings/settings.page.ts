@@ -494,8 +494,10 @@ const MAX_API_KEYS = 5;
                 <app-ai-key-provider-card
                   [provider]="p"
                   [key]="aiKeyProviderService.keyForProvider(p)()"
+                  [isOpen]="openAiProvider() === p"
+                  (onToggle)="toggleAiProvider($event)"
                   (onRemove)="removeAiKey($event)"
-                  (onSaved)="aiKeyProviderService.loadKeys()"
+                  (onSaved)="onAiKeySaved()"
                 />
               }
             </div>
@@ -831,6 +833,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   private readonly driveSetupDialog = viewChild(DriveSetupDialogComponent);
 
   readonly aiProviders: AiProvider[] = ['Anthropic', 'OpenAI', 'Gemini'];
+  readonly openAiProvider = signal<AiProvider | null>(null);
 
   readonly maxProfiles = MAX_PROFILES;
   readonly atMaxProfiles = computed(() => this.profileService.profiles().length >= MAX_PROFILES);
@@ -1101,6 +1104,14 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   // --- AI Key actions ---
+
+  toggleAiProvider(provider: AiProvider): void {
+    this.openAiProvider.update(current => current === provider ? null : provider);
+  }
+
+  onAiKeySaved(): void {
+    // Service already refreshes keys internally — no-op here to avoid duplicate GET
+  }
 
   removeAiKey(provider: AiProvider): void {
     this.aiKeyProviderService.removeKey(provider);

@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { seedTestUser } from '../helpers/db-reset';
 import { getMockAuthHeaders, MockUser } from '../helpers/mock-auth';
 
-const USER_SUFFIX = 10;
+const USER_SUFFIX = 11;
 let testUser: MockUser;
 
 test.describe('Settings — AI Keys', () => {
@@ -13,11 +13,16 @@ test.describe('Settings — AI Keys', () => {
   });
 
   test.beforeEach(async ({ request }) => {
-    // Clean up AI keys before each test
+    // Clean up AI keys before each test — only ignore 404s
     for (const provider of ['Anthropic', 'OpenAI', 'Gemini']) {
-      await request.delete(`/api/ai-keys/${provider}`, {
+      const response = await request.delete(`/api/ai-keys/${provider}`, {
         headers: getMockAuthHeaders(testUser),
-      }).catch(() => { /* ignore 404 */ });
+      });
+      if (response.status() !== 404 && !response.ok()) {
+        throw new Error(
+          `Failed to delete AI key for provider ${provider}: ${response.status()} ${response.statusText()}`
+        );
+      }
     }
   });
 
@@ -45,8 +50,14 @@ test.describe('Settings — AI Keys', () => {
     // Wait for the key to be saved — should show Connected status
     await expect(geminiCard.getByText('Connected')).toBeVisible({ timeout: 15000 });
 
+    // Ensure drawer is open before asserting key hint
+    const geminiToggleButton = geminiCard.locator('button').first();
+    const isGeminiExpanded = await geminiToggleButton.getAttribute('aria-expanded');
+    if (isGeminiExpanded !== 'true') {
+      await geminiToggleButton.click();
+    }
+
     // Verify key hint is displayed
-    await geminiCard.locator('button').first().click(); // re-expand drawer
     await expect(geminiCard.locator('code')).toBeVisible();
 
     // Remove the key

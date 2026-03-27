@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, inject, signal } from '@angular/core';
 import { AiKeyDto, AiProvider } from './ai-key-provider.model';
 import { AiKeyProviderService } from './ai-key-provider.service';
 
@@ -47,7 +47,7 @@ const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
         type="button"
         class="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-subtle transition-colors text-left"
         (click)="toggleDrawer()"
-        [attr.aria-expanded]="drawerOpen()"
+        [attr.aria-expanded]="isOpen()"
         [attr.aria-label]="'Configure ' + meta.label + ' API key'"
       >
         <span class="text-lg font-semibold" [class]="meta.colorClass" aria-hidden="true">
@@ -69,11 +69,11 @@ const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
           <span class="text-xs text-foreground-muted bg-surface-muted px-2 py-0.5 rounded-full">Free tier</span>
         }
 
-        <i class="pi text-xs text-foreground-muted" [class.pi-chevron-down]="!drawerOpen()" [class.pi-chevron-up]="drawerOpen()" aria-hidden="true"></i>
+        <i class="pi text-xs text-foreground-muted" [class.pi-chevron-down]="!isOpen()" [class.pi-chevron-up]="isOpen()" aria-hidden="true"></i>
       </button>
 
       <!-- Expandable drawer -->
-      @if (drawerOpen()) {
+      @if (isOpen()) {
         <div class="border-t border-border px-4 py-4 space-y-3 bg-surface-subtle">
           @if (key()?.hasKey) {
             <!-- Connected state -->
@@ -153,12 +153,13 @@ const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
 export class AiKeyProviderCardComponent {
   readonly provider = input.required<AiProvider>();
   readonly key = input<AiKeyDto | null>(null);
+  readonly isOpen = input(false);
   readonly onRemove = output<AiProvider>();
   readonly onSaved = output<void>();
+  readonly onToggle = output<AiProvider>();
 
   readonly aiKeyService = inject(AiKeyProviderService);
 
-  readonly drawerOpen = signal(false);
   readonly inputKey = signal('');
   readonly validationError = signal<string | null>(null);
   readonly rateLimitWarning = signal(false);
@@ -168,12 +169,12 @@ export class AiKeyProviderCardComponent {
   }
 
   toggleDrawer(): void {
-    this.drawerOpen.update(v => !v);
-    if (this.drawerOpen()) {
+    if (!this.isOpen()) {
       this.inputKey.set('');
       this.validationError.set(null);
       this.rateLimitWarning.set(false);
     }
+    this.onToggle.emit(this.provider());
   }
 
   async validateAndSave(): Promise<void> {
