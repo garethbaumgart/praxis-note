@@ -1,6 +1,7 @@
 using NSubstitute;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tags.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Tags;
@@ -15,6 +16,7 @@ public class AskTagAiTests
     private readonly INoteRepository _noteRepo = Substitute.For<INoteRepository>();
     private readonly ITaskRepository _taskRepo = Substitute.For<ITaskRepository>();
     private readonly ITagAiChatService _aiChatService = Substitute.For<ITagAiChatService>();
+    private readonly IResolvedAiServices _aiServices = Substitute.For<IResolvedAiServices>();
     private readonly AskTagAi _sut;
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _profileId = Guid.NewGuid();
@@ -22,7 +24,9 @@ public class AskTagAiTests
 
     public AskTagAiTests()
     {
-        _sut = new AskTagAi(_tagRepo, _meetingRepo, _noteRepo, _taskRepo, _aiChatService);
+        _aiServices.GetTagAiChatServiceAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(_aiChatService);
+        _sut = new AskTagAi(_tagRepo, _meetingRepo, _noteRepo, _taskRepo, _aiServices);
     }
 
     #region Validation

@@ -1,10 +1,11 @@
 using System.Globalization;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 
 namespace PraxisNote.Application.Features.Meetings;
 
 public sealed class ParseTranscriptForImport(
-    IMeetingAnalyzer meetingAnalyzer,
+    IResolvedAiServices aiServices,
     ITranscriptExtractor transcriptExtractor)
 {
     private const string DocxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -36,6 +37,7 @@ public sealed class ParseTranscriptForImport(
             throw new ArgumentException("No text content could be extracted from the provided input.");
         }
 
+        var meetingAnalyzer = await aiServices.GetMeetingAnalyzerAsync(command.UserId, cancellationToken);
         var parseResult = await meetingAnalyzer.ParseTranscriptForImportAsync(text, command.TimeZone, cancellationToken);
 
         var personTags = GetAttendeePersonTags(parseResult.Attendees, command.UserName);

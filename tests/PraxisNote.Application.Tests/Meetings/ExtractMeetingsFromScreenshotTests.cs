@@ -1,17 +1,21 @@
 using NSubstitute;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 
 namespace PraxisNote.Application.Tests.Meetings;
 
 public sealed class ExtractMeetingsFromScreenshotTests
 {
     private readonly IMeetingAnalyzer _analyzer = Substitute.For<IMeetingAnalyzer>();
+    private readonly IResolvedAiServices _aiServices = Substitute.For<IResolvedAiServices>();
     private readonly ExtractMeetingsFromScreenshot _sut;
 
     public ExtractMeetingsFromScreenshotTests()
     {
-        _sut = new ExtractMeetingsFromScreenshot(_analyzer);
+        _aiServices.GetMeetingAnalyzerAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(_analyzer);
+        _sut = new ExtractMeetingsFromScreenshot(_aiServices);
     }
 
     #region ExecuteAsync

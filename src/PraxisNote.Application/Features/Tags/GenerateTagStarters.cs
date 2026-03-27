@@ -1,4 +1,5 @@
 using PraxisNote.Application.Features.Tags.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
 using PraxisNote.Domain.Aggregates.Tags;
@@ -11,7 +12,7 @@ public sealed class GenerateTagStarters(
     IMeetingRepository meetingRepository,
     INoteRepository noteRepository,
     ITaskRepository taskRepository,
-    ITagAiChatService aiChatService)
+    IResolvedAiServices aiServices)
 {
     public record Query(Guid UserId, Guid TagId);
 
@@ -34,6 +35,7 @@ public sealed class GenerateTagStarters(
 
         var context = AskTagAi.BuildContext(tag.Name, meetings, notes, tasks);
 
+        var aiChatService = await aiServices.GetTagAiChatServiceAsync(query.UserId, cancellationToken);
         return await aiChatService.GenerateStarterPromptsAsync(context, cancellationToken);
     }
 }

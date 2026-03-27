@@ -2,19 +2,23 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 
 namespace PraxisNote.Application.Tests.Meetings;
 
 public class ParseTranscriptForImportTests
 {
     private readonly IMeetingAnalyzer _meetingAnalyzer = Substitute.For<IMeetingAnalyzer>();
+    private readonly IResolvedAiServices _aiServices = Substitute.For<IResolvedAiServices>();
     private readonly ITranscriptExtractor _transcriptExtractor = Substitute.For<ITranscriptExtractor>();
     private readonly ParseTranscriptForImport _sut;
     private readonly Guid _userId = Guid.NewGuid();
 
     public ParseTranscriptForImportTests()
     {
-        _sut = new ParseTranscriptForImport(_meetingAnalyzer, _transcriptExtractor);
+        _aiServices.GetMeetingAnalyzerAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(_meetingAnalyzer);
+        _sut = new ParseTranscriptForImport(_aiServices, _transcriptExtractor);
     }
 
     #region Text Input
