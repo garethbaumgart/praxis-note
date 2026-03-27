@@ -11,7 +11,7 @@ public sealed class GetUserAiKeys(IUserAiKeyRepository repository)
         var keys = await repository.GetByUserIdAsync(query.UserId, cancellationToken);
 
         return keys
-            .Select(k => new UserAiKeyDto(k.Provider, true, k.KeyHint, k.PreferredModel, k.CreatedAt))
+            .Select(k => new UserAiKeyDto(k.Provider.ToString(), true, k.KeyHint, k.PreferredModel, k.CreatedAt))
             .ToList();
     }
 }
