@@ -488,6 +488,17 @@ const MAX_API_KEYS = 5;
               <span class="text-sm text-foreground-muted" aria-hidden="true">Loading AI keys...</span>
               <span class="sr-only">Loading AI keys...</span>
             </div>
+          } @else if (aiKeyProviderService.error()) {
+            <div class="py-2 px-4 bg-danger/10 border border-danger/30 rounded-lg mb-4">
+              <p class="text-sm text-danger">{{ aiKeyProviderService.error() }}</p>
+              <button
+                type="button"
+                class="text-sm text-accent underline mt-1"
+                (click)="aiKeyProviderService.loadKeys()"
+              >
+                Try again
+              </button>
+            </div>
           } @else {
             <div class="flex flex-col gap-2 mb-4">
               @for (p of aiProviders; track p) {

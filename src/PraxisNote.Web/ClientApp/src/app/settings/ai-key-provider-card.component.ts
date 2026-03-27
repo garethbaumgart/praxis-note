@@ -75,21 +75,50 @@ const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
       <!-- Expandable drawer -->
       @if (isOpen()) {
         <div class="border-t border-border px-4 py-4 space-y-3 bg-surface-subtle">
-          @if (key()?.hasKey) {
+          @if (key()?.hasKey && !replacing()) {
             <!-- Connected state -->
             <div class="flex items-center justify-between">
               <div class="text-sm">
                 <span class="text-foreground-muted">Key:</span>
                 <code class="ml-1 text-xs text-foreground font-mono bg-surface-muted px-1.5 py-0.5 rounded">{{ key()!.keyHint }}</code>
               </div>
-              <button
-                type="button"
-                class="p-2 text-foreground-muted hover:text-danger transition-colors rounded-md"
-                (click)="confirmRemove()"
-                aria-label="Remove API key"
-              >
-                <i class="pi pi-trash text-sm" aria-hidden="true"></i>
-              </button>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  class="p-2 text-foreground-muted hover:text-foreground transition-colors rounded-md"
+                  (click)="replacing.set(true)"
+                  aria-label="Replace API key"
+                >
+                  <i class="pi pi-pencil text-sm" aria-hidden="true"></i>
+                </button>
+                @if (!confirmingRemove()) {
+                  <button
+                    type="button"
+                    class="p-2 text-foreground-muted hover:text-danger transition-colors rounded-md"
+                    (click)="confirmingRemove.set(true)"
+                    aria-label="Remove API key"
+                  >
+                    <i class="pi pi-trash text-sm" aria-hidden="true"></i>
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="px-2 py-1 text-xs text-danger hover:bg-danger/10 rounded transition-colors"
+                    (click)="doRemove()"
+                    aria-label="Confirm remove API key"
+                  >
+                    Remove?
+                  </button>
+                  <button
+                    type="button"
+                    class="px-2 py-1 text-xs text-foreground-muted hover:text-foreground rounded transition-colors"
+                    (click)="confirmingRemove.set(false)"
+                    aria-label="Cancel remove"
+                  >
+                    Cancel
+                  </button>
+                }
+              </div>
             </div>
             @if (key()!.preferredModel) {
               <p class="text-xs text-foreground-muted">Model: {{ key()!.preferredModel }}</p>
@@ -163,6 +192,8 @@ export class AiKeyProviderCardComponent {
   readonly inputKey = signal('');
   readonly validationError = signal<string | null>(null);
   readonly rateLimitWarning = signal(false);
+  readonly replacing = signal(false);
+  readonly confirmingRemove = signal(false);
 
   get meta(): ProviderMeta {
     return PROVIDER_META[this.provider()];
@@ -173,6 +204,8 @@ export class AiKeyProviderCardComponent {
       this.inputKey.set('');
       this.validationError.set(null);
       this.rateLimitWarning.set(false);
+      this.replacing.set(false);
+      this.confirmingRemove.set(false);
     }
     this.onToggle.emit(this.provider());
   }
@@ -191,13 +224,15 @@ export class AiKeyProviderCardComponent {
         this.rateLimitWarning.set(true);
       }
       this.inputKey.set('');
+      this.replacing.set(false);
       this.onSaved.emit();
     } catch (err) {
       this.validationError.set(typeof err === 'string' ? err : 'Invalid API key');
     }
   }
 
-  confirmRemove(): void {
+  doRemove(): void {
+    this.confirmingRemove.set(false);
     this.onRemove.emit(this.provider());
   }
 }
