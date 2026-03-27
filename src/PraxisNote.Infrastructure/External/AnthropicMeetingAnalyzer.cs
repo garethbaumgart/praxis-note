@@ -8,13 +8,14 @@ using PraxisNote.Application.Features.Meetings.Services;
 
 namespace PraxisNote.Infrastructure.External;
 
-public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
+public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
 {
-    private readonly MeetingAnalysisSettings _settings;
-    private readonly ILogger<ClaudeMeetingAnalyzer> _logger;
+    private readonly AiProviderSettings _settings;
+    private readonly ILogger<AnthropicMeetingAnalyzer> _logger;
     private readonly AnthropicClient? _client;
+    private readonly string _model;
 
-    private const string AnalysisPrompt = """
+    internal const string AnalysisPrompt = """
         Analyze this meeting transcript and provide a comprehensive JSON response.
 
         CONTENT ANALYSIS:
@@ -85,22 +86,23 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         Transcript:
         """;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    internal static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public ClaudeMeetingAnalyzer(IOptions<MeetingAnalysisSettings> settings, ILogger<ClaudeMeetingAnalyzer> logger)
+    public AnthropicMeetingAnalyzer(IOptions<AiProviderSettings> settings, ILogger<AnthropicMeetingAnalyzer> logger)
     {
         _settings = settings.Value;
         _logger = logger;
+        _model = _settings.Anthropic.DefaultModel;
 
         // Defer client creation until first use - allows app to start without API key
         // and provides a clear error message when analysis is attempted
-        if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
+        if (!string.IsNullOrWhiteSpace(_settings.Anthropic.ApiKey))
         {
-            _client = new AnthropicClient(_settings.ApiKey);
+            _client = new AnthropicClient(_settings.Anthropic.ApiKey);
         }
     }
 
@@ -108,7 +110,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
     {
         if (_client is null)
         {
-            throw new InvalidOperationException("Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+            throw new InvalidOperationException("Anthropic API key is not configured. Set AiProviders:Anthropic:ApiKey in appsettings or environment variables.");
         }
 
         // Use string concatenation to avoid format string vulnerabilities
@@ -116,12 +118,12 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 
         var parameters = new MessageParameters
         {
-            Model = _settings.Model,
+            Model = _model,
             MaxTokens = _settings.MaxTokens,
             Messages = [new Message(RoleType.User, prompt)]
         };
 
-        _logger.LogInformation("Starting meeting analysis with model {Model}", _settings.Model);
+        _logger.LogInformation("Starting meeting analysis with model {Model}", _model);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
@@ -132,7 +134,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 
         if (string.IsNullOrWhiteSpace(content))
         {
-            throw new InvalidOperationException("Claude returned an empty response");
+            throw new InvalidOperationException("Anthropic returned an empty response");
         }
 
         _logger.LogInformation("Received analysis response, parsing JSON");
@@ -140,7 +142,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         return ParseAnalysisResponse(content);
     }
 
-    private const string TranscriptImportPromptTemplate = """
+    internal const string TranscriptImportPromptTemplate = """
         Parse this meeting transcript and extract structured meeting data as JSON.
 
         User's timezone: <<TIMEZONE>>
@@ -173,7 +175,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         Transcript:
         """;
 
-    private const string ScreenshotExtractionPromptTemplate = """
+    internal const string ScreenshotExtractionPromptTemplate = """
         Extract all calendar events/meetings visible in this screenshot. The image is from a calendar application (Google Calendar, Outlook, Apple Calendar, or similar).
 
         Current date in the user's timezone: <<BASE_DATE>>
@@ -212,19 +214,17 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         if (_client is null)
         {
             throw new InvalidOperationException(
-                "Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+                "Anthropic API key is not configured. Set AiProviders:Anthropic:ApiKey in appsettings or environment variables.");
         }
 
-        var tz = GetTimeZoneInfo(timeZone);
-        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var resolved = TimeZoneHelper.ResolveTimeZone(timeZone, _logger);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, resolved.TimeZoneInfo);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        // Use the original IANA ID for the prompt (better AI recognition) but fall back to resolved ID
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = ScreenshotExtractionPromptTemplate
             .Replace("<<BASE_DATE>>", baseDate)
-            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<TIMEZONE>>", resolved.DisplayName)
             .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
         var imageContent = new ImageContent
@@ -238,7 +238,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 
         var parameters = new MessageParameters
         {
-            Model = _settings.Model,
+            Model = _model,
             MaxTokens = _settings.MaxTokens,
             Messages =
             [
@@ -254,7 +254,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
             ],
         };
 
-        _logger.LogInformation("Extracting meetings from calendar screenshot with model {Model}", _settings.Model);
+        _logger.LogInformation("Extracting meetings from calendar screenshot with model {Model}", _model);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
@@ -264,7 +264,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 
         if (string.IsNullOrWhiteSpace(content))
         {
-            throw new InvalidOperationException("Claude returned an empty response for screenshot extraction");
+            throw new InvalidOperationException("Anthropic returned an empty response for screenshot extraction");
         }
 
         return ParseScreenshotExtractionResponse(content);
@@ -275,18 +275,16 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         if (_client is null)
         {
             throw new InvalidOperationException(
-                "Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+                "Anthropic API key is not configured. Set AiProviders:Anthropic:ApiKey in appsettings or environment variables.");
         }
 
-        var tz = GetTimeZoneInfo(timeZone);
-        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var resolved = TimeZoneHelper.ResolveTimeZone(timeZone, _logger);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, resolved.TimeZoneInfo);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        // Use the original IANA ID for the prompt (better AI recognition) but fall back to resolved ID
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) && TryFindTimeZone(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = TranscriptImportPromptTemplate
-            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<TIMEZONE>>", resolved.DisplayName)
             .Replace("<<BASE_DATE>>", baseDate)
             .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
@@ -294,12 +292,12 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 
         var parameters = new MessageParameters
         {
-            Model = _settings.Model,
+            Model = _model,
             MaxTokens = _settings.MaxTokens,
             Messages = [new Message(RoleType.User, prompt)]
         };
 
-        _logger.LogInformation("Parsing transcript for import with model {Model}", _settings.Model);
+        _logger.LogInformation("Parsing transcript for import with model {Model}", _model);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
@@ -309,18 +307,18 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
 
         if (string.IsNullOrWhiteSpace(content))
         {
-            throw new InvalidOperationException("Claude returned an empty response for transcript import parsing");
+            throw new InvalidOperationException("Anthropic returned an empty response for transcript import parsing");
         }
 
         _logger.LogInformation("Received transcript import parse response, parsing JSON");
 
         var result = ParseTranscriptImportResponse(content);
         _logger.LogDebug("Transcript import parse result — meetingDate: {MeetingDate}, timezone sent: {TimeZone}",
-            result.MeetingDate, tzName);
+            result.MeetingDate, resolved.DisplayName);
         return result;
     }
 
-    private static TranscriptImportResult ParseTranscriptImportResponse(string jsonResponse)
+    internal static TranscriptImportResult ParseTranscriptImportResponse(string jsonResponse)
     {
         var cleanJson = CleanJsonResponse(jsonResponse);
 
@@ -364,7 +362,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
             result.IsAdhoc);
     }
 
-    private static ScreenshotExtractionResult ParseScreenshotExtractionResponse(string jsonResponse)
+    internal static ScreenshotExtractionResult ParseScreenshotExtractionResponse(string jsonResponse)
     {
         var cleanJson = CleanJsonResponse(jsonResponse);
 
@@ -384,7 +382,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         return new ScreenshotExtractionResult(events);
     }
 
-    private static string CleanJsonResponse(string jsonResponse)
+    internal static string CleanJsonResponse(string jsonResponse)
     {
         var cleanJson = jsonResponse.Trim();
         var hadCodeBlock = false;
@@ -403,7 +401,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         return cleanJson.Trim();
     }
 
-    private static MeetingAnalysisResult ParseAnalysisResponse(string jsonResponse)
+    internal static MeetingAnalysisResult ParseAnalysisResponse(string jsonResponse)
     {
         var cleanJson = CleanJsonResponse(jsonResponse);
 
@@ -464,47 +462,9 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         );
     }
 
-    private TimeZoneInfo GetTimeZoneInfo(string? ianaTimeZone)
-    {
-        if (string.IsNullOrWhiteSpace(ianaTimeZone))
-            return TimeZoneInfo.Local;
-
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            _logger.LogWarning("Timezone '{TimeZone}' not found, falling back to local timezone", ianaTimeZone);
-            return TimeZoneInfo.Local;
-        }
-        catch (InvalidTimeZoneException)
-        {
-            _logger.LogWarning("Timezone '{TimeZone}' is invalid, falling back to local timezone", ianaTimeZone);
-            return TimeZoneInfo.Local;
-        }
-    }
-
-    private static bool TryFindTimeZone(string timeZoneId)
-    {
-        try
-        {
-            TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            return true;
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            return false;
-        }
-        catch (InvalidTimeZoneException)
-        {
-            return false;
-        }
-    }
-
     #region JSON Response Classes
 
-    private sealed class TranscriptImportJsonResponse
+    internal sealed class TranscriptImportJsonResponse
     {
         public string? Title { get; set; }
         public string? MeetingDate { get; set; }
@@ -519,12 +479,12 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         public bool IsAdhoc { get; set; }
     }
 
-    private sealed class ScreenshotExtractionJsonResponse
+    internal sealed class ScreenshotExtractionJsonResponse
     {
         public List<CalendarEventJson>? Events { get; set; }
     }
 
-    private sealed class CalendarEventJson
+    internal sealed class CalendarEventJson
     {
         public string? Title { get; set; }
         public DateTimeOffset StartTime { get; set; }
@@ -533,7 +493,7 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         public string? Location { get; set; }
     }
 
-    private sealed class AnalysisJsonResponse
+    internal sealed class AnalysisJsonResponse
     {
         public string? Summary { get; set; }
         public List<string>? KeyPoints { get; set; }
@@ -545,13 +505,13 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         public List<string>? SuggestedTags { get; set; }
     }
 
-    private sealed class ActionItemJson
+    internal sealed class ActionItemJson
     {
         public string? Description { get; set; }
         public string? Assignee { get; set; }
     }
 
-    private sealed class BehavioralAnalysisJson
+    internal sealed class BehavioralAnalysisJson
     {
         public SpeakingDynamicsJson? SpeakingDynamics { get; set; }
         public SentimentToneJson? SentimentTone { get; set; }
@@ -559,42 +519,42 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         public List<RedFlagJson>? RedFlags { get; set; }
     }
 
-    private sealed class SpeakingDynamicsJson
+    internal sealed class SpeakingDynamicsJson
     {
         public List<ParticipantTalkTimeJson>? TalkTimeByParticipant { get; set; }
         public List<InterruptionPatternJson>? InterruptionPatterns { get; set; }
         public Dictionary<string, double>? QuestionVsStatementRatio { get; set; }
     }
 
-    private sealed class ParticipantTalkTimeJson
+    internal sealed class ParticipantTalkTimeJson
     {
         public string? Participant { get; set; }
         public double Percentage { get; set; }
         public string? Duration { get; set; }
     }
 
-    private sealed class InterruptionPatternJson
+    internal sealed class InterruptionPatternJson
     {
         public string? Interrupter { get; set; }
         public string? Interrupted { get; set; }
         public int Count { get; set; }
     }
 
-    private sealed class SentimentToneJson
+    internal sealed class SentimentToneJson
     {
         public List<ParticipantSentimentJson>? ParticipantSentiments { get; set; }
         public List<ToneShiftJson>? ToneShifts { get; set; }
         public List<string>? EmotionalIndicators { get; set; }
     }
 
-    private sealed class ParticipantSentimentJson
+    internal sealed class ParticipantSentimentJson
     {
         public string? Participant { get; set; }
         public string? Sentiment { get; set; }
         public double Score { get; set; }
     }
 
-    private sealed class ToneShiftJson
+    internal sealed class ToneShiftJson
     {
         public string? Timestamp { get; set; }
         public string? Description { get; set; }
@@ -602,28 +562,28 @@ public sealed class ClaudeMeetingAnalyzer : IMeetingAnalyzer
         public string? To { get; set; }
     }
 
-    private sealed class CommunicationPatternsJson
+    internal sealed class CommunicationPatternsJson
     {
         public double OverallClarity { get; set; }
         public List<FollowUpPatternJson>? FollowUpPatterns { get; set; }
         public List<ParticipantEngagementJson>? EngagementLevels { get; set; }
     }
 
-    private sealed class FollowUpPatternJson
+    internal sealed class FollowUpPatternJson
     {
         public string? Topic { get; set; }
         public bool WasFollowedUp { get; set; }
         public string? AssignedTo { get; set; }
     }
 
-    private sealed class ParticipantEngagementJson
+    internal sealed class ParticipantEngagementJson
     {
         public string? Participant { get; set; }
         public string? Level { get; set; }
         public List<string>? Indicators { get; set; }
     }
 
-    private sealed class RedFlagJson
+    internal sealed class RedFlagJson
     {
         public string? Type { get; set; }
         public string? Participant { get; set; }
