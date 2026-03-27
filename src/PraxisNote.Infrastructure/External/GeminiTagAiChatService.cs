@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PraxisNote.Application.Features.Tags.Services;
+using static PraxisNote.Infrastructure.External.GeminiJsonConfiguration;
 
 namespace PraxisNote.Infrastructure.External;
 
@@ -27,33 +28,33 @@ public sealed class GeminiTagAiChatService(
             .Replace("{0}", context.TagName)
             .Replace("{1}", contextBlock);
 
-        var contents = new List<GeminiMeetingAnalyzer.GeminiContent>();
+        var contents = new List<GeminiContent>();
 
         // Add conversation history
         foreach (var msg in history)
         {
-            contents.Add(new GeminiMeetingAnalyzer.GeminiContent
+            contents.Add(new GeminiContent
             {
                 Role = msg.Role == "user" ? "user" : "model",
-                Parts = [new GeminiMeetingAnalyzer.GeminiPart { Text = msg.Content }]
+                Parts = [new GeminiPart { Text = msg.Content }]
             });
         }
 
         // Add the current user message
-        contents.Add(new GeminiMeetingAnalyzer.GeminiContent
+        contents.Add(new GeminiContent
         {
             Role = "user",
-            Parts = [new GeminiMeetingAnalyzer.GeminiPart { Text = userMessage }]
+            Parts = [new GeminiPart { Text = userMessage }]
         });
 
         var requestBody = new GeminiStreamRequest
         {
-            SystemInstruction = new GeminiMeetingAnalyzer.GeminiContent
+            SystemInstruction = new GeminiContent
             {
-                Parts = [new GeminiMeetingAnalyzer.GeminiPart { Text = systemPrompt }]
+                Parts = [new GeminiPart { Text = systemPrompt }]
             },
             Contents = contents,
-            GenerationConfig = new GeminiMeetingAnalyzer.GeminiGenerationConfig { MaxOutputTokens = maxTokens }
+            GenerationConfig = new GeminiGenerationConfig { MaxOutputTokens = maxTokens }
         };
 
         var url = $"{BaseUrl}/{model}:streamGenerateContent?alt=sse&key={apiKey}";
@@ -65,7 +66,7 @@ public sealed class GeminiTagAiChatService(
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url)
         {
-            Content = JsonContent.Create(requestBody, options: GeminiJsonOptions)
+            Content = JsonContent.Create(requestBody, options: Options)
         };
 
         using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
@@ -84,7 +85,7 @@ public sealed class GeminiTagAiChatService(
             if (string.IsNullOrWhiteSpace(json))
                 continue;
 
-            var chunk = JsonSerializer.Deserialize<GeminiMeetingAnalyzer.GeminiResponse>(json, GeminiJsonOptions);
+            var chunk = JsonSerializer.Deserialize<GeminiResponse>(json, Options);
             var text = chunk?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
 
             if (!string.IsNullOrEmpty(text))
@@ -105,13 +106,13 @@ public sealed class GeminiTagAiChatService(
 
         var url = $"{BaseUrl}/{model}:generateContent?key={apiKey}";
 
-        var requestBody = new GeminiMeetingAnalyzer.GeminiRequest
+        var requestBody = new GeminiRequest
         {
-            Contents = [new GeminiMeetingAnalyzer.GeminiContent
+            Contents = [new GeminiContent
             {
-                Parts = [new GeminiMeetingAnalyzer.GeminiPart { Text = prompt }]
+                Parts = [new GeminiPart { Text = prompt }]
             }],
-            GenerationConfig = new GeminiMeetingAnalyzer.GeminiGenerationConfig { MaxOutputTokens = 512 }
+            GenerationConfig = new GeminiGenerationConfig { MaxOutputTokens = 512 }
         };
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -119,10 +120,10 @@ public sealed class GeminiTagAiChatService(
 
         logger.LogDebug("Generating starter prompts with Gemini model {Model}", model);
 
-        var response = await httpClient.PostAsJsonAsync(url, requestBody, GeminiJsonOptions, cts.Token);
+        var response = await httpClient.PostAsJsonAsync(url, requestBody, Options, cts.Token);
         response.EnsureSuccessStatusCode();
 
-        var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiMeetingAnalyzer.GeminiResponse>(GeminiJsonOptions, cts.Token);
+        var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token);
         var content = geminiResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
 
         if (string.IsNullOrWhiteSpace(content))
@@ -145,18 +146,5 @@ public sealed class GeminiTagAiChatService(
         }
 
         return AnthropicTagAiChatService.DefaultStarters(context.TagName);
-    }
-
-    private static readonly JsonSerializerOptions GeminiJsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        PropertyNameCaseInsensitive = true
-    };
-
-    internal sealed class GeminiStreamRequest
-    {
-        public GeminiMeetingAnalyzer.GeminiContent? SystemInstruction { get; set; }
-        public List<GeminiMeetingAnalyzer.GeminiContent> Contents { get; set; } = [];
-        public GeminiMeetingAnalyzer.GeminiGenerationConfig? GenerationConfig { get; set; }
     }
 }

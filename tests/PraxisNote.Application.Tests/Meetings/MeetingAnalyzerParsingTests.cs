@@ -333,16 +333,16 @@ public class MeetingAnalyzerParsingTests
     [Fact]
     public void GeminiRequest_SerializesCorrectly()
     {
-        var request = new GeminiMeetingAnalyzer.GeminiRequest
+        var request = new GeminiJsonConfiguration.GeminiRequest
         {
             Contents =
             [
-                new GeminiMeetingAnalyzer.GeminiContent
+                new GeminiJsonConfiguration.GeminiContent
                 {
-                    Parts = [new GeminiMeetingAnalyzer.GeminiPart { Text = "Analyze this" }]
+                    Parts = [new GeminiJsonConfiguration.GeminiPart { Text = "Analyze this" }]
                 }
             ],
-            GenerationConfig = new GeminiMeetingAnalyzer.GeminiGenerationConfig { MaxOutputTokens = 4096 }
+            GenerationConfig = new GeminiJsonConfiguration.GeminiGenerationConfig { MaxOutputTokens = 4096 }
         };
 
         var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
@@ -375,7 +375,7 @@ public class MeetingAnalyzerParsingTests
             PropertyNameCaseInsensitive = true
         };
 
-        var response = JsonSerializer.Deserialize<GeminiMeetingAnalyzer.GeminiResponse>(json, options);
+        var response = JsonSerializer.Deserialize<GeminiJsonConfiguration.GeminiResponse>(json, options);
 
         Assert.NotNull(response?.Candidates);
         Assert.Single(response.Candidates);
@@ -386,23 +386,23 @@ public class MeetingAnalyzerParsingTests
     [Fact]
     public void GeminiRequest_WithInlineImage_SerializesCorrectly()
     {
-        var request = new GeminiMeetingAnalyzer.GeminiRequest
+        var request = new GeminiJsonConfiguration.GeminiRequest
         {
             Contents =
             [
-                new GeminiMeetingAnalyzer.GeminiContent
+                new GeminiJsonConfiguration.GeminiContent
                 {
                     Parts =
                     [
-                        new GeminiMeetingAnalyzer.GeminiPart
+                        new GeminiJsonConfiguration.GeminiPart
                         {
-                            InlineData = new GeminiMeetingAnalyzer.GeminiInlineData
+                            InlineData = new GeminiJsonConfiguration.GeminiInlineData
                             {
                                 MimeType = "image/png",
                                 Data = "base64data"
                             }
                         },
-                        new GeminiMeetingAnalyzer.GeminiPart { Text = "Extract events" }
+                        new GeminiJsonConfiguration.GeminiPart { Text = "Extract events" }
                     ]
                 }
             ]
@@ -454,6 +454,15 @@ public class MeetingAnalyzerParsingTests
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             factory.CreateMeetingAnalyzer("key", (Domain.Aggregates.UserAiKeys.AiProvider)99, "model"));
+    }
+
+    [Fact]
+    public void AiProviderFactory_InvalidProvider_TagAiChatService_ThrowsArgumentOutOfRange()
+    {
+        var factory = CreateFactory();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            factory.CreateTagAiChatService("key", (Domain.Aggregates.UserAiKeys.AiProvider)99, "model"));
     }
 
     private static AiProviderFactory CreateFactory()

@@ -217,16 +217,14 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
                 "Anthropic API key is not configured. Set AiProviders:Anthropic:ApiKey in appsettings or environment variables.");
         }
 
-        var tz = GetTimeZoneInfo(timeZone);
-        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var resolved = TimeZoneHelper.ResolveTimeZone(timeZone, _logger);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, resolved.TimeZoneInfo);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        // Use the original IANA ID for the prompt (better AI recognition) but fall back to resolved ID
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = ScreenshotExtractionPromptTemplate
             .Replace("<<BASE_DATE>>", baseDate)
-            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<TIMEZONE>>", resolved.DisplayName)
             .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
         var imageContent = new ImageContent
@@ -280,15 +278,13 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
                 "Anthropic API key is not configured. Set AiProviders:Anthropic:ApiKey in appsettings or environment variables.");
         }
 
-        var tz = GetTimeZoneInfo(timeZone);
-        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var resolved = TimeZoneHelper.ResolveTimeZone(timeZone, _logger);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, resolved.TimeZoneInfo);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        // Use the original IANA ID for the prompt (better AI recognition) but fall back to resolved ID
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) && TryFindTimeZone(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = TranscriptImportPromptTemplate
-            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<TIMEZONE>>", resolved.DisplayName)
             .Replace("<<BASE_DATE>>", baseDate)
             .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
@@ -318,7 +314,7 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
 
         var result = ParseTranscriptImportResponse(content);
         _logger.LogDebug("Transcript import parse result — meetingDate: {MeetingDate}, timezone sent: {TimeZone}",
-            result.MeetingDate, tzName);
+            result.MeetingDate, resolved.DisplayName);
         return result;
     }
 
@@ -464,44 +460,6 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
                 .Select(r => new RedFlag(r.Type!, r.Participant ?? "Unknown", r.Description ?? "", r.Context ?? "", r.Severity!))
                 .ToList() ?? []
         );
-    }
-
-    private TimeZoneInfo GetTimeZoneInfo(string? ianaTimeZone)
-    {
-        if (string.IsNullOrWhiteSpace(ianaTimeZone))
-            return TimeZoneInfo.Local;
-
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            _logger.LogWarning("Timezone '{TimeZone}' not found, falling back to local timezone", ianaTimeZone);
-            return TimeZoneInfo.Local;
-        }
-        catch (InvalidTimeZoneException)
-        {
-            _logger.LogWarning("Timezone '{TimeZone}' is invalid, falling back to local timezone", ianaTimeZone);
-            return TimeZoneInfo.Local;
-        }
-    }
-
-    private static bool TryFindTimeZone(string timeZoneId)
-    {
-        try
-        {
-            TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            return true;
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            return false;
-        }
-        catch (InvalidTimeZoneException)
-        {
-            return false;
-        }
     }
 
     #region JSON Response Classes

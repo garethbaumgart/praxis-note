@@ -24,7 +24,7 @@ public sealed class AiProviderFactory(
                 loggerFactory.CreateLogger<AnthropicMeetingAnalyzer>()),
 
             AiProvider.Gemini => new GeminiMeetingAnalyzer(
-                httpClientFactory.CreateClient($"Gemini-{Guid.NewGuid()}"),
+                httpClientFactory.CreateClient("Gemini"),
                 loggerFactory.CreateLogger<GeminiMeetingAnalyzer>(),
                 apiKey,
                 model,
@@ -52,7 +52,7 @@ public sealed class AiProviderFactory(
                 loggerFactory.CreateLogger<AnthropicTagAiChatService>()),
 
             AiProvider.Gemini => new GeminiTagAiChatService(
-                httpClientFactory.CreateClient($"Gemini-{Guid.NewGuid()}"),
+                httpClientFactory.CreateClient("Gemini"),
                 loggerFactory.CreateLogger<GeminiTagAiChatService>(),
                 apiKey,
                 model,

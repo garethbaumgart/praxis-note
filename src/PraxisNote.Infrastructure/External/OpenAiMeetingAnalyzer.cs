@@ -34,15 +34,14 @@ public sealed class OpenAiMeetingAnalyzer(
     public async Task<ScreenshotExtractionResult> ExtractFromScreenshotAsync(
         string base64Image, string mediaType, string? timeZone = null, CancellationToken cancellationToken = default)
     {
-        var tz = GetTimeZoneInfo(timeZone);
-        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var resolved = TimeZoneHelper.ResolveTimeZone(timeZone, logger);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, resolved.TimeZoneInfo);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = AnthropicMeetingAnalyzer.ScreenshotExtractionPromptTemplate
             .Replace("<<BASE_DATE>>", baseDate)
-            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<TIMEZONE>>", resolved.DisplayName)
             .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
         logger.LogInformation("Extracting meetings from calendar screenshot with OpenAI model {Model}", model);
@@ -65,14 +64,13 @@ public sealed class OpenAiMeetingAnalyzer(
     public async Task<TranscriptImportResult> ParseTranscriptForImportAsync(
         string transcript, string? timeZone = null, CancellationToken cancellationToken = default)
     {
-        var tz = GetTimeZoneInfo(timeZone);
-        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var resolved = TimeZoneHelper.ResolveTimeZone(timeZone, logger);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, resolved.TimeZoneInfo);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = AnthropicMeetingAnalyzer.TranscriptImportPromptTemplate
-            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<TIMEZONE>>", resolved.DisplayName)
             .Replace("<<BASE_DATE>>", baseDate)
             .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
@@ -87,7 +85,7 @@ public sealed class OpenAiMeetingAnalyzer(
 
         var result = AnthropicMeetingAnalyzer.ParseTranscriptImportResponse(responseText);
         logger.LogDebug("Transcript import parse result — meetingDate: {MeetingDate}, timezone sent: {TimeZone}",
-            result.MeetingDate, tzName);
+            result.MeetingDate, resolved.DisplayName);
         return result;
     }
 
@@ -106,10 +104,10 @@ public sealed class OpenAiMeetingAnalyzer(
 
         var completion = await _chatClient.CompleteChatAsync(messages, options, cts.Token);
 
-        var content = completion.Value.Content
-            .Where(p => p.Kind == ChatMessageContentPartKind.Text)
-            .Select(p => p.Text)
-            .FirstOrDefault();
+        var content = string.Concat(
+            completion.Value.Content
+                .Where(p => p.Kind == ChatMessageContentPartKind.Text)
+                .Select(p => p.Text));
 
         if (string.IsNullOrWhiteSpace(content))
         {
@@ -117,21 +115,5 @@ public sealed class OpenAiMeetingAnalyzer(
         }
 
         return content;
-    }
-
-    private TimeZoneInfo GetTimeZoneInfo(string? ianaTimeZone)
-    {
-        if (string.IsNullOrWhiteSpace(ianaTimeZone))
-            return TimeZoneInfo.Local;
-
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
-        }
-        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
-        {
-            logger.LogWarning("Timezone '{TimeZone}' not found, falling back to local timezone", ianaTimeZone);
-            return TimeZoneInfo.Local;
-        }
     }
 }

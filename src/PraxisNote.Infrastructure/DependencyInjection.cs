@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Calendar;
 using PraxisNote.Application.Features.Calendar.Services;
@@ -77,10 +78,26 @@ public static class DependencyInjection
         services.Configure<AiProviderSettings>(configuration.GetSection(AiProviderSettings.SectionName));
         services.AddScoped<IAiProviderFactory, AiProviderFactory>();
         services.AddHttpClient();
-        // Default scoped registrations use Anthropic config — replaced by per-user resolution in #681
-        services.AddScoped<IMeetingAnalyzer, AnthropicMeetingAnalyzer>();
+        // Default registrations resolve via factory using Anthropic config — replaced by per-user resolution in #681
+        services.AddScoped<IMeetingAnalyzer>(sp =>
+        {
+            var factory = sp.GetRequiredService<IAiProviderFactory>();
+            var settings = sp.GetRequiredService<IOptions<AiProviderSettings>>().Value;
+            return factory.CreateMeetingAnalyzer(
+                settings.Anthropic.ApiKey ?? "",
+                Domain.Aggregates.UserAiKeys.AiProvider.Anthropic,
+                settings.Anthropic.DefaultModel);
+        });
         services.AddScoped<ITranscriptExtractor, TranscriptExtractor>();
-        services.AddScoped<ITagAiChatService, AnthropicTagAiChatService>();
+        services.AddScoped<ITagAiChatService>(sp =>
+        {
+            var factory = sp.GetRequiredService<IAiProviderFactory>();
+            var settings = sp.GetRequiredService<IOptions<AiProviderSettings>>().Value;
+            return factory.CreateTagAiChatService(
+                settings.Anthropic.ApiKey ?? "",
+                Domain.Aggregates.UserAiKeys.AiProvider.Anthropic,
+                settings.Anthropic.DefaultModel);
+        });
         services.Configure<DeepgramSettings>(configuration.GetSection(DeepgramSettings.SectionName));
         services.Configure<JiraSettings>(configuration.GetSection(JiraSettings.SectionName));
         services.AddScoped<IJiraService, JiraService>();

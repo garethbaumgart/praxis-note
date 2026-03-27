@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using static PraxisNote.Infrastructure.External.GeminiJsonConfiguration;
 
 namespace PraxisNote.Infrastructure.External;
 
@@ -32,15 +32,14 @@ public sealed class GeminiMeetingAnalyzer(
     public async Task<ScreenshotExtractionResult> ExtractFromScreenshotAsync(
         string base64Image, string mediaType, string? timeZone = null, CancellationToken cancellationToken = default)
     {
-        var tz = GetTimeZoneInfo(timeZone);
-        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var resolved = TimeZoneHelper.ResolveTimeZone(timeZone, logger);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, resolved.TimeZoneInfo);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = AnthropicMeetingAnalyzer.ScreenshotExtractionPromptTemplate
             .Replace("<<BASE_DATE>>", baseDate)
-            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<TIMEZONE>>", resolved.DisplayName)
             .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
         logger.LogInformation("Extracting meetings from calendar screenshot with Gemini model {Model}", model);
@@ -59,14 +58,13 @@ public sealed class GeminiMeetingAnalyzer(
     public async Task<TranscriptImportResult> ParseTranscriptForImportAsync(
         string transcript, string? timeZone = null, CancellationToken cancellationToken = default)
     {
-        var tz = GetTimeZoneInfo(timeZone);
-        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+        var resolved = TimeZoneHelper.ResolveTimeZone(timeZone, logger);
+        var userNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, resolved.TimeZoneInfo);
         var baseDate = userNow.ToString("yyyy-MM-dd");
-        var tzName = !string.IsNullOrWhiteSpace(timeZone) ? timeZone : tz.Id;
         var offsetExample = userNow.ToString("zzz");
 
         var promptText = AnthropicMeetingAnalyzer.TranscriptImportPromptTemplate
-            .Replace("<<TIMEZONE>>", tzName)
+            .Replace("<<TIMEZONE>>", resolved.DisplayName)
             .Replace("<<BASE_DATE>>", baseDate)
             .Replace("<<OFFSET_EXAMPLE>>", offsetExample);
 
@@ -80,7 +78,7 @@ public sealed class GeminiMeetingAnalyzer(
 
         var result = AnthropicMeetingAnalyzer.ParseTranscriptImportResponse(responseText);
         logger.LogDebug("Transcript import parse result — meetingDate: {MeetingDate}, timezone sent: {TimeZone}",
-            result.MeetingDate, tzName);
+            result.MeetingDate, resolved.DisplayName);
         return result;
     }
 
@@ -97,10 +95,10 @@ public sealed class GeminiMeetingAnalyzer(
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
-        var response = await httpClient.PostAsJsonAsync(url, requestBody, GeminiJsonOptions, cts.Token);
+        var response = await httpClient.PostAsJsonAsync(url, requestBody, Options, cts.Token);
         response.EnsureSuccessStatusCode();
 
-        var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(GeminiJsonOptions, cts.Token)
+        var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token)
             ?? throw new InvalidOperationException("Gemini returned an empty response");
 
         var text = geminiResponse.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
@@ -112,69 +110,4 @@ public sealed class GeminiMeetingAnalyzer(
 
         return text;
     }
-
-    private TimeZoneInfo GetTimeZoneInfo(string? ianaTimeZone)
-    {
-        if (string.IsNullOrWhiteSpace(ianaTimeZone))
-            return TimeZoneInfo.Local;
-
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
-        }
-        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
-        {
-            logger.LogWarning("Timezone '{TimeZone}' not found, falling back to local timezone", ianaTimeZone);
-            return TimeZoneInfo.Local;
-        }
-    }
-
-    #region Gemini JSON Models
-
-    private static readonly JsonSerializerOptions GeminiJsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        PropertyNameCaseInsensitive = true
-    };
-
-    internal sealed class GeminiRequest
-    {
-        public List<GeminiContent> Contents { get; set; } = [];
-        public GeminiGenerationConfig? GenerationConfig { get; set; }
-    }
-
-    internal sealed class GeminiContent
-    {
-        public string? Role { get; set; }
-        public List<GeminiPart> Parts { get; set; } = [];
-    }
-
-    internal sealed class GeminiPart
-    {
-        public string? Text { get; set; }
-        public GeminiInlineData? InlineData { get; set; }
-    }
-
-    internal sealed class GeminiInlineData
-    {
-        public string MimeType { get; set; } = "";
-        public string Data { get; set; } = "";
-    }
-
-    internal sealed class GeminiGenerationConfig
-    {
-        public int MaxOutputTokens { get; set; }
-    }
-
-    internal sealed class GeminiResponse
-    {
-        public List<GeminiCandidate>? Candidates { get; set; }
-    }
-
-    internal sealed class GeminiCandidate
-    {
-        public GeminiContent? Content { get; set; }
-    }
-
-    #endregion
 }
