@@ -14,6 +14,7 @@ using PraxisNote.Domain.Aggregates.Profiles;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
 using PraxisNote.Domain.Aggregates.ApiKeys;
+using PraxisNote.Domain.Aggregates.UserAiKeys;
 using PraxisNote.Domain.Aggregates.Users;
 
 namespace PraxisNote.Infrastructure.Persistence;
@@ -36,6 +37,7 @@ public sealed class PraxisNoteDbContext : DbContext, IUnitOfWork, IDataProtectio
     public DbSet<LinkedIdentity> LinkedIdentities => Set<LinkedIdentity>();
     public DbSet<AccountLinkCode> AccountLinkCodes => Set<AccountLinkCode>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+    public DbSet<UserAiKey> UserAiKeys => Set<UserAiKey>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public PraxisNoteDbContext(DbContextOptions<PraxisNoteDbContext> options)

@@ -11,6 +11,7 @@ using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
 using PraxisNote.Application.Features.Tags.Services;
 using PraxisNote.Application.Features.Transcription;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.ApiKeys;
 using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.BlindSpotNudges;
@@ -24,6 +25,7 @@ using PraxisNote.Domain.Aggregates.Notifications;
 using PraxisNote.Domain.Aggregates.Profiles;
 using PraxisNote.Domain.Aggregates.Tags;
 using PraxisNote.Domain.Aggregates.Tasks;
+using PraxisNote.Domain.Aggregates.UserAiKeys;
 using PraxisNote.Domain.Aggregates.Users;
 using PraxisNote.Infrastructure.External;
 using PraxisNote.Infrastructure.Persistence;
@@ -66,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<IBlindSpotNudgeRepository, BlindSpotNudgeRepository>();
         services.AddScoped<ILinkedIdentityRepository, LinkedIdentityRepository>();
         services.AddScoped<IAccountLinkCodeRepository, AccountLinkCodeRepository>();
+        services.AddScoped<IUserAiKeyRepository, UserAiKeyRepository>();
 
         // External services
         services.Configure<GoogleCalendarSettings>(configuration.GetSection(GoogleCalendarSettings.SectionName));
@@ -78,6 +81,7 @@ public static class DependencyInjection
         services.Configure<JiraSettings>(configuration.GetSection(JiraSettings.SectionName));
         services.AddScoped<IJiraService, JiraService>();
         services.AddScoped<IDriveService, GoogleDriveService>();
+        services.AddScoped<IAiKeyEncryptionService, DataProtectionAiKeyEncryptionService>();
 
         return services;
     }

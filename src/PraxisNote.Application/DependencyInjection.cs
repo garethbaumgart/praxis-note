@@ -15,6 +15,7 @@ using PraxisNote.Application.Features.Insights;
 using PraxisNote.Application.Features.ActionItems;
 using PraxisNote.Application.Features.AccountLinking;
 using PraxisNote.Application.Features.Profiles;
+using PraxisNote.Application.Features.UserAiKeys;
 using PraxisNote.Application.Features.Users;
 
 namespace PraxisNote.Application;
@@ -27,6 +28,11 @@ public static class DependencyInjection
         services.AddScoped<CreateApiKey>();
         services.AddScoped<RevokeApiKey>();
         services.AddScoped<GetUserApiKeys>();
+
+        // User AI Key use cases
+        services.AddScoped<GetUserAiKeys>();
+        services.AddScoped<UpsertUserAiKey>();
+        services.AddScoped<DeleteUserAiKey>();
 
         // Task use cases
         services.AddScoped<CreateTask>();

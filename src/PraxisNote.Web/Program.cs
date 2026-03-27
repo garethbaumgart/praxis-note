@@ -345,6 +345,7 @@ app.MapInsightEndpoints();
 app.MapActionItemEndpoints();
 app.MapTranscriptionEndpoints();
 app.MapApiKeyEndpoints();
+app.MapUserAiKeyEndpoints();
 
 // MCP endpoint for OpenClaw and other MCP clients
 app.MapMcp("/mcp").RequireAuthorization().RequireRateLimiting("mcp");
