@@ -245,6 +245,46 @@ public class AiKeyResolverTests
         Assert.Equal("gemini-1.5-flash", result.Model);
     }
 
+    [Fact]
+    public async Task ResolveAsync_DecryptThrowsGenericException_FallsBackToNextProvider()
+    {
+        var anthropicKey = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_corrupt", "****", "claude-4");
+        var openAiKey = UserAiKey.Create(_userId, AiProvider.OpenAI, "enc_good", "****", "gpt-4o");
+        _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns([anthropicKey, openAiKey]);
+        _encryption.Decrypt("enc_corrupt").Throws(new InvalidOperationException("unexpected decryption failure"));
+        _encryption.Decrypt("enc_good").Returns("sk-openai-real");
+
+        var sut = CreateSut();
+        var result = await sut.ResolveAsync(_userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(AiProvider.OpenAI, result.Provider);
+        Assert.Equal("sk-openai-real", result.ApiKey);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_AllUserKeysFailDecrypt_FallsBackToAppDefault()
+    {
+        var anthropicKey = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_bad1", "****", "claude-4");
+        var openAiKey = UserAiKey.Create(_userId, AiProvider.OpenAI, "enc_bad2", "****", "gpt-4o");
+        _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns([anthropicKey, openAiKey]);
+        _encryption.Decrypt("enc_bad1").Throws(new CryptographicException("rotated key"));
+        _encryption.Decrypt("enc_bad2").Throws(new InvalidOperationException("corrupt"));
+
+        var settings = new AiProviderSettings
+        {
+            Anthropic = new AnthropicProviderConfig { ApiKey = "app-fallback", DefaultModel = "claude-sonnet-4-6" }
+        };
+        var sut = CreateSut(settings);
+        var result = await sut.ResolveAsync(_userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(AiProvider.Anthropic, result.Provider);
+        Assert.Equal("app-fallback", result.ApiKey);
+    }
+
     #endregion
 
     #region No keys at all

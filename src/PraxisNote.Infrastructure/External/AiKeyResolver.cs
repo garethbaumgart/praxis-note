@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PraxisNote.Application.Features.Meetings;
@@ -35,7 +34,7 @@ public sealed class AiKeyResolver(
                         logger.LogDebug("Resolved user key for provider {Provider} for user {UserId}", provider, userId);
                         return new ResolvedAiKey(provider, decrypted, model);
                     }
-                    catch (CryptographicException ex)
+                    catch (Exception ex)
                     {
                         logger.LogWarning(ex, "Failed to decrypt user key for provider {Provider} for user {UserId}, trying next provider", provider, userId);
                     }

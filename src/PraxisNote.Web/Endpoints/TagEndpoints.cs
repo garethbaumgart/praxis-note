@@ -289,8 +289,7 @@ public static class TagEndpoints
         {
             try
             {
-                var payload = JsonSerializer.Serialize(new { error = "no_ai_key", message = "No AI key is configured. Add your own API key in Settings → AI Keys, or ask your administrator to configure a default key.", settingsUrl = "/settings/ai-keys" });
-                await context.Response.WriteAsync($"event: error\ndata: {payload}\n\n", cancellationToken);
+                await context.Response.WriteAsync($"event: error\ndata: {AiKeyErrorResults.NoAiKeySsePayload()}\n\n", cancellationToken);
                 await context.Response.Body.FlushAsync(cancellationToken);
             }
             catch { /* Client likely disconnected */ }
