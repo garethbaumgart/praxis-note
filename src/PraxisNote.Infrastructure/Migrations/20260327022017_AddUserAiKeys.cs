@@ -27,6 +27,12 @@ namespace PraxisNote.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserAiKeys", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserAiKeys_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

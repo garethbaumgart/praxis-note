@@ -1000,6 +1000,15 @@ namespace PraxisNote.Infrastructure.Migrations
                     b.Navigation("DueDate");
                 });
 
+            modelBuilder.Entity("PraxisNote.Domain.Aggregates.UserAiKeys.UserAiKey", b =>
+                {
+                    b.HasOne("PraxisNote.Domain.Aggregates.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("PraxisNote.Domain.Aggregates.Users.AccountLinkCode", b =>
                 {
                     b.HasOne("PraxisNote.Domain.Aggregates.Users.User", null)

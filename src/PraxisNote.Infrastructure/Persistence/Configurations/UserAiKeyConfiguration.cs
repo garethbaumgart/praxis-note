@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PraxisNote.Domain.Aggregates.UserAiKeys;
+using PraxisNote.Domain.Aggregates.Users;
 
 namespace PraxisNote.Infrastructure.Persistence.Configurations;
 
@@ -10,6 +11,7 @@ public sealed class UserAiKeyConfiguration : IEntityTypeConfiguration<UserAiKey>
     {
         builder.HasKey(k => k.Id);
         builder.Property(k => k.UserId).IsRequired();
+        builder.HasOne<User>().WithMany().HasForeignKey(k => k.UserId).OnDelete(DeleteBehavior.Cascade);
         builder.Property(k => k.Provider)
             .HasConversion(v => v.ToString(), v => Enum.Parse<AiProvider>(v, ignoreCase: true))
             .HasMaxLength(20).IsRequired();
