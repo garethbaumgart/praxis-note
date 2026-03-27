@@ -21,7 +21,6 @@ public sealed class DataProtectionAiKeyEncryptionService : IAiKeyEncryptionServi
     /// </summary>
     public string ComputeHint(string plainTextKey)
     {
-        ArgumentNullException.ThrowIfNull(plainTextKey, nameof(plainTextKey));
         ArgumentException.ThrowIfNullOrWhiteSpace(plainTextKey, nameof(plainTextKey));
 
         if (plainTextKey.Length <= 4)

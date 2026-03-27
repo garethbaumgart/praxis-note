@@ -22,7 +22,7 @@ public sealed class UserAiKey : AggregateRoot
         Provider = provider;
         EncryptedKey = encryptedKey;
         KeyHint = keyHint;
-        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel;
+        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel.Trim();
         CreatedAt = now;
         UpdatedAt = now;
     }
@@ -45,7 +45,7 @@ public sealed class UserAiKey : AggregateRoot
 
         EncryptedKey = encryptedKey;
         KeyHint = keyHint;
-        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel;
+        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel.Trim();
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
