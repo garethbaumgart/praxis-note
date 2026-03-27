@@ -57,7 +57,7 @@ public sealed class GeminiTagAiChatService(
             GenerationConfig = new GeminiGenerationConfig { MaxOutputTokens = maxTokens }
         };
 
-        var url = $"{BaseUrl}/{model}:streamGenerateContent?alt=sse&key={apiKey}";
+        var url = $"{BaseUrl}/{model}:streamGenerateContent?alt=sse";
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
@@ -68,6 +68,7 @@ public sealed class GeminiTagAiChatService(
         {
             Content = JsonContent.Create(requestBody, options: Options)
         };
+        request.Headers.Add("x-goog-api-key", apiKey);
 
         using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
         response.EnsureSuccessStatusCode();
@@ -86,7 +87,9 @@ public sealed class GeminiTagAiChatService(
                 continue;
 
             var chunk = JsonSerializer.Deserialize<GeminiResponse>(json, Options);
-            var text = chunk?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
+            var text = string.Concat(
+                chunk?.Candidates?.FirstOrDefault()?.Content?.Parts?
+                    .Select(p => p.Text ?? string.Empty) ?? []);
 
             if (!string.IsNullOrEmpty(text))
             {
@@ -104,7 +107,7 @@ public sealed class GeminiTagAiChatService(
             .Replace("{0}", context.TagName)
             .Replace("{1}", contextBlock);
 
-        var url = $"{BaseUrl}/{model}:generateContent?key={apiKey}";
+        var url = $"{BaseUrl}/{model}:generateContent";
 
         var requestBody = new GeminiRequest
         {
@@ -120,11 +123,19 @@ public sealed class GeminiTagAiChatService(
 
         logger.LogDebug("Generating starter prompts with Gemini model {Model}", model);
 
-        var response = await httpClient.PostAsJsonAsync(url, requestBody, Options, cts.Token);
+        using var starterRequest = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = JsonContent.Create(requestBody, options: Options)
+        };
+        starterRequest.Headers.Add("x-goog-api-key", apiKey);
+
+        using var response = await httpClient.SendAsync(starterRequest, cts.Token);
         response.EnsureSuccessStatusCode();
 
         var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token);
-        var content = geminiResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
+        var content = string.Concat(
+            geminiResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?
+                .Select(p => p.Text ?? string.Empty) ?? []);
 
         if (string.IsNullOrWhiteSpace(content))
         {

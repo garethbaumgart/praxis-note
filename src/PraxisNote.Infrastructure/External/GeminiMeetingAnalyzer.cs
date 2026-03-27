@@ -84,7 +84,7 @@ public sealed class GeminiMeetingAnalyzer(
 
     private async Task<string> SendGenerateContentAsync(List<GeminiPart> parts, CancellationToken cancellationToken)
     {
-        var url = $"{BaseUrl}/{model}:generateContent?key={apiKey}";
+        var url = $"{BaseUrl}/{model}:generateContent";
 
         var requestBody = new GeminiRequest
         {
@@ -95,13 +95,21 @@ public sealed class GeminiMeetingAnalyzer(
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
-        var response = await httpClient.PostAsJsonAsync(url, requestBody, Options, cts.Token);
+        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = JsonContent.Create(requestBody, options: Options)
+        };
+        request.Headers.Add("x-goog-api-key", apiKey);
+
+        using var response = await httpClient.SendAsync(request, cts.Token);
         response.EnsureSuccessStatusCode();
 
         var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token)
             ?? throw new InvalidOperationException("Gemini returned an empty response");
 
-        var text = geminiResponse.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
+        var text = string.Concat(
+            geminiResponse.Candidates?.FirstOrDefault()?.Content?.Parts?
+                .Select(p => p.Text ?? string.Empty) ?? []);
 
         if (string.IsNullOrWhiteSpace(text))
         {
