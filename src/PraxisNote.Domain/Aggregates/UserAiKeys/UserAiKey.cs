@@ -17,13 +17,14 @@ public sealed class UserAiKey : AggregateRoot
     private UserAiKey(Guid id, Guid userId, AiProvider provider, string encryptedKey,
         string keyHint, string? preferredModel) : base(id)
     {
+        var now = DateTimeOffset.UtcNow;
         UserId = userId;
         Provider = provider;
         EncryptedKey = encryptedKey;
         KeyHint = keyHint;
         PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel;
-        CreatedAt = DateTimeOffset.UtcNow;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        CreatedAt = now;
+        UpdatedAt = now;
     }
 
     public static UserAiKey Create(Guid userId, AiProvider provider, string encryptedKey, string keyHint, string? preferredModel)
@@ -51,7 +52,7 @@ public sealed class UserAiKey : AggregateRoot
     public void UpdateModel(string? preferredModel)
     {
         ValidatePreferredModelLength(preferredModel);
-        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel;
+        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel.Trim();
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

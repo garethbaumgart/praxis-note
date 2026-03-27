@@ -116,6 +116,8 @@ public class UserAiKeyTests
         var originalCreatedAt = key.CreatedAt;
         var originalUpdatedAt = key.UpdatedAt;
 
+        Thread.Sleep(1);
+
         var newEncrypted = "new-encrypted-key";
         var newHint = "...xYz1";
         var newModel = "claude-opus-4-6";
@@ -128,7 +130,7 @@ public class UserAiKeyTests
         Assert.Equal(newHint, key.KeyHint);
         Assert.Equal(newModel, key.PreferredModel);
         Assert.Equal(originalCreatedAt, key.CreatedAt);
-        Assert.True(key.UpdatedAt >= originalUpdatedAt);
+        Assert.True(key.UpdatedAt > originalUpdatedAt);
     }
 
     [Fact]

@@ -46,7 +46,7 @@ public static class UserAiKeyEndpoints
             return Results.Unauthorized();
         }
 
-        if (!Enum.TryParse<AiProvider>(provider, ignoreCase: true, out var aiProvider))
+        if (!Enum.TryParse<AiProvider>(provider, ignoreCase: true, out var aiProvider) || !Enum.IsDefined(typeof(AiProvider), aiProvider))
         {
             var validProviders = string.Join(", ", Enum.GetNames(typeof(AiProvider)));
             return Results.BadRequest(new { error = $"Unknown provider. Valid values: {validProviders}" });
@@ -74,7 +74,7 @@ public static class UserAiKeyEndpoints
             return Results.Unauthorized();
         }
 
-        if (!Enum.TryParse<AiProvider>(provider, ignoreCase: true, out var aiProvider))
+        if (!Enum.TryParse<AiProvider>(provider, ignoreCase: true, out var aiProvider) || !Enum.IsDefined(typeof(AiProvider), aiProvider))
         {
             var validProviders = string.Join(", ", Enum.GetNames(typeof(AiProvider)));
             return Results.BadRequest(new { error = $"Unknown provider. Valid values: {validProviders}" });

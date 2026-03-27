@@ -18,16 +18,16 @@ public sealed class DataProtectionAiKeyEncryptionService : IAiKeyEncryptionServi
 
     /// <summary>
     /// Returns a masked hint showing only the last 4 characters.
-    /// Assumes <paramref name="plainTextKey"/> is at least 8 characters (API keys are).
     /// </summary>
     public string ComputeHint(string plainTextKey)
     {
+        ArgumentNullException.ThrowIfNull(plainTextKey, nameof(plainTextKey));
         ArgumentException.ThrowIfNullOrWhiteSpace(plainTextKey, nameof(plainTextKey));
 
-        if (plainTextKey.Length <= 8)
-            return "...";
+        if (plainTextKey.Length <= 4)
+            return "****";
 
         var suffix = plainTextKey[^4..];
-        return $"...{suffix}";
+        return $"****...{suffix}";
     }
 }
