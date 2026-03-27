@@ -143,9 +143,11 @@ export class NotificationPanelComponent {
   protected readonly activeTab = signal<'new' | 'history'>('new');
 
   constructor() {
-    // Load notifications when panel opens
+    // Track panel visibility and load notifications when panel opens
     effect(() => {
-      if (this.visible()) {
+      const isVisible = this.visible();
+      this.notificationService.setPanelOpen(isVisible);
+      if (isVisible) {
         this.notificationService.loadNotifications();
       }
     });

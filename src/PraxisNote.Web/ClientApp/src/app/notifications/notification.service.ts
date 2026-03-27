@@ -15,6 +15,7 @@ export class NotificationService {
   private visibilityHandler: (() => void) | null = null;
   private pollInFlight = false;
   private destroyRegistered = false;
+  private panelOpen = false;
 
   private readonly _notifications = signal<Notification[]>([]);
   private readonly _unseenCount = signal(0);
@@ -47,23 +48,24 @@ export class NotificationService {
       this.destroyRegistered = true;
     }
 
-    // Fetch immediately on start
-    this.pollUnseenCount();
-
-    // Set up interval
-    this.pollTimer = setInterval(() => this.pollUnseenCount(), POLL_INTERVAL_MS);
-
     // Pause/resume on tab visibility
     this.visibilityHandler = () => {
       if (document.hidden) {
         this.clearPollTimer();
-      } else {
+      } else if (!this.pollTimer) {
         // Fetch immediately on tab focus, then resume interval
         this.pollUnseenCount();
         this.pollTimer = setInterval(() => this.pollUnseenCount(), POLL_INTERVAL_MS);
       }
     };
     document.addEventListener('visibilitychange', this.visibilityHandler);
+
+    // If the tab is currently visible, fetch immediately and start interval;
+    // otherwise wait for a visibilitychange event to start polling.
+    if (!document.hidden) {
+      this.pollUnseenCount();
+      this.pollTimer = setInterval(() => this.pollUnseenCount(), POLL_INTERVAL_MS);
+    }
   }
 
   stopPolling(): void {
@@ -109,9 +111,9 @@ export class NotificationService {
         const previousCount = this._unseenCount();
         this._unseenCount.set(newCount);
 
-        // If the notification panel has been loaded and the count changed,
-        // refresh the list so the panel stays up-to-date without a manual reopen.
-        if (newCount !== previousCount && this._notifications().length > 0) {
+        // If the notification panel is currently open and the count changed,
+        // refresh the list so it stays up-to-date without a manual reopen.
+        if (newCount !== previousCount && this.panelOpen) {
           this.loadNotifications();
         }
       }
@@ -121,6 +123,11 @@ export class NotificationService {
     } finally {
       this.pollInFlight = false;
     }
+  }
+
+  /** Track panel visibility so polling only refreshes the list when the panel is open. */
+  setPanelOpen(open: boolean): void {
+    this.panelOpen = open;
   }
 
   /** Load full notification list (called when panel opens). Uses HttpClient — this is a user-initiated action. */
