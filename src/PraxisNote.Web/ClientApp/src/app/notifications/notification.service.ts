@@ -1,18 +1,20 @@
-import { Injectable, inject, signal, computed, NgZone } from '@angular/core';
+import { Injectable, inject, signal, computed, isDevMode, DestroyRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { MockAuthService } from '../auth/mock-auth.service';
+import { ProfileService } from '../profiles/profile.service';
 import { Notification } from './notification.model';
-import { DriveService } from '../shared/services/drive.service';
+
+const POLL_INTERVAL_MS = 30_000; // 30 seconds
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private readonly http = inject(HttpClient);
-  private readonly ngZone = inject(NgZone);
-  private readonly driveService = inject(DriveService);
+  private readonly mockAuth = inject(MockAuthService);
+  private readonly profileService = inject(ProfileService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private eventSource: EventSource | null = null;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-  private reconnectAttempts = 0;
-  private readonly maxReconnectDelay = 60000; // 1 minute max
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
+  private visibilityHandler: (() => void) | null = null;
 
   private readonly _notifications = signal<Notification[]>([]);
   private readonly _unseenCount = signal(0);
@@ -30,76 +32,84 @@ export class NotificationService {
     this._notifications().filter(n => n.isSeen)
   );
 
-  connectSse(): void {
-    if (this.eventSource) return;
+  /**
+   * Start polling for unseen notification count every 30s.
+   * Pauses when tab is hidden, resumes on focus.
+   * Uses fetch() instead of HttpClient — notification count is non-critical
+   * and should NOT trigger auth interceptor page reload on 401.
+   */
+  startPolling(): void {
+    if (this.pollTimer) return;
 
-    // Load initial count via HTTP - works with mock auth interceptor
-    // SSE can't use custom headers, so this ensures count loads in dev mode
-    this.loadUnseenCount();
+    // Fetch immediately on start
+    this.pollUnseenCount();
 
-    this.ngZone.runOutsideAngular(() => {
-      this.eventSource = new EventSource('/api/notifications/stream', {
-        withCredentials: true
-      });
+    // Set up interval
+    this.pollTimer = setInterval(() => this.pollUnseenCount(), POLL_INTERVAL_MS);
 
-      this.eventSource.addEventListener('count', (event: MessageEvent) => {
-        this.ngZone.run(() => {
-          try {
-            const data = JSON.parse(event.data);
-            this._unseenCount.set(data.count);
-            this.reconnectAttempts = 0; // Reset on successful message
-          } catch {
-            // Ignore malformed JSON
-          }
-        });
-      });
+    // Pause/resume on tab visibility
+    this.visibilityHandler = () => {
+      if (document.hidden) {
+        this.clearPollTimer();
+      } else {
+        // Fetch immediately on tab focus, then resume interval
+        this.pollUnseenCount();
+        this.pollTimer = setInterval(() => this.pollUnseenCount(), POLL_INTERVAL_MS);
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityHandler);
 
-      this.eventSource.addEventListener('new', (event: MessageEvent) => {
-        this.ngZone.run(() => {
-          try {
-            const notification = JSON.parse(event.data) as Notification;
-            this._notifications.update(list => [notification, ...list]);
-            this._unseenCount.update(c => c + 1);
-            this.reconnectAttempts = 0; // Reset on successful message
-          } catch {
-            // Ignore malformed JSON
-          }
-        });
-      });
-
-      this.eventSource.addEventListener('drive-sync', (event: MessageEvent) => {
-        this.ngZone.run(() => {
-          try {
-            const data = JSON.parse(event.data);
-            this.driveService.handleDriveSyncEvent(data);
-            this.reconnectAttempts = 0;
-          } catch {
-            // Ignore malformed JSON
-          }
-        });
-      });
-
-      this.eventSource.onerror = () => {
-        this.disconnectSse();
-        // Exponential backoff: 1s, 2s, 4s, 8s, ... up to maxReconnectDelay
-        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
-        this.reconnectAttempts++;
-        this.reconnectTimer = setTimeout(() => this.connectSse(), delay);
-      };
-    });
+    // Clean up on destroy
+    this.destroyRef.onDestroy(() => this.stopPolling());
   }
 
-  disconnectSse(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
+  stopPolling(): void {
+    this.clearPollTimer();
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
     }
   }
 
+  private clearPollTimer(): void {
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  private async pollUnseenCount(): Promise<void> {
+    try {
+      const headers: Record<string, string> = {};
+
+      if (isDevMode()) {
+        const mockHeader = this.mockAuth.getMockHeader();
+        if (mockHeader) {
+          headers['X-Mock-User'] = mockHeader;
+        }
+      }
+
+      const profileId = this.profileService.activeProfileId();
+      if (profileId) {
+        headers['X-Profile-Id'] = profileId;
+      }
+
+      const response = await fetch('/api/notifications/count', {
+        headers,
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        this._unseenCount.set(data.count);
+      }
+      // Silently ignore errors — non-critical polling
+    } catch {
+      // Network error — silently ignore, will retry on next interval
+    }
+  }
+
+  /** Load full notification list (called when panel opens). Uses HttpClient — this is a user-initiated action. */
   loadNotifications(): void {
     this._loading.set(true);
     this.http.get<Notification[]>('/api/notifications').subscribe({
@@ -111,20 +121,13 @@ export class NotificationService {
     });
   }
 
-  loadUnseenCount(): void {
-    this.http.get<{ count: number }>('/api/notifications/count').subscribe({
-      next: (result) => this._unseenCount.set(result.count),
-    });
-  }
-
   markAllAsSeen(): void {
     const notifications = this._notifications();
     if (notifications.length === 0) return;
 
-    // Find the max notification ID
     const maxId = Math.max(...notifications.map(n => n.id));
 
-    // Optimistic update - mark all as seen
+    // Optimistic update
     this._notifications.update(list =>
       list.map(n => ({ ...n, isSeen: true }))
     );
