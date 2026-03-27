@@ -8,41 +8,39 @@ public sealed class ResolvedAiServices(
     IAiKeyResolver keyResolver,
     IAiProviderFactory providerFactory) : IResolvedAiServices
 {
-    private readonly Dictionary<Guid, ResolvedAiKey> _keyCache = [];
-    private readonly Dictionary<Guid, IMeetingAnalyzer> _analyzerCache = [];
-    private readonly Dictionary<Guid, ITagAiChatService> _chatServiceCache = [];
+    // Scoped per-request — single user per instance, so nullable fields are sufficient and thread-safe.
+    private ResolvedAiKey? _cachedKey;
+    private IMeetingAnalyzer? _cachedAnalyzer;
+    private ITagAiChatService? _cachedChatService;
 
     public async Task<IMeetingAnalyzer> GetMeetingAnalyzerAsync(Guid userId, CancellationToken ct = default)
     {
-        if (_analyzerCache.TryGetValue(userId, out var cached))
-            return cached;
+        if (_cachedAnalyzer is not null)
+            return _cachedAnalyzer;
 
         var resolved = await ResolveWithCacheAsync(userId, ct);
-        var analyzer = providerFactory.CreateMeetingAnalyzer(resolved.ApiKey, resolved.Provider, resolved.Model);
-        _analyzerCache[userId] = analyzer;
-        return analyzer;
+        _cachedAnalyzer = providerFactory.CreateMeetingAnalyzer(resolved.ApiKey, resolved.Provider, resolved.Model);
+        return _cachedAnalyzer;
     }
 
     public async Task<ITagAiChatService> GetTagAiChatServiceAsync(Guid userId, CancellationToken ct = default)
     {
-        if (_chatServiceCache.TryGetValue(userId, out var cached))
-            return cached;
+        if (_cachedChatService is not null)
+            return _cachedChatService;
 
         var resolved = await ResolveWithCacheAsync(userId, ct);
-        var chatService = providerFactory.CreateTagAiChatService(resolved.ApiKey, resolved.Provider, resolved.Model);
-        _chatServiceCache[userId] = chatService;
-        return chatService;
+        _cachedChatService = providerFactory.CreateTagAiChatService(resolved.ApiKey, resolved.Provider, resolved.Model);
+        return _cachedChatService;
     }
 
     private async Task<ResolvedAiKey> ResolveWithCacheAsync(Guid userId, CancellationToken ct)
     {
-        if (_keyCache.TryGetValue(userId, out var cached))
-            return cached;
+        if (_cachedKey is not null)
+            return _cachedKey;
 
-        var resolved = await keyResolver.ResolveAsync(userId, ct)
+        _cachedKey = await keyResolver.ResolveAsync(userId, ct)
             ?? throw new NoAiKeyConfiguredException();
 
-        _keyCache[userId] = resolved;
-        return resolved;
+        return _cachedKey;
     }
 }
