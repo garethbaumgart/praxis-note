@@ -18,17 +18,7 @@ public sealed class UpsertUserAiKey(
         var encrypted = encryption.Encrypt(command.ApiKey);
         var hint = encryption.ComputeHint(command.ApiKey);
 
-        var existing = await repository.GetByUserAndProviderAsync(command.UserId, command.Provider, cancellationToken);
-        if (existing is not null)
-        {
-            existing.UpdateKey(encrypted, hint, command.PreferredModel);
-        }
-        else
-        {
-            var key = UserAiKey.Create(command.UserId, command.Provider, encrypted, hint, command.PreferredModel);
-            await repository.AddAsync(key, cancellationToken);
-        }
-
+        await repository.UpsertAsync(command.UserId, command.Provider, encrypted, hint, command.PreferredModel, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

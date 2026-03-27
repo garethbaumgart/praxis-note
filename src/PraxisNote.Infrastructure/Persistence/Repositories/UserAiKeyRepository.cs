@@ -14,6 +14,22 @@ public sealed class UserAiKeyRepository(PraxisNoteDbContext context) : IUserAiKe
     public async Task AddAsync(UserAiKey key, CancellationToken cancellationToken = default)
         => await context.UserAiKeys.AddAsync(key, cancellationToken);
 
+    public async Task<UserAiKey> UpsertAsync(Guid userId, AiProvider provider, string encryptedKey, string keyHint, string? preferredModel, CancellationToken cancellationToken = default)
+    {
+        var existing = await context.UserAiKeys
+            .FirstOrDefaultAsync(k => k.UserId == userId && k.Provider == provider, cancellationToken);
+
+        if (existing is not null)
+        {
+            existing.UpdateKey(encryptedKey, keyHint, preferredModel);
+            return existing;
+        }
+
+        var key = UserAiKey.Create(userId, provider, encryptedKey, keyHint, preferredModel);
+        await context.UserAiKeys.AddAsync(key, cancellationToken);
+        return key;
+    }
+
     public void Remove(UserAiKey key)
         => context.UserAiKeys.Remove(key);
 }

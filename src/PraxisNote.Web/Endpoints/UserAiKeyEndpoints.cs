@@ -47,7 +47,8 @@ public static class UserAiKeyEndpoints
 
         if (!Enum.TryParse<AiProvider>(provider, ignoreCase: true, out var aiProvider))
         {
-            return Results.BadRequest(new { error = "Unknown provider. Valid values: Anthropic, OpenAI, Gemini" });
+            var validProviders = string.Join(", ", Enum.GetNames(typeof(AiProvider)));
+            return Results.BadRequest(new { error = $"Unknown provider. Valid values: {validProviders}" });
         }
 
         if (string.IsNullOrWhiteSpace(request.ApiKey))
@@ -74,7 +75,8 @@ public static class UserAiKeyEndpoints
 
         if (!Enum.TryParse<AiProvider>(provider, ignoreCase: true, out var aiProvider))
         {
-            return Results.BadRequest(new { error = "Unknown provider" });
+            var validProviders = string.Join(", ", Enum.GetNames(typeof(AiProvider)));
+            return Results.BadRequest(new { error = $"Unknown provider. Valid values: {validProviders}" });
         }
 
         try
@@ -82,7 +84,7 @@ public static class UserAiKeyEndpoints
             await deleteKey.ExecuteAsync(new DeleteUserAiKey.Command(userId.Value, aiProvider), cancellationToken);
             return Results.NoContent();
         }
-        catch (InvalidOperationException ex) when (ex.Message == DeleteUserAiKey.NotFoundError)
+        catch (UserAiKeyNotFoundException)
         {
             return Results.NotFound();
         }

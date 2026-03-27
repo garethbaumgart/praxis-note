@@ -6,7 +6,7 @@ public class UserAiKeyTests
 {
     private readonly Guid _validUserId = Guid.NewGuid();
     private const string ValidEncryptedKey = "encrypted-key-data";
-    private const string ValidKeyHint = "sk-ant-...a3kX";
+    private const string ValidKeyHint = "...a3kX";
     private const string ValidModel = "claude-sonnet-4-6";
 
     #region Create Tests
@@ -24,8 +24,9 @@ public class UserAiKeyTests
         Assert.Equal(ValidEncryptedKey, key.EncryptedKey);
         Assert.Equal(ValidKeyHint, key.KeyHint);
         Assert.Equal(ValidModel, key.PreferredModel);
-        Assert.True(key.CreatedAt <= DateTimeOffset.UtcNow);
-        Assert.True(key.UpdatedAt <= DateTimeOffset.UtcNow);
+        Assert.NotEqual(default, key.CreatedAt);
+        Assert.NotEqual(default, key.UpdatedAt);
+        Assert.True(key.CreatedAt <= key.UpdatedAt);
     }
 
     [Fact]
@@ -99,10 +100,11 @@ public class UserAiKeyTests
     {
         // Arrange
         var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+        var originalCreatedAt = key.CreatedAt;
         var originalUpdatedAt = key.UpdatedAt;
 
         var newEncrypted = "new-encrypted-key";
-        var newHint = "sk-new-...xYz1";
+        var newHint = "...xYz1";
         var newModel = "claude-opus-4-6";
 
         // Act
@@ -112,6 +114,7 @@ public class UserAiKeyTests
         Assert.Equal(newEncrypted, key.EncryptedKey);
         Assert.Equal(newHint, key.KeyHint);
         Assert.Equal(newModel, key.PreferredModel);
+        Assert.Equal(originalCreatedAt, key.CreatedAt);
         Assert.True(key.UpdatedAt >= originalUpdatedAt);
     }
 
@@ -185,6 +188,21 @@ public class UserAiKeyTests
         // Assert
         Assert.Equal("gpt-4o", key.PreferredModel);
         Assert.True(key.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void UpdateModel_WithEmptyOrWhitespace_NormalizesToNull(string model)
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        // Act
+        key.UpdateModel(model);
+
+        // Assert
+        Assert.Null(key.PreferredModel);
     }
 
     [Fact]

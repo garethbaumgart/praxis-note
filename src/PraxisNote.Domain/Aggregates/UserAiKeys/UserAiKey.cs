@@ -21,7 +21,7 @@ public sealed class UserAiKey : AggregateRoot
         Provider = provider;
         EncryptedKey = encryptedKey;
         KeyHint = keyHint;
-        PreferredModel = preferredModel;
+        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel;
         CreatedAt = DateTimeOffset.UtcNow;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
@@ -42,13 +42,13 @@ public sealed class UserAiKey : AggregateRoot
 
         EncryptedKey = encryptedKey;
         KeyHint = keyHint;
-        PreferredModel = preferredModel;
+        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public void UpdateModel(string? preferredModel)
     {
-        PreferredModel = preferredModel;
+        PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }
