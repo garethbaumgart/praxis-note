@@ -41,7 +41,6 @@
     {
       "name": "api-streaming",
       "urls": [
-        "/api/notifications/stream",
         "/api/transcription/stream"
       ],
       "cacheConfig": {

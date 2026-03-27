@@ -1,7 +1,6 @@
 import { Injectable, inject, signal, computed, isDevMode, DestroyRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MockAuthService } from '../auth/mock-auth.service';
-import { ProfileService } from '../profiles/profile.service';
 import { Notification } from './notification.model';
 
 const POLL_INTERVAL_MS = 30_000; // 30 seconds
@@ -10,11 +9,12 @@ const POLL_INTERVAL_MS = 30_000; // 30 seconds
 export class NotificationService {
   private readonly http = inject(HttpClient);
   private readonly mockAuth = inject(MockAuthService);
-  private readonly profileService = inject(ProfileService);
   private readonly destroyRef = inject(DestroyRef);
 
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private visibilityHandler: (() => void) | null = null;
+  private pollInFlight = false;
+  private destroyRegistered = false;
 
   private readonly _notifications = signal<Notification[]>([]);
   private readonly _unseenCount = signal(0);
@@ -41,6 +41,12 @@ export class NotificationService {
   startPolling(): void {
     if (this.pollTimer) return;
 
+    // Register destroy handler only once across login/logout cycles
+    if (!this.destroyRegistered) {
+      this.destroyRef.onDestroy(() => this.stopPolling());
+      this.destroyRegistered = true;
+    }
+
     // Fetch immediately on start
     this.pollUnseenCount();
 
@@ -58,9 +64,6 @@ export class NotificationService {
       }
     };
     document.addEventListener('visibilitychange', this.visibilityHandler);
-
-    // Clean up on destroy
-    this.destroyRef.onDestroy(() => this.stopPolling());
   }
 
   stopPolling(): void {
@@ -79,6 +82,10 @@ export class NotificationService {
   }
 
   private async pollUnseenCount(): Promise<void> {
+    // Guard against overlapping requests — skip if a request is already in flight
+    if (this.pollInFlight) return;
+    this.pollInFlight = true;
+
     try {
       const headers: Record<string, string> = {};
 
@@ -89,10 +96,7 @@ export class NotificationService {
         }
       }
 
-      const profileId = this.profileService.activeProfileId();
-      if (profileId) {
-        headers['X-Profile-Id'] = profileId;
-      }
+      // Notifications are user-scoped (not profile-scoped); do not send X-Profile-Id
 
       const response = await fetch('/api/notifications/count', {
         headers,
@@ -101,11 +105,21 @@ export class NotificationService {
 
       if (response.ok) {
         const data = await response.json();
-        this._unseenCount.set(data.count);
+        const newCount = data.count as number;
+        const previousCount = this._unseenCount();
+        this._unseenCount.set(newCount);
+
+        // If the notification panel has been loaded and the count changed,
+        // refresh the list so the panel stays up-to-date without a manual reopen.
+        if (newCount !== previousCount && this._notifications().length > 0) {
+          this.loadNotifications();
+        }
       }
       // Silently ignore errors — non-critical polling
     } catch {
       // Network error — silently ignore, will retry on next interval
+    } finally {
+      this.pollInFlight = false;
     }
   }
 
