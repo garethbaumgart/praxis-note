@@ -10,13 +10,14 @@ using PraxisNote.Application.Features.Tags.Services;
 
 namespace PraxisNote.Infrastructure.External;
 
-public sealed class ClaudeTagAiChatService : ITagAiChatService
+public sealed class AnthropicTagAiChatService : ITagAiChatService
 {
-    private readonly MeetingAnalysisSettings _settings;
-    private readonly ILogger<ClaudeTagAiChatService> _logger;
+    private readonly AiProviderSettings _settings;
+    private readonly ILogger<AnthropicTagAiChatService> _logger;
     private readonly AnthropicClient? _client;
+    private readonly string _model;
 
-    private const string SystemPromptTemplate = """
+    internal const string SystemPromptTemplate = """
         You are a helpful assistant for PraxisNote, a professional note-taking and meeting management application.
         You are answering questions about content tagged with "{0}".
 
@@ -33,7 +34,7 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
         - Do not make up information that is not in the content
         """;
 
-    private const string StarterPrompt = """
+    internal const string StarterPrompt = """
         Based on the following content tagged with "{0}", generate exactly 4 short, natural-sounding starter questions that a user might want to ask about this content. The questions should be diverse and cover different aspects of the content.
 
         Content:
@@ -42,14 +43,15 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
         Respond ONLY with a valid JSON array of 4 strings. Example: ["Question 1?", "Question 2?", "Question 3?", "Question 4?"]
         """;
 
-    public ClaudeTagAiChatService(IOptions<MeetingAnalysisSettings> settings, ILogger<ClaudeTagAiChatService> logger)
+    public AnthropicTagAiChatService(IOptions<AiProviderSettings> settings, ILogger<AnthropicTagAiChatService> logger)
     {
         _settings = settings.Value;
         _logger = logger;
+        _model = _settings.Anthropic.DefaultModel;
 
-        if (!string.IsNullOrWhiteSpace(_settings.ApiKey))
+        if (!string.IsNullOrWhiteSpace(_settings.Anthropic.ApiKey))
         {
-            _client = new AnthropicClient(_settings.ApiKey);
+            _client = new AnthropicClient(_settings.Anthropic.ApiKey);
         }
     }
 
@@ -62,7 +64,7 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
         if (_client is null)
         {
             throw new InvalidOperationException(
-                "Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+                "Anthropic API key is not configured. Set AiProviders:Anthropic:ApiKey in appsettings or environment variables.");
         }
 
         var contextBlock = BuildContextBlock(context);
@@ -85,14 +87,14 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
 
         var parameters = new MessageParameters
         {
-            Model = _settings.Model,
+            Model = _model,
             MaxTokens = _settings.MaxTokens,
             Messages = messages,
             System = [new SystemMessage(systemPrompt)],
             Stream = true
         };
 
-        _logger.LogDebug("Starting tag AI chat stream with model {Model}", _settings.Model);
+        _logger.LogDebug("Starting tag AI chat stream with model {Model}", _model);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
@@ -113,7 +115,7 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
         if (_client is null)
         {
             throw new InvalidOperationException(
-                "Anthropic API key is not configured. Set MeetingAnalysis:ApiKey in appsettings or environment variables.");
+                "Anthropic API key is not configured. Set AiProviders:Anthropic:ApiKey in appsettings or environment variables.");
         }
 
         var contextBlock = BuildContextBlock(context);
@@ -123,12 +125,12 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
 
         var parameters = new MessageParameters
         {
-            Model = _settings.Model,
+            Model = _model,
             MaxTokens = 512,
             Messages = [new Message(RoleType.User, prompt)]
         };
 
-        _logger.LogDebug("Generating starter prompts with model {Model}", _settings.Model);
+        _logger.LogDebug("Generating starter prompts with model {Model}", _model);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
@@ -143,7 +145,7 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
 
         try
         {
-            var cleanJson = CleanJsonResponse(content);
+            var cleanJson = AnthropicMeetingAnalyzer.CleanJsonResponse(content);
             var starters = JsonSerializer.Deserialize<List<string>>(cleanJson);
             if (starters is { Count: > 0 })
             {
@@ -158,7 +160,7 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
         return DefaultStarters(context.TagName);
     }
 
-    private static string BuildContextBlock(TagChatContext context)
+    internal static string BuildContextBlock(TagChatContext context)
     {
         var sb = new StringBuilder();
 
@@ -207,7 +209,7 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
         return sb.ToString();
     }
 
-    private static IReadOnlyList<string> DefaultStarters(string tagName)
+    internal static IReadOnlyList<string> DefaultStarters(string tagName)
     {
         return new List<string>
         {
@@ -216,24 +218,5 @@ public sealed class ClaudeTagAiChatService : ITagAiChatService
             $"What tasks are still outstanding for {tagName}?",
             $"What decisions have been made about {tagName}?"
         };
-    }
-
-    private static string CleanJsonResponse(string jsonResponse)
-    {
-        var cleanJson = jsonResponse.Trim();
-        var hadCodeBlock = false;
-        if (cleanJson.StartsWith("```json", StringComparison.OrdinalIgnoreCase))
-        {
-            cleanJson = cleanJson[7..];
-            hadCodeBlock = true;
-        }
-        else if (cleanJson.StartsWith("```"))
-        {
-            cleanJson = cleanJson[3..];
-            hadCodeBlock = true;
-        }
-        if (hadCodeBlock && cleanJson.EndsWith("```"))
-            cleanJson = cleanJson[..^3];
-        return cleanJson.Trim();
     }
 }

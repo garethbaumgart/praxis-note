@@ -77,7 +77,7 @@ public static class DependencyInjection
         services.Configure<AiProviderSettings>(configuration.GetSection(AiProviderSettings.SectionName));
         services.AddScoped<IMeetingAnalyzer, AnthropicMeetingAnalyzer>();
         services.AddScoped<ITranscriptExtractor, TranscriptExtractor>();
-        services.AddScoped<ITagAiChatService, ClaudeTagAiChatService>();
+        services.AddScoped<ITagAiChatService, AnthropicTagAiChatService>();
         services.Configure<DeepgramSettings>(configuration.GetSection(DeepgramSettings.SectionName));
         services.Configure<JiraSettings>(configuration.GetSection(JiraSettings.SectionName));
         services.AddScoped<IJiraService, JiraService>();
