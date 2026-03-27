@@ -41,12 +41,12 @@ export class App {
   }
 
   constructor() {
-    // Connect SSE when authenticated
+    // Poll for notification count when authenticated
     effect(() => {
       if (this.auth.isAuthenticated()) {
-        this.notificationService.connectSse();
+        this.notificationService.startPolling();
       } else {
-        this.notificationService.disconnectSse();
+        this.notificationService.stopPolling();
       }
     });
   }
