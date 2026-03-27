@@ -11,7 +11,7 @@ public sealed class UserAiKeyConfiguration : IEntityTypeConfiguration<UserAiKey>
         builder.HasKey(k => k.Id);
         builder.Property(k => k.UserId).IsRequired();
         builder.Property(k => k.Provider)
-            .HasConversion(v => v.ToString(), v => Enum.Parse<AiProvider>(v))
+            .HasConversion(v => v.ToString(), v => Enum.Parse<AiProvider>(v, ignoreCase: true))
             .HasMaxLength(20).IsRequired();
         builder.Property(k => k.EncryptedKey).IsRequired();
         builder.Property(k => k.KeyHint).HasMaxLength(30).IsRequired();

@@ -104,6 +104,30 @@ public class UserAiKeyTests
         Assert.Equal(provider, key.Provider);
     }
 
+    [Fact]
+    public void Create_WithPreferredModelExceeding100Chars_ThrowsArgumentException()
+    {
+        // Arrange
+        var tooLongModel = new string('a', 101);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, tooLongModel));
+    }
+
+    [Fact]
+    public void Create_WithPreferredModelExactly100Chars_Succeeds()
+    {
+        // Arrange
+        var exactModel = new string('a', 100);
+
+        // Act
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, exactModel);
+
+        // Assert
+        Assert.Equal(exactModel, key.PreferredModel);
+    }
+
     #endregion
 
     #region UpdateKey Tests
@@ -186,6 +210,18 @@ public class UserAiKeyTests
             key.UpdateKey(ValidEncryptedKey, invalidHint, ValidModel));
     }
 
+    [Fact]
+    public void UpdateKey_WithPreferredModelExceeding100Chars_ThrowsArgumentException()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+        var tooLongModel = new string('b', 101);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            key.UpdateKey(ValidEncryptedKey, ValidKeyHint, tooLongModel));
+    }
+
     #endregion
 
     #region UpdateModel Tests
@@ -245,6 +281,18 @@ public class UserAiKeyTests
         // Assert
         Assert.Equal(ValidEncryptedKey, key.EncryptedKey);
         Assert.Equal(ValidKeyHint, key.KeyHint);
+    }
+
+    [Fact]
+    public void UpdateModel_WithPreferredModelExceeding100Chars_ThrowsArgumentException()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+        var tooLongModel = new string('c', 101);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            key.UpdateModel(tooLongModel));
     }
 
     #endregion

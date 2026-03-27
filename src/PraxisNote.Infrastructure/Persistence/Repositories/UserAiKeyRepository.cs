@@ -28,21 +28,7 @@ public sealed class UserAiKeyRepository(PraxisNoteDbContext context) : IUserAiKe
         var key = UserAiKey.Create(userId, provider, encryptedKey, keyHint, preferredModel);
         await context.UserAiKeys.AddAsync(key, cancellationToken);
 
-        try
-        {
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateException)
-        {
-            // Concurrent insert for same (userId, provider) — re-query and update instead
-            context.ChangeTracker.Clear();
-            existing = await context.UserAiKeys
-                .FirstOrDefaultAsync(k => k.UserId == userId && k.Provider == provider, cancellationToken);
-            existing!.UpdateKey(encryptedKey, keyHint, preferredModel);
-            await context.SaveChangesAsync(cancellationToken);
-            return existing;
-        }
-
+        // No SaveChangesAsync here — unit of work pattern: caller (use case) handles persistence uniformly.
         return key;
     }
 

@@ -58,7 +58,14 @@ public static class UserAiKeyEndpoints
         }
 
         var command = new UpsertUserAiKey.Command(userId.Value, aiProvider, request.ApiKey, request.PreferredModel);
-        await upsertKey.ExecuteAsync(command, cancellationToken);
+        try
+        {
+            await upsertKey.ExecuteAsync(command, cancellationToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
         return Results.NoContent();
     }
 
