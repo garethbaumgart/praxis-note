@@ -50,9 +50,6 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // HttpContextAccessor (needed by MCP tools and API key auth)
 builder.Services.AddHttpContextAccessor();
 
-// SSE Manager for real-time notifications (singleton for connection tracking)
-builder.Services.AddSingleton<NotificationSseManager>();
-
 // Background service for periodic Drive folder sync
 builder.Services.AddHostedService<DriveSyncBackgroundJob>();
 
