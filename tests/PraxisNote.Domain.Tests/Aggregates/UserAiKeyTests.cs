@@ -1,0 +1,299 @@
+using PraxisNote.Domain.Aggregates.UserAiKeys;
+
+namespace PraxisNote.Domain.Tests.Aggregates;
+
+public class UserAiKeyTests
+{
+    private readonly Guid _validUserId = Guid.NewGuid();
+    private const string ValidEncryptedKey = "encrypted-key-data";
+    private const string ValidKeyHint = "...a3kX";
+    private const string ValidModel = "claude-sonnet-4-6";
+
+    #region Create Tests
+
+    [Fact]
+    public void Create_WithValidInputs_CreatesKeyWithCorrectProperties()
+    {
+        // Act
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        // Assert
+        Assert.NotEqual(Guid.Empty, key.Id);
+        Assert.Equal(_validUserId, key.UserId);
+        Assert.Equal(AiProvider.Anthropic, key.Provider);
+        Assert.Equal(ValidEncryptedKey, key.EncryptedKey);
+        Assert.Equal(ValidKeyHint, key.KeyHint);
+        Assert.Equal(ValidModel, key.PreferredModel);
+        Assert.NotEqual(default, key.CreatedAt);
+        Assert.NotEqual(default, key.UpdatedAt);
+        Assert.True(key.CreatedAt <= key.UpdatedAt);
+    }
+
+    [Fact]
+    public void Create_WithNullPreferredModel_CreatesKeyWithNullModel()
+    {
+        // Act
+        var key = UserAiKey.Create(_validUserId, AiProvider.OpenAI, ValidEncryptedKey, ValidKeyHint, null);
+
+        // Assert
+        Assert.Null(key.PreferredModel);
+    }
+
+    [Fact]
+    public void Create_WithEmptyUserId_ThrowsArgumentOutOfRangeException()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            UserAiKey.Create(Guid.Empty, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel));
+    }
+
+    [Fact]
+    public void Create_WithNullEncryptedKey_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            UserAiKey.Create(_validUserId, AiProvider.Anthropic, null!, ValidKeyHint, ValidModel));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithEmptyOrWhitespaceEncryptedKey_ThrowsArgumentException(string invalidKey)
+    {
+        Assert.Throws<ArgumentException>(() =>
+            UserAiKey.Create(_validUserId, AiProvider.Anthropic, invalidKey, ValidKeyHint, ValidModel));
+    }
+
+    [Fact]
+    public void Create_WithNullKeyHint_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, null!, ValidModel));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithEmptyOrWhitespaceKeyHint_ThrowsArgumentException(string invalidHint)
+    {
+        Assert.Throws<ArgumentException>(() =>
+            UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, invalidHint, ValidModel));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithNullOrWhitespacePreferredModel_NormalizesToNull(string? model)
+    {
+        // Act
+        var key = UserAiKey.Create(_validUserId, AiProvider.OpenAI, ValidEncryptedKey, ValidKeyHint, model);
+
+        // Assert
+        Assert.Null(key.PreferredModel);
+    }
+
+    [Theory]
+    [InlineData(AiProvider.Anthropic)]
+    [InlineData(AiProvider.OpenAI)]
+    [InlineData(AiProvider.Gemini)]
+    public void Create_WithEachProvider_SetsProviderCorrectly(AiProvider provider)
+    {
+        // Act
+        var key = UserAiKey.Create(_validUserId, provider, ValidEncryptedKey, ValidKeyHint, null);
+
+        // Assert
+        Assert.Equal(provider, key.Provider);
+    }
+
+    [Fact]
+    public void Create_WithPreferredModelExceeding100Chars_ThrowsArgumentException()
+    {
+        // Arrange
+        var tooLongModel = new string('a', 101);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, tooLongModel));
+    }
+
+    [Fact]
+    public void Create_WithPreferredModelExactly100Chars_Succeeds()
+    {
+        // Arrange
+        var exactModel = new string('a', 100);
+
+        // Act
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, exactModel);
+
+        // Assert
+        Assert.Equal(exactModel, key.PreferredModel);
+    }
+
+    #endregion
+
+    #region UpdateKey Tests
+
+    [Fact]
+    public void UpdateKey_WithValidInputs_UpdatesAllFields()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+        var originalCreatedAt = key.CreatedAt;
+        var originalUpdatedAt = key.UpdatedAt;
+
+        Thread.Sleep(1);
+
+        var newEncrypted = "new-encrypted-key";
+        var newHint = "...xYz1";
+        var newModel = "claude-opus-4-6";
+
+        // Act
+        key.UpdateKey(newEncrypted, newHint, newModel);
+
+        // Assert
+        Assert.Equal(newEncrypted, key.EncryptedKey);
+        Assert.Equal(newHint, key.KeyHint);
+        Assert.Equal(newModel, key.PreferredModel);
+        Assert.Equal(originalCreatedAt, key.CreatedAt);
+        Assert.True(key.UpdatedAt > originalUpdatedAt);
+    }
+
+    [Fact]
+    public void UpdateKey_WithNullModel_SetsModelToNull()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        // Act
+        key.UpdateKey("new-encrypted", "new-hint", null);
+
+        // Assert
+        Assert.Null(key.PreferredModel);
+    }
+
+    [Fact]
+    public void UpdateKey_WithNullEncryptedKey_ThrowsArgumentNullException()
+    {
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        Assert.Throws<ArgumentNullException>(() =>
+            key.UpdateKey(null!, ValidKeyHint, ValidModel));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void UpdateKey_WithEmptyOrWhitespaceEncryptedKey_ThrowsArgumentException(string invalidKey)
+    {
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        Assert.Throws<ArgumentException>(() =>
+            key.UpdateKey(invalidKey, ValidKeyHint, ValidModel));
+    }
+
+    [Fact]
+    public void UpdateKey_WithNullKeyHint_ThrowsArgumentNullException()
+    {
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        Assert.Throws<ArgumentNullException>(() =>
+            key.UpdateKey(ValidEncryptedKey, null!, ValidModel));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void UpdateKey_WithEmptyOrWhitespaceKeyHint_ThrowsArgumentException(string invalidHint)
+    {
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        Assert.Throws<ArgumentException>(() =>
+            key.UpdateKey(ValidEncryptedKey, invalidHint, ValidModel));
+    }
+
+    [Fact]
+    public void UpdateKey_WithPreferredModelExceeding100Chars_ThrowsArgumentException()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+        var tooLongModel = new string('b', 101);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            key.UpdateKey(ValidEncryptedKey, ValidKeyHint, tooLongModel));
+    }
+
+    #endregion
+
+    #region UpdateModel Tests
+
+    [Fact]
+    public void UpdateModel_WithNewModel_UpdatesModelAndTimestamp()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+        var originalUpdatedAt = key.UpdatedAt;
+
+        // Act
+        key.UpdateModel("gpt-4o");
+
+        // Assert
+        Assert.Equal("gpt-4o", key.PreferredModel);
+        Assert.True(key.UpdatedAt >= originalUpdatedAt);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void UpdateModel_WithEmptyOrWhitespace_NormalizesToNull(string model)
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        // Act
+        key.UpdateModel(model);
+
+        // Assert
+        Assert.Null(key.PreferredModel);
+    }
+
+    [Fact]
+    public void UpdateModel_WithNull_ClearsModel()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        // Act
+        key.UpdateModel(null);
+
+        // Assert
+        Assert.Null(key.PreferredModel);
+    }
+
+    [Fact]
+    public void UpdateModel_DoesNotChangeEncryptedKeyOrHint()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+
+        // Act
+        key.UpdateModel("new-model");
+
+        // Assert
+        Assert.Equal(ValidEncryptedKey, key.EncryptedKey);
+        Assert.Equal(ValidKeyHint, key.KeyHint);
+    }
+
+    [Fact]
+    public void UpdateModel_WithPreferredModelExceeding100Chars_ThrowsArgumentException()
+    {
+        // Arrange
+        var key = UserAiKey.Create(_validUserId, AiProvider.Anthropic, ValidEncryptedKey, ValidKeyHint, ValidModel);
+        var tooLongModel = new string('c', 101);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            key.UpdateModel(tooLongModel));
+    }
+
+    #endregion
+}
