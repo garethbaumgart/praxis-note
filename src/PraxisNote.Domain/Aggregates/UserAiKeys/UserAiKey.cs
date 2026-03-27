@@ -31,6 +31,7 @@ public sealed class UserAiKey : AggregateRoot
         ArgumentOutOfRangeException.ThrowIfEqual(userId, Guid.Empty, nameof(userId));
         ArgumentException.ThrowIfNullOrWhiteSpace(encryptedKey, nameof(encryptedKey));
         ArgumentException.ThrowIfNullOrWhiteSpace(keyHint, nameof(keyHint));
+        ValidatePreferredModelLength(preferredModel);
 
         return new UserAiKey(Guid.NewGuid(), userId, provider, encryptedKey, keyHint, preferredModel);
     }
@@ -39,6 +40,7 @@ public sealed class UserAiKey : AggregateRoot
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(encryptedKey, nameof(encryptedKey));
         ArgumentException.ThrowIfNullOrWhiteSpace(keyHint, nameof(keyHint));
+        ValidatePreferredModelLength(preferredModel);
 
         EncryptedKey = encryptedKey;
         KeyHint = keyHint;
@@ -48,7 +50,14 @@ public sealed class UserAiKey : AggregateRoot
 
     public void UpdateModel(string? preferredModel)
     {
+        ValidatePreferredModelLength(preferredModel);
         PreferredModel = string.IsNullOrWhiteSpace(preferredModel) ? null : preferredModel;
         UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    private static void ValidatePreferredModelLength(string? preferredModel)
+    {
+        if (preferredModel is not null && preferredModel.Length > 100)
+            throw new ArgumentException("PreferredModel must be 100 characters or fewer.", nameof(preferredModel));
     }
 }

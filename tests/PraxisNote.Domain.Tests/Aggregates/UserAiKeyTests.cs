@@ -79,6 +79,19 @@ public class UserAiKeyTests
     }
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithNullOrWhitespacePreferredModel_NormalizesToNull(string? model)
+    {
+        // Act
+        var key = UserAiKey.Create(_validUserId, AiProvider.OpenAI, ValidEncryptedKey, ValidKeyHint, model);
+
+        // Assert
+        Assert.Null(key.PreferredModel);
+    }
+
+    [Theory]
     [InlineData(AiProvider.Anthropic)]
     [InlineData(AiProvider.OpenAI)]
     [InlineData(AiProvider.Gemini)]
