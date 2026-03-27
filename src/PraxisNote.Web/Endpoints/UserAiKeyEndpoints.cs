@@ -38,6 +38,7 @@ public static class UserAiKeyEndpoints
         ClaimsPrincipal user,
         UpsertAiKeyRequest request,
         UpsertUserAiKey upsertKey,
+        ValidateAiKey validateKey,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -66,7 +67,17 @@ public static class UserAiKeyEndpoints
         {
             return Results.BadRequest(new { error = ex.Message });
         }
-        return Results.NoContent();
+
+        // Validate the key after storing it
+        var validation = await validateKey.ExecuteAsync(
+            new ValidateAiKey.Command(aiProvider, request.ApiKey), cancellationToken);
+
+        if (!validation.Validated)
+        {
+            return Results.UnprocessableEntity(new { error = "ai_key_invalid" });
+        }
+
+        return Results.Ok(new { validated = validation.Validated, rateLimited = validation.RateLimited });
     }
 
     private static async Task<IResult> HandleDeleteAiKey(

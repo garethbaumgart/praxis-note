@@ -19,6 +19,9 @@ import { LinkAccountPanelComponent } from './link-account-panel.component';
 import { ApiKeyService } from './api-key.service';
 import { ApiKeyDto } from './api-key.model';
 import { ApiKeyCardComponent } from './api-key-card.component';
+import { AiKeyProviderService } from './ai-key-provider.service';
+import { AiKeyProviderCardComponent } from './ai-key-provider-card.component';
+import { AiProvider } from './ai-key-provider.model';
 import { DriveSetupDialogComponent } from './drive-setup-dialog.component';
 
 const MAX_PROFILES = 5;
@@ -28,7 +31,7 @@ const MAX_API_KEYS = 5;
   selector: 'app-settings-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, DatePipe, Dialog, PageContentComponent, ProfileCardComponent, CreateProfileDialogComponent, LinkedAccountCardComponent, LinkAccountPanelComponent, ApiKeyCardComponent, DriveSetupDialogComponent],
+  imports: [Button, DatePipe, Dialog, PageContentComponent, ProfileCardComponent, CreateProfileDialogComponent, LinkedAccountCardComponent, LinkAccountPanelComponent, ApiKeyCardComponent, AiKeyProviderCardComponent, DriveSetupDialogComponent],
   template: `
     <app-page-content maxWidth="narrow">
       <h1 class="sr-only">Settings</h1>
@@ -467,6 +470,45 @@ const MAX_API_KEYS = 5;
           }
         </section>
 
+        <!-- AI & API Keys Section -->
+        <section class="bg-surface border border-border rounded-xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-surface-muted flex items-center justify-center">
+              <i class="pi pi-sparkles text-lg text-foreground-secondary" aria-hidden="true"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-foreground">AI & API Keys</h2>
+              <p class="text-sm text-foreground-secondary">Bring your own AI provider keys for meeting analysis and AI chat.</p>
+            </div>
+          </div>
+
+          @if (aiKeyProviderService.loading()) {
+            <div class="flex items-center gap-3 py-4" role="status" aria-label="Loading AI keys">
+              <i class="pi pi-spin pi-spinner text-sm text-foreground-muted" aria-hidden="true"></i>
+              <span class="text-sm text-foreground-muted" aria-hidden="true">Loading AI keys...</span>
+              <span class="sr-only">Loading AI keys...</span>
+            </div>
+          } @else {
+            <div class="flex flex-col gap-2 mb-4">
+              @for (p of aiProviders; track p) {
+                <app-ai-key-provider-card
+                  [provider]="p"
+                  [key]="aiKeyProviderService.keyForProvider(p)()"
+                  (onRemove)="removeAiKey($event)"
+                  (onSaved)="aiKeyProviderService.loadKeys()"
+                />
+              }
+            </div>
+
+            <div class="py-3 px-4 bg-surface-subtle border border-border rounded-lg">
+              <p class="text-xs text-foreground-muted">
+                <i class="pi pi-info-circle mr-1" aria-hidden="true"></i>
+                Gemini 1.5 Flash is available free via Google AI Studio. Keys are encrypted at rest and never shared.
+              </p>
+            </div>
+          }
+        </section>
+
         <!-- API Keys Section -->
         <section class="bg-surface border border-border rounded-xl p-6">
           <div class="flex items-center gap-3 mb-2">
@@ -779,6 +821,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   readonly profileService = inject(ProfileService);
   readonly linkedAccountsService = inject(LinkedAccountsService);
   readonly apiKeyService = inject(ApiKeyService);
+  readonly aiKeyProviderService = inject(AiKeyProviderService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
@@ -786,6 +829,8 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   private readonly profileDialog = viewChild(CreateProfileDialogComponent);
   private readonly driveSetupDialog = viewChild(DriveSetupDialogComponent);
+
+  readonly aiProviders: AiProvider[] = ['Anthropic', 'OpenAI', 'Gemini'];
 
   readonly maxProfiles = MAX_PROFILES;
   readonly atMaxProfiles = computed(() => this.profileService.profiles().length >= MAX_PROFILES);
@@ -878,6 +923,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.profileService.loadProfiles();
     this.linkedAccountsService.loadIdentities();
     this.apiKeyService.loadKeys();
+    this.aiKeyProviderService.loadKeys();
 
     // Check for OAuth redirect success
     const params = this.route.snapshot.queryParams;
@@ -1052,6 +1098,12 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   disconnectJira(): void {
     this.jiraService.disconnectJira();
+  }
+
+  // --- AI Key actions ---
+
+  removeAiKey(provider: AiProvider): void {
+    this.aiKeyProviderService.removeKey(provider);
   }
 
   // --- API Key actions ---
