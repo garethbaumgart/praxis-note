@@ -8,29 +8,41 @@ public sealed class ResolvedAiServices(
     IAiKeyResolver keyResolver,
     IAiProviderFactory providerFactory) : IResolvedAiServices
 {
-    private readonly Dictionary<Guid, ResolvedAiKey> _cache = [];
+    private readonly Dictionary<Guid, ResolvedAiKey> _keyCache = [];
+    private readonly Dictionary<Guid, IMeetingAnalyzer> _analyzerCache = [];
+    private readonly Dictionary<Guid, ITagAiChatService> _chatServiceCache = [];
 
     public async Task<IMeetingAnalyzer> GetMeetingAnalyzerAsync(Guid userId, CancellationToken ct = default)
     {
+        if (_analyzerCache.TryGetValue(userId, out var cached))
+            return cached;
+
         var resolved = await ResolveWithCacheAsync(userId, ct);
-        return providerFactory.CreateMeetingAnalyzer(resolved.ApiKey, resolved.Provider, resolved.Model);
+        var analyzer = providerFactory.CreateMeetingAnalyzer(resolved.ApiKey, resolved.Provider, resolved.Model);
+        _analyzerCache[userId] = analyzer;
+        return analyzer;
     }
 
     public async Task<ITagAiChatService> GetTagAiChatServiceAsync(Guid userId, CancellationToken ct = default)
     {
+        if (_chatServiceCache.TryGetValue(userId, out var cached))
+            return cached;
+
         var resolved = await ResolveWithCacheAsync(userId, ct);
-        return providerFactory.CreateTagAiChatService(resolved.ApiKey, resolved.Provider, resolved.Model);
+        var chatService = providerFactory.CreateTagAiChatService(resolved.ApiKey, resolved.Provider, resolved.Model);
+        _chatServiceCache[userId] = chatService;
+        return chatService;
     }
 
     private async Task<ResolvedAiKey> ResolveWithCacheAsync(Guid userId, CancellationToken ct)
     {
-        if (_cache.TryGetValue(userId, out var cached))
+        if (_keyCache.TryGetValue(userId, out var cached))
             return cached;
 
         var resolved = await keyResolver.ResolveAsync(userId, ct)
             ?? throw new NoAiKeyConfiguredException();
 
-        _cache[userId] = resolved;
+        _keyCache[userId] = resolved;
         return resolved;
     }
 }
