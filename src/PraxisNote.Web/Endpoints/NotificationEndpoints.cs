@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using PraxisNote.Web.Extensions;
 using PraxisNote.Application.Features.Notifications;
-using PraxisNote.Web.Services;
 
 namespace PraxisNote.Web.Endpoints;
 
@@ -15,7 +14,6 @@ public static class NotificationEndpoints
         group.MapGet("/", (Delegate)HandleGetNotifications);
         group.MapGet("/count", (Delegate)HandleGetUnseenCount);
         group.MapPost("/seen", (Delegate)HandleMarkSeen);
-        group.MapGet("/stream", (Delegate)HandleSseStream);
     }
 
     private static async Task<IResult> HandleGetNotifications(
@@ -73,49 +71,6 @@ public static class NotificationEndpoints
         return Results.NoContent();
     }
 
-    private static async Task HandleSseStream(
-        HttpContext context,
-        ClaimsPrincipal user,
-        NotificationSseManager sseManager,
-        GetUnseenNotificationCount getCount,
-        CancellationToken cancellationToken)
-    {
-        var userId = user.GetUserId();
-        if (userId is null)
-        {
-            context.Response.StatusCode = 401;
-            return;
-        }
-
-        context.Response.ContentType = "text/event-stream";
-        context.Response.Headers.CacheControl = "no-cache";
-        context.Response.Headers.Connection = "keep-alive";
-
-        sseManager.AddConnection(userId.Value, context.Response);
-
-        try
-        {
-            // Send initial count
-            var count = await getCount.ExecuteAsync(
-                new GetUnseenNotificationCount.Query(userId.Value),
-                cancellationToken);
-
-            var initialData = $"event: count\ndata: {{\"count\":{count}}}\n\n";
-            await context.Response.WriteAsync(initialData, cancellationToken);
-            await context.Response.Body.FlushAsync(cancellationToken);
-
-            // Keep connection open until client disconnects
-            await Task.Delay(Timeout.Infinite, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // Client disconnected
-        }
-        finally
-        {
-            sseManager.RemoveConnection(userId.Value, context.Response);
-        }
-    }
 }
 
 public record MarkSeenRequest(int LastSeenNotificationId);
