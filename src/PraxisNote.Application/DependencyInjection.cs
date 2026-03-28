@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<GetUserAiKeys>();
         services.AddScoped<UpsertUserAiKey>();
         services.AddScoped<DeleteUserAiKey>();
+        services.AddScoped<ValidateAiKey>();
 
         // Task use cases
         services.AddScoped<CreateTask>();

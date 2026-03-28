@@ -38,6 +38,8 @@ public static class UserAiKeyEndpoints
         ClaimsPrincipal user,
         UpsertAiKeyRequest request,
         UpsertUserAiKey upsertKey,
+        ValidateAiKey validateKey,
+        DeleteUserAiKey deleteKey,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -57,6 +59,23 @@ public static class UserAiKeyEndpoints
             return Results.BadRequest(new { error = "apiKey is required" });
         }
 
+        // Validate the key before persisting
+        var validation = await validateKey.ExecuteAsync(
+            new ValidateAiKey.Command(aiProvider, request.ApiKey), cancellationToken);
+
+        if (!validation.Validated)
+        {
+            // Compensating delete — remove any previously stored key for this provider
+            try
+            {
+                await deleteKey.ExecuteAsync(new DeleteUserAiKey.Command(userId.Value, aiProvider), cancellationToken);
+            }
+            catch (UserAiKeyNotFoundException) { /* No key stored — nothing to clean up */ }
+
+            return Results.UnprocessableEntity(new { error = "ai_key_invalid" });
+        }
+
+        // Key is valid — persist it
         var command = new UpsertUserAiKey.Command(userId.Value, aiProvider, request.ApiKey, request.PreferredModel);
         try
         {
@@ -66,7 +85,8 @@ public static class UserAiKeyEndpoints
         {
             return Results.BadRequest(new { error = ex.Message });
         }
-        return Results.NoContent();
+
+        return Results.Ok(new { validated = validation.Validated, rateLimited = validation.RateLimited });
     }
 
     private static async Task<IResult> HandleDeleteAiKey(
