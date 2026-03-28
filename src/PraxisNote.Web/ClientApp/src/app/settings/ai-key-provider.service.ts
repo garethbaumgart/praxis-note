@@ -61,15 +61,21 @@ export class AiKeyProviderService {
         ),
       );
       this.loadKeys();
-      this.toast.success({ summary: `${provider} key saved` });
+      const summary = apiKey ? `${provider} key saved` : `${provider} model updated`;
+      this.toast.success({ summary });
       return result;
     } catch (err) {
       const httpErr = err as HttpErrorResponse;
       if (httpErr.status === 422) {
         const code = httpErr.error?.error;
-        const message = code === 'ai_key_invalid'
-          ? 'This API key was rejected by the provider. Please check the key and try again.'
-          : (code ?? 'Invalid API key');
+        let message: string;
+        if (code === 'ai_key_invalid') {
+          message = 'This API key was rejected by the provider. Please check the key and try again.';
+        } else if (code === 'invalid_model') {
+          message = httpErr.error?.message ?? 'Unknown model selected';
+        } else {
+          message = code ?? 'Invalid API key';
+        }
         throw message;
       } else {
         const message = httpErr.error?.error ?? `Failed to save ${provider} key`;

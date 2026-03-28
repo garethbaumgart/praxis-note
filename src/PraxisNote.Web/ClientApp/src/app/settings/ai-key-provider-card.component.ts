@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy, input, output, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, inject, signal, computed } from '@angular/core';
 import { AiKeyDto, AiProvider } from './ai-key-provider.model';
 import { AiKeyProviderService } from './ai-key-provider.service';
+import { AI_MODEL_CATALOGUE, AiModelOption, AiModelTag } from './ai-model-catalogue';
 
 interface ProviderMeta {
   label: string;
@@ -34,6 +35,14 @@ const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     keyUrlLabel: 'Get key from aistudio.google.com',
     freeTier: true,
   },
+};
+
+const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
+  fast: { label: 'Fast', class: 'bg-done/20 text-done-foreground' },
+  balanced: { label: 'Balanced', class: 'bg-accent/20 text-accent-solid' },
+  powerful: { label: 'Powerful', class: 'bg-in-progress/20 text-in-progress-foreground' },
+  cheap: { label: 'Cheap', class: 'bg-surface-muted text-foreground-muted' },
+  'free-tier': { label: 'Free tier', class: 'bg-surface-muted text-foreground-muted' },
 };
 
 @Component({
@@ -120,8 +129,42 @@ const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
                 }
               </div>
             </div>
-            @if (key()!.preferredModel) {
-              <p class="text-xs text-foreground-muted">Model: {{ key()!.preferredModel }}</p>
+
+            <!-- Model selector -->
+            @if (modelOptions().length > 0) {
+              <div class="pt-2 border-t border-border">
+                <p class="text-xs font-medium text-foreground-muted mb-2">Preferred model</p>
+                <div class="space-y-1.5">
+                  @for (model of modelOptions(); track model.value) {
+                    <button
+                      type="button"
+                      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-colors text-left"
+                      [class.border-accent-solid]="selectedModel() === model.value"
+                      [class.bg-accent/10]="selectedModel() === model.value"
+                      [class.border-border]="selectedModel() !== model.value"
+                      [class.hover:border-foreground-muted]="selectedModel() !== model.value"
+                      [disabled]="savingModel() === model.value"
+                      (click)="selectModel(model.value)"
+                      [attr.aria-label]="'Select model ' + model.label"
+                    >
+                      <span class="flex-1 min-w-0">
+                        <span class="text-sm font-medium text-foreground">{{ model.label }}</span>
+                        <span class="block text-xs text-foreground-muted">{{ model.description }}</span>
+                      </span>
+                      <span class="flex items-center gap-1 shrink-0">
+                        @for (tag of model.tags; track tag) {
+                          <span class="text-[10px] px-1.5 py-0.5 rounded-full" [class]="tagClass(tag)">{{ tagLabel(tag) }}</span>
+                        }
+                      </span>
+                      @if (savingModel() === model.value) {
+                        <i class="pi pi-spin pi-spinner text-xs text-accent-solid" aria-hidden="true"></i>
+                      } @else if (selectedModel() === model.value) {
+                        <i class="pi pi-check text-xs text-accent-solid" aria-hidden="true"></i>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
             }
           } @else {
             <!-- Input state -->
@@ -194,9 +237,26 @@ export class AiKeyProviderCardComponent {
   readonly rateLimitWarning = signal(false);
   readonly replacing = signal(false);
   readonly confirmingRemove = signal(false);
+  readonly savingModel = signal<string | null>(null);
+
+  readonly modelOptions = computed<AiModelOption[]>(() => AI_MODEL_CATALOGUE[this.provider()] ?? []);
+
+  readonly selectedModel = computed(() => {
+    const current = this.key()?.preferredModel;
+    if (current) return current;
+    return this.modelOptions().find(m => m.isDefault)?.value ?? this.modelOptions()[0]?.value ?? '';
+  });
 
   get meta(): ProviderMeta {
     return PROVIDER_META[this.provider()];
+  }
+
+  tagClass(tag: AiModelTag): string {
+    return TAG_STYLES[tag]?.class ?? 'bg-surface-muted text-foreground-muted';
+  }
+
+  tagLabel(tag: AiModelTag): string {
+    return TAG_STYLES[tag]?.label ?? tag;
   }
 
   toggleDrawer(): void {
@@ -228,6 +288,19 @@ export class AiKeyProviderCardComponent {
       this.onSaved.emit();
     } catch (err) {
       this.validationError.set(typeof err === 'string' ? err : 'Invalid API key');
+    }
+  }
+
+  async selectModel(modelValue: string): Promise<void> {
+    if (this.savingModel() || modelValue === this.selectedModel()) return;
+
+    this.savingModel.set(modelValue);
+    try {
+      await this.aiKeyService.upsertKey(this.provider(), '', modelValue);
+    } catch {
+      // Model update failed — toast already shown by service
+    } finally {
+      this.savingModel.set(null);
     }
   }
 

@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using PraxisNote.Application.Features.UserAiKeys;
 using PraxisNote.Domain.Aggregates.UserAiKeys;
@@ -54,9 +53,24 @@ public static class UserAiKeyEndpoints
             return Results.BadRequest(new { error = $"Unknown provider. Valid values: {validProviders}" });
         }
 
+        // Model-only update: no API key provided
         if (string.IsNullOrWhiteSpace(request.ApiKey))
         {
-            return Results.BadRequest(new { error = "apiKey is required" });
+            var modelCommand = new UpsertUserAiKey.Command(userId.Value, aiProvider, "", request.PreferredModel);
+            try
+            {
+                await upsertKey.ExecuteAsync(modelCommand, cancellationToken);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.UnprocessableEntity(new { error = "invalid_model", message = ex.Message });
+            }
+            catch (UserAiKeyNotFoundException)
+            {
+                return Results.NotFound(new { error = "No key found for this provider" });
+            }
+
+            return Results.Ok(new { validated = true, rateLimited = false });
         }
 
         // Validate the key before persisting
@@ -83,7 +97,7 @@ public static class UserAiKeyEndpoints
         }
         catch (ArgumentException ex)
         {
-            return Results.BadRequest(new { error = ex.Message });
+            return Results.UnprocessableEntity(new { error = "invalid_model", message = ex.Message });
         }
 
         return Results.Ok(new { validated = validation.Validated, rateLimited = validation.RateLimited });
@@ -119,4 +133,4 @@ public static class UserAiKeyEndpoints
     }
 }
 
-public record UpsertAiKeyRequest([Required] string ApiKey, string? PreferredModel = null);
+public record UpsertAiKeyRequest(string? ApiKey = null, string? PreferredModel = null);
