@@ -39,6 +39,7 @@ public static class UserAiKeyEndpoints
         UpsertAiKeyRequest request,
         UpsertUserAiKey upsertKey,
         ValidateAiKey validateKey,
+        DeleteUserAiKey deleteKey,
         CancellationToken cancellationToken)
     {
         var userId = user.GetUserId();
@@ -64,6 +65,13 @@ public static class UserAiKeyEndpoints
 
         if (!validation.Validated)
         {
+            // Compensating delete — remove any previously stored key for this provider
+            try
+            {
+                await deleteKey.ExecuteAsync(new DeleteUserAiKey.Command(userId.Value, aiProvider), cancellationToken);
+            }
+            catch (UserAiKeyNotFoundException) { /* No key stored — nothing to clean up */ }
+
             return Results.UnprocessableEntity(new { error = "ai_key_invalid" });
         }
 
