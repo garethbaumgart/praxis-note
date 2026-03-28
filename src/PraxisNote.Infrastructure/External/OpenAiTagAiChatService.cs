@@ -77,6 +77,16 @@ public sealed class OpenAiTagAiChatService(
             logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
             throw new AiProviderException("OpenAI", "OpenAI returned an error. Try again shortly.", ex);
         }
+        catch (ClientResultException ex)
+        {
+            logger.LogError(ex, "Unexpected error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+            throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Network error calling {Provider}", "OpenAI");
+            throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+        }
 
         var enumerator = stream.GetAsyncEnumerator(cts.Token);
         try
@@ -107,6 +117,16 @@ public sealed class OpenAiTagAiChatService(
                 {
                     logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
                     throw new AiProviderException("OpenAI", "OpenAI returned an error. Try again shortly.", ex);
+                }
+                catch (ClientResultException ex)
+                {
+                    logger.LogError(ex, "Unexpected error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+                    throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    logger.LogError(ex, "Network error calling {Provider}", "OpenAI");
+                    throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
                 }
 
                 foreach (var part in enumerator.Current.ContentUpdate)
@@ -193,6 +213,16 @@ public sealed class OpenAiTagAiChatService(
         {
             logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
             throw new AiProviderException("OpenAI", "OpenAI returned an error. Try again shortly.", ex);
+        }
+        catch (ClientResultException ex)
+        {
+            logger.LogError(ex, "Unexpected error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+            throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Network error calling {Provider}", "OpenAI");
+            throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
         }
     }
 }

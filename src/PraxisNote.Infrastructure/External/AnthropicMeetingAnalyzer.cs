@@ -165,6 +165,11 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
         }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Network error calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Could not reach Anthropic. Check your connection and try again.", ex);
+        }
     }
 
     internal const string TranscriptImportPromptTemplate = """
@@ -316,6 +321,11 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
         }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Network error calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Could not reach Anthropic. Check your connection and try again.", ex);
+        }
     }
 
     public async Task<TranscriptImportResult> ParseTranscriptForImportAsync(string transcript, string? timeZone = null, CancellationToken cancellationToken = default)
@@ -386,6 +396,11 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
         {
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Network error calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Could not reach Anthropic. Check your connection and try again.", ex);
         }
     }
 

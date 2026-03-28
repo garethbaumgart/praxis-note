@@ -76,7 +76,15 @@ public sealed class GeminiTagAiChatService(
             request.Headers.Add("x-goog-api-key", apiKey);
 
             response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch
+            {
+                response.Dispose();
+                throw;
+            }
         }
         catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
@@ -97,6 +105,11 @@ public sealed class GeminiTagAiChatService(
         {
             logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Gemini", ex.StatusCode);
             throw new AiProviderException("Gemini", "Gemini returned an error. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Network error calling {Provider}", "Gemini");
+            throw new AiProviderException("Gemini", "Could not reach Gemini. Check your connection and try again.", ex);
         }
 
         using (response)
@@ -232,6 +245,11 @@ public sealed class GeminiTagAiChatService(
         {
             logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Gemini", ex.StatusCode);
             throw new AiProviderException("Gemini", "Gemini returned an error. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Network error calling {Provider}", "Gemini");
+            throw new AiProviderException("Gemini", "Could not reach Gemini. Check your connection and try again.", ex);
         }
     }
 }

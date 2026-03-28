@@ -121,6 +121,11 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
         }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Network error calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Could not reach Anthropic. Check your connection and try again.", ex);
+        }
 
         var enumerator = stream.GetAsyncEnumerator(cts.Token);
         try
@@ -151,6 +156,11 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
                 {
                     _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
                     throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogError(ex, "Network error calling {Provider}", "Anthropic");
+                    throw new AiProviderException("Anthropic", "Could not reach Anthropic. Check your connection and try again.", ex);
                 }
 
                 if (enumerator.Current.Delta?.Text is { } text)
@@ -237,6 +247,11 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
         {
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Network error calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Could not reach Anthropic. Check your connection and try again.", ex);
         }
     }
 

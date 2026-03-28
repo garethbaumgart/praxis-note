@@ -148,5 +148,10 @@ public sealed class GeminiMeetingAnalyzer(
             logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Gemini", ex.StatusCode);
             throw new AiProviderException("Gemini", "Gemini returned an error. Try again shortly.", ex);
         }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Network error calling {Provider}", "Gemini");
+            throw new AiProviderException("Gemini", "Could not reach Gemini. Check your connection and try again.", ex);
+        }
     }
 }

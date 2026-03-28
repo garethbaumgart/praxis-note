@@ -248,6 +248,7 @@ import { AiErrorBannerComponent, AiErrorState } from '../shared/components/ai-er
                 <app-ai-error-banner
                   [error]="screenshotAiError()"
                   (onDismiss)="importService.reset()"
+                  (onRetry)="importService.reset()"
                 />
               } @else {
                 <app-error-state
@@ -463,6 +464,7 @@ import { AiErrorBannerComponent, AiErrorState } from '../shared/components/ai-er
                 <app-ai-error-banner
                   [error]="transcriptAiError()"
                   (onDismiss)="transcriptService.reset()"
+                  (onRetry)="transcriptService.reset()"
                 />
               } @else {
                 <app-error-state

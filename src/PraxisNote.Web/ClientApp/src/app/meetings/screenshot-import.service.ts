@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ExtractedCalendarEvent, ScreenshotExtractionResult } from './screenshot-import.model';
+import { ToastService } from '../shared/services/toast.service';
 
 export type ImportState = 'idle' | 'extracting' | 'preview' | 'importing' | 'done' | 'error';
 
@@ -14,6 +15,7 @@ export interface ScreenshotAiError {
 @Injectable({ providedIn: 'root' })
 export class ScreenshotImportService {
   private readonly http = inject(HttpClient);
+  private readonly toast = inject(ToastService);
 
   readonly state = signal<ImportState>('idle');
   readonly events = signal<ExtractedCalendarEvent[]>([]);
@@ -56,11 +58,17 @@ export class ScreenshotImportService {
       },
       error: (err: { error?: { error?: string; message?: string; settingsUrl?: string } }) => {
         const aiErrorCode = err.error?.error;
-        if (aiErrorCode && ['no_ai_key', 'ai_key_invalid', 'ai_rate_limited', 'ai_provider_error'].includes(aiErrorCode)) {
+        if (aiErrorCode === 'no_ai_key' || aiErrorCode === 'ai_key_invalid') {
           this.aiError.set(err.error as ScreenshotAiError);
+          this.error.set(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
+          this.state.set('error');
+        } else if (aiErrorCode === 'ai_rate_limited' || aiErrorCode === 'ai_provider_error') {
+          this.toast.error(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
+          this.state.set('idle');
+        } else {
+          this.error.set(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
+          this.state.set('error');
         }
-        this.error.set(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
-        this.state.set('error');
       },
     });
   }

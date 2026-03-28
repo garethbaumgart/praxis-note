@@ -252,6 +252,7 @@ interface DateOption {
                     class="mt-3 block"
                     [error]="aiError()"
                     (onDismiss)="aiError.set(null)"
+                    (onRetry)="analyze()"
                   />
                 }
                 @if (currentMeeting()) {
