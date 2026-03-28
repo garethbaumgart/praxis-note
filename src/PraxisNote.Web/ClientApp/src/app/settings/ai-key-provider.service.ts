@@ -39,9 +39,10 @@ export class AiKeyProviderService {
         this._keys.set(keys);
         this._loading.set(false);
       },
-      () => {
+      (err) => {
         this._error.set('Failed to load AI keys');
         this._loading.set(false);
+        throw err;
       },
     );
   }
@@ -79,7 +80,6 @@ export class AiKeyProviderService {
         throw message;
       } else {
         const message = httpErr.error?.error ?? `Failed to save ${provider} key`;
-        this.toast.error(message);
         throw message;
       }
     } finally {

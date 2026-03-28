@@ -318,8 +318,6 @@ export class AiKeyProviderCardComponent {
       }
     } finally {
       this.savingModel.set(null);
-      // Don't clear pendingModel here — upsertKey awaits loadKeys(),
-      // so key() already reflects the new model by this point
       this.pendingModel.set(null);
     }
   }
