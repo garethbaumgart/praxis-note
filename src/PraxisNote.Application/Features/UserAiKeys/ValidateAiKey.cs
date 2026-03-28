@@ -58,9 +58,10 @@ public sealed class ValidateAiKey(
         }
         catch (HttpRequestException ex)
         {
-            // Network-level error (DNS, timeout, 5xx) — inconclusive, key may be valid
-            logger.LogWarning(ex, "AI key validation inconclusive (network) for provider {Provider}", command.Provider);
-            return new Result(true, RateLimited: true);
+            // Network-level error (DNS, timeout, 5xx) — cannot confirm key is valid
+            logger.LogWarning(ex, "AI key validation failed (network) for provider {Provider}: {Status}",
+                command.Provider, ex.StatusCode);
+            return new Result(false);
         }
         catch (Exception ex)
         {
