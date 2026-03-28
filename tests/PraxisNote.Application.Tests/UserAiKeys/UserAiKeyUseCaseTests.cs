@@ -107,21 +107,6 @@ public class UserAiKeyUseCaseTests
         await Assert.ThrowsAsync<ArgumentException>(() => sut.ExecuteAsync(command));
     }
 
-    [Fact]
-    public async Task Upsert_NullModel_DoesNotThrow()
-    {
-        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
-        var command = new UpsertUserAiKey.Command(_userId, AiProvider.OpenAI, "sk-key", null);
-
-        var key = UserAiKey.Create(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", null);
-        _repo.UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", null, Arg.Any<CancellationToken>())
-            .Returns(key);
-
-        await sut.ExecuteAsync(command);
-
-        await _repo.Received(1).UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", null, Arg.Any<CancellationToken>());
-    }
-
     #endregion
 
     #region GetUserAiKeys

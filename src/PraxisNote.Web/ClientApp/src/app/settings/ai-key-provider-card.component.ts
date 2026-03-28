@@ -140,6 +140,7 @@ const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
                       type="button"
                       role="radio"
                       [attr.aria-checked]="selectedModel() === model.value"
+                      [attr.tabindex]="selectedModel() === model.value ? 0 : -1"
                       class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-colors text-left"
                       [class.border-accent-solid]="selectedModel() === model.value"
                       [class.bg-accent/10]="selectedModel() === model.value"
@@ -147,6 +148,7 @@ const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
                       [class.hover:border-foreground-muted]="selectedModel() !== model.value"
                       [disabled]="savingModel() === model.value"
                       (click)="selectModel(model.value)"
+                      (keydown)="handleModelKeyDown($event, $index)"
                     >
                       <span class="flex-1 min-w-0">
                         <span class="text-sm font-medium text-foreground">{{ model.label }}</span>
@@ -308,6 +310,25 @@ export class AiKeyProviderCardComponent {
     } finally {
       this.savingModel.set(null);
     }
+  }
+
+  handleModelKeyDown(event: KeyboardEvent, currentIndex: number): void {
+    const options = this.modelOptions();
+    let newIndex = currentIndex;
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+      newIndex = (currentIndex + 1) % options.length;
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+      newIndex = (currentIndex - 1 + options.length) % options.length;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    const container = (event.target as HTMLElement).closest('[role="radiogroup"]');
+    const buttons = container?.querySelectorAll<HTMLElement>('[role="radio"]');
+    buttons?.[newIndex]?.focus();
+    this.selectModel(options[newIndex].value);
   }
 
   doRemove(): void {
