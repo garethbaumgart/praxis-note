@@ -27,10 +27,18 @@ export interface AiErrorState {
             </a>
           }
         </div>
-        <button type="button" class="text-current opacity-50 hover:opacity-100 flex-shrink-0"
-                (click)="onDismiss.emit()" aria-label="Dismiss">
-          <i class="pi pi-times text-xs"></i>
-        </button>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          @if (!isPersistent()) {
+            <button type="button" class="text-current opacity-50 hover:opacity-100 text-xs underline"
+                    (click)="onRetry.emit()" aria-label="Retry">
+              Retry
+            </button>
+          }
+          <button type="button" class="text-current opacity-50 hover:opacity-100"
+                  (click)="onDismiss.emit()" aria-label="Dismiss">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
       </div>
     }
   `,
@@ -38,6 +46,7 @@ export interface AiErrorState {
 export class AiErrorBannerComponent {
   readonly error = input<AiErrorState | null>(null);
   readonly onDismiss = output<void>();
+  readonly onRetry = output<void>();
 
   protected readonly isPersistent = computed(() => {
     const code = this.error()?.code;

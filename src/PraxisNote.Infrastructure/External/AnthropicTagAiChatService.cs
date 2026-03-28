@@ -195,7 +195,7 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
         try
         {
             var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
-            var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
+            var content = string.Concat(response.Content.OfType<TextContent>().Select(part => part.Text));
 
             if (string.IsNullOrWhiteSpace(content))
             {

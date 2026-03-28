@@ -148,10 +148,10 @@ public sealed class OpenAiTagAiChatService(
             var completion = await _chatClient.CompleteChatAsync(
                 [OaiChatMessage.CreateUserMessage(prompt)], options, cts.Token);
 
-            var content = completion.Value.Content
-                .Where(p => p.Kind == ChatMessageContentPartKind.Text)
-                .Select(p => p.Text)
-                .FirstOrDefault();
+            var content = string.Concat(
+                completion.Value.Content
+                    .Where(p => p.Kind == ChatMessageContentPartKind.Text && !string.IsNullOrEmpty(p.Text))
+                    .Select(p => p.Text));
 
             if (string.IsNullOrWhiteSpace(content))
             {

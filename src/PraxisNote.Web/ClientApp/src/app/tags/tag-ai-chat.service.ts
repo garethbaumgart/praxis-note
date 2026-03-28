@@ -14,7 +14,7 @@ export class TagAiChatService {
   private readonly _isOpen = signal(false);
   private readonly _isCollapsed = signal(false);
   private readonly _error = signal<string | null>(null);
-  private readonly _errorData = signal<{ code: string; message: string; settingsUrl?: string } | null>(null);
+  private readonly _errorData = signal<{ code: string; message: string; settingsUrl?: string; retryAfterSeconds?: number } | null>(null);
 
   private abortController: AbortController | null = null;
   private currentTagId: string | null = null;
@@ -197,11 +197,12 @@ export class TagAiChatService {
                 // Set the full error message (not just the code)
                 this._error.set(data.message ?? data.error);
                 // Store structured error data for the banner
-                if (data.settingsUrl) {
-                  this._errorData.set({ code: data.error, message: data.message ?? data.error, settingsUrl: data.settingsUrl });
-                } else {
-                  this._errorData.set({ code: data.error, message: data.message ?? data.error });
-                }
+                this._errorData.set({
+                  code: data.error,
+                  message: data.message ?? data.error,
+                  settingsUrl: data.settingsUrl,
+                  retryAfterSeconds: data.retryAfterSeconds,
+                });
                 this._state.set('error');
                 return;
               }

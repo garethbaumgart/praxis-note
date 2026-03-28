@@ -679,6 +679,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initNewMeeting(): void {
+    this.aiError.set(null);
     this.isNewMeeting.set(true);
     this.loading.set(false);
     this.notFound.set(false);
@@ -709,6 +710,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadMeeting(id: string): void {
+    this.aiError.set(null);
     this.cancelPolling();
     this.meetingId.set(id);
     this.loading.set(true);

@@ -101,28 +101,36 @@ public sealed class GeminiTagAiChatService(
 
         using (response)
         {
-            await using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
-            using var reader = new System.IO.StreamReader(stream);
-
-            while (await reader.ReadLineAsync(cts.Token) is { } line)
+            try
             {
-                if (!line.StartsWith("data: ", StringComparison.Ordinal))
-                    continue;
+                await using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
+                using var reader = new System.IO.StreamReader(stream);
 
-                var json = line[6..];
-                if (string.IsNullOrWhiteSpace(json))
-                    continue;
-
-                var chunk = JsonSerializer.Deserialize<GeminiResponse>(json, Options);
-                var text = string.Concat(
-                    chunk?.Candidates?
-                        .SelectMany(c => c.Content?.Parts ?? [])
-                        .Select(p => p.Text ?? string.Empty) ?? []);
-
-                if (!string.IsNullOrEmpty(text))
+                while (await reader.ReadLineAsync(cts.Token) is { } line)
                 {
-                    yield return text;
+                    if (!line.StartsWith("data: ", StringComparison.Ordinal))
+                        continue;
+
+                    var json = line[6..];
+                    if (string.IsNullOrWhiteSpace(json))
+                        continue;
+
+                    var chunk = JsonSerializer.Deserialize<GeminiResponse>(json, Options);
+                    var text = string.Concat(
+                        chunk?.Candidates?
+                            .SelectMany(c => c.Content?.Parts ?? [])
+                            .Select(p => p.Text ?? string.Empty) ?? []);
+
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        yield return text;
+                    }
                 }
+            }
+            catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                logger.LogError(ex, "Timeout reading stream from {Provider}", "Gemini");
+                throw new AiProviderException("Gemini", "Gemini is not responding. Try again shortly.", ex);
             }
         }
     }
