@@ -133,8 +133,8 @@ const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
             <!-- Model selector -->
             @if (modelOptions().length > 0) {
               <div class="pt-2 border-t border-border">
-                <p id="preferred-model-label" class="text-xs font-medium text-foreground-muted mb-2">Preferred model</p>
-                <div class="space-y-1.5" role="radiogroup" aria-labelledby="preferred-model-label">
+                <p [id]="'preferred-model-label-' + provider()" class="text-xs font-medium text-foreground-muted mb-2">Preferred model</p>
+                <div class="space-y-1.5" role="radiogroup" [attr.aria-labelledby]="'preferred-model-label-' + provider()">
                   @for (model of modelOptions(); track model.value) {
                     <button
                       type="button"
@@ -244,10 +244,13 @@ export class AiKeyProviderCardComponent {
   readonly replacing = signal(false);
   readonly confirmingRemove = signal(false);
   readonly savingModel = signal<string | null>(null);
+  readonly pendingModel = signal<string | null>(null);
 
   readonly modelOptions = computed<AiModelOption[]>(() => AI_MODEL_CATALOGUE[this.provider()] ?? []);
 
   readonly selectedModel = computed(() => {
+    const pending = this.pendingModel();
+    if (pending) return pending;
     const options = this.modelOptions();
     if (!options.length) return '';
     const current = this.key()?.preferredModel;
@@ -302,13 +305,16 @@ export class AiKeyProviderCardComponent {
   async selectModel(modelValue: string): Promise<void> {
     if (this.savingModel() || modelValue === this.selectedModel()) return;
 
+    this.pendingModel.set(modelValue);
     this.savingModel.set(modelValue);
     try {
       await this.aiKeyService.upsertKey(this.provider(), '', modelValue);
     } catch (err) {
+      this.pendingModel.set(null);
       this.aiKeyService.showModelError(typeof err === 'string' ? err : 'Failed to update model');
     } finally {
       this.savingModel.set(null);
+      this.pendingModel.set(null);
     }
   }
 

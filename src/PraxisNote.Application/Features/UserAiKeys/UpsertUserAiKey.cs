@@ -35,11 +35,8 @@ public sealed class UpsertUserAiKey(
 
     public async Task ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
-        if (!string.IsNullOrWhiteSpace(command.PreferredModel)
-            && (!KnownModelsByProvider.TryGetValue(command.Provider, out var allowed) || !allowed.Contains(command.PreferredModel)))
-        {
-            throw new ArgumentException($"Unknown model: {command.PreferredModel}");
-        }
+        // Normalize model to canonical casing from the allowlist
+        var normalizedModel = NormalizeModel(command.Provider, command.PreferredModel);
 
         // Model-only update: no API key provided
         if (string.IsNullOrWhiteSpace(command.ApiKey))
@@ -50,7 +47,7 @@ public sealed class UpsertUserAiKey(
                 throw new UserAiKeyNotFoundException(command.UserId, command.Provider);
             }
 
-            existing.UpdateModel(command.PreferredModel);
+            existing.UpdateModel(normalizedModel);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return;
         }
@@ -58,7 +55,23 @@ public sealed class UpsertUserAiKey(
         var encrypted = encryption.Encrypt(command.ApiKey);
         var hint = encryption.ComputeHint(command.ApiKey);
 
-        await repository.UpsertAsync(command.UserId, command.Provider, encrypted, hint, command.PreferredModel, cancellationToken);
+        await repository.UpsertAsync(command.UserId, command.Provider, encrypted, hint, normalizedModel, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    private static string? NormalizeModel(AiProvider provider, string? preferredModel)
+    {
+        if (string.IsNullOrWhiteSpace(preferredModel))
+            return preferredModel;
+
+        if (!KnownModelsByProvider.TryGetValue(provider, out var allowed))
+            throw new ArgumentException($"Unknown model: {preferredModel}");
+
+        // Find the canonical casing from the allowlist
+        var canonical = allowed.FirstOrDefault(m => string.Equals(m, preferredModel, StringComparison.OrdinalIgnoreCase));
+        if (canonical is null)
+            throw new ArgumentException($"Unknown model: {preferredModel}");
+
+        return canonical;
     }
 }

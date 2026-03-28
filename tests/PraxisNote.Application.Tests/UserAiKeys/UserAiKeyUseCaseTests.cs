@@ -107,6 +107,36 @@ public class UserAiKeyUseCaseTests
         await Assert.ThrowsAsync<ArgumentException>(() => sut.ExecuteAsync(command));
     }
 
+    [Fact]
+    public async Task Upsert_WithNonCanonicalModelCasing_NormalizesToCanonical()
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.OpenAI, "sk-key", "GPT-4O");
+
+        var key = UserAiKey.Create(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", null);
+        _repo.UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", "gpt-4o", Arg.Any<CancellationToken>())
+            .Returns(key);
+
+        await sut.ExecuteAsync(command);
+
+        await _repo.Received(1).UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", "gpt-4o", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Upsert_ModelOnly_NormalizesModelCasing()
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        var existing = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_key", "****...abcd", null);
+        _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
+            .Returns(existing);
+
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "", "CLAUDE-SONNET-4-6");
+
+        await sut.ExecuteAsync(command);
+
+        Assert.Equal("claude-sonnet-4-6", existing.PreferredModel);
+    }
+
     #endregion
 
     #region GetUserAiKeys

@@ -56,6 +56,11 @@ public static class UserAiKeyEndpoints
         // Model-only update: no API key provided
         if (string.IsNullOrWhiteSpace(request.ApiKey))
         {
+            if (string.IsNullOrWhiteSpace(request.PreferredModel))
+            {
+                return Results.BadRequest(new { error = "Either apiKey or preferredModel must be provided" });
+            }
+
             var modelCommand = new UpsertUserAiKey.Command(userId.Value, aiProvider, "", request.PreferredModel);
             try
             {
