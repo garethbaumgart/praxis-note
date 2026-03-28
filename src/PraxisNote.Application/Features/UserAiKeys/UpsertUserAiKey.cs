@@ -76,7 +76,7 @@ public sealed class UpsertUserAiKey(
             return null;
 
         if (!KnownModelsByProvider.TryGetValue(provider, out var allowed))
-            throw new ArgumentException($"Unknown model: {preferredModel}");
+            throw new ArgumentException($"No model configuration for provider: {provider}");
 
         // Find the canonical casing from the allowlist
         var canonical = allowed.FirstOrDefault(m => string.Equals(m, preferredModel, StringComparison.OrdinalIgnoreCase));

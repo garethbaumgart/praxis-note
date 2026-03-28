@@ -324,8 +324,14 @@ export class AiKeyProviderCardComponent {
 
   handleModelKeyDown(event: KeyboardEvent, currentIndex: number): void {
     const options = this.modelOptions();
-    let newIndex = currentIndex;
 
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      void this.selectModel(options[currentIndex].value);
+      return;
+    }
+
+    let newIndex = currentIndex;
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
       newIndex = (currentIndex + 1) % options.length;
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
@@ -338,7 +344,6 @@ export class AiKeyProviderCardComponent {
     const container = (event.target as HTMLElement).closest('[role="radiogroup"]');
     const buttons = container?.querySelectorAll<HTMLElement>('[role="radio"]');
     buttons?.[newIndex]?.focus();
-    this.selectModel(options[newIndex].value);
   }
 
   doRemove(): void {
