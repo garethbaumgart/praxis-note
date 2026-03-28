@@ -121,6 +121,11 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
         }
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogError(ex, "Timeout initializing stream with {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
+        }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Network error calling {Provider}", "Anthropic");

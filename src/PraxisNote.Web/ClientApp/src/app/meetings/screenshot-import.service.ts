@@ -62,7 +62,14 @@ export class ScreenshotImportService {
           this.aiError.set(err.error as ScreenshotAiError);
           this.error.set(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
           this.state.set('error');
-        } else if (aiErrorCode === 'ai_rate_limited' || aiErrorCode === 'ai_provider_error') {
+        } else if (aiErrorCode === 'ai_rate_limited') {
+          const retryAfter = (err.error as any)?.retryAfterSeconds;
+          const message = retryAfter
+            ? `Rate limit reached. Try again in ~${retryAfter}s.`
+            : (err.error?.message ?? 'Rate limit reached. Try again shortly.');
+          this.toast.error(message);
+          this.state.set('idle');
+        } else if (aiErrorCode === 'ai_provider_error') {
           this.toast.error(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
           this.state.set('idle');
         } else {

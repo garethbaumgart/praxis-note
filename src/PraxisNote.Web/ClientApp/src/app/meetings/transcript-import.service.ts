@@ -100,7 +100,14 @@ export class TranscriptImportService {
           this.aiError.set(err.error as TranscriptAiError);
           this.error.set(err.error?.message ?? 'Failed to parse transcript. Please try again.');
           this.state.set('error');
-        } else if (aiErrorCode === 'ai_rate_limited' || aiErrorCode === 'ai_provider_error') {
+        } else if (aiErrorCode === 'ai_rate_limited') {
+          const retryAfter = err.error?.retryAfterSeconds;
+          const message = retryAfter
+            ? `Rate limit reached. Try again in ~${retryAfter}s.`
+            : (err.error?.message ?? 'Rate limit reached. Try again shortly.');
+          this.toast.error(message);
+          this.state.set('idle');
+        } else if (aiErrorCode === 'ai_provider_error') {
           this.toast.error(err.error?.message ?? 'Failed to parse transcript. Please try again.');
           this.state.set('idle');
         } else {
@@ -142,8 +149,28 @@ export class TranscriptImportService {
         meeting.isDuplicate = this.checkDuplicate(meeting);
         if (meeting.isDuplicate) meeting.selected = false;
         results.push(meeting);
-      } catch {
-        failures++;
+      } catch (err: any) {
+        const aiErrorCode = err.error?.error;
+        if (aiErrorCode === 'no_ai_key' || aiErrorCode === 'ai_key_invalid') {
+          this.aiError.set(err.error as TranscriptAiError);
+          this.error.set(err.error?.message ?? 'Failed to parse transcript. Please try again.');
+          this.state.set('error');
+          return;
+        } else if (aiErrorCode === 'ai_rate_limited') {
+          const retryAfter = err.error?.retryAfterSeconds;
+          const message = retryAfter
+            ? `Rate limit reached. Try again in ~${retryAfter}s.`
+            : (err.error?.message ?? 'Rate limit reached. Try again shortly.');
+          this.toast.error(message);
+          this.state.set('idle');
+          return;
+        } else if (aiErrorCode === 'ai_provider_error') {
+          this.toast.error(err.error?.message ?? 'Failed to parse transcript. Please try again.');
+          this.state.set('idle');
+          return;
+        } else {
+          failures++;
+        }
       }
     }
 
