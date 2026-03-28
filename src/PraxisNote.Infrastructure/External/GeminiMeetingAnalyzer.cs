@@ -133,12 +133,12 @@ public sealed class GeminiMeetingAnalyzer(
             logger.LogWarning("Rate limited by {Provider}", "Gemini");
             throw new AiRateLimitedException("Gemini");
         }
-        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             logger.LogError(ex, "Timeout calling {Provider}", "Gemini");
             throw new AiProviderException("Gemini", "Gemini is not responding. Try again shortly.", ex);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        catch (HttpRequestException ex) when (ex.StatusCode is { } s && (int)s >= 500)
         {
             logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Gemini", ex.StatusCode);
             throw new AiProviderException("Gemini", "Gemini returned an error. Try again shortly.", ex);

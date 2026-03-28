@@ -98,7 +98,7 @@ public sealed class OpenAiTagAiChatService(
                     logger.LogWarning("Rate limited by {Provider}", "OpenAI");
                     throw new AiRateLimitedException("OpenAI");
                 }
-                catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+                catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
                 {
                     logger.LogError(ex, "Timeout calling {Provider}", "OpenAI");
                     throw new AiProviderException("OpenAI", "OpenAI is not responding. Try again shortly.", ex);
@@ -184,7 +184,7 @@ public sealed class OpenAiTagAiChatService(
             logger.LogWarning("Rate limited by {Provider}", "OpenAI");
             throw new AiRateLimitedException("OpenAI");
         }
-        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             logger.LogError(ex, "Timeout calling {Provider}", "OpenAI");
             throw new AiProviderException("OpenAI", "OpenAI is not responding. Try again shortly.", ex);

@@ -155,12 +155,12 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
             _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
             throw new AiRateLimitedException("Anthropic");
         }
-        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "Timeout calling {Provider}", "Anthropic");
             throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        catch (HttpRequestException ex) when (ex.StatusCode is { } s && (int)s >= 500)
         {
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
@@ -306,12 +306,12 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
             _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
             throw new AiRateLimitedException("Anthropic");
         }
-        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "Timeout calling {Provider}", "Anthropic");
             throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        catch (HttpRequestException ex) when (ex.StatusCode is { } s && (int)s >= 500)
         {
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
@@ -377,12 +377,12 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
             _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
             throw new AiRateLimitedException("Anthropic");
         }
-        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "Timeout calling {Provider}", "Anthropic");
             throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        catch (HttpRequestException ex) when (ex.StatusCode is { } s && (int)s >= 500)
         {
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);

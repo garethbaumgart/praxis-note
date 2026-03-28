@@ -113,7 +113,7 @@ import { TagAiChatService } from './tag-ai-chat.service';
             @if (chat.error()) {
               <div class="px-3 py-2 rounded-lg bg-danger-bg text-danger text-sm">
                 <div class="flex items-center gap-2">
-                  <i [class]="errorIcon()" class="text-xs flex-shrink-0" aria-hidden="true"></i>
+                  <i [class]="errorIcon()" aria-hidden="true"></i>
                   <span>{{ chat.error() }}</span>
                 </div>
                 @if (chat.errorData()?.settingsUrl) {
@@ -175,10 +175,10 @@ export class TagAiChatComponent implements AfterViewChecked {
   protected readonly errorIcon = computed(() => {
     const code = this.chat.errorData()?.code;
     switch (code) {
-      case 'no_ai_key': return 'pi pi-key';
-      case 'ai_key_invalid': return 'pi pi-shield';
-      case 'ai_rate_limited': return 'pi pi-clock';
-      default: return 'pi pi-exclamation-circle';
+      case 'no_ai_key': return 'pi pi-key text-xs flex-shrink-0';
+      case 'ai_key_invalid': return 'pi pi-shield text-xs flex-shrink-0';
+      case 'ai_rate_limited': return 'pi pi-clock text-xs flex-shrink-0';
+      default: return 'pi pi-exclamation-circle text-xs flex-shrink-0';
     }
   });
   private shouldScrollToBottom = false;
