@@ -146,7 +146,7 @@ const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
                       [class.bg-accent/10]="selectedModel() === model.value"
                       [class.border-border]="selectedModel() !== model.value"
                       [class.hover:border-foreground-muted]="selectedModel() !== model.value"
-                      [disabled]="savingModel() === model.value"
+                      [disabled]="savingModel() !== null"
                       (click)="selectModel(model.value)"
                       (keydown)="handleModelKeyDown($event, $index)"
                     >

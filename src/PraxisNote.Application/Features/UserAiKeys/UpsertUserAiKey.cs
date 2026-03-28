@@ -41,6 +41,9 @@ public sealed class UpsertUserAiKey(
         // Model-only update: no API key provided
         if (string.IsNullOrWhiteSpace(command.ApiKey))
         {
+            if (string.IsNullOrWhiteSpace(normalizedModel))
+                throw new ArgumentException("PreferredModel is required for model-only updates");
+
             var existing = await repository.GetByUserAndProviderAsync(command.UserId, command.Provider, cancellationToken);
             if (existing is null)
             {
@@ -54,6 +57,14 @@ public sealed class UpsertUserAiKey(
 
         var encrypted = encryption.Encrypt(command.ApiKey);
         var hint = encryption.ComputeHint(command.ApiKey);
+
+        // Preserve existing model preference when no explicit model is provided
+        if (normalizedModel is null)
+        {
+            var existing = await repository.GetByUserAndProviderAsync(command.UserId, command.Provider, cancellationToken);
+            if (existing is not null)
+                normalizedModel = existing.PreferredModel;
+        }
 
         await repository.UpsertAsync(command.UserId, command.Provider, encrypted, hint, normalizedModel, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

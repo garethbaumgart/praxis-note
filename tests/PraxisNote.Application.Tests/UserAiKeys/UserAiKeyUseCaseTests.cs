@@ -54,6 +54,18 @@ public class UserAiKeyUseCaseTests
         await _repo.Received(1).UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", null, Arg.Any<CancellationToken>());
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Upsert_ModelOnly_WithNullOrEmptyModel_ThrowsArgumentException(string? model)
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "", model);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => sut.ExecuteAsync(command));
+    }
+
     [Fact]
     public async Task Upsert_WithNullApiKey_AndNoExistingKey_ThrowsNotFoundException()
     {
@@ -61,7 +73,7 @@ public class UserAiKeyUseCaseTests
         _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
             .Returns((UserAiKey?)null);
 
-        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, null!, null);
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, null!, "claude-sonnet-4-6");
 
         await Assert.ThrowsAsync<UserAiKeyNotFoundException>(() => sut.ExecuteAsync(command));
     }
@@ -120,6 +132,25 @@ public class UserAiKeyUseCaseTests
         await sut.ExecuteAsync(command);
 
         await _repo.Received(1).UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", "gpt-4o", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Upsert_KeyReplace_WithNullModel_PreservesExistingModel()
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        var existing = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_old", "****...old", "claude-opus-4-6");
+        _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
+            .Returns(existing);
+
+        var key = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_sk-new", "****...abcd", "claude-opus-4-6");
+        _repo.UpsertAsync(_userId, AiProvider.Anthropic, "enc_sk-new", "****...abcd", "claude-opus-4-6", Arg.Any<CancellationToken>())
+            .Returns(key);
+
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "sk-new", null);
+
+        await sut.ExecuteAsync(command);
+
+        await _repo.Received(1).UpsertAsync(_userId, AiProvider.Anthropic, "enc_sk-new", "****...abcd", "claude-opus-4-6", Arg.Any<CancellationToken>());
     }
 
     [Fact]
