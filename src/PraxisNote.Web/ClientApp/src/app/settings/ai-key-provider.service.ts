@@ -30,20 +30,20 @@ export class AiKeyProviderService {
     return cached;
   }
 
-  loadKeys(): void {
+  loadKeys(): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http.get<AiKeyDto[]>('/api/ai-keys').subscribe({
-      next: (keys) => {
+    return firstValueFrom(this.http.get<AiKeyDto[]>('/api/ai-keys')).then(
+      (keys) => {
         this._keys.set(keys);
         this._loading.set(false);
       },
-      error: () => {
+      () => {
         this._error.set('Failed to load AI keys');
         this._loading.set(false);
       },
-    });
+    );
   }
 
   async upsertKey(
@@ -60,7 +60,7 @@ export class AiKeyProviderService {
           { apiKey, preferredModel },
         ),
       );
-      this.loadKeys();
+      await this.loadKeys();
       const summary = apiKey ? `${provider} key saved` : `${provider} model updated`;
       this.toast.success({ summary });
       return result;

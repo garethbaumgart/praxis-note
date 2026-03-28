@@ -312,9 +312,14 @@ export class AiKeyProviderCardComponent {
       await this.aiKeyService.upsertKey(this.provider(), '', modelValue);
     } catch (err) {
       this.pendingModel.set(null);
-      this.aiKeyService.showModelError(typeof err === 'string' ? err : 'Failed to update model');
+      // Only toast for 422 (validation) errors; service already toasts for other failures
+      if (typeof err === 'string') {
+        this.aiKeyService.showModelError(err);
+      }
     } finally {
       this.savingModel.set(null);
+      // Don't clear pendingModel here — upsertKey awaits loadKeys(),
+      // so key() already reflects the new model by this point
       this.pendingModel.set(null);
     }
   }
