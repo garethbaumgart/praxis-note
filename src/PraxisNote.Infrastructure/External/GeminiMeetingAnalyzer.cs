@@ -119,7 +119,7 @@ public sealed class GeminiMeetingAnalyzer(
             response.EnsureSuccessStatusCode();
 
             var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token)
-                ?? throw new InvalidOperationException("Gemini returned an empty response");
+                ?? throw new AiProviderException("Gemini", "Provider returned an empty response.", null);
 
             var text = string.Concat(
                 geminiResponse.Candidates?
@@ -128,7 +128,7 @@ public sealed class GeminiMeetingAnalyzer(
 
             if (string.IsNullOrWhiteSpace(text))
             {
-                throw new InvalidOperationException("Gemini returned an empty response");
+                throw new AiProviderException("Gemini", "Provider returned an empty response.", null);
             }
 
             return text;

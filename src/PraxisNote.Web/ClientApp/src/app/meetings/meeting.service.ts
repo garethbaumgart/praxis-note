@@ -187,7 +187,7 @@ export class MeetingService {
     });
   }
 
-  analyzeMeeting(id: string, onAiError?: (err: { error?: string; message?: string; settingsUrl?: string }) => void): void {
+  analyzeMeeting(id: string, onAiError?: (err: { error?: string; message?: string; settingsUrl?: string; retryAfterSeconds?: number }) => void): void {
     // Optimistic update - set status to Processing
     this._meetings.update(meetings =>
       meetings.map(m =>

@@ -76,6 +76,17 @@ public sealed class GeminiTagAiChatService(
             request.Headers.Add("x-goog-api-key", apiKey);
 
             response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                var retryAfterSeconds = response.Headers.RetryAfter?.Delta is { } delta
+                    ? (int)Math.Ceiling(delta.TotalSeconds)
+                    : response.Headers.RetryAfter?.Date is { } date
+                        ? Math.Max(0, (int)Math.Ceiling((date - DateTimeOffset.UtcNow).TotalSeconds))
+                        : (int?)null;
+                response.Dispose();
+                logger.LogWarning("Rate limited by {Provider}", "Gemini");
+                throw new AiRateLimitedException("Gemini", retryAfterSeconds);
+            }
             try
             {
                 response.EnsureSuccessStatusCode();
@@ -90,11 +101,6 @@ public sealed class GeminiTagAiChatService(
         {
             logger.LogError(ex, "AI key rejected by {Provider}", "Gemini");
             throw new AiKeyInvalidException("Gemini");
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
-        {
-            logger.LogWarning("Rate limited by {Provider}", "Gemini");
-            throw new AiRateLimitedException("Gemini");
         }
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
@@ -197,6 +203,16 @@ public sealed class GeminiTagAiChatService(
             starterRequest.Headers.Add("x-goog-api-key", apiKey);
 
             using var response = await httpClient.SendAsync(starterRequest, cts.Token);
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                var retryAfterSeconds = response.Headers.RetryAfter?.Delta is { } delta
+                    ? (int)Math.Ceiling(delta.TotalSeconds)
+                    : response.Headers.RetryAfter?.Date is { } date
+                        ? Math.Max(0, (int)Math.Ceiling((date - DateTimeOffset.UtcNow).TotalSeconds))
+                        : (int?)null;
+                logger.LogWarning("Rate limited by {Provider}", "Gemini");
+                throw new AiRateLimitedException("Gemini", retryAfterSeconds);
+            }
             response.EnsureSuccessStatusCode();
 
             var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token);
@@ -230,11 +246,6 @@ public sealed class GeminiTagAiChatService(
         {
             logger.LogError(ex, "AI key rejected by {Provider}", "Gemini");
             throw new AiKeyInvalidException("Gemini");
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
-        {
-            logger.LogWarning("Rate limited by {Provider}", "Gemini");
-            throw new AiRateLimitedException("Gemini");
         }
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {

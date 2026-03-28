@@ -138,7 +138,7 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new InvalidOperationException("Anthropic returned an empty response");
+                throw new AiProviderException("Anthropic", "Provider returned an empty response.", null);
             }
 
             _logger.LogInformation("Received analysis response, parsing JSON");
@@ -296,7 +296,7 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new InvalidOperationException("Anthropic returned an empty response for screenshot extraction");
+                throw new AiProviderException("Anthropic", "Provider returned an empty response.", null);
             }
 
             return ParseScreenshotExtractionResponse(content);
@@ -367,7 +367,7 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new InvalidOperationException("Anthropic returned an empty response for transcript import parsing");
+                throw new AiProviderException("Anthropic", "Provider returned an empty response.", null);
             }
 
             _logger.LogInformation("Received transcript import parse response, parsing JSON");

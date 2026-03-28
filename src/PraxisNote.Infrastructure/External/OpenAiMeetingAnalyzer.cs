@@ -114,7 +114,7 @@ public sealed class OpenAiMeetingAnalyzer(
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new InvalidOperationException("OpenAI returned an empty response");
+                throw new AiProviderException("OpenAI", "Provider returned an empty response.", null);
             }
 
             return content;
