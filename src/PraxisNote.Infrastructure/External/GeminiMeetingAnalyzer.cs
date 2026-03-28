@@ -128,7 +128,8 @@ public sealed class GeminiMeetingAnalyzer(
 
             if (string.IsNullOrWhiteSpace(text))
             {
-                throw new AiProviderException("Gemini", "Provider returned an empty response.", null);
+                logger.LogError("Empty response from {Provider}", "Gemini");
+                throw new AiProviderException("Gemini", "Gemini returned an empty response.");
             }
 
             return text;
