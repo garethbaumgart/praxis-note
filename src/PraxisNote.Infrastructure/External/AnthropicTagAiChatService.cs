@@ -114,7 +114,7 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
         {
             _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
-            throw new AiRateLimitedException("Anthropic");
+            throw new AiRateLimitedException("Anthropic", ExtractRetryAfterSeconds(ex));
         }
         catch (HttpRequestException ex) when (ex.StatusCode is { } s && (int)s >= 500)
         {
@@ -150,7 +150,7 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
                 catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
-                    throw new AiRateLimitedException("Anthropic");
+                    throw new AiRateLimitedException("Anthropic", ExtractRetryAfterSeconds(ex));
                 }
                 catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
                 {
@@ -241,7 +241,7 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
         {
             _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
-            throw new AiRateLimitedException("Anthropic");
+            throw new AiRateLimitedException("Anthropic", ExtractRetryAfterSeconds(ex));
         }
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
@@ -318,5 +318,26 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
             $"What tasks are still outstanding for {tagName}?",
             $"What decisions have been made about {tagName}?"
         };
+    }
+
+    /// <summary>
+    /// Attempts to extract a Retry-After hint in seconds from an <see cref="HttpRequestException"/>
+    /// raised by the Anthropic SDK. The SDK does not surface raw response headers, so we try to
+    /// parse the value from the exception message (e.g. "retry-after: 30").
+    /// Returns <c>null</c> when no hint is found.
+    /// </summary>
+    private static int? ExtractRetryAfterSeconds(HttpRequestException ex)
+    {
+        var message = ex.Message;
+        var idx = message.IndexOf("retry-after", StringComparison.OrdinalIgnoreCase);
+        if (idx < 0) return null;
+
+        // Find the number that follows "retry-after" (with optional colon/space)
+        var afterKey = message.AsSpan(idx + "retry-after".Length).TrimStart([':', ' ', '\t']);
+        var end = 0;
+        while (end < afterKey.Length && char.IsDigit(afterKey[end])) end++;
+        if (end > 0 && int.TryParse(afterKey[..end], out var seconds)) return seconds;
+
+        return null;
     }
 }
