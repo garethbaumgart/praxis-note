@@ -133,11 +133,13 @@ const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
             <!-- Model selector -->
             @if (modelOptions().length > 0) {
               <div class="pt-2 border-t border-border">
-                <p class="text-xs font-medium text-foreground-muted mb-2">Preferred model</p>
-                <div class="space-y-1.5">
+                <p id="preferred-model-label" class="text-xs font-medium text-foreground-muted mb-2">Preferred model</p>
+                <div class="space-y-1.5" role="radiogroup" aria-labelledby="preferred-model-label">
                   @for (model of modelOptions(); track model.value) {
                     <button
                       type="button"
+                      role="radio"
+                      [attr.aria-checked]="selectedModel() === model.value"
                       class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-colors text-left"
                       [class.border-accent-solid]="selectedModel() === model.value"
                       [class.bg-accent/10]="selectedModel() === model.value"
@@ -145,7 +147,6 @@ const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
                       [class.hover:border-foreground-muted]="selectedModel() !== model.value"
                       [disabled]="savingModel() === model.value"
                       (click)="selectModel(model.value)"
-                      [attr.aria-label]="'Select model ' + model.label"
                     >
                       <span class="flex-1 min-w-0">
                         <span class="text-sm font-medium text-foreground">{{ model.label }}</span>
@@ -157,7 +158,10 @@ const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
                         }
                       </span>
                       @if (savingModel() === model.value) {
-                        <i class="pi pi-spin pi-spinner text-xs text-accent-solid" aria-hidden="true"></i>
+                        <span role="status" aria-label="Saving model">
+                          <i class="pi pi-spin pi-spinner text-xs text-accent-solid" aria-hidden="true"></i>
+                          <span class="sr-only">Saving model...</span>
+                        </span>
                       } @else if (selectedModel() === model.value) {
                         <i class="pi pi-check text-xs text-accent-solid" aria-hidden="true"></i>
                       }
@@ -242,9 +246,11 @@ export class AiKeyProviderCardComponent {
   readonly modelOptions = computed<AiModelOption[]>(() => AI_MODEL_CATALOGUE[this.provider()] ?? []);
 
   readonly selectedModel = computed(() => {
+    const options = this.modelOptions();
+    if (!options.length) return '';
     const current = this.key()?.preferredModel;
-    if (current) return current;
-    return this.modelOptions().find(m => m.isDefault)?.value ?? this.modelOptions()[0]?.value ?? '';
+    if (current && options.some(m => m.value === current)) return current;
+    return options.find(m => m.isDefault)?.value ?? options[0].value;
   });
 
   get meta(): ProviderMeta {
@@ -297,8 +303,8 @@ export class AiKeyProviderCardComponent {
     this.savingModel.set(modelValue);
     try {
       await this.aiKeyService.upsertKey(this.provider(), '', modelValue);
-    } catch {
-      // Model update failed — toast already shown by service
+    } catch (err) {
+      this.aiKeyService.showModelError(typeof err === 'string' ? err : 'Failed to update model');
     } finally {
       this.savingModel.set(null);
     }

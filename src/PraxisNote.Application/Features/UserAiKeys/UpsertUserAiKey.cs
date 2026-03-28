@@ -11,25 +11,32 @@ public sealed class UpsertUserAiKey(
 {
     public record Command(Guid UserId, AiProvider Provider, string ApiKey, string? PreferredModel);
 
-    private static readonly HashSet<string> KnownModels = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<AiProvider, HashSet<string>> KnownModelsByProvider = new()
     {
-        // Anthropic
-        "claude-sonnet-4-6",
-        "claude-haiku-4-5",
-        "claude-opus-4-6",
-        // OpenAI
-        "gpt-4o-mini",
-        "gpt-4o",
-        "gpt-4.1",
-        // Gemini
-        "gemini-1.5-flash",
-        "gemini-1.5-pro",
-        "gemini-2.0-flash",
+        [AiProvider.Anthropic] = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "claude-sonnet-4-6",
+            "claude-haiku-4-5",
+            "claude-opus-4-6",
+        },
+        [AiProvider.OpenAI] = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "gpt-4o-mini",
+            "gpt-4o",
+            "gpt-4.1",
+        },
+        [AiProvider.Gemini] = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-2.0-flash",
+        },
     };
 
     public async Task ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
-        if (!string.IsNullOrWhiteSpace(command.PreferredModel) && !KnownModels.Contains(command.PreferredModel))
+        if (!string.IsNullOrWhiteSpace(command.PreferredModel)
+            && (!KnownModelsByProvider.TryGetValue(command.Provider, out var allowed) || !allowed.Contains(command.PreferredModel)))
         {
             throw new ArgumentException($"Unknown model: {command.PreferredModel}");
         }

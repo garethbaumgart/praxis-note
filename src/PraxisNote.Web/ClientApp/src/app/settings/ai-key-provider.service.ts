@@ -87,6 +87,10 @@ export class AiKeyProviderService {
     }
   }
 
+  showModelError(message: string): void {
+    this.toast.error(message);
+  }
+
   removeKey(provider: AiProvider): void {
     const previousKeys = this._keys();
     this._keys.update(keys => keys.filter(k => k.provider !== provider));

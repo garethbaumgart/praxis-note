@@ -66,15 +66,17 @@ public class UserAiKeyUseCaseTests
         await Assert.ThrowsAsync<UserAiKeyNotFoundException>(() => sut.ExecuteAsync(command));
     }
 
-    [Fact]
-    public async Task Upsert_ModelOnly_UpdatesExistingKeyModel()
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Upsert_ModelOnly_UpdatesExistingKeyModel(string apiKey)
     {
         var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
         var existing = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_key", "****...abcd", null);
         _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
             .Returns(existing);
 
-        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "", "claude-opus-4-6");
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, apiKey, "claude-opus-4-6");
 
         await sut.ExecuteAsync(command);
 
@@ -94,11 +96,13 @@ public class UserAiKeyUseCaseTests
         await Assert.ThrowsAsync<UserAiKeyNotFoundException>(() => sut.ExecuteAsync(command));
     }
 
-    [Fact]
-    public async Task Upsert_UnknownModel_ThrowsArgumentException()
+    [Theory]
+    [InlineData("unknown-model-xyz")]
+    [InlineData("gpt-4o")]  // Valid model but wrong provider (OpenAI model for Anthropic)
+    public async Task Upsert_UnknownOrMismatchedModel_ThrowsArgumentException(string model)
     {
         var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
-        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "sk-test", "unknown-model-xyz");
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "sk-test", model);
 
         await Assert.ThrowsAsync<ArgumentException>(() => sut.ExecuteAsync(command));
     }
