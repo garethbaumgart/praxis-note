@@ -62,7 +62,7 @@ public sealed class UpsertUserAiKey(
     private static string? NormalizeModel(AiProvider provider, string? preferredModel)
     {
         if (string.IsNullOrWhiteSpace(preferredModel))
-            return preferredModel;
+            return null;
 
         if (!KnownModelsByProvider.TryGetValue(provider, out var allowed))
             throw new ArgumentException($"Unknown model: {preferredModel}");

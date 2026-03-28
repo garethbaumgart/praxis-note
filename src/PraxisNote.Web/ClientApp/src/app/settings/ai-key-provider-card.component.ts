@@ -303,7 +303,8 @@ export class AiKeyProviderCardComponent {
   }
 
   async selectModel(modelValue: string): Promise<void> {
-    if (this.savingModel() || modelValue === this.selectedModel()) return;
+    const persistedModel = this.key()?.preferredModel;
+    if (this.savingModel() || modelValue === persistedModel) return;
 
     this.pendingModel.set(modelValue);
     this.savingModel.set(modelValue);
