@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using PraxisNote.Application.Features.Meetings;
+using PraxisNote.Application.Features.UserAiKeys;
 using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Web.Extensions;
 
@@ -205,6 +206,18 @@ public static class MeetingEndpoints
         {
             return AiKeyErrorResults.NoAiKeyResult();
         }
+        catch (AiKeyInvalidException ex)
+        {
+            return AiKeyErrorResults.AiKeyInvalidResult(ex);
+        }
+        catch (AiRateLimitedException ex)
+        {
+            return AiKeyErrorResults.AiRateLimitedResult(ex);
+        }
+        catch (AiProviderException ex)
+        {
+            return AiKeyErrorResults.AiProviderErrorResult(ex);
+        }
     }
 
     private static async Task<IResult> HandleToggleActionItem(
@@ -395,6 +408,18 @@ public static class MeetingEndpoints
         {
             return AiKeyErrorResults.NoAiKeyResult();
         }
+        catch (AiKeyInvalidException ex)
+        {
+            return AiKeyErrorResults.AiKeyInvalidResult(ex);
+        }
+        catch (AiRateLimitedException ex)
+        {
+            return AiKeyErrorResults.AiRateLimitedResult(ex);
+        }
+        catch (AiProviderException ex)
+        {
+            return AiKeyErrorResults.AiProviderErrorResult(ex);
+        }
     }
 
     private static async Task<IResult> HandleCreateMeetingNote(
@@ -556,6 +581,18 @@ public static class MeetingEndpoints
         catch (NoAiKeyConfiguredException)
         {
             return AiKeyErrorResults.NoAiKeyResult();
+        }
+        catch (AiKeyInvalidException ex)
+        {
+            return AiKeyErrorResults.AiKeyInvalidResult(ex);
+        }
+        catch (AiRateLimitedException ex)
+        {
+            return AiKeyErrorResults.AiRateLimitedResult(ex);
+        }
+        catch (AiProviderException ex)
+        {
+            return AiKeyErrorResults.AiProviderErrorResult(ex);
         }
         finally
         {

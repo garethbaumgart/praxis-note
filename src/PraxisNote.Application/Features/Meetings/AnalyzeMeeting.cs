@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.Meetings;
 
@@ -67,6 +68,27 @@ public sealed class AnalyzeMeeting(
             await unitOfWork.SaveChangesAsync(CancellationToken.None);
             throw;
         }
+        catch (AiKeyInvalidException ex)
+        {
+            logger.LogWarning("AI key invalid for meeting {MeetingId}, provider {Provider}", meeting.Id, ex.Provider);
+            meeting.FailAnalysis();
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            throw;
+        }
+        catch (AiRateLimitedException ex)
+        {
+            logger.LogInformation("AI rate limited for meeting {MeetingId}, provider {Provider}", meeting.Id, ex.Provider);
+            meeting.FailAnalysis();
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            throw;
+        }
+        catch (AiProviderException ex)
+        {
+            logger.LogError(ex, "AI provider error for meeting {MeetingId}", meeting.Id);
+            meeting.FailAnalysis();
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            throw;
+        }
         catch (OperationCanceledException)
         {
             // Mark as failed before propagating so meeting isn't stuck in Processing
@@ -78,7 +100,7 @@ public sealed class AnalyzeMeeting(
         {
             logger.LogError(
                 ex,
-                "Failed to analyze meeting {MeetingId} for user {UserId}",
+                "Unexpected error analyzing meeting {MeetingId} for user {UserId}",
                 meeting.Id,
                 command.UserId);
 

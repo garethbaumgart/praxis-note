@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Chat;
 using PraxisNote.Application.Features.Tags.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 using OaiChatMessage = OpenAI.Chat.ChatMessage;
 
 namespace PraxisNote.Infrastructure.External;
@@ -56,15 +57,90 @@ public sealed class OpenAiTagAiChatService(
 
         logger.LogDebug("Starting tag AI chat stream with OpenAI model {Model}", model);
 
-        await foreach (var update in _chatClient.CompleteChatStreamingAsync(messages, options, cts.Token))
+        IAsyncEnumerable<StreamingChatCompletionUpdate> stream;
+        try
         {
-            foreach (var part in update.ContentUpdate)
+            stream = _chatClient.CompleteChatStreamingAsync(messages, options, cts.Token);
+        }
+        catch (ClientResultException ex) when (ex.Status is 401 or 403)
+        {
+            logger.LogError(ex, "AI key rejected by {Provider}", "OpenAI");
+            throw new AiKeyInvalidException("OpenAI");
+        }
+        catch (ClientResultException ex) when (ex.Status == 429)
+        {
+            logger.LogWarning("Rate limited by {Provider}", "OpenAI");
+            throw new AiRateLimitedException("OpenAI");
+        }
+        catch (ClientResultException ex) when (ex.Status >= 500)
+        {
+            logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+            throw new AiProviderException("OpenAI", "OpenAI returned an error. Try again shortly.", ex);
+        }
+        catch (ClientResultException ex)
+        {
+            logger.LogError(ex, "Unexpected error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+            throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Network error calling {Provider}", "OpenAI");
+            throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+        }
+
+        var enumerator = stream.GetAsyncEnumerator(cts.Token);
+        try
+        {
+            while (true)
             {
-                if (part.Kind == ChatMessageContentPartKind.Text && !string.IsNullOrEmpty(part.Text))
+                try
                 {
-                    yield return part.Text;
+                    if (!await enumerator.MoveNextAsync())
+                        break;
+                }
+                catch (ClientResultException ex) when (ex.Status is 401 or 403)
+                {
+                    logger.LogError(ex, "AI key rejected by {Provider}", "OpenAI");
+                    throw new AiKeyInvalidException("OpenAI");
+                }
+                catch (ClientResultException ex) when (ex.Status == 429)
+                {
+                    logger.LogWarning("Rate limited by {Provider}", "OpenAI");
+                    throw new AiRateLimitedException("OpenAI");
+                }
+                catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+                {
+                    logger.LogError(ex, "Timeout calling {Provider}", "OpenAI");
+                    throw new AiProviderException("OpenAI", "OpenAI is not responding. Try again shortly.", ex);
+                }
+                catch (ClientResultException ex) when (ex.Status >= 500)
+                {
+                    logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+                    throw new AiProviderException("OpenAI", "OpenAI returned an error. Try again shortly.", ex);
+                }
+                catch (ClientResultException ex)
+                {
+                    logger.LogError(ex, "Unexpected error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+                    throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    logger.LogError(ex, "Network error calling {Provider}", "OpenAI");
+                    throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+                }
+
+                foreach (var part in enumerator.Current.ContentUpdate)
+                {
+                    if (part.Kind == ChatMessageContentPartKind.Text && !string.IsNullOrEmpty(part.Text))
+                    {
+                        yield return part.Text;
+                    }
                 }
             }
+        }
+        finally
+        {
+            await enumerator.DisposeAsync();
         }
     }
 
@@ -87,33 +163,66 @@ public sealed class OpenAiTagAiChatService(
 
         logger.LogDebug("Generating starter prompts with OpenAI model {Model}", model);
 
-        var completion = await _chatClient.CompleteChatAsync(
-            [OaiChatMessage.CreateUserMessage(prompt)], options, cts.Token);
-
-        var content = completion.Value.Content
-            .Where(p => p.Kind == ChatMessageContentPartKind.Text)
-            .Select(p => p.Text)
-            .FirstOrDefault();
-
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return AnthropicTagAiChatService.DefaultStarters(context.TagName);
-        }
-
         try
         {
-            var cleanJson = AnthropicMeetingAnalyzer.CleanJsonResponse(content);
-            var starters = JsonSerializer.Deserialize<List<string>>(cleanJson);
-            if (starters is { Count: > 0 })
-            {
-                return starters.Take(4).ToList();
-            }
-        }
-        catch (JsonException ex)
-        {
-            logger.LogWarning(ex, "Failed to parse OpenAI starter prompts JSON, using defaults");
-        }
+            var completion = await _chatClient.CompleteChatAsync(
+                [OaiChatMessage.CreateUserMessage(prompt)], options, cts.Token);
 
-        return AnthropicTagAiChatService.DefaultStarters(context.TagName);
+            var content = string.Concat(
+                completion.Value.Content
+                    .Where(p => p.Kind == ChatMessageContentPartKind.Text && !string.IsNullOrEmpty(p.Text))
+                    .Select(p => p.Text));
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return AnthropicTagAiChatService.DefaultStarters(context.TagName);
+            }
+
+            try
+            {
+                var cleanJson = AnthropicMeetingAnalyzer.CleanJsonResponse(content);
+                var starters = JsonSerializer.Deserialize<List<string>>(cleanJson);
+                if (starters is { Count: > 0 })
+                {
+                    return starters.Take(4).ToList();
+                }
+            }
+            catch (JsonException ex)
+            {
+                logger.LogWarning(ex, "Failed to parse OpenAI starter prompts JSON, using defaults");
+            }
+
+            return AnthropicTagAiChatService.DefaultStarters(context.TagName);
+        }
+        catch (ClientResultException ex) when (ex.Status is 401 or 403)
+        {
+            logger.LogError(ex, "AI key rejected by {Provider}", "OpenAI");
+            throw new AiKeyInvalidException("OpenAI");
+        }
+        catch (ClientResultException ex) when (ex.Status == 429)
+        {
+            logger.LogWarning("Rate limited by {Provider}", "OpenAI");
+            throw new AiRateLimitedException("OpenAI");
+        }
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger.LogError(ex, "Timeout calling {Provider}", "OpenAI");
+            throw new AiProviderException("OpenAI", "OpenAI is not responding. Try again shortly.", ex);
+        }
+        catch (ClientResultException ex) when (ex.Status >= 500)
+        {
+            logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+            throw new AiProviderException("OpenAI", "OpenAI returned an error. Try again shortly.", ex);
+        }
+        catch (ClientResultException ex)
+        {
+            logger.LogError(ex, "Unexpected error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+            throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Network error calling {Provider}", "OpenAI");
+            throw new AiProviderException("OpenAI", "Could not reach OpenAI. Check your connection and try again.", ex);
+        }
     }
 }

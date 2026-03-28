@@ -8,12 +8,13 @@ import { TranscriptImportService } from './transcript-import.service';
 import { CalendarService } from '../shared/services/calendar.service';
 import { formatDateTime as sharedFormatDateTime, formatLocaleTime, formatShortDate } from '../shared/date-utils';
 import { ErrorStateComponent } from '../shared/components/error-state.component';
+import { AiErrorBannerComponent, AiErrorState } from '../shared/components/ai-error-banner.component';
 
 @Component({
   selector: 'app-import-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Dialog, Checkbox, ProgressSpinner, FormsModule, ErrorStateComponent],
+  imports: [Dialog, Checkbox, ProgressSpinner, FormsModule, ErrorStateComponent, AiErrorBannerComponent],
   template: `
     <p-dialog
       header="Import Meetings"
@@ -243,12 +244,20 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
             }
 
             @case ('error') {
-              <app-error-state
-                size="sm"
-                title="Something went wrong"
-                [message]="importService.error()!"
-                (retry)="importService.reset()"
-              />
+              @if (importService.aiError()) {
+                <app-ai-error-banner
+                  [error]="screenshotAiError()"
+                  (onDismiss)="importService.reset()"
+                  (onRetry)="importService.reset()"
+                />
+              } @else {
+                <app-error-state
+                  size="sm"
+                  title="Something went wrong"
+                  [message]="importService.error()!"
+                  (retry)="importService.reset()"
+                />
+              }
             }
           }
         }
@@ -451,12 +460,20 @@ import { ErrorStateComponent } from '../shared/components/error-state.component'
             }
 
             @case ('error') {
-              <app-error-state
-                size="sm"
-                title="Something went wrong"
-                [message]="transcriptService.error()!"
-                (retry)="transcriptService.reset()"
-              />
+              @if (transcriptService.aiError()) {
+                <app-ai-error-banner
+                  [error]="transcriptAiError()"
+                  (onDismiss)="transcriptService.reset()"
+                  (onRetry)="transcriptService.reset()"
+                />
+              } @else {
+                <app-error-state
+                  size="sm"
+                  title="Something went wrong"
+                  [message]="transcriptService.error()!"
+                  (retry)="transcriptService.reset()"
+                />
+              }
             }
           }
         }
@@ -480,6 +497,18 @@ export class ImportDialogComponent {
     this.importService.state() !== 'extracting' && this.importService.state() !== 'importing'
     && this.transcriptService.state() !== 'parsing' && this.transcriptService.state() !== 'importing'
   );
+
+  readonly screenshotAiError = computed<AiErrorState | null>(() => {
+    const err = this.importService.aiError();
+    if (!err) return null;
+    return { code: err.error as AiErrorState['code'], message: err.message, settingsUrl: err.settingsUrl };
+  });
+
+  readonly transcriptAiError = computed<AiErrorState | null>(() => {
+    const err = this.transcriptService.aiError();
+    if (!err) return null;
+    return { code: err.error as AiErrorState['code'], message: err.message, settingsUrl: err.settingsUrl };
+  });
 
   readonly selectedCount = computed(() => this.importService.events().filter(e => e.selected).length);
   readonly allSelected = computed(() => {

@@ -3,6 +3,8 @@ using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Drive.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Domain.Aggregates.Users;
@@ -110,6 +112,26 @@ public sealed class ParseDriveFiles(
             }
             catch (OperationCanceledException)
             {
+                throw;
+            }
+            catch (NoAiKeyConfiguredException)
+            {
+                // Config issue — bubble immediately, don't mark individual files as errors
+                throw;
+            }
+            catch (AiKeyInvalidException ex)
+            {
+                logger.LogWarning("AI key invalid during Drive parse, provider {Provider}", ex.Provider);
+                throw;
+            }
+            catch (AiRateLimitedException ex)
+            {
+                logger.LogWarning("AI rate limited during Drive parse, provider {Provider}", ex.Provider);
+                throw;
+            }
+            catch (AiProviderException ex)
+            {
+                logger.LogError(ex, "AI provider error during Drive parse");
                 throw;
             }
             catch (Exception ex)

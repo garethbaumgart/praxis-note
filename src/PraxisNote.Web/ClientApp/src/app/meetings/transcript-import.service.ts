@@ -2,8 +2,15 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { MeetingService } from './meeting.service';
+import { ToastService } from '../shared/services/toast.service';
 
 export type TranscriptImportState = 'idle' | 'parsing' | 'preview' | 'importing' | 'done' | 'error';
+
+export interface TranscriptAiError {
+  error: string;
+  message: string;
+  settingsUrl?: string;
+}
 
 export interface ParsedMeetingActionItem {
   description: string;
@@ -50,10 +57,12 @@ interface ConfirmResponse {
 export class TranscriptImportService {
   private readonly http = inject(HttpClient);
   private readonly meetingService = inject(MeetingService);
+  private readonly toast = inject(ToastService);
 
   readonly state = signal<TranscriptImportState>('idle');
   readonly parsedMeetings = signal<ParsedMeeting[]>([]);
   readonly error = signal<string | null>(null);
+  readonly aiError = signal<TranscriptAiError | null>(null);
   readonly importedCount = signal(0);
   readonly totalActionItems = signal(0);
   readonly tagsCreated = signal(0);
@@ -66,6 +75,7 @@ export class TranscriptImportService {
   parseText(text: string): void {
     this.state.set('parsing');
     this.error.set(null);
+    this.aiError.set(null);
     this.parseProgress.set({ current: 1, total: 1 });
 
     const formData = new FormData();
@@ -84,9 +94,26 @@ export class TranscriptImportService {
         this.parsedMeetings.set([meeting]);
         this.state.set('preview');
       },
-      error: () => {
-        this.error.set('Failed to parse transcript. Please try again.');
-        this.state.set('error');
+      error: (err) => {
+        const aiErrorCode = err.error?.error;
+        if (aiErrorCode === 'no_ai_key' || aiErrorCode === 'ai_key_invalid') {
+          this.aiError.set(err.error as TranscriptAiError);
+          this.error.set(err.error?.message ?? 'Failed to parse transcript. Please try again.');
+          this.state.set('error');
+        } else if (aiErrorCode === 'ai_rate_limited') {
+          const retryAfter = err.error?.retryAfterSeconds;
+          const message = retryAfter
+            ? `Rate limit reached. Try again in ~${retryAfter}s.`
+            : (err.error?.message ?? 'Rate limit reached. Try again shortly.');
+          this.toast.error(message);
+          this.state.set('idle');
+        } else if (aiErrorCode === 'ai_provider_error') {
+          this.toast.error(err.error?.message ?? 'Failed to parse transcript. Please try again.');
+          this.state.set('idle');
+        } else {
+          this.error.set(err.error?.message ?? 'Failed to parse transcript. Please try again.');
+          this.state.set('error');
+        }
       },
     });
   }
@@ -94,6 +121,7 @@ export class TranscriptImportService {
   async parseFiles(files: FileList): Promise<void> {
     this.state.set('parsing');
     this.error.set(null);
+    this.aiError.set(null);
     const total = files.length;
     this.parseProgress.set({ current: 0, total });
 
@@ -121,8 +149,28 @@ export class TranscriptImportService {
         meeting.isDuplicate = this.checkDuplicate(meeting);
         if (meeting.isDuplicate) meeting.selected = false;
         results.push(meeting);
-      } catch {
-        failures++;
+      } catch (err: any) {
+        const aiErrorCode = err.error?.error;
+        if (aiErrorCode === 'no_ai_key' || aiErrorCode === 'ai_key_invalid') {
+          this.aiError.set(err.error as TranscriptAiError);
+          this.error.set(err.error?.message ?? 'Failed to parse transcript. Please try again.');
+          this.state.set('error');
+          return;
+        } else if (aiErrorCode === 'ai_rate_limited') {
+          const retryAfter = err.error?.retryAfterSeconds;
+          const message = retryAfter
+            ? `Rate limit reached. Try again in ~${retryAfter}s.`
+            : (err.error?.message ?? 'Rate limit reached. Try again shortly.');
+          this.toast.error(message);
+          this.state.set('idle');
+          return;
+        } else if (aiErrorCode === 'ai_provider_error') {
+          this.toast.error(err.error?.message ?? 'Failed to parse transcript. Please try again.');
+          this.state.set('idle');
+          return;
+        } else {
+          failures++;
+        }
       }
     }
 
@@ -206,6 +254,7 @@ export class TranscriptImportService {
     this.state.set('idle');
     this.parsedMeetings.set([]);
     this.error.set(null);
+    this.aiError.set(null);
     this.importedCount.set(0);
     this.totalActionItems.set(0);
     this.tagsCreated.set(0);

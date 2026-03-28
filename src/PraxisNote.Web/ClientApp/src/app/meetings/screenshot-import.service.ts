@@ -2,28 +2,39 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ExtractedCalendarEvent, ScreenshotExtractionResult } from './screenshot-import.model';
+import { ToastService } from '../shared/services/toast.service';
 
 export type ImportState = 'idle' | 'extracting' | 'preview' | 'importing' | 'done' | 'error';
+
+export interface ScreenshotAiError {
+  error: string;
+  message: string;
+  settingsUrl?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ScreenshotImportService {
   private readonly http = inject(HttpClient);
+  private readonly toast = inject(ToastService);
 
   readonly state = signal<ImportState>('idle');
   readonly events = signal<ExtractedCalendarEvent[]>([]);
   readonly error = signal<string | null>(null);
+  readonly aiError = signal<ScreenshotAiError | null>(null);
   readonly importedCount = signal(0);
 
   reset(): void {
     this.state.set('idle');
     this.events.set([]);
     this.error.set(null);
+    this.aiError.set(null);
     this.importedCount.set(0);
   }
 
   extractFromImage(base64Image: string, mediaType: string): void {
     this.state.set('extracting');
     this.error.set(null);
+    this.aiError.set(null);
 
     let timeZone: string | undefined;
     try {
@@ -45,9 +56,26 @@ export class ScreenshotImportService {
         this.events.set(result.events.map(e => ({ ...e, selected: true })));
         this.state.set('preview');
       },
-      error: () => {
-        this.error.set('Failed to extract meetings from screenshot. Please try again.');
-        this.state.set('error');
+      error: (err: { error?: { error?: string; message?: string; settingsUrl?: string } }) => {
+        const aiErrorCode = err.error?.error;
+        if (aiErrorCode === 'no_ai_key' || aiErrorCode === 'ai_key_invalid') {
+          this.aiError.set(err.error as ScreenshotAiError);
+          this.error.set(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
+          this.state.set('error');
+        } else if (aiErrorCode === 'ai_rate_limited') {
+          const retryAfter = (err.error as any)?.retryAfterSeconds;
+          const message = retryAfter
+            ? `Rate limit reached. Try again in ~${retryAfter}s.`
+            : (err.error?.message ?? 'Rate limit reached. Try again shortly.');
+          this.toast.error(message);
+          this.state.set('idle');
+        } else if (aiErrorCode === 'ai_provider_error') {
+          this.toast.error(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
+          this.state.set('idle');
+        } else {
+          this.error.set(err.error?.message ?? 'Failed to extract meetings from screenshot. Please try again.');
+          this.state.set('error');
+        }
       },
     });
   }

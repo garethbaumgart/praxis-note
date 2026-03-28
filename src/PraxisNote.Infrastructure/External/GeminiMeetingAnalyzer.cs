@@ -1,7 +1,9 @@
+using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 using static PraxisNote.Infrastructure.External.GeminiJsonConfiguration;
 
 namespace PraxisNote.Infrastructure.External;
@@ -95,28 +97,62 @@ public sealed class GeminiMeetingAnalyzer(
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        try
         {
-            Content = JsonContent.Create(requestBody, options: Options)
-        };
-        request.Headers.Add("x-goog-api-key", apiKey);
+            using var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = JsonContent.Create(requestBody, options: Options)
+            };
+            request.Headers.Add("x-goog-api-key", apiKey);
 
-        using var response = await httpClient.SendAsync(request, cts.Token);
-        response.EnsureSuccessStatusCode();
+            using var response = await httpClient.SendAsync(request, cts.Token);
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                var retryAfterSeconds = response.Headers.RetryAfter?.Delta is { } delta
+                    ? (int)Math.Ceiling(delta.TotalSeconds)
+                    : response.Headers.RetryAfter?.Date is { } date
+                        ? Math.Max(0, (int)Math.Ceiling((date - DateTimeOffset.UtcNow).TotalSeconds))
+                        : (int?)null;
+                logger.LogWarning("Rate limited by {Provider}", "Gemini");
+                throw new AiRateLimitedException("Gemini", retryAfterSeconds);
+            }
+            response.EnsureSuccessStatusCode();
 
-        var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token)
-            ?? throw new InvalidOperationException("Gemini returned an empty response");
+            var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token)
+                ?? throw new AiProviderException("Gemini", "Provider returned an empty response.", null);
 
-        var text = string.Concat(
-            geminiResponse.Candidates?
-                .SelectMany(c => c.Content?.Parts ?? [])
-                .Select(p => p.Text ?? string.Empty) ?? []);
+            var text = string.Concat(
+                geminiResponse.Candidates?
+                    .SelectMany(c => c.Content?.Parts ?? [])
+                    .Select(p => p.Text ?? string.Empty) ?? []);
 
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            throw new InvalidOperationException("Gemini returned an empty response");
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                logger.LogError("Empty response from {Provider}", "Gemini");
+                throw new AiProviderException("Gemini", "Gemini returned an empty response.");
+            }
+
+            return text;
         }
-
-        return text;
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            logger.LogError(ex, "AI key rejected by {Provider}", "Gemini");
+            throw new AiKeyInvalidException("Gemini");
+        }
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger.LogError(ex, "Timeout calling {Provider}", "Gemini");
+            throw new AiProviderException("Gemini", "Gemini is not responding. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode is { } s && (int)s >= 500)
+        {
+            logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Gemini", ex.StatusCode);
+            throw new AiProviderException("Gemini", "Gemini returned an error. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Network error calling {Provider}", "Gemini");
+            throw new AiProviderException("Gemini", "Could not reach Gemini. Check your connection and try again.", ex);
+        }
     }
 }
