@@ -1,8 +1,10 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PraxisNote.Application.Features.Tags.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 using static PraxisNote.Infrastructure.External.GeminiJsonConfiguration;
 
 namespace PraxisNote.Infrastructure.External;
@@ -64,37 +66,63 @@ public sealed class GeminiTagAiChatService(
 
         logger.LogDebug("Starting tag AI chat stream with Gemini model {Model}", model);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        HttpResponseMessage response;
+        try
         {
-            Content = JsonContent.Create(requestBody, options: Options)
-        };
-        request.Headers.Add("x-goog-api-key", apiKey);
-
-        using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
-        response.EnsureSuccessStatusCode();
-
-        await using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
-        using var reader = new System.IO.StreamReader(stream);
-
-        while (await reader.ReadLineAsync(cts.Token) is { } line)
-        {
-
-            if (!line.StartsWith("data: ", StringComparison.Ordinal))
-                continue;
-
-            var json = line[6..];
-            if (string.IsNullOrWhiteSpace(json))
-                continue;
-
-            var chunk = JsonSerializer.Deserialize<GeminiResponse>(json, Options);
-            var text = string.Concat(
-                chunk?.Candidates?
-                    .SelectMany(c => c.Content?.Parts ?? [])
-                    .Select(p => p.Text ?? string.Empty) ?? []);
-
-            if (!string.IsNullOrEmpty(text))
+            using var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                yield return text;
+                Content = JsonContent.Create(requestBody, options: Options)
+            };
+            request.Headers.Add("x-goog-api-key", apiKey);
+
+            response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            logger.LogError(ex, "AI key rejected by {Provider}", "Gemini");
+            throw new AiKeyInvalidException("Gemini");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            logger.LogWarning("Rate limited by {Provider}", "Gemini");
+            throw new AiRateLimitedException("Gemini");
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        {
+            logger.LogError(ex, "Timeout calling {Provider}", "Gemini");
+            throw new AiProviderException("Gemini", "Gemini is not responding. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        {
+            logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Gemini", ex.StatusCode);
+            throw new AiProviderException("Gemini", "Gemini returned an error. Try again shortly.", ex);
+        }
+
+        using (response)
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
+            using var reader = new System.IO.StreamReader(stream);
+
+            while (await reader.ReadLineAsync(cts.Token) is { } line)
+            {
+                if (!line.StartsWith("data: ", StringComparison.Ordinal))
+                    continue;
+
+                var json = line[6..];
+                if (string.IsNullOrWhiteSpace(json))
+                    continue;
+
+                var chunk = JsonSerializer.Deserialize<GeminiResponse>(json, Options);
+                var text = string.Concat(
+                    chunk?.Candidates?
+                        .SelectMany(c => c.Content?.Parts ?? [])
+                        .Select(p => p.Text ?? string.Empty) ?? []);
+
+                if (!string.IsNullOrEmpty(text))
+                {
+                    yield return text;
+                }
             }
         }
     }
@@ -124,40 +152,63 @@ public sealed class GeminiTagAiChatService(
 
         logger.LogDebug("Generating starter prompts with Gemini model {Model}", model);
 
-        using var starterRequest = new HttpRequestMessage(HttpMethod.Post, url)
-        {
-            Content = JsonContent.Create(requestBody, options: Options)
-        };
-        starterRequest.Headers.Add("x-goog-api-key", apiKey);
-
-        using var response = await httpClient.SendAsync(starterRequest, cts.Token);
-        response.EnsureSuccessStatusCode();
-
-        var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token);
-        var content = string.Concat(
-            geminiResponse?.Candidates?
-                .SelectMany(c => c.Content?.Parts ?? [])
-                .Select(p => p.Text ?? string.Empty) ?? []);
-
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return AnthropicTagAiChatService.DefaultStarters(context.TagName);
-        }
-
         try
         {
-            var cleanJson = AnthropicMeetingAnalyzer.CleanJsonResponse(content);
-            var starters = JsonSerializer.Deserialize<List<string>>(cleanJson);
-            if (starters is { Count: > 0 })
+            using var starterRequest = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                return starters.Take(4).ToList();
-            }
-        }
-        catch (JsonException ex)
-        {
-            logger.LogWarning(ex, "Failed to parse Gemini starter prompts JSON, using defaults");
-        }
+                Content = JsonContent.Create(requestBody, options: Options)
+            };
+            starterRequest.Headers.Add("x-goog-api-key", apiKey);
 
-        return AnthropicTagAiChatService.DefaultStarters(context.TagName);
+            using var response = await httpClient.SendAsync(starterRequest, cts.Token);
+            response.EnsureSuccessStatusCode();
+
+            var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token);
+            var content = string.Concat(
+                geminiResponse?.Candidates?
+                    .SelectMany(c => c.Content?.Parts ?? [])
+                    .Select(p => p.Text ?? string.Empty) ?? []);
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return AnthropicTagAiChatService.DefaultStarters(context.TagName);
+            }
+
+            try
+            {
+                var cleanJson = AnthropicMeetingAnalyzer.CleanJsonResponse(content);
+                var starters = JsonSerializer.Deserialize<List<string>>(cleanJson);
+                if (starters is { Count: > 0 })
+                {
+                    return starters.Take(4).ToList();
+                }
+            }
+            catch (JsonException ex)
+            {
+                logger.LogWarning(ex, "Failed to parse Gemini starter prompts JSON, using defaults");
+            }
+
+            return AnthropicTagAiChatService.DefaultStarters(context.TagName);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            logger.LogError(ex, "AI key rejected by {Provider}", "Gemini");
+            throw new AiKeyInvalidException("Gemini");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            logger.LogWarning("Rate limited by {Provider}", "Gemini");
+            throw new AiRateLimitedException("Gemini");
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        {
+            logger.LogError(ex, "Timeout calling {Provider}", "Gemini");
+            throw new AiProviderException("Gemini", "Gemini is not responding. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        {
+            logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Gemini", ex.StatusCode);
+            throw new AiProviderException("Gemini", "Gemini returned an error. Try again shortly.", ex);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Tags.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 
 namespace PraxisNote.Infrastructure.External;
 
@@ -99,12 +101,67 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
 
-        await foreach (var response in _client.Messages.StreamClaudeMessageAsync(parameters, cts.Token))
+        IAsyncEnumerable<MessageResponse> stream;
+        try
         {
-            if (response.Delta?.Text is { } text)
+            stream = _client.Messages.StreamClaudeMessageAsync(parameters, cts.Token);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            _logger.LogError(ex, "AI key rejected by {Provider}", "Anthropic");
+            throw new AiKeyInvalidException("Anthropic");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
+            throw new AiRateLimitedException("Anthropic");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        {
+            _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
+            throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+        }
+
+        var enumerator = stream.GetAsyncEnumerator(cts.Token);
+        try
+        {
+            while (true)
             {
-                yield return text;
+                try
+                {
+                    if (!await enumerator.MoveNextAsync())
+                        break;
+                }
+                catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+                {
+                    _logger.LogError(ex, "AI key rejected by {Provider}", "Anthropic");
+                    throw new AiKeyInvalidException("Anthropic");
+                }
+                catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
+                    throw new AiRateLimitedException("Anthropic");
+                }
+                catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+                {
+                    _logger.LogError(ex, "Timeout calling {Provider}", "Anthropic");
+                    throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
+                }
+                catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+                {
+                    _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
+                    throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+                }
+
+                if (enumerator.Current.Delta?.Text is { } text)
+                {
+                    yield return text;
+                }
             }
+        }
+        finally
+        {
+            await enumerator.DisposeAsync();
         }
     }
 
@@ -135,29 +192,52 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
 
-        var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
-        var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
-
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return DefaultStarters(context.TagName);
-        }
-
         try
         {
-            var cleanJson = AnthropicMeetingAnalyzer.CleanJsonResponse(content);
-            var starters = JsonSerializer.Deserialize<List<string>>(cleanJson);
-            if (starters is { Count: > 0 })
-            {
-                return starters.Take(4).ToList();
-            }
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "Failed to parse starter prompts JSON, using defaults");
-        }
+            var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
+            var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
 
-        return DefaultStarters(context.TagName);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return DefaultStarters(context.TagName);
+            }
+
+            try
+            {
+                var cleanJson = AnthropicMeetingAnalyzer.CleanJsonResponse(content);
+                var starters = JsonSerializer.Deserialize<List<string>>(cleanJson);
+                if (starters is { Count: > 0 })
+                {
+                    return starters.Take(4).ToList();
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Failed to parse starter prompts JSON, using defaults");
+            }
+
+            return DefaultStarters(context.TagName);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            _logger.LogError(ex, "AI key rejected by {Provider}", "Anthropic");
+            throw new AiKeyInvalidException("Anthropic");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
+            throw new AiRateLimitedException("Anthropic");
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        {
+            _logger.LogError(ex, "Timeout calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        {
+            _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
+            throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+        }
     }
 
     internal static string BuildContextBlock(TagChatContext context)

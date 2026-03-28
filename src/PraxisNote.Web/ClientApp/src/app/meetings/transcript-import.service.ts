@@ -5,6 +5,12 @@ import { MeetingService } from './meeting.service';
 
 export type TranscriptImportState = 'idle' | 'parsing' | 'preview' | 'importing' | 'done' | 'error';
 
+export interface TranscriptAiError {
+  error: string;
+  message: string;
+  settingsUrl?: string;
+}
+
 export interface ParsedMeetingActionItem {
   description: string;
   assignee: string | null;
@@ -54,6 +60,7 @@ export class TranscriptImportService {
   readonly state = signal<TranscriptImportState>('idle');
   readonly parsedMeetings = signal<ParsedMeeting[]>([]);
   readonly error = signal<string | null>(null);
+  readonly aiError = signal<TranscriptAiError | null>(null);
   readonly importedCount = signal(0);
   readonly totalActionItems = signal(0);
   readonly tagsCreated = signal(0);
@@ -66,6 +73,7 @@ export class TranscriptImportService {
   parseText(text: string): void {
     this.state.set('parsing');
     this.error.set(null);
+    this.aiError.set(null);
     this.parseProgress.set({ current: 1, total: 1 });
 
     const formData = new FormData();
@@ -84,8 +92,12 @@ export class TranscriptImportService {
         this.parsedMeetings.set([meeting]);
         this.state.set('preview');
       },
-      error: () => {
-        this.error.set('Failed to parse transcript. Please try again.');
+      error: (err) => {
+        const aiErrorCode = err.error?.error;
+        if (aiErrorCode && ['no_ai_key', 'ai_key_invalid', 'ai_rate_limited', 'ai_provider_error'].includes(aiErrorCode)) {
+          this.aiError.set(err.error as TranscriptAiError);
+        }
+        this.error.set(err.error?.message ?? 'Failed to parse transcript. Please try again.');
         this.state.set('error');
       },
     });
@@ -94,6 +106,7 @@ export class TranscriptImportService {
   async parseFiles(files: FileList): Promise<void> {
     this.state.set('parsing');
     this.error.set(null);
+    this.aiError.set(null);
     const total = files.length;
     this.parseProgress.set({ current: 0, total });
 
@@ -206,6 +219,7 @@ export class TranscriptImportService {
     this.state.set('idle');
     this.parsedMeetings.set([]);
     this.error.set(null);
+    this.aiError.set(null);
     this.importedCount.set(0);
     this.totalActionItems.set(0);
     this.tagsCreated.set(0);

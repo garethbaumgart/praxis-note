@@ -187,7 +187,7 @@ export class MeetingService {
     });
   }
 
-  analyzeMeeting(id: string): void {
+  analyzeMeeting(id: string, onAiError?: (err: { error?: string; message?: string; settingsUrl?: string }) => void): void {
     // Optimistic update - set status to Processing
     this._meetings.update(meetings =>
       meetings.map(m =>
@@ -202,8 +202,13 @@ export class MeetingService {
         // Poll for completion
         this.pollForAnalysisCompletion(id);
       },
-      error: () => {
-        this.toast.error('Failed to start analysis');
+      error: (err) => {
+        const aiErrorCode = err.error?.error;
+        if (aiErrorCode && ['no_ai_key', 'ai_key_invalid', 'ai_rate_limited', 'ai_provider_error'].includes(aiErrorCode)) {
+          onAiError?.(err.error);
+        } else {
+          this.toast.error('Failed to start analysis');
+        }
         this.loadMeetings();
       },
     });

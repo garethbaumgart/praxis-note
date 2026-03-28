@@ -1,7 +1,9 @@
+using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 using static PraxisNote.Infrastructure.External.GeminiJsonConfiguration;
 
 namespace PraxisNote.Infrastructure.External;
@@ -95,28 +97,51 @@ public sealed class GeminiMeetingAnalyzer(
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        try
         {
-            Content = JsonContent.Create(requestBody, options: Options)
-        };
-        request.Headers.Add("x-goog-api-key", apiKey);
+            using var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = JsonContent.Create(requestBody, options: Options)
+            };
+            request.Headers.Add("x-goog-api-key", apiKey);
 
-        using var response = await httpClient.SendAsync(request, cts.Token);
-        response.EnsureSuccessStatusCode();
+            using var response = await httpClient.SendAsync(request, cts.Token);
+            response.EnsureSuccessStatusCode();
 
-        var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token)
-            ?? throw new InvalidOperationException("Gemini returned an empty response");
+            var geminiResponse = await response.Content.ReadFromJsonAsync<GeminiResponse>(Options, cts.Token)
+                ?? throw new InvalidOperationException("Gemini returned an empty response");
 
-        var text = string.Concat(
-            geminiResponse.Candidates?
-                .SelectMany(c => c.Content?.Parts ?? [])
-                .Select(p => p.Text ?? string.Empty) ?? []);
+            var text = string.Concat(
+                geminiResponse.Candidates?
+                    .SelectMany(c => c.Content?.Parts ?? [])
+                    .Select(p => p.Text ?? string.Empty) ?? []);
 
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            throw new InvalidOperationException("Gemini returned an empty response");
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new InvalidOperationException("Gemini returned an empty response");
+            }
+
+            return text;
         }
-
-        return text;
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            logger.LogError(ex, "AI key rejected by {Provider}", "Gemini");
+            throw new AiKeyInvalidException("Gemini");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            logger.LogWarning("Rate limited by {Provider}", "Gemini");
+            throw new AiRateLimitedException("Gemini");
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        {
+            logger.LogError(ex, "Timeout calling {Provider}", "Gemini");
+            throw new AiProviderException("Gemini", "Gemini is not responding. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        {
+            logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Gemini", ex.StatusCode);
+            throw new AiProviderException("Gemini", "Gemini returned an error. Try again shortly.", ex);
+        }
     }
 }

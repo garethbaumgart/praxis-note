@@ -4,6 +4,8 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using PraxisNote.Application.Features.Drive;
+using PraxisNote.Application.Features.UserAiKeys;
+using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
 using PraxisNote.Web.Extensions;
@@ -309,6 +311,22 @@ public static class DriveEndpoints
                 new ParseDriveFiles.Command(userId.Value, profileId),
                 cancellationToken);
             return Results.Ok(result);
+        }
+        catch (NoAiKeyConfiguredException)
+        {
+            return AiKeyErrorResults.NoAiKeyResult();
+        }
+        catch (AiKeyInvalidException ex)
+        {
+            return AiKeyErrorResults.AiKeyInvalidResult(ex);
+        }
+        catch (AiRateLimitedException ex)
+        {
+            return AiKeyErrorResults.AiRateLimitedResult(ex);
+        }
+        catch (AiProviderException ex)
+        {
+            return AiKeyErrorResults.AiProviderErrorResult(ex);
         }
         catch (InvalidOperationException ex)
         {

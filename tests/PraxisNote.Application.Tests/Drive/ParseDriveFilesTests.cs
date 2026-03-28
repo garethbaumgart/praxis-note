@@ -6,6 +6,7 @@ using PraxisNote.Application.Features.Drive;
 using PraxisNote.Application.Features.Drive.Services;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
@@ -419,4 +420,109 @@ public class ParseDriveFilesTests
         Assert.Equal(0, result.Errors);
         Assert.Equal(0, result.Remaining);
     }
+
+    #region AI exception bubbling
+
+    [Fact]
+    public async Task ExecuteAsync_AiKeyInvalidException_BubblesUpInsteadOfMarkingFileError()
+    {
+        var connection = CreateConnectionWithFolder();
+        _connectionRepository.GetByUserIdAsync(_userId, _profileId, Arg.Any<CancellationToken>())
+            .Returns(connection);
+
+        var file = DriveFileImport.Create(connection.Id, "file-1", "doc.txt", "text/plain", DateTimeOffset.UtcNow);
+        _fileImportRepository.GetByStatusAsync(connection.Id, DriveFileImportStatus.Pending, Arg.Any<CancellationToken>())
+            .Returns(new List<DriveFileImport> { file });
+
+        var stream = new MemoryStream("content"u8.ToArray());
+        _driveService.DownloadFileAsync("access-token", "file-1", Arg.Any<CancellationToken>())
+            .Returns(stream);
+        _transcriptExtractor.ExtractTextFromPlainText(Arg.Any<Stream>())
+            .Returns("content");
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Throws(new AiKeyInvalidException("Gemini"));
+
+        var command = new ParseDriveFiles.Command(_userId, _profileId);
+
+        await Assert.ThrowsAsync<AiKeyInvalidException>(() => _sut.ExecuteAsync(command));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AiRateLimitedException_BubblesUp()
+    {
+        var connection = CreateConnectionWithFolder();
+        _connectionRepository.GetByUserIdAsync(_userId, _profileId, Arg.Any<CancellationToken>())
+            .Returns(connection);
+
+        var file = DriveFileImport.Create(connection.Id, "file-1", "doc.txt", "text/plain", DateTimeOffset.UtcNow);
+        _fileImportRepository.GetByStatusAsync(connection.Id, DriveFileImportStatus.Pending, Arg.Any<CancellationToken>())
+            .Returns(new List<DriveFileImport> { file });
+
+        var stream = new MemoryStream("content"u8.ToArray());
+        _driveService.DownloadFileAsync("access-token", "file-1", Arg.Any<CancellationToken>())
+            .Returns(stream);
+        _transcriptExtractor.ExtractTextFromPlainText(Arg.Any<Stream>())
+            .Returns("content");
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Throws(new AiRateLimitedException("Gemini", 30));
+
+        var command = new ParseDriveFiles.Command(_userId, _profileId);
+
+        var ex = await Assert.ThrowsAsync<AiRateLimitedException>(() => _sut.ExecuteAsync(command));
+        Assert.Equal(30, ex.RetryAfterSeconds);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AiProviderException_BubblesUp()
+    {
+        var connection = CreateConnectionWithFolder();
+        _connectionRepository.GetByUserIdAsync(_userId, _profileId, Arg.Any<CancellationToken>())
+            .Returns(connection);
+
+        var file = DriveFileImport.Create(connection.Id, "file-1", "doc.txt", "text/plain", DateTimeOffset.UtcNow);
+        _fileImportRepository.GetByStatusAsync(connection.Id, DriveFileImportStatus.Pending, Arg.Any<CancellationToken>())
+            .Returns(new List<DriveFileImport> { file });
+
+        var stream = new MemoryStream("content"u8.ToArray());
+        _driveService.DownloadFileAsync("access-token", "file-1", Arg.Any<CancellationToken>())
+            .Returns(stream);
+        _transcriptExtractor.ExtractTextFromPlainText(Arg.Any<Stream>())
+            .Returns("content");
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Throws(new AiProviderException("Gemini", "Gemini returned an error."));
+
+        var command = new ParseDriveFiles.Command(_userId, _profileId);
+
+        await Assert.ThrowsAsync<AiProviderException>(() => _sut.ExecuteAsync(command));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoAiKeyConfiguredException_BubblesUp()
+    {
+        var connection = CreateConnectionWithFolder();
+        _connectionRepository.GetByUserIdAsync(_userId, _profileId, Arg.Any<CancellationToken>())
+            .Returns(connection);
+
+        var file = DriveFileImport.Create(connection.Id, "file-1", "doc.txt", "text/plain", DateTimeOffset.UtcNow);
+        _fileImportRepository.GetByStatusAsync(connection.Id, DriveFileImportStatus.Pending, Arg.Any<CancellationToken>())
+            .Returns(new List<DriveFileImport> { file });
+
+        var stream = new MemoryStream("content"u8.ToArray());
+        _driveService.DownloadFileAsync("access-token", "file-1", Arg.Any<CancellationToken>())
+            .Returns(stream);
+        _transcriptExtractor.ExtractTextFromPlainText(Arg.Any<Stream>())
+            .Returns("content");
+
+        _meetingAnalyzer.ParseTranscriptForImportAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Throws(new NoAiKeyConfiguredException());
+
+        var command = new ParseDriveFiles.Command(_userId, _profileId);
+
+        await Assert.ThrowsAsync<NoAiKeyConfiguredException>(() => _sut.ExecuteAsync(command));
+    }
+
+    #endregion
 }

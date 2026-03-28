@@ -37,6 +37,7 @@ import { toLocalISOString, formatShortDate } from '../shared/date-utils';
 import { AuthService } from '../auth/auth.service';
 import { DeleteConfirmationService } from '../shared/services/delete-confirmation.service';
 import { DeleteConfirmButtonComponent } from '../shared/components/delete-confirm-button.component';
+import { AiErrorBannerComponent, AiErrorState } from '../shared/components/ai-error-banner.component';
 import { ButtonModule } from 'primeng/button';
 
 interface DateOption {
@@ -56,6 +57,7 @@ interface DateOption {
     MeetingAnalysisComponent,
     MeetingReflectionComponent,
     DeleteConfirmButtonComponent,
+    AiErrorBannerComponent,
     ButtonModule,
     TiptapEditorComponent,
   ],
@@ -245,6 +247,13 @@ interface DateOption {
                   [disabled]="!analysisHasTranscript()"
                   (onClick)="analyze()"
                 />
+                @if (aiError()) {
+                  <app-ai-error-banner
+                    class="mt-3 block"
+                    [error]="aiError()"
+                    (onDismiss)="aiError.set(null)"
+                  />
+                }
                 @if (currentMeeting()) {
                   <app-meeting-analysis
                     [meeting]="currentMeeting()!"
@@ -1158,11 +1167,21 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
 
   // --- AI Analysis ---
 
+  readonly aiError = signal<AiErrorState | null>(null);
+
   analyze(): void {
     const id = this.meetingId();
     if (id) {
+      this.aiError.set(null);
       this.saveTranscript();
-      this.meetingService.analyzeMeeting(id);
+      this.meetingService.analyzeMeeting(id, (err) => {
+        const code = err.error as AiErrorState['code'];
+        if (code === 'no_ai_key' || code === 'ai_key_invalid') {
+          this.aiError.set({ code, message: err.message ?? 'AI error', settingsUrl: err.settingsUrl });
+        } else {
+          this.toast.error(err.message ?? 'AI analysis failed. Please try again.');
+        }
+      });
     }
   }
 

@@ -4,6 +4,7 @@ using OpenAI;
 using OpenAI.Chat;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 
 namespace PraxisNote.Infrastructure.External;
 
@@ -102,18 +103,41 @@ public sealed class OpenAiMeetingAnalyzer(
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
-        var completion = await _chatClient.CompleteChatAsync(messages, options, cts.Token);
-
-        var content = string.Concat(
-            completion.Value.Content
-                .Where(p => p.Kind == ChatMessageContentPartKind.Text)
-                .Select(p => p.Text));
-
-        if (string.IsNullOrWhiteSpace(content))
+        try
         {
-            throw new InvalidOperationException("OpenAI returned an empty response");
-        }
+            var completion = await _chatClient.CompleteChatAsync(messages, options, cts.Token);
 
-        return content;
+            var content = string.Concat(
+                completion.Value.Content
+                    .Where(p => p.Kind == ChatMessageContentPartKind.Text)
+                    .Select(p => p.Text));
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new InvalidOperationException("OpenAI returned an empty response");
+            }
+
+            return content;
+        }
+        catch (ClientResultException ex) when (ex.Status is 401 or 403)
+        {
+            logger.LogError(ex, "AI key rejected by {Provider}", "OpenAI");
+            throw new AiKeyInvalidException("OpenAI");
+        }
+        catch (ClientResultException ex) when (ex.Status == 429)
+        {
+            logger.LogWarning("Rate limited by {Provider}", "OpenAI");
+            throw new AiRateLimitedException("OpenAI");
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        {
+            logger.LogError(ex, "Timeout calling {Provider}", "OpenAI");
+            throw new AiProviderException("OpenAI", "OpenAI is not responding. Try again shortly.", ex);
+        }
+        catch (ClientResultException ex) when (ex.Status >= 500)
+        {
+            logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "OpenAI", ex.Status);
+            throw new AiProviderException("OpenAI", "OpenAI returned an error. Try again shortly.", ex);
+        }
     }
 }

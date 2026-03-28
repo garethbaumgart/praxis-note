@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using Anthropic.SDK;
 using Anthropic.SDK.Messaging;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 
 namespace PraxisNote.Infrastructure.External;
 
@@ -128,18 +130,41 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
 
-        var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
-
-        var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
-
-        if (string.IsNullOrWhiteSpace(content))
+        try
         {
-            throw new InvalidOperationException("Anthropic returned an empty response");
+            var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
+
+            var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new InvalidOperationException("Anthropic returned an empty response");
+            }
+
+            _logger.LogInformation("Received analysis response, parsing JSON");
+
+            return ParseAnalysisResponse(content);
         }
-
-        _logger.LogInformation("Received analysis response, parsing JSON");
-
-        return ParseAnalysisResponse(content);
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            _logger.LogError(ex, "AI key rejected by {Provider}", "Anthropic");
+            throw new AiKeyInvalidException("Anthropic");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
+            throw new AiRateLimitedException("Anthropic");
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        {
+            _logger.LogError(ex, "Timeout calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        {
+            _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
+            throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+        }
     }
 
     internal const string TranscriptImportPromptTemplate = """
@@ -259,15 +284,38 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
 
-        var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
-        var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
-
-        if (string.IsNullOrWhiteSpace(content))
+        try
         {
-            throw new InvalidOperationException("Anthropic returned an empty response for screenshot extraction");
-        }
+            var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
+            var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
 
-        return ParseScreenshotExtractionResponse(content);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new InvalidOperationException("Anthropic returned an empty response for screenshot extraction");
+            }
+
+            return ParseScreenshotExtractionResponse(content);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            _logger.LogError(ex, "AI key rejected by {Provider}", "Anthropic");
+            throw new AiKeyInvalidException("Anthropic");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
+            throw new AiRateLimitedException("Anthropic");
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        {
+            _logger.LogError(ex, "Timeout calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        {
+            _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
+            throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+        }
     }
 
     public async Task<TranscriptImportResult> ParseTranscriptForImportAsync(string transcript, string? timeZone = null, CancellationToken cancellationToken = default)
@@ -302,20 +350,43 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
 
-        var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
-        var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
-
-        if (string.IsNullOrWhiteSpace(content))
+        try
         {
-            throw new InvalidOperationException("Anthropic returned an empty response for transcript import parsing");
+            var response = await _client.Messages.GetClaudeMessageAsync(parameters, cts.Token);
+            var content = response.Content.OfType<TextContent>().FirstOrDefault()?.Text;
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new InvalidOperationException("Anthropic returned an empty response for transcript import parsing");
+            }
+
+            _logger.LogInformation("Received transcript import parse response, parsing JSON");
+
+            var result = ParseTranscriptImportResponse(content);
+            _logger.LogDebug("Transcript import parse result — meetingDate: {MeetingDate}, timezone sent: {TimeZone}",
+                result.MeetingDate, resolved.DisplayName);
+            return result;
         }
-
-        _logger.LogInformation("Received transcript import parse response, parsing JSON");
-
-        var result = ParseTranscriptImportResponse(content);
-        _logger.LogDebug("Transcript import parse result — meetingDate: {MeetingDate}, timezone sent: {TimeZone}",
-            result.MeetingDate, resolved.DisplayName);
-        return result;
+        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            _logger.LogError(ex, "AI key rejected by {Provider}", "Anthropic");
+            throw new AiKeyInvalidException("Anthropic");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning("Rate limited by {Provider}", "Anthropic");
+            throw new AiRateLimitedException("Anthropic");
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken != cancellationToken)
+        {
+            _logger.LogError(ex, "Timeout calling {Provider}", "Anthropic");
+            throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode >= HttpStatusCode.InternalServerError)
+        {
+            _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
+            throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+        }
     }
 
     internal static TranscriptImportResult ParseTranscriptImportResponse(string jsonResponse)

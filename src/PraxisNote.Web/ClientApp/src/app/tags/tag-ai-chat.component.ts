@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, inject, signal, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Skeleton } from 'primeng/skeleton';
 import { TagAiChatService } from './tag-ai-chat.service';
 
@@ -6,7 +7,7 @@ import { TagAiChatService } from './tag-ai-chat.service';
   selector: 'app-tag-ai-chat',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Skeleton],
+  imports: [Skeleton, RouterLink],
   template: `
     @if (chat.isOpen()) {
       @if (chat.isCollapsed()) {
@@ -110,9 +111,16 @@ import { TagAiChatService } from './tag-ai-chat.service';
             }
 
             @if (chat.error()) {
-              <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-danger-bg text-danger text-sm">
-                <i class="pi pi-exclamation-circle text-xs" aria-hidden="true"></i>
-                <span>{{ chat.error() }}</span>
+              <div class="px-3 py-2 rounded-lg bg-danger-bg text-danger text-sm">
+                <div class="flex items-center gap-2">
+                  <i [class]="errorIcon()" class="text-xs flex-shrink-0" aria-hidden="true"></i>
+                  <span>{{ chat.error() }}</span>
+                </div>
+                @if (chat.errorData()?.settingsUrl) {
+                  <a [routerLink]="chat.errorData()!.settingsUrl" class="text-xs underline mt-1 block ml-5">
+                    Go to Settings → AI Keys
+                  </a>
+                }
               </div>
             }
           </div>
@@ -164,6 +172,15 @@ export class TagAiChatComponent implements AfterViewChecked {
   @ViewChild('chatInput') chatInput?: ElementRef<HTMLInputElement>;
 
   readonly inputValue = signal('');
+  protected readonly errorIcon = computed(() => {
+    const code = this.chat.errorData()?.code;
+    switch (code) {
+      case 'no_ai_key': return 'pi pi-key';
+      case 'ai_key_invalid': return 'pi pi-shield';
+      case 'ai_rate_limited': return 'pi pi-clock';
+      default: return 'pi pi-exclamation-circle';
+    }
+  });
   private shouldScrollToBottom = false;
   private lastMessageCount = 0;
 

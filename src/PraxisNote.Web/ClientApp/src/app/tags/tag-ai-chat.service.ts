@@ -14,6 +14,7 @@ export class TagAiChatService {
   private readonly _isOpen = signal(false);
   private readonly _isCollapsed = signal(false);
   private readonly _error = signal<string | null>(null);
+  private readonly _errorData = signal<{ code: string; message: string; settingsUrl?: string } | null>(null);
 
   private abortController: AbortController | null = null;
   private currentTagId: string | null = null;
@@ -24,6 +25,7 @@ export class TagAiChatService {
   readonly isOpen = this._isOpen.asReadonly();
   readonly isCollapsed = this._isCollapsed.asReadonly();
   readonly error = this._error.asReadonly();
+  readonly errorData = this._errorData.asReadonly();
   readonly hasMessages = computed(() => this._messages().length > 0);
 
   open(tagId: string): void {
@@ -39,6 +41,7 @@ export class TagAiChatService {
     this._messages.set([]);
     this._starters.set([]);
     this._error.set(null);
+    this._errorData.set(null);
     this._state.set('loading-starters');
 
     this.loadStarters(tagId);
@@ -51,6 +54,7 @@ export class TagAiChatService {
     this._messages.set([]);
     this._starters.set([]);
     this._error.set(null);
+    this._errorData.set(null);
     this._state.set('idle');
     this.currentTagId = null;
   }
@@ -77,6 +81,7 @@ export class TagAiChatService {
     this.stop();
     this._messages.set([]);
     this._error.set(null);
+    this._errorData.set(null);
     this._state.set('loading-starters');
     if (this.currentTagId) {
       this.loadStarters(this.currentTagId);
@@ -88,6 +93,7 @@ export class TagAiChatService {
 
     const tagId = this.currentTagId;
     this._error.set(null);
+    this._errorData.set(null);
     this.stop();
 
     // Add user message
@@ -188,7 +194,14 @@ export class TagAiChatService {
                     ? msgs.slice(0, -1)
                     : msgs;
                 });
-                this._error.set(data.error);
+                // Set the full error message (not just the code)
+                this._error.set(data.message ?? data.error);
+                // Store structured error data for the banner
+                if (data.settingsUrl) {
+                  this._errorData.set({ code: data.error, message: data.message ?? data.error, settingsUrl: data.settingsUrl });
+                } else {
+                  this._errorData.set({ code: data.error, message: data.message ?? data.error });
+                }
                 this._state.set('error');
                 return;
               }

@@ -3,6 +3,7 @@ using System.Text.Json;
 using PraxisNote.Web.Extensions;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tags.Services;
+using PraxisNote.Application.Features.UserAiKeys;
 using PraxisNote.Application.Features.UserAiKeys.Services;
 
 namespace PraxisNote.Web.Endpoints;
@@ -294,6 +295,33 @@ public static class TagEndpoints
             }
             catch { /* Client likely disconnected */ }
         }
+        catch (AiKeyInvalidException ex)
+        {
+            try
+            {
+                await context.Response.WriteAsync($"event: error\ndata: {AiKeyErrorResults.AiKeyInvalidSsePayload(ex)}\n\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
+            }
+            catch { /* Client likely disconnected */ }
+        }
+        catch (AiRateLimitedException ex)
+        {
+            try
+            {
+                await context.Response.WriteAsync($"event: error\ndata: {AiKeyErrorResults.AiRateLimitedSsePayload(ex)}\n\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
+            }
+            catch { /* Client likely disconnected */ }
+        }
+        catch (AiProviderException ex)
+        {
+            try
+            {
+                await context.Response.WriteAsync($"event: error\ndata: {AiKeyErrorResults.AiProviderErrorSsePayload(ex)}\n\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
+            }
+            catch { /* Client likely disconnected */ }
+        }
         catch (OperationCanceledException)
         {
             // Client disconnected
@@ -341,6 +369,18 @@ public static class TagEndpoints
         catch (NoAiKeyConfiguredException)
         {
             return AiKeyErrorResults.NoAiKeyResult();
+        }
+        catch (AiKeyInvalidException ex)
+        {
+            return AiKeyErrorResults.AiKeyInvalidResult(ex);
+        }
+        catch (AiRateLimitedException ex)
+        {
+            return AiKeyErrorResults.AiRateLimitedResult(ex);
+        }
+        catch (AiProviderException ex)
+        {
+            return AiKeyErrorResults.AiProviderErrorResult(ex);
         }
         catch (OperationCanceledException)
         {
