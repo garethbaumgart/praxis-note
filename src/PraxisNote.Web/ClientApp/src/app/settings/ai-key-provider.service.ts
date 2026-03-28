@@ -30,20 +30,21 @@ export class AiKeyProviderService {
     return cached;
   }
 
-  loadKeys(): void {
+  loadKeys(): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http.get<AiKeyDto[]>('/api/ai-keys').subscribe({
-      next: (keys) => {
+    return firstValueFrom(this.http.get<AiKeyDto[]>('/api/ai-keys')).then(
+      (keys) => {
         this._keys.set(keys);
         this._loading.set(false);
       },
-      error: () => {
+      (err) => {
         this._error.set('Failed to load AI keys');
         this._loading.set(false);
+        throw err;
       },
-    });
+    );
   }
 
   async upsertKey(
@@ -60,25 +61,34 @@ export class AiKeyProviderService {
           { apiKey, preferredModel },
         ),
       );
-      this.loadKeys();
-      this.toast.success({ summary: `${provider} key saved` });
+      await this.loadKeys();
+      const summary = apiKey ? `${provider} key saved` : `${provider} model updated`;
+      this.toast.success({ summary });
       return result;
     } catch (err) {
       const httpErr = err as HttpErrorResponse;
       if (httpErr.status === 422) {
         const code = httpErr.error?.error;
-        const message = code === 'ai_key_invalid'
-          ? 'This API key was rejected by the provider. Please check the key and try again.'
-          : (code ?? 'Invalid API key');
+        let message: string;
+        if (code === 'ai_key_invalid') {
+          message = 'This API key was rejected by the provider. Please check the key and try again.';
+        } else if (code === 'invalid_model') {
+          message = httpErr.error?.message ?? 'Unknown model selected';
+        } else {
+          message = code ?? 'Invalid API key';
+        }
         throw message;
       } else {
         const message = httpErr.error?.error ?? `Failed to save ${provider} key`;
-        this.toast.error(message);
         throw message;
       }
     } finally {
       this._saving.set(false);
     }
+  }
+
+  showModelError(message: string): void {
+    this.toast.error(message);
   }
 
   removeKey(provider: AiProvider): void {

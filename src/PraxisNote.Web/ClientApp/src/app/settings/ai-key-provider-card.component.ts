@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy, input, output, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, inject, signal, computed } from '@angular/core';
 import { AiKeyDto, AiProvider } from './ai-key-provider.model';
 import { AiKeyProviderService } from './ai-key-provider.service';
+import { AI_MODEL_CATALOGUE, AiModelOption, AiModelTag } from './ai-model-catalogue';
 
 interface ProviderMeta {
   label: string;
@@ -34,6 +35,14 @@ const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     keyUrlLabel: 'Get key from aistudio.google.com',
     freeTier: true,
   },
+};
+
+const TAG_STYLES: Record<AiModelTag, { label: string; class: string }> = {
+  fast: { label: 'Fast', class: 'bg-done/20 text-done-foreground' },
+  balanced: { label: 'Balanced', class: 'bg-accent/20 text-accent-solid' },
+  powerful: { label: 'Powerful', class: 'bg-in-progress/20 text-in-progress-foreground' },
+  cheap: { label: 'Cheap', class: 'bg-surface-muted text-foreground-muted' },
+  'free-tier': { label: 'Free tier', class: 'bg-surface-muted text-foreground-muted' },
 };
 
 @Component({
@@ -120,8 +129,48 @@ const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
                 }
               </div>
             </div>
-            @if (key()!.preferredModel) {
-              <p class="text-xs text-foreground-muted">Model: {{ key()!.preferredModel }}</p>
+
+            <!-- Model selector -->
+            @if (modelOptions().length > 0) {
+              <div class="pt-2 border-t border-border">
+                <p [id]="'preferred-model-label-' + provider()" class="text-xs font-medium text-foreground-muted mb-2">Preferred model</p>
+                <div class="space-y-1.5" role="radiogroup" [attr.aria-labelledby]="'preferred-model-label-' + provider()">
+                  @for (model of modelOptions(); track model.value) {
+                    <button
+                      type="button"
+                      role="radio"
+                      [attr.aria-checked]="selectedModel() === model.value"
+                      [attr.tabindex]="selectedModel() === model.value ? 0 : -1"
+                      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-colors text-left"
+                      [class.border-accent-solid]="selectedModel() === model.value"
+                      [class.bg-accent/10]="selectedModel() === model.value"
+                      [class.border-border]="selectedModel() !== model.value"
+                      [class.hover:border-foreground-muted]="selectedModel() !== model.value"
+                      [disabled]="savingModel() !== null"
+                      (click)="selectModel(model.value)"
+                      (keydown)="handleModelKeyDown($event, $index)"
+                    >
+                      <span class="flex-1 min-w-0">
+                        <span class="text-sm font-medium text-foreground">{{ model.label }}</span>
+                        <span class="block text-xs text-foreground-muted">{{ model.description }}</span>
+                      </span>
+                      <span class="flex items-center gap-1 shrink-0">
+                        @for (tag of model.tags; track tag) {
+                          <span class="text-[10px] px-1.5 py-0.5 rounded-full" [class]="tagClass(tag)">{{ tagLabel(tag) }}</span>
+                        }
+                      </span>
+                      @if (savingModel() === model.value) {
+                        <span role="status" aria-label="Saving model">
+                          <i class="pi pi-spin pi-spinner text-xs text-accent-solid" aria-hidden="true"></i>
+                          <span class="sr-only">Saving model...</span>
+                        </span>
+                      } @else if (selectedModel() === model.value) {
+                        <i class="pi pi-check text-xs text-accent-solid" aria-hidden="true"></i>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
             }
           } @else {
             <!-- Input state -->
@@ -194,9 +243,31 @@ export class AiKeyProviderCardComponent {
   readonly rateLimitWarning = signal(false);
   readonly replacing = signal(false);
   readonly confirmingRemove = signal(false);
+  readonly savingModel = signal<string | null>(null);
+  readonly pendingModel = signal<string | null>(null);
+
+  readonly modelOptions = computed<AiModelOption[]>(() => AI_MODEL_CATALOGUE[this.provider()] ?? []);
+
+  readonly selectedModel = computed(() => {
+    const pending = this.pendingModel();
+    if (pending) return pending;
+    const options = this.modelOptions();
+    if (!options.length) return '';
+    const current = this.key()?.preferredModel;
+    if (current && options.some(m => m.value === current)) return current;
+    return options.find(m => m.isDefault)?.value ?? options[0].value;
+  });
 
   get meta(): ProviderMeta {
     return PROVIDER_META[this.provider()];
+  }
+
+  tagClass(tag: AiModelTag): string {
+    return TAG_STYLES[tag]?.class ?? 'bg-surface-muted text-foreground-muted';
+  }
+
+  tagLabel(tag: AiModelTag): string {
+    return TAG_STYLES[tag]?.label ?? tag;
   }
 
   toggleDrawer(): void {
@@ -229,6 +300,50 @@ export class AiKeyProviderCardComponent {
     } catch (err) {
       this.validationError.set(typeof err === 'string' ? err : 'Invalid API key');
     }
+  }
+
+  async selectModel(modelValue: string): Promise<void> {
+    const persistedModel = this.key()?.preferredModel;
+    if (this.savingModel() || modelValue === persistedModel) return;
+
+    this.pendingModel.set(modelValue);
+    this.savingModel.set(modelValue);
+    try {
+      await this.aiKeyService.upsertKey(this.provider(), '', modelValue);
+    } catch (err) {
+      this.pendingModel.set(null);
+      // Only toast for 422 (validation) errors; service already toasts for other failures
+      if (typeof err === 'string') {
+        this.aiKeyService.showModelError(err);
+      }
+    } finally {
+      this.savingModel.set(null);
+      this.pendingModel.set(null);
+    }
+  }
+
+  handleModelKeyDown(event: KeyboardEvent, currentIndex: number): void {
+    const options = this.modelOptions();
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      void this.selectModel(options[currentIndex].value);
+      return;
+    }
+
+    let newIndex = currentIndex;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+      newIndex = (currentIndex + 1) % options.length;
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+      newIndex = (currentIndex - 1 + options.length) % options.length;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    const container = (event.target as HTMLElement).closest('[role="radiogroup"]');
+    const buttons = container?.querySelectorAll<HTMLElement>('[role="radio"]');
+    buttons?.[newIndex]?.focus();
   }
 
   doRemove(): void {

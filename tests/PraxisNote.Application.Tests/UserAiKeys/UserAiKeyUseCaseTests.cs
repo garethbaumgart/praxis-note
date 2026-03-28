@@ -25,17 +25,17 @@ public class UserAiKeyUseCaseTests
     public async Task Upsert_WithValidKey_CallsRepositoryUpsertAndSaves()
     {
         var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
-        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "sk-test-key", "claude-4");
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "sk-test-key", "claude-sonnet-4-6");
 
-        var key = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_sk-test-key", "****...abcd", "claude-4");
-        _repo.UpsertAsync(_userId, AiProvider.Anthropic, "enc_sk-test-key", "****...abcd", "claude-4", Arg.Any<CancellationToken>())
+        var key = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_sk-test-key", "****...abcd", "claude-sonnet-4-6");
+        _repo.UpsertAsync(_userId, AiProvider.Anthropic, "enc_sk-test-key", "****...abcd", "claude-sonnet-4-6", Arg.Any<CancellationToken>())
             .Returns(key);
 
         await sut.ExecuteAsync(command);
 
         _encryption.Received(1).Encrypt("sk-test-key");
         _encryption.Received(1).ComputeHint("sk-test-key");
-        await _repo.Received(1).UpsertAsync(_userId, AiProvider.Anthropic, "enc_sk-test-key", "****...abcd", "claude-4", Arg.Any<CancellationToken>());
+        await _repo.Received(1).UpsertAsync(_userId, AiProvider.Anthropic, "enc_sk-test-key", "****...abcd", "claude-sonnet-4-6", Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -54,35 +54,118 @@ public class UserAiKeyUseCaseTests
         await _repo.Received(1).UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", null, Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task Upsert_WithNullApiKey_ThrowsArgumentNullException()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Upsert_ModelOnly_WithNullOrEmptyModel_ThrowsArgumentException(string? model)
     {
         var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
-        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, null!, null);
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "", model);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => sut.ExecuteAsync(command));
+        await Assert.ThrowsAsync<ArgumentException>(() => sut.ExecuteAsync(command));
+    }
+
+    [Fact]
+    public async Task Upsert_WithNullApiKey_AndNoExistingKey_ThrowsNotFoundException()
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
+            .Returns((UserAiKey?)null);
+
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, null!, "claude-sonnet-4-6");
+
+        await Assert.ThrowsAsync<UserAiKeyNotFoundException>(() => sut.ExecuteAsync(command));
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task Upsert_WithEmptyOrWhitespaceApiKey_ThrowsArgumentException(string apiKey)
+    public async Task Upsert_ModelOnly_UpdatesExistingKeyModel(string apiKey)
     {
         var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
-        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, apiKey, null);
+        var existing = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_key", "****...abcd", null);
+        _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
+            .Returns(existing);
+
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, apiKey, "claude-opus-4-6");
+
+        await sut.ExecuteAsync(command);
+
+        Assert.Equal("claude-opus-4-6", existing.PreferredModel);
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Upsert_ModelOnly_NoExistingKey_ThrowsNotFoundException()
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
+            .Returns((UserAiKey?)null);
+
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "", "claude-opus-4-6");
+
+        await Assert.ThrowsAsync<UserAiKeyNotFoundException>(() => sut.ExecuteAsync(command));
+    }
+
+    [Theory]
+    [InlineData("unknown-model-xyz")]
+    [InlineData("gpt-4o")]  // Valid model but wrong provider (OpenAI model for Anthropic)
+    public async Task Upsert_UnknownOrMismatchedModel_ThrowsArgumentException(string model)
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "sk-test", model);
 
         await Assert.ThrowsAsync<ArgumentException>(() => sut.ExecuteAsync(command));
     }
 
     [Fact]
-    public async Task Upsert_WithWhitespaceApiKey_DoesNotCallRepository()
+    public async Task Upsert_WithNonCanonicalModelCasing_NormalizesToCanonical()
     {
         var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
-        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "   ", null);
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.OpenAI, "sk-key", "GPT-4O");
 
-        await Assert.ThrowsAsync<ArgumentException>(() => sut.ExecuteAsync(command));
+        var key = UserAiKey.Create(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", null);
+        _repo.UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", "gpt-4o", Arg.Any<CancellationToken>())
+            .Returns(key);
 
-        await _repo.DidNotReceiveWithAnyArgs().UpsertAsync(default, default, default!, default!, default, default);
+        await sut.ExecuteAsync(command);
+
+        await _repo.Received(1).UpsertAsync(_userId, AiProvider.OpenAI, "enc_sk-key", "****...abcd", "gpt-4o", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Upsert_KeyReplace_WithNullModel_PreservesExistingModel()
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        var existing = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_old", "****...old", "claude-opus-4-6");
+        _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
+            .Returns(existing);
+
+        var key = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_sk-new", "****...abcd", "claude-opus-4-6");
+        _repo.UpsertAsync(_userId, AiProvider.Anthropic, "enc_sk-new", "****...abcd", "claude-opus-4-6", Arg.Any<CancellationToken>())
+            .Returns(key);
+
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "sk-new", null);
+
+        await sut.ExecuteAsync(command);
+
+        await _repo.Received(1).UpsertAsync(_userId, AiProvider.Anthropic, "enc_sk-new", "****...abcd", "claude-opus-4-6", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Upsert_ModelOnly_NormalizesModelCasing()
+    {
+        var sut = new UpsertUserAiKey(_repo, _encryption, _unitOfWork);
+        var existing = UserAiKey.Create(_userId, AiProvider.Anthropic, "enc_key", "****...abcd", null);
+        _repo.GetByUserAndProviderAsync(_userId, AiProvider.Anthropic, Arg.Any<CancellationToken>())
+            .Returns(existing);
+
+        var command = new UpsertUserAiKey.Command(_userId, AiProvider.Anthropic, "", "CLAUDE-SONNET-4-6");
+
+        await sut.ExecuteAsync(command);
+
+        Assert.Equal("claude-sonnet-4-6", existing.PreferredModel);
     }
 
     #endregion
@@ -93,7 +176,7 @@ public class UserAiKeyUseCaseTests
     public async Task Get_ReturnsProjectedDtos()
     {
         var sut = new GetUserAiKeys(_repo);
-        var key = UserAiKey.Create(_userId, AiProvider.Gemini, "enc", "****...hint", "gemini-pro");
+        var key = UserAiKey.Create(_userId, AiProvider.Gemini, "enc", "****...hint", "gemini-1.5-pro");
         _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>())
             .Returns(new List<UserAiKey> { key });
 
@@ -104,7 +187,7 @@ public class UserAiKeyUseCaseTests
         Assert.Equal("Gemini", dto.Provider);
         Assert.True(dto.HasKey);
         Assert.Equal("****...hint", dto.KeyHint);
-        Assert.Equal("gemini-pro", dto.PreferredModel);
+        Assert.Equal("gemini-1.5-pro", dto.PreferredModel);
         Assert.NotNull(dto.CreatedAt);
     }
 
@@ -127,8 +210,8 @@ public class UserAiKeyUseCaseTests
         var keys = new List<UserAiKey>
         {
             UserAiKey.Create(_userId, AiProvider.Anthropic, "enc1", "h1", null),
-            UserAiKey.Create(_userId, AiProvider.OpenAI, "enc2", "h2", "gpt-4"),
-            UserAiKey.Create(_userId, AiProvider.Gemini, "enc3", "h3", "gemini-pro"),
+            UserAiKey.Create(_userId, AiProvider.OpenAI, "enc2", "h2", "gpt-4o"),
+            UserAiKey.Create(_userId, AiProvider.Gemini, "enc3", "h3", "gemini-1.5-pro"),
         };
         _repo.GetByUserIdAsync(_userId, Arg.Any<CancellationToken>()).Returns(keys);
 
