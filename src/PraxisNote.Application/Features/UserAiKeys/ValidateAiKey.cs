@@ -1,3 +1,4 @@
+using System.ClientModel;
 using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -61,6 +62,40 @@ public sealed class ValidateAiKey(
             // Network-level error (DNS, timeout, 5xx) — cannot confirm key is valid
             logger.LogWarning(ex, "AI key validation failed (network) for provider {Provider}: {Status}",
                 command.Provider, ex.StatusCode);
+            return new Result(false);
+        }
+        catch (AiKeyInvalidException ex)
+        {
+            logger.LogInformation("AI key validation failed for provider {Provider}: {Message}",
+                command.Provider, ex.Message);
+            return new Result(false);
+        }
+        catch (AiRateLimitedException ex)
+        {
+            logger.LogInformation("AI key validation rate-limited for provider {Provider}", command.Provider);
+            return new Result(true, RateLimited: true);
+        }
+        catch (AiProviderException ex)
+        {
+            logger.LogWarning(ex, "AI key validation failed (provider) for provider {Provider}: {Message}",
+                command.Provider, ex.Message);
+            return new Result(false);
+        }
+        catch (ClientResultException ex) when (ex.Status is 401 or 403)
+        {
+            logger.LogInformation("AI key validation failed for provider {Provider}: {Status}",
+                command.Provider, ex.Status);
+            return new Result(false);
+        }
+        catch (ClientResultException ex) when (ex.Status == 429)
+        {
+            logger.LogInformation("AI key validation rate-limited for provider {Provider}", command.Provider);
+            return new Result(true, RateLimited: true);
+        }
+        catch (ClientResultException ex)
+        {
+            logger.LogWarning(ex, "AI key validation failed (ClientResultException) for provider {Provider}: {Status}",
+                command.Provider, ex.Status);
             return new Result(false);
         }
         catch (Exception ex)
