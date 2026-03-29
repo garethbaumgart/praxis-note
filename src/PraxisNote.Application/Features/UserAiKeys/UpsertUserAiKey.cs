@@ -11,26 +11,27 @@ public sealed class UpsertUserAiKey(
 {
     public record Command(Guid UserId, AiProvider Provider, string ApiKey, string? PreferredModel);
 
-    private static readonly Dictionary<AiProvider, HashSet<string>> KnownModelsByProvider = new()
+    // Ordered lists — first entry is the recommended/default model shown in the UI
+    private static readonly Dictionary<AiProvider, List<string>> KnownModelsByProvider = new()
     {
-        [AiProvider.Anthropic] = new(StringComparer.OrdinalIgnoreCase)
-        {
+        [AiProvider.Anthropic] =
+        [
             "claude-sonnet-4-6",
             "claude-haiku-4-5",
             "claude-opus-4-6",
-        },
-        [AiProvider.OpenAI] = new(StringComparer.OrdinalIgnoreCase)
-        {
+        ],
+        [AiProvider.OpenAI] =
+        [
             "gpt-4o-mini",
             "gpt-4o",
             "gpt-4.1",
-        },
-        [AiProvider.Gemini] = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "gemini-1.5-flash",
+        ],
+        [AiProvider.Gemini] =
+        [
+            "gemini-2.0-flash",   // default — available on free tier v1beta
+            "gemini-1.5-flash",   // kept for backwards compat with saved preferences
             "gemini-1.5-pro",
-            "gemini-2.0-flash",
-        },
+        ],
     };
 
     public async Task ExecuteAsync(Command command, CancellationToken cancellationToken = default)

@@ -85,12 +85,14 @@ jobs:
             --session-affinity
           env_vars: |
             ASPNETCORE_ENVIRONMENT=Production
+          # TODO: remove MeetingAnalysis__ApiKey once Anthropic billing confirmed off
           secrets: |
             ConnectionStrings__DefaultConnection=CONNECTION_STRING:latest
             Authentication__Google__ClientId=GOOGLE_CLIENT_ID:latest
             Authentication__Google__ClientSecret=GOOGLE_CLIENT_SECRET:latest
             MeetingAnalysis__ApiKey=ANTHROPIC_API_KEY:latest
             Deepgram__ApiKey=DEEPGRAM_API_KEY:latest
+            AiProviders__Gemini__ApiKey=GEMINI_API_KEY:latest
 
       - name: Show deployment URL
         run: |
