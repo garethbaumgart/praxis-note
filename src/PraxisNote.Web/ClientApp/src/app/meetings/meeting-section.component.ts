@@ -43,6 +43,7 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
         class="section-body"
         [class.section-body-visible]="expanded()"
         [class.section-body-hidden]="!expanded()"
+        [attr.inert]="expanded() ? null : true"
       >
         <ng-content />
       </div>
