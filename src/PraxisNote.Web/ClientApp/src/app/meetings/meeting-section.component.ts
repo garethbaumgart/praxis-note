@@ -43,6 +43,7 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
         class="section-body"
         [class.section-body-visible]="expanded()"
         [class.section-body-hidden]="!expanded()"
+        [attr.inert]="expanded() ? null : true"
       >
         <ng-content />
       </div>
@@ -94,20 +95,19 @@ import { Component, ChangeDetectionStrategy, input, signal, computed } from '@an
     }
 
     .section-body {
-      overflow: hidden;
       transition: opacity 0.2s ease;
     }
 
     .section-body-visible {
       opacity: 1;
       margin-top: 12px;
-      overflow: visible;
     }
 
     .section-body-hidden {
       opacity: 0;
       height: 0;
       margin-top: 0;
+      overflow: hidden;
     }
   `],
 })
