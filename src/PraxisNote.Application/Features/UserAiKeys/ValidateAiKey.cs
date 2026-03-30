@@ -80,6 +80,10 @@ public sealed class ValidateAiKey(
                 command.Provider, ex.Message);
             return new Result(false);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             // Unexpected error (serialization, SDK issue) — treat as invalid to be safe
