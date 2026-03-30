@@ -69,7 +69,7 @@ public sealed class ValidateAiKey(
                 command.Provider, ex.Message);
             return new Result(false);
         }
-        catch (AiRateLimitedException ex)
+        catch (AiRateLimitedException)
         {
             logger.LogInformation("AI key validation rate-limited for provider {Provider}", command.Provider);
             return new Result(true, RateLimited: true);

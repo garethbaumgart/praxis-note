@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.Meetings;
 using PraxisNote.Application.Features.Meetings.Services;
@@ -303,7 +302,9 @@ public class UserAiKeyUseCaseTests
     {
         await Task.CompletedTask;
         throw ex;
-        yield break; // unreachable but required for async enumerable
+#pragma warning disable CS0162 // Unreachable code — yield required for async iterator
+        yield break;
+#pragma warning restore CS0162
     }
 
     [Fact]
@@ -362,13 +363,16 @@ public class UserAiKeyUseCaseTests
         Assert.False(result.RateLimited);
     }
 
-    [Fact]
-    public async Task Validate_HttpRequestException401_ReturnsFalse()
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task Validate_HttpRequestExceptionAuthError_ReturnsFalse(HttpStatusCode statusCode)
     {
         var sut = CreateValidateAiKeySut(out _, out var chatService);
         chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
                 Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
-            .Returns(ThrowingStream(new HttpRequestException("Unauthorized", null, HttpStatusCode.Unauthorized)));
+            .Returns(ThrowingStream(new HttpRequestException("Error", null, statusCode)));
 
         var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.OpenAI, "sk-bad"));
 
