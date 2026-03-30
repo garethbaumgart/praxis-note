@@ -63,6 +63,27 @@ public sealed class ValidateAiKey(
                 command.Provider, ex.StatusCode);
             return new Result(false);
         }
+        catch (AiKeyInvalidException ex)
+        {
+            logger.LogInformation("AI key validation failed for provider {Provider}: {Message}",
+                command.Provider, ex.Message);
+            return new Result(false);
+        }
+        catch (AiRateLimitedException)
+        {
+            logger.LogInformation("AI key validation rate-limited for provider {Provider}", command.Provider);
+            return new Result(true, RateLimited: true);
+        }
+        catch (AiProviderException ex)
+        {
+            logger.LogWarning(ex, "AI key validation failed (provider) for provider {Provider}: {Message}",
+                command.Provider, ex.Message);
+            return new Result(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             // Unexpected error (serialization, SDK issue) — treat as invalid to be safe

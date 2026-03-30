@@ -1,5 +1,12 @@
+using System.Net;
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using PraxisNote.Application.Common;
+using PraxisNote.Application.Features.Meetings;
+using PraxisNote.Application.Features.Meetings.Services;
+using PraxisNote.Application.Features.Tags.Services;
 using PraxisNote.Application.Features.UserAiKeys;
 using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.UserAiKeys;
@@ -263,6 +270,140 @@ public class UserAiKeyUseCaseTests
             () => sut.ExecuteAsync(new DeleteUserAiKey.Command(_userId, AiProvider.Gemini)));
 
         await _unitOfWork.DidNotReceiveWithAnyArgs().SaveChangesAsync(default);
+    }
+
+    #endregion
+
+    #region ValidateAiKey
+
+    private ValidateAiKey CreateValidateAiKeySut(
+        out IAiProviderFactory factory,
+        out ITagAiChatService chatService)
+    {
+        factory = Substitute.For<IAiProviderFactory>();
+        chatService = Substitute.For<ITagAiChatService>();
+        factory.CreateTagAiChatService(Arg.Any<string>(), Arg.Any<AiProvider>(), Arg.Any<string>())
+            .Returns(chatService);
+
+        var settings = Options.Create(new AiProviderSettings());
+        var logger = Substitute.For<ILogger<ValidateAiKey>>();
+        return new ValidateAiKey(factory, settings, logger);
+    }
+
+    private static async IAsyncEnumerable<string> SingleTokenStream(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await Task.CompletedTask;
+        yield return "Hello";
+    }
+
+    private static async IAsyncEnumerable<string> ThrowingStream<TException>(TException ex)
+        where TException : Exception
+    {
+        await Task.CompletedTask;
+        throw ex;
+#pragma warning disable CS0162 // Unreachable code — yield required for async iterator
+        yield break;
+#pragma warning restore CS0162
+    }
+
+    [Fact]
+    public async Task Validate_ValidKey_ReturnsTrue()
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(SingleTokenStream());
+
+        var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.Anthropic, "sk-test"));
+
+        Assert.True(result.Validated);
+        Assert.False(result.RateLimited);
+    }
+
+    [Fact]
+    public async Task Validate_AiKeyInvalidException_ReturnsFalse()
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(ThrowingStream(new AiKeyInvalidException("Anthropic")));
+
+        var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.Anthropic, "sk-bad"));
+
+        Assert.False(result.Validated);
+        Assert.False(result.RateLimited);
+    }
+
+    [Fact]
+    public async Task Validate_AiRateLimitedException_ReturnsRateLimited()
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(ThrowingStream(new AiRateLimitedException("Anthropic")));
+
+        var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.Anthropic, "sk-test"));
+
+        Assert.True(result.Validated);
+        Assert.True(result.RateLimited);
+    }
+
+    [Fact]
+    public async Task Validate_AiProviderException_ReturnsFalse()
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(ThrowingStream(new AiProviderException("Anthropic", "Server error")));
+
+        var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.Anthropic, "sk-test"));
+
+        Assert.False(result.Validated);
+        Assert.False(result.RateLimited);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task Validate_HttpRequestExceptionAuthError_ReturnsFalse(HttpStatusCode statusCode)
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(ThrowingStream(new HttpRequestException("Error", null, statusCode)));
+
+        var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.OpenAI, "sk-bad"));
+
+        Assert.False(result.Validated);
+        Assert.False(result.RateLimited);
+    }
+
+    [Fact]
+    public async Task Validate_HttpRequestException429_ReturnsRateLimited()
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(ThrowingStream(new HttpRequestException("Too Many Requests", null, HttpStatusCode.TooManyRequests)));
+
+        var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.OpenAI, "sk-test"));
+
+        Assert.True(result.Validated);
+        Assert.True(result.RateLimited);
+    }
+
+    [Fact]
+    public async Task Validate_OperationCanceledException_Rethrows()
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(ThrowingStream(new OperationCanceledException()));
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.Anthropic, "sk-test")));
     }
 
     #endregion
