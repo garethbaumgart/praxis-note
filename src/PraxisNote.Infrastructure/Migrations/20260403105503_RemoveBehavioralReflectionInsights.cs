@@ -32,6 +32,16 @@ namespace PraxisNote.Infrastructure.Migrations
             migrationBuilder.DropColumn(
                 name: "ReflectionSubmittedAt",
                 table: "Meetings");
+
+            // Clean up stale feature notification rows for removed features
+            migrationBuilder.Sql("""
+                DELETE FROM "FeatureNotifications"
+                WHERE "Title" IN (
+                    'Post-meeting self-reflection',
+                    'Behavioral Goals',
+                    'Blind Spot Nudges'
+                );
+                """);
         }
 
         /// <inheritdoc />

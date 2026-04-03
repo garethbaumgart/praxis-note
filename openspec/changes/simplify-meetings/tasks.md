@@ -34,7 +34,7 @@
 ## 4. Database Migration
 
 - [x] 4.1 Create EF migration to drop columns + BehavioralGoals/BlindSpotNudges tables
-- [ ] 4.2 Create data migration to remove the self-reflection feature notification row
+- [x] 4.2 Clean up stale feature notification rows in schema migration
 
 ## 5. Frontend — Remove Insights Feature
 
