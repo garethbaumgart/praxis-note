@@ -424,7 +424,7 @@ public class UserAiKeyUseCaseTests
     }
 
     [Fact]
-    public async Task AiInsufficientCreditsException_CarriesProviderName()
+    public void AiInsufficientCreditsException_CarriesProviderName()
     {
         var ex = new AiInsufficientCreditsException("Anthropic");
 
