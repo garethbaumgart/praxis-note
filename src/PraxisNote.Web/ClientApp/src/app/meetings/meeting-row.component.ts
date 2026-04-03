@@ -35,9 +35,6 @@ import { DeleteConfirmButtonComponent } from '../shared/components/delete-confir
           @if (meeting().transcriptContent) {
             <i class="pi pi-file-edit text-xs text-foreground-muted" title="Has transcript"></i>
           }
-          @if (meeting().excludeFromInsights) {
-            <i class="pi pi-eye-slash text-xs text-foreground-muted" title="Excluded from insights"></i>
-          }
           <!-- Tags -->
           @if (meeting().tags.length > 0) {
             <div class="flex items-center gap-1">

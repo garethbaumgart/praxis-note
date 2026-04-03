@@ -80,15 +80,6 @@ public sealed class Meeting : AggregateRoot
     public string? Decisions { get; private set; }
 
     /// <summary>
-    /// AI-generated behavioral analysis. Stored as JSON object containing:
-    /// - speakingDynamics: talk time, interruptions, question ratios per participant
-    /// - sentimentTone: sentiment scores, tone shifts, emotional indicators
-    /// - communicationPatterns: clarity, follow-ups, engagement levels
-    /// - redFlags: evasive language, hedging, defensive responses
-    /// </summary>
-    public string? BehavioralAnalysis { get; private set; }
-
-    /// <summary>
     /// AI-suggested tags for the meeting. Stored as JSON array of tag name strings.
     /// </summary>
     public string? SuggestedTags { get; private set; }
@@ -102,23 +93,6 @@ public sealed class Meeting : AggregateRoot
     /// AI-extracted action items from the meeting transcript.
     /// </summary>
     public IReadOnlyCollection<ActionItem> ActionItems => _actionItems.AsReadOnly();
-
-    /// <summary>
-    /// User's self-reflection data stored as JSON object containing self-assessments
-    /// and prompt responses. Used to build the Johari Window.
-    /// </summary>
-    public string? ReflectionData { get; private set; }
-
-    /// <summary>
-    /// When the user submitted their post-meeting reflection.
-    /// </summary>
-    public DateTimeOffset? ReflectionSubmittedAt { get; private set; }
-
-    /// <summary>
-    /// Whether this meeting is excluded from behavioral insights calculations.
-    /// Useful for non-interactive meetings (live streams, webinars) that would skew metrics.
-    /// </summary>
-    public bool ExcludeFromInsights { get; private set; }
 
     /// <summary>
     /// Optional linked note for meeting notes.
@@ -322,7 +296,6 @@ public sealed class Meeting : AggregateRoot
     /// <param name="summary">The AI-generated summary.</param>
     /// <param name="keyPoints">JSON array of key discussion points.</param>
     /// <param name="decisions">JSON array of decisions made.</param>
-    /// <param name="behavioralAnalysis">JSON object with behavioral analysis data.</param>
     /// <param name="actionItems">Extracted action items from the transcript.</param>
     /// <param name="suggestedTitle">AI-suggested title. Applied only if meeting has no existing title.</param>
     /// <param name="suggestedTags">JSON array of AI-suggested tag names.</param>
@@ -330,7 +303,6 @@ public sealed class Meeting : AggregateRoot
         string summary,
         string? keyPoints,
         string? decisions,
-        string? behavioralAnalysis = null,
         IEnumerable<ActionItem>? actionItems = null,
         string? suggestedTitle = null,
         string? suggestedTags = null)
@@ -340,7 +312,6 @@ public sealed class Meeting : AggregateRoot
         Summary = summary.Trim();
         KeyPoints = keyPoints;
         Decisions = decisions;
-        BehavioralAnalysis = behavioralAnalysis;
         SuggestedTags = suggestedTags;
 
         // Auto-apply title only for untitled meetings
@@ -372,33 +343,16 @@ public sealed class Meeting : AggregateRoot
     /// </summary>
     public void ClearAnalysis()
     {
-        if (Summary is null && KeyPoints is null && Decisions is null && BehavioralAnalysis is null && SuggestedTags is null && _actionItems.Count == 0 && Status != MeetingStatus.Failed)
+        if (Summary is null && KeyPoints is null && Decisions is null && SuggestedTags is null && _actionItems.Count == 0 && Status != MeetingStatus.Failed)
             return;
 
         Summary = null;
         KeyPoints = null;
         Decisions = null;
-        BehavioralAnalysis = null;
         SuggestedTags = null;
         _actionItems.Clear();
         UpdateStatus(MeetingStatus.Draft);
     }
-
-    #region Insights Exclusion
-
-    /// <summary>
-    /// Sets whether this meeting should be excluded from behavioral insights calculations.
-    /// </summary>
-    public void SetExcludeFromInsights(bool exclude)
-    {
-        if (ExcludeFromInsights == exclude)
-            return;
-
-        ExcludeFromInsights = exclude;
-        UpdatedAt = DateTimeOffset.UtcNow;
-    }
-
-    #endregion
 
     #region Meeting Notes
 
@@ -419,28 +373,6 @@ public sealed class Meeting : AggregateRoot
     {
         if (NoteId is null) return;
         NoteId = null;
-        UpdatedAt = DateTimeOffset.UtcNow;
-    }
-
-    #endregion
-
-    #region Reflection
-
-    /// <summary>
-    /// Whether this meeting has a completed self-reflection.
-    /// </summary>
-    public bool HasReflection => ReflectionData is not null;
-
-    /// <summary>
-    /// Submits or updates the user's post-meeting reflection.
-    /// </summary>
-    /// <param name="reflectionJson">JSON object containing reflection data.</param>
-    public void SubmitReflection(string reflectionJson)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(reflectionJson, nameof(reflectionJson));
-
-        ReflectionData = reflectionJson.Trim();
-        ReflectionSubmittedAt = DateTimeOffset.UtcNow;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

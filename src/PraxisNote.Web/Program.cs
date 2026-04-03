@@ -341,7 +341,6 @@ app.MapNotificationEndpoints();
 app.MapCalendarEndpoints();
 app.MapDriveEndpoints();
 app.MapJiraEndpoints();
-app.MapInsightEndpoints();
 app.MapActionItemEndpoints();
 app.MapTranscriptionEndpoints();
 app.MapApiKeyEndpoints();

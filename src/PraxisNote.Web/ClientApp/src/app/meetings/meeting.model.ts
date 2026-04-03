@@ -24,87 +24,12 @@ export interface Meeting {
   summary: string | null;
   keyPoints: string | null;
   decisions: string | null;
-  behavioralAnalysis: string | null;
   suggestedTags: string | null;
-  reflectionData: string | null;
-  reflectionSubmittedAt: string | null;
-  excludeFromInsights: boolean;
   noteId: string | null;
   tags: MeetingTag[];
   actionItems: ActionItem[];
   createdAt: string;
   updatedAt: string;
-}
-
-// Behavioral Analysis Types
-export interface BehavioralAnalysis {
-  speakingDynamics: SpeakingDynamics;
-  sentimentTone: SentimentTone;
-  communicationPatterns: CommunicationPatterns;
-  redFlags: RedFlag[];
-}
-
-export interface SpeakingDynamics {
-  talkTimeByParticipant: ParticipantTalkTime[];
-  interruptionPatterns: InterruptionPattern[];
-  questionVsStatementRatio: Record<string, number>;
-}
-
-export interface ParticipantTalkTime {
-  participant: string;
-  percentage: number;
-  duration: string;
-}
-
-export interface InterruptionPattern {
-  interrupter: string;
-  interrupted: string;
-  count: number;
-}
-
-export interface SentimentTone {
-  participantSentiments: ParticipantSentiment[];
-  toneShifts: ToneShift[];
-  emotionalIndicators: string[];
-}
-
-export interface ParticipantSentiment {
-  participant: string;
-  sentiment: 'positive' | 'neutral' | 'negative';
-  score: number;
-}
-
-export interface ToneShift {
-  timestamp: string;
-  description: string;
-  from: string;
-  to: string;
-}
-
-export interface CommunicationPatterns {
-  overallClarity: number;
-  followUpPatterns: FollowUpPattern[];
-  engagementLevels: ParticipantEngagement[];
-}
-
-export interface FollowUpPattern {
-  topic: string;
-  wasFollowedUp: boolean;
-  assignedTo: string | null;
-}
-
-export interface ParticipantEngagement {
-  participant: string;
-  level: 'high' | 'medium' | 'low';
-  indicators: string[];
-}
-
-export interface RedFlag {
-  type: 'evasive' | 'hedging' | 'defensive' | 'inconsistent';
-  participant: string;
-  description: string;
-  context: string;
-  severity: 'low' | 'medium' | 'high';
 }
 
 export function parseJsonArray(json: string | null): string[] {
@@ -127,20 +52,6 @@ export function hasAnalysisResults(meeting: Meeting | null | undefined): boolean
     meeting.status === 'Ready';
 }
 
-export function parseBehavioralAnalysis(json: string | null): BehavioralAnalysis | null {
-  if (!json) return null;
-  try {
-    const parsed = JSON.parse(json) as BehavioralAnalysis;
-    // Basic validation - check if it has the expected structure
-    if (parsed && typeof parsed === 'object' && 'speakingDynamics' in parsed) {
-      return parsed;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 export interface MeetingGroup {
   label: string;
   subLabel: string;
@@ -158,40 +69,4 @@ export interface PromoteActionItemResult {
   taskId: string;
   title: string;
   status: string;
-}
-
-// Reflection Types
-export interface ReflectionPrompt {
-  promptId: string;
-  category: 'talk-time' | 'engagement' | 'tone' | 'interruptions' | 'general';
-  promptText: string;
-  quickOptions: string[];
-}
-
-export interface PromptResponse {
-  promptId: string;
-  promptText: string;
-  response: string;
-}
-
-export interface MeetingReflection {
-  selfAssessedTalkTime: number | null;
-  selfAssessedEngagement: string | null;
-  selfAssessedTone: string | null;
-  interruptionAwareness: string | null;
-  freeformReflection: string | null;
-  promptResponses: PromptResponse[];
-}
-
-export function parseReflection(json: string | null): MeetingReflection | null {
-  if (!json) return null;
-  try {
-    const parsed = JSON.parse(json) as MeetingReflection;
-    if (parsed && typeof parsed === 'object' && 'promptResponses' in parsed) {
-      return parsed;
-    }
-    return null;
-  } catch {
-    return null;
-  }
 }

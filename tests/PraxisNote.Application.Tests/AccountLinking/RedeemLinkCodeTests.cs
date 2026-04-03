@@ -1,8 +1,6 @@
 using NSubstitute;
 using PraxisNote.Application.Common;
 using PraxisNote.Application.Features.AccountLinking;
-using PraxisNote.Domain.Aggregates.BehavioralGoals;
-using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
@@ -41,8 +39,6 @@ public class RedeemLinkCodeTests
             Substitute.For<ITagRepository>(),
             Substitute.For<ICalendarConnectionRepository>(),
             Substitute.For<IDriveConnectionRepository>(),
-            Substitute.For<IBehavioralGoalRepository>(),
-            Substitute.For<IBlindSpotNudgeRepository>(),
             _profileRepo);
 
         // Override TransferAsync to do nothing (it's virtual)

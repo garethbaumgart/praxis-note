@@ -1,5 +1,3 @@
-using PraxisNote.Domain.Aggregates.BehavioralGoals;
-using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
@@ -21,8 +19,6 @@ public class UserDataTransferService(
     ITagRepository tagRepository,
     ICalendarConnectionRepository calendarConnectionRepository,
     IDriveConnectionRepository driveConnectionRepository,
-    IBehavioralGoalRepository behavioralGoalRepository,
-    IBlindSpotNudgeRepository blindSpotNudgeRepository,
     IProfileRepository profileRepository)
 {
     /// <summary>
@@ -47,8 +43,6 @@ public class UserDataTransferService(
         var tags = await tagRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
         var calendarConnections = await calendarConnectionRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
         var driveConnections = await driveConnectionRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
-        var goals = await behavioralGoalRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
-        var nudges = await blindSpotNudgeRepository.GetAllByUserIdAsync(sourceUserId, cancellationToken);
 
         // Reassign all entities to the target user and profile
         foreach (var task in tasks)
@@ -68,12 +62,6 @@ public class UserDataTransferService(
 
         foreach (var driveConnection in driveConnections)
             driveConnection.Reassign(targetUserId, targetProfileId);
-
-        foreach (var goal in goals)
-            goal.Reassign(targetUserId, targetProfileId);
-
-        foreach (var nudge in nudges)
-            nudge.Reassign(targetUserId, targetProfileId);
 
         // Remove source user's profiles
         var sourceProfiles = await profileRepository.GetByUserIdAsync(sourceUserId, cancellationToken);

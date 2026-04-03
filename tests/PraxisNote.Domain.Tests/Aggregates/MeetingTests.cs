@@ -734,54 +734,6 @@ public class MeetingTests
         Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
     }
 
-    [Fact]
-    public void CompleteAnalysis_WithBehavioralAnalysis_StoresData()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        meeting.SubmitTranscript("Some transcript");
-        meeting.StartAnalysis();
-        var behavioralAnalysis = """{"speakingDynamics":{"talkTimeByParticipant":[{"participant":"John","percentage":60,"duration":"5:30"}]}}""";
-
-        // Act
-        meeting.CompleteAnalysis("Summary", null, null, behavioralAnalysis);
-
-        // Assert
-        Assert.Equal(MeetingStatus.Ready, meeting.Status);
-        Assert.Equal(behavioralAnalysis, meeting.BehavioralAnalysis);
-    }
-
-    [Fact]
-    public void CompleteAnalysis_WithNullBehavioralAnalysis_StoresNull()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        meeting.SubmitTranscript("Some transcript");
-        meeting.StartAnalysis();
-
-        // Act
-        meeting.CompleteAnalysis("Summary", null, null, null);
-
-        // Assert
-        Assert.Equal(MeetingStatus.Ready, meeting.Status);
-        Assert.Null(meeting.BehavioralAnalysis);
-    }
-
-    [Fact]
-    public void CompleteAnalysis_WithoutBehavioralAnalysisParameter_DefaultsToNull()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        meeting.SubmitTranscript("Some transcript");
-        meeting.StartAnalysis();
-
-        // Act
-        meeting.CompleteAnalysis("Summary", null, null);
-
-        // Assert
-        Assert.Null(meeting.BehavioralAnalysis);
-    }
-
     #endregion
 
     #region FailAnalysis Tests
@@ -838,23 +790,6 @@ public class MeetingTests
         Assert.Null(meeting.Summary);
         Assert.Null(meeting.KeyPoints);
         Assert.Null(meeting.Decisions);
-    }
-
-    [Fact]
-    public void ClearAnalysis_ClearsBehavioralAnalysis()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        meeting.SubmitTranscript("Some transcript");
-        meeting.StartAnalysis();
-        var behavioralAnalysis = """{"speakingDynamics":{}}""";
-        meeting.CompleteAnalysis("Summary", null, null, behavioralAnalysis);
-
-        // Act
-        meeting.ClearAnalysis();
-
-        // Assert
-        Assert.Null(meeting.BehavioralAnalysis);
     }
 
     [Fact]
@@ -1211,7 +1146,7 @@ public class MeetingTests
         };
 
         // Act
-        meeting.CompleteAnalysis("Summary", null, null, null, actionItems);
+        meeting.CompleteAnalysis("Summary", null, null, actionItems);
 
         // Assert
         Assert.Equal(2, meeting.ActionItems.Count);
@@ -1228,7 +1163,7 @@ public class MeetingTests
         meeting.StartAnalysis();
 
         // Act
-        meeting.CompleteAnalysis("Summary", null, null, null, null);
+        meeting.CompleteAnalysis("Summary", null, null, null);
 
         // Assert
         Assert.Empty(meeting.ActionItems);
@@ -1241,13 +1176,13 @@ public class MeetingTests
         var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
-        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Old item") });
+        meeting.CompleteAnalysis("Summary", null, null, new[] { ActionItem.Create("Old item") });
         meeting.UpdateStatus(MeetingStatus.Draft);
         meeting.StartAnalysis();
         var newActionItems = new[] { ActionItem.Create("New item") };
 
         // Act
-        meeting.CompleteAnalysis("New summary", null, null, null, newActionItems);
+        meeting.CompleteAnalysis("New summary", null, null, newActionItems);
 
         // Assert
         Assert.Single(meeting.ActionItems);
@@ -1262,7 +1197,7 @@ public class MeetingTests
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var actionItem = ActionItem.Create("Test item");
-        meeting.CompleteAnalysis("Summary", null, null, null, new[] { actionItem });
+        meeting.CompleteAnalysis("Summary", null, null, new[] { actionItem });
         var itemId = meeting.ActionItems.First().Id;
 
         // Act
@@ -1281,7 +1216,7 @@ public class MeetingTests
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var actionItem = ActionItem.Create("Test item");
-        meeting.CompleteAnalysis("Summary", null, null, null, new[] { actionItem });
+        meeting.CompleteAnalysis("Summary", null, null, new[] { actionItem });
         var itemId = meeting.ActionItems.First().Id;
 
         // Act - Toggle twice
@@ -1299,7 +1234,7 @@ public class MeetingTests
         var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
-        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+        meeting.CompleteAnalysis("Summary", null, null, new[] { ActionItem.Create("Test item") });
         var originalUpdatedAt = meeting.UpdatedAt;
 
         // Act
@@ -1317,7 +1252,7 @@ public class MeetingTests
         var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
-        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+        meeting.CompleteAnalysis("Summary", null, null, new[] { ActionItem.Create("Test item") });
         var originalUpdatedAt = meeting.UpdatedAt;
         var itemId = meeting.ActionItems.First().Id;
 
@@ -1335,7 +1270,7 @@ public class MeetingTests
         var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
-        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+        meeting.CompleteAnalysis("Summary", null, null, new[] { ActionItem.Create("Test item") });
 
         // Act
         meeting.ClearAnalysis();
@@ -1352,7 +1287,7 @@ public class MeetingTests
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
         var actionItem = ActionItem.Create("Test item");
-        meeting.CompleteAnalysis("Summary", null, null, null, new[] { actionItem });
+        meeting.CompleteAnalysis("Summary", null, null, new[] { actionItem });
         var itemId = meeting.ActionItems.First().Id;
 
         // Act
@@ -1371,7 +1306,7 @@ public class MeetingTests
         var meeting = Meeting.Create(_validUserId, _validProfileId);
         meeting.SubmitTranscript("Some transcript");
         meeting.StartAnalysis();
-        meeting.CompleteAnalysis("Summary", null, null, null, new[] { ActionItem.Create("Test item") });
+        meeting.CompleteAnalysis("Summary", null, null, new[] { ActionItem.Create("Test item") });
 
         // Act
         var result = meeting.GetActionItem(Guid.NewGuid());
@@ -1394,104 +1329,6 @@ public class MeetingTests
 
         // Assert
         Assert.Null(result);
-    }
-
-    #endregion
-
-    #region Reflection Tests
-
-    [Fact]
-    public void SubmitReflection_WithValidJson_StoresReflectionData()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        var json = """{"selfAssessedTalkTime":30,"selfAssessedEngagement":"medium"}""";
-
-        // Act
-        meeting.SubmitReflection(json);
-
-        // Assert
-        Assert.Equal(json, meeting.ReflectionData);
-        Assert.NotNull(meeting.ReflectionSubmittedAt);
-        Assert.True(meeting.HasReflection);
-    }
-
-    [Fact]
-    public void SubmitReflection_WithNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            meeting.SubmitReflection(null!));
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void SubmitReflection_WithEmptyOrWhitespace_ThrowsArgumentException(string invalidJson)
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() =>
-            meeting.SubmitReflection(invalidJson));
-    }
-
-    [Fact]
-    public void SubmitReflection_TrimsWhitespace()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-
-        // Act
-        meeting.SubmitReflection("""  {"test":true}  """);
-
-        // Assert
-        Assert.Equal("""{"test":true}""", meeting.ReflectionData);
-    }
-
-    [Fact]
-    public void SubmitReflection_UpdatesTimestamps()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        var beforeSubmit = DateTimeOffset.UtcNow;
-
-        // Act
-        meeting.SubmitReflection("""{"test":true}""");
-
-        // Assert
-        Assert.True(meeting.ReflectionSubmittedAt >= beforeSubmit);
-        Assert.True(meeting.UpdatedAt >= beforeSubmit);
-    }
-
-    [Fact]
-    public void SubmitReflection_CalledTwice_OverwritesReflection()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        meeting.SubmitReflection("""{"first":true}""");
-
-        // Act
-        meeting.SubmitReflection("""{"second":true}""");
-
-        // Assert
-        Assert.Equal("""{"second":true}""", meeting.ReflectionData);
-    }
-
-    [Fact]
-    public void HasReflection_WhenNoReflection_ReturnsFalse()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-
-        // Assert
-        Assert.False(meeting.HasReflection);
-        Assert.Null(meeting.ReflectionData);
-        Assert.Null(meeting.ReflectionSubmittedAt);
     }
 
     #endregion
@@ -1678,64 +1515,6 @@ public class MeetingTests
 
         // Assert
         Assert.False(meeting.IsTitleAutoGenerated);
-    }
-
-    #endregion
-
-    #region ExcludeFromInsights Tests
-
-    [Theory]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    public void SetExcludeFromInsights_SetsExcludedFlag(bool initial, bool target)
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        meeting.SetExcludeFromInsights(initial);
-
-        // Act
-        meeting.SetExcludeFromInsights(target);
-
-        // Assert
-        Assert.Equal(target, meeting.ExcludeFromInsights);
-    }
-
-    [Fact]
-    public void SetExcludeFromInsights_UpdatesUpdatedAt()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        var originalUpdatedAt = meeting.UpdatedAt;
-
-        // Act
-        meeting.SetExcludeFromInsights(true);
-
-        // Assert
-        Assert.True(meeting.UpdatedAt >= originalUpdatedAt);
-    }
-
-    [Fact]
-    public void SetExcludeFromInsights_WithSameValue_DoesNotUpdateUpdatedAt()
-    {
-        // Arrange
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-        var originalUpdatedAt = meeting.UpdatedAt;
-
-        // Act
-        meeting.SetExcludeFromInsights(false); // Same as default
-
-        // Assert
-        Assert.Equal(originalUpdatedAt, meeting.UpdatedAt);
-    }
-
-    [Fact]
-    public void ExcludeFromInsights_DefaultsFalse()
-    {
-        // Act
-        var meeting = Meeting.Create(_validUserId, _validProfileId);
-
-        // Assert
-        Assert.False(meeting.ExcludeFromInsights);
     }
 
     #endregion

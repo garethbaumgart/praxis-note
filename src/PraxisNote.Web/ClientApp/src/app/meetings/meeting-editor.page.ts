@@ -20,7 +20,6 @@ import { Meeting, MeetingTag, ActionItemStatus, parseJsonArray, hasAnalysisResul
 import { TiptapEditorComponent } from '../notes/tiptap-editor.component';
 import { MeetingService } from './meeting.service';
 import { MeetingAnalysisComponent } from './meeting-analysis.component';
-import { MeetingReflectionComponent } from './meeting-reflection.component';
 import { MeetingSectionComponent } from './meeting-section.component';
 import { MeetingDetailsSectionComponent } from './meeting-details-section.component';
 import { MeetingTranscriptSectionComponent } from './meeting-transcript-section.component';
@@ -55,7 +54,6 @@ interface DateOption {
     MeetingDetailsSectionComponent,
     MeetingTranscriptSectionComponent,
     MeetingAnalysisComponent,
-    MeetingReflectionComponent,
     DeleteConfirmButtonComponent,
     AiErrorBannerComponent,
     ButtonModule,
@@ -158,7 +156,6 @@ interface DateOption {
                 [attendees]="attendees()"
                 [meetingTags]="meetingTags()"
                 [pendingSuggestedTags]="pendingSuggestedTags()"
-                [includeInInsights]="includeInInsights()"
                 [selectedDateChip]="selectedDateChip()"
                 [customDateLabel]="customDateLabel()"
                 [selectedTimeLabel]="selectedTimeLabel()"
@@ -174,7 +171,6 @@ interface DateOption {
                 (onCreateAndAddTag)="createAndAddTag($event)"
                 (onAcceptSuggestedTag)="acceptSuggestedTag($event)"
                 (onDismissSuggestedTag)="dismissSuggestedTag($event)"
-                (onToggleExcludeFromInsights)="onToggleExcludeFromInsights()"
                 (onCloseDatePicker)="showDatePicker.set(false)"
               />
             </app-meeting-section>
@@ -267,20 +263,6 @@ interface DateOption {
                 }
               </app-meeting-section>
 
-              <!-- Reflection Section (only when behavioral analysis exists) -->
-              @if (currentMeeting()?.behavioralAnalysis) {
-                <app-meeting-section
-                  title="Self-Reflection"
-                  icon="pi-comments"
-                  [borderColor]="'var(--color-meeting-reflection-border)'"
-                  [headerColor]="'var(--color-meeting-reflection-border)'"
-                  sectionId="reflection-section"
-                >
-                  <app-meeting-reflection
-                    [meeting]="currentMeeting()!"
-                  />
-                </app-meeting-section>
-              }
             }
           </div>
         }
@@ -418,8 +400,7 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
   readonly analysisIsProcessing = computed(() => this.currentMeeting()?.status === 'Processing');
   readonly analysisHasResults = computed(() => hasAnalysisResults(this.currentMeeting()));
 
-  // Insights exclusion (inverted for positive framing in UI)
-  readonly includeInInsights = computed(() => !(this.currentMeeting()?.excludeFromInsights ?? false));
+
 
   // Suggested tags state (dismissed tags tracked locally)
   private readonly dismissedSuggestedTags = signal<Set<string>>(new Set());
@@ -930,12 +911,6 @@ export class MeetingEditorPage implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  onToggleExcludeFromInsights(): void {
-    const id = this.meetingId();
-    if (!id) return;
-    const currentlyExcluded = this.currentMeeting()?.excludeFromInsights ?? false;
-    this.meetingService.toggleExcludeFromInsights(id, !currentlyExcluded);
-  }
 
   toggleDatePicker(): void {
     this.detailsSectionRef()?.hideTimeSelect();

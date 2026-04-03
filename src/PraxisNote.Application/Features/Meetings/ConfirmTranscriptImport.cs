@@ -98,7 +98,6 @@ public sealed class ConfirmTranscriptImport(
                 summary,
                 item.KeyPoints,
                 item.Decisions,
-                behavioralAnalysis: null,
                 actionItems,
                 suggestedTitle: null,
                 item.SuggestedTags.Count > 0

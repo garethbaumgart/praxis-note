@@ -49,39 +49,8 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
            - Tags should categorize the meeting topic (e.g., "budget", "planning", "engineering")
            - Keep tags short (1-2 words each)
 
-        BEHAVIORAL ANALYSIS:
-        8. "behavioralAnalysis": An object containing behavioral insights (or null if insufficient data):
-           a) "speakingDynamics": {
-              "talkTimeByParticipant": [{"participant": "Name", "percentage": 35.5, "duration": "12:30"}],
-              "interruptionPatterns": [{"interrupter": "Name", "interrupted": "Name", "count": 3}],
-              "questionVsStatementRatio": {"Name": 0.4}
-           }
-           b) "sentimentTone": {
-              "participantSentiments": [{"participant": "Name", "sentiment": "positive|neutral|negative", "score": 0.7}],
-              "toneShifts": [{"timestamp": "10:30", "description": "Discussion became heated", "from": "collaborative", "to": "defensive"}],
-              "emotionalIndicators": ["frustration detected in budget discussion"]
-           }
-           c) "communicationPatterns": {
-              "overallClarity": 0.8,
-              "followUpPatterns": [{"topic": "Q3 budget", "wasFollowedUp": true, "assignedTo": "Sarah"}],
-              "engagementLevels": [{"participant": "Name", "level": "high|medium|low", "indicators": ["asked questions", "took notes"]}]
-           }
-           d) "redFlags": [
-              {
-                "type": "evasive|hedging|defensive|inconsistent",
-                "participant": "Name",
-                "description": "Avoided direct answer about timeline",
-                "context": "When asked about delivery date...",
-                "severity": "low|medium|high"
-              }
-           ]
-
         IMPORTANT GUIDELINES:
         - If participant names cannot be identified, use "Speaker 1", "Speaker 2", etc.
-        - If the transcript lacks sufficient detail for behavioral analysis, set "behavioralAnalysis" to null
-        - Red flags should only be included when there's clear evidence - avoid speculation
-        - All percentages should sum to 100 for talk time
-        - Sentiment scores range from 0.0 (most negative) to 1.0 (most positive)
 
         Respond ONLY with valid JSON, no other text or markdown formatting.
 
@@ -516,7 +485,6 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
             result.Summary ?? "No summary provided",
             result.KeyPoints ?? [],
             result.Decisions ?? [],
-            MapBehavioralAnalysis(result.BehavioralAnalysis),
             result.ExtractedAttendees ?? [],
             result.ActionItems?
                 .Where(a => !string.IsNullOrWhiteSpace(a.Description))
@@ -524,46 +492,6 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
                 .ToList() ?? [],
             result.SuggestedTitle?.Trim(),
             result.SuggestedTags ?? []);
-    }
-
-    private static BehavioralAnalysisData? MapBehavioralAnalysis(BehavioralAnalysisJson? json)
-    {
-        if (json is null)
-            return null;
-
-        return new BehavioralAnalysisData(
-            SpeakingDynamics: new SpeakingDynamics(
-                TalkTimeByParticipant: json.SpeakingDynamics?.TalkTimeByParticipant?
-                    .Select(t => new ParticipantTalkTime(t.Participant ?? "Unknown", t.Percentage, t.Duration ?? "0:00"))
-                    .ToList() ?? [],
-                InterruptionPatterns: json.SpeakingDynamics?.InterruptionPatterns?
-                    .Select(i => new InterruptionPattern(i.Interrupter ?? "Unknown", i.Interrupted ?? "Unknown", i.Count))
-                    .ToList() ?? [],
-                QuestionVsStatementRatio: json.SpeakingDynamics?.QuestionVsStatementRatio ?? new Dictionary<string, double>()
-            ),
-            SentimentTone: new SentimentTone(
-                ParticipantSentiments: json.SentimentTone?.ParticipantSentiments?
-                    .Select(s => new ParticipantSentiment(s.Participant ?? "Unknown", s.Sentiment ?? "neutral", s.Score))
-                    .ToList() ?? [],
-                ToneShifts: json.SentimentTone?.ToneShifts?
-                    .Select(t => new ToneShift(t.Timestamp ?? "", t.Description ?? "", t.From ?? "", t.To ?? ""))
-                    .ToList() ?? [],
-                EmotionalIndicators: json.SentimentTone?.EmotionalIndicators ?? []
-            ),
-            CommunicationPatterns: new CommunicationPatterns(
-                OverallClarity: json.CommunicationPatterns?.OverallClarity ?? 0.5,
-                FollowUpPatterns: json.CommunicationPatterns?.FollowUpPatterns?
-                    .Select(f => new FollowUpPattern(f.Topic ?? "", f.WasFollowedUp, f.AssignedTo))
-                    .ToList() ?? [],
-                EngagementLevels: json.CommunicationPatterns?.EngagementLevels?
-                    .Select(e => new ParticipantEngagement(e.Participant ?? "Unknown", e.Level ?? "medium", e.Indicators ?? []))
-                    .ToList() ?? []
-            ),
-            RedFlags: json.RedFlags?
-                .Where(r => !string.IsNullOrWhiteSpace(r.Type) && !string.IsNullOrWhiteSpace(r.Severity))
-                .Select(r => new RedFlag(r.Type!, r.Participant ?? "Unknown", r.Description ?? "", r.Context ?? "", r.Severity!))
-                .ToList() ?? []
-        );
     }
 
     #region JSON Response Classes
@@ -604,7 +532,6 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
         public List<string>? Decisions { get; set; }
         public List<string>? ExtractedAttendees { get; set; }
         public List<ActionItemJson>? ActionItems { get; set; }
-        public BehavioralAnalysisJson? BehavioralAnalysis { get; set; }
         public string? SuggestedTitle { get; set; }
         public List<string>? SuggestedTags { get; set; }
     }
@@ -613,87 +540,6 @@ public sealed class AnthropicMeetingAnalyzer : IMeetingAnalyzer
     {
         public string? Description { get; set; }
         public string? Assignee { get; set; }
-    }
-
-    internal sealed class BehavioralAnalysisJson
-    {
-        public SpeakingDynamicsJson? SpeakingDynamics { get; set; }
-        public SentimentToneJson? SentimentTone { get; set; }
-        public CommunicationPatternsJson? CommunicationPatterns { get; set; }
-        public List<RedFlagJson>? RedFlags { get; set; }
-    }
-
-    internal sealed class SpeakingDynamicsJson
-    {
-        public List<ParticipantTalkTimeJson>? TalkTimeByParticipant { get; set; }
-        public List<InterruptionPatternJson>? InterruptionPatterns { get; set; }
-        public Dictionary<string, double>? QuestionVsStatementRatio { get; set; }
-    }
-
-    internal sealed class ParticipantTalkTimeJson
-    {
-        public string? Participant { get; set; }
-        public double Percentage { get; set; }
-        public string? Duration { get; set; }
-    }
-
-    internal sealed class InterruptionPatternJson
-    {
-        public string? Interrupter { get; set; }
-        public string? Interrupted { get; set; }
-        public int Count { get; set; }
-    }
-
-    internal sealed class SentimentToneJson
-    {
-        public List<ParticipantSentimentJson>? ParticipantSentiments { get; set; }
-        public List<ToneShiftJson>? ToneShifts { get; set; }
-        public List<string>? EmotionalIndicators { get; set; }
-    }
-
-    internal sealed class ParticipantSentimentJson
-    {
-        public string? Participant { get; set; }
-        public string? Sentiment { get; set; }
-        public double Score { get; set; }
-    }
-
-    internal sealed class ToneShiftJson
-    {
-        public string? Timestamp { get; set; }
-        public string? Description { get; set; }
-        public string? From { get; set; }
-        public string? To { get; set; }
-    }
-
-    internal sealed class CommunicationPatternsJson
-    {
-        public double OverallClarity { get; set; }
-        public List<FollowUpPatternJson>? FollowUpPatterns { get; set; }
-        public List<ParticipantEngagementJson>? EngagementLevels { get; set; }
-    }
-
-    internal sealed class FollowUpPatternJson
-    {
-        public string? Topic { get; set; }
-        public bool WasFollowedUp { get; set; }
-        public string? AssignedTo { get; set; }
-    }
-
-    internal sealed class ParticipantEngagementJson
-    {
-        public string? Participant { get; set; }
-        public string? Level { get; set; }
-        public List<string>? Indicators { get; set; }
-    }
-
-    internal sealed class RedFlagJson
-    {
-        public string? Type { get; set; }
-        public string? Participant { get; set; }
-        public string? Description { get; set; }
-        public string? Context { get; set; }
-        public string? Severity { get; set; }
     }
 
     #endregion

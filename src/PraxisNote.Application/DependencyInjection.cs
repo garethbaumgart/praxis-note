@@ -10,8 +10,6 @@ using PraxisNote.Application.Features.Jira;
 using PraxisNote.Application.Features.Notifications;
 using PraxisNote.Application.Features.Tags;
 using PraxisNote.Application.Features.Tasks;
-using PraxisNote.Application.Features.Goals;
-using PraxisNote.Application.Features.Insights;
 using PraxisNote.Application.Features.ActionItems;
 using PraxisNote.Application.Features.AccountLinking;
 using PraxisNote.Application.Features.Profiles;
@@ -119,11 +117,7 @@ public static class DependencyInjection
         services.AddScoped<ToggleActionItem>();
         services.AddScoped<PromoteActionItemToTask>();
         services.AddScoped<GetActionItemStatus>();
-        services.AddScoped<GenerateReflectionPrompts>();
-        services.AddScoped<SubmitReflection>();
-        services.AddScoped<GetMeetingReflection>();
         services.AddScoped<ExtractMeetingsFromScreenshot>();
-        services.AddScoped<UpdateMeetingExcludeFromInsights>();
         services.AddScoped<CreateMeetingNote>();
         services.AddScoped<UpdateMeetingNote>();
         services.AddScoped<GetMeetingNote>();
@@ -159,26 +153,8 @@ public static class DependencyInjection
         services.AddScoped<GetJiraConnectionStatus>();
         services.AddScoped<ResolveJiraIssue>();
 
-        // Insight use cases
-        services.AddScoped<GetBehavioralTrends>();
-        services.AddScoped<GetInsightsSummary>();
-        services.AddScoped<GetCommunicationProfile>();
-        services.AddScoped<GetJohariWindow>();
-
-        // Nudge use cases
-        services.AddScoped<GenerateBlindSpotNudges>();
-        services.AddScoped<DismissNudge>();
-        services.AddScoped<AcceptNudgeAsGoal>();
-
         // Action item use cases
         services.AddScoped<GetOutstandingActionItems>();
-
-        // Goal use cases
-        services.AddScoped<CreateBehavioralGoal>();
-        services.AddScoped<UpdateBehavioralGoal>();
-        services.AddScoped<DeleteBehavioralGoal>();
-        services.AddScoped<GetUserGoals>();
-        services.AddScoped<EvaluateGoalProgress>();
 
         // Notification use cases
         services.AddScoped<GetNotifications>();

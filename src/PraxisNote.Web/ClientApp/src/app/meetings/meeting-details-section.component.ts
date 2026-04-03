@@ -231,27 +231,6 @@ interface DateOption {
         </div>
       }
     </div>
-    @if (!isNewMeeting()) {
-      <div class="flex items-center gap-2 mt-3 pt-3 border-t border-border">
-        <button
-          type="button"
-          class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-md transition-colors"
-          [class.bg-surface-muted]="includeInInsights()"
-          [class.text-foreground-secondary]="includeInInsights()"
-          [class.bg-warning/10]="!includeInInsights()"
-          [class.text-warning]="!includeInInsights()"
-          (click)="onToggleExcludeFromInsights.emit()"
-          [attr.aria-pressed]="includeInInsights()"
-          aria-label="Include in behavioral insights"
-        >
-          <i class="pi" [class.pi-eye]="includeInInsights()" [class.pi-eye-slash]="!includeInInsights()"></i>
-          {{ includeInInsights() ? 'Included in Insights' : 'Excluded from Insights' }}
-        </button>
-        @if (!includeInInsights()) {
-          <span class="text-xs text-foreground-muted">This meeting won't affect your behavioral trends</span>
-        }
-      </div>
-    }
   `,
   styles: [`
     :host { display: block; }
@@ -345,7 +324,6 @@ export class MeetingDetailsSectionComponent {
   readonly attendees = input.required<string>();
   readonly meetingTags = input.required<MeetingTag[]>();
   readonly pendingSuggestedTags = input.required<string[]>();
-  readonly includeInInsights = input.required<boolean>();
   readonly selectedDateChip = input.required<string | null>();
   readonly customDateLabel = input.required<string | null>();
   readonly selectedTimeLabel = input.required<string>();
@@ -363,7 +341,6 @@ export class MeetingDetailsSectionComponent {
   readonly onCreateAndAddTag = output<string>();
   readonly onAcceptSuggestedTag = output<string>();
   readonly onDismissSuggestedTag = output<string>();
-  readonly onToggleExcludeFromInsights = output<void>();
   readonly onCloseDatePicker = output<void>();
 
   // Local state
