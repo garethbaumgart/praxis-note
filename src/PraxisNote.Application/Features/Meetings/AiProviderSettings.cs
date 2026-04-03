@@ -27,5 +27,5 @@ public class OpenAiProviderConfig
 public class GeminiProviderConfig
 {
     public string? ApiKey { get; set; }
-    public string DefaultModel { get; set; } = "gemini-2.0-flash";
+    public string DefaultModel { get; set; } = "gemini-2.5-flash";
 }
