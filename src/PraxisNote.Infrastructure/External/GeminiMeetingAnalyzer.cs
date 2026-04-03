@@ -108,6 +108,14 @@ public sealed class GeminiMeetingAnalyzer(
             using var response = await httpClient.SendAsync(request, cts.Token);
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
+                var body = await response.Content.ReadAsStringAsync(cts.Token);
+                if (body.Contains("quota", StringComparison.OrdinalIgnoreCase)
+                    || body.Contains("RESOURCE_EXHAUSTED", StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogWarning("Insufficient credits for {Provider}", "Gemini");
+                    throw new AiInsufficientCreditsException("Gemini");
+                }
+
                 var retryAfterSeconds = response.Headers.RetryAfter?.Delta is { } delta
                     ? (int)Math.Ceiling(delta.TotalSeconds)
                     : response.Headers.RetryAfter?.Date is { } date

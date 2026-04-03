@@ -395,6 +395,44 @@ public class UserAiKeyUseCaseTests
     }
 
     [Fact]
+    public async Task Validate_AiInsufficientCreditsException_ReturnsInsufficientCredits()
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(ThrowingStream(new AiInsufficientCreditsException("Anthropic")));
+
+        var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.Anthropic, "sk-test"));
+
+        Assert.False(result.Validated);
+        Assert.True(result.InsufficientCredits);
+        Assert.False(result.RateLimited);
+    }
+
+    [Fact]
+    public async Task Validate_AiKeyInvalidException_DoesNotSetInsufficientCredits()
+    {
+        var sut = CreateValidateAiKeySut(out _, out var chatService);
+        chatService.StreamResponseAsync(Arg.Any<TagChatContext>(), Arg.Any<string>(),
+                Arg.Any<IReadOnlyList<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(ThrowingStream(new AiKeyInvalidException("Anthropic")));
+
+        var result = await sut.ExecuteAsync(new ValidateAiKey.Command(AiProvider.Anthropic, "sk-bad"));
+
+        Assert.False(result.Validated);
+        Assert.False(result.InsufficientCredits);
+    }
+
+    [Fact]
+    public void AiInsufficientCreditsException_CarriesProviderName()
+    {
+        var ex = new AiInsufficientCreditsException("Anthropic");
+
+        Assert.Equal("Anthropic", ex.Provider);
+        Assert.Contains("insufficient credits", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task Validate_OperationCanceledException_Rethrows()
     {
         var sut = CreateValidateAiKeySut(out _, out var chatService);
