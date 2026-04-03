@@ -84,17 +84,18 @@ public static class UserAiKeyEndpoints
 
         if (!validation.Validated)
         {
+            if (validation.InsufficientCredits)
+            {
+                // Key is valid but account has no credits — do NOT delete the stored key
+                return Results.UnprocessableEntity(new { error = "ai_key_insufficient_credits", message = "Your API key is valid but your account has insufficient credits. Please top up your balance." });
+            }
+
             // Compensating delete — remove any previously stored key for this provider
             try
             {
                 await deleteKey.ExecuteAsync(new DeleteUserAiKey.Command(userId.Value, aiProvider), cancellationToken);
             }
             catch (UserAiKeyNotFoundException) { /* No key stored — nothing to clean up */ }
-
-            if (validation.InsufficientCredits)
-            {
-                return Results.UnprocessableEntity(new { error = "ai_key_insufficient_credits", message = "Your API key is valid but your account has insufficient credits. Please top up your balance." });
-            }
 
             return Results.UnprocessableEntity(new { error = "ai_key_invalid" });
         }

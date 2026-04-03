@@ -80,7 +80,7 @@ public sealed class GeminiTagAiChatService(
             {
                 var body = await response.Content.ReadAsStringAsync(cts.Token);
                 if (body.Contains("quota", StringComparison.OrdinalIgnoreCase)
-                    || body.Contains("RESOURCE_EXHAUSTED", StringComparison.Ordinal))
+                    || body.Contains("RESOURCE_EXHAUSTED", StringComparison.OrdinalIgnoreCase))
                 {
                     response.Dispose();
                     logger.LogWarning("Insufficient credits for {Provider}", "Gemini");
@@ -216,7 +216,7 @@ public sealed class GeminiTagAiChatService(
             {
                 var body = await response.Content.ReadAsStringAsync(cts.Token);
                 if (body.Contains("quota", StringComparison.OrdinalIgnoreCase)
-                    || body.Contains("RESOURCE_EXHAUSTED", StringComparison.Ordinal))
+                    || body.Contains("RESOURCE_EXHAUSTED", StringComparison.OrdinalIgnoreCase))
                 {
                     logger.LogWarning("Insufficient credits for {Provider}", "Gemini");
                     throw new AiInsufficientCreditsException("Gemini");

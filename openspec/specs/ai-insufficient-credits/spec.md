@@ -1,7 +1,7 @@
 # ai-insufficient-credits Specification
 
 ## Purpose
-TBD - created by archiving change improve-ai-credit-error-message. Update Purpose after archive.
+Detect and surface insufficient-credits errors from AI providers (Anthropic, OpenAI, Gemini) as a distinct exception so the frontend can show a clear "top up your balance" message instead of a misleading "invalid key" error.
 ## Requirements
 ### Requirement: Insufficient credits exception
 
