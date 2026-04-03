@@ -17,7 +17,7 @@ public sealed class ValidateAiKey(
 
     public record Command(AiProvider Provider, string ApiKey);
 
-    public record Result(bool Validated, bool RateLimited = false);
+    public record Result(bool Validated, bool RateLimited = false, bool InsufficientCredits = false);
 
     public async Task<Result> ExecuteAsync(Command command, CancellationToken cancellationToken = default)
     {
@@ -62,6 +62,12 @@ public sealed class ValidateAiKey(
             logger.LogWarning(ex, "AI key validation failed (network) for provider {Provider}: {Status}",
                 command.Provider, ex.StatusCode);
             return new Result(false);
+        }
+        catch (AiInsufficientCreditsException ex)
+        {
+            logger.LogInformation("AI key validation found insufficient credits for provider {Provider}",
+                command.Provider);
+            return new Result(false, InsufficientCredits: true);
         }
         catch (AiKeyInvalidException ex)
         {

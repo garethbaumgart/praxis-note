@@ -67,6 +67,11 @@ public sealed class OpenAiTagAiChatService(
             logger.LogError(ex, "AI key rejected by {Provider}", "OpenAI");
             throw new AiKeyInvalidException("OpenAI");
         }
+        catch (ClientResultException ex) when (ex.Status == 429 && ex.Message.Contains("insufficient_quota", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning(ex, "Insufficient credits for {Provider}", "OpenAI");
+            throw new AiInsufficientCreditsException("OpenAI");
+        }
         catch (ClientResultException ex) when (ex.Status == 429)
         {
             logger.LogWarning("Rate limited by {Provider}", "OpenAI");
@@ -102,6 +107,11 @@ public sealed class OpenAiTagAiChatService(
                 {
                     logger.LogError(ex, "AI key rejected by {Provider}", "OpenAI");
                     throw new AiKeyInvalidException("OpenAI");
+                }
+                catch (ClientResultException ex) when (ex.Status == 429 && ex.Message.Contains("insufficient_quota", StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogWarning(ex, "Insufficient credits for {Provider}", "OpenAI");
+                    throw new AiInsufficientCreditsException("OpenAI");
                 }
                 catch (ClientResultException ex) when (ex.Status == 429)
                 {
@@ -198,6 +208,11 @@ public sealed class OpenAiTagAiChatService(
         {
             logger.LogError(ex, "AI key rejected by {Provider}", "OpenAI");
             throw new AiKeyInvalidException("OpenAI");
+        }
+        catch (ClientResultException ex) when (ex.Status == 429 && ex.Message.Contains("insufficient_quota", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning(ex, "Insufficient credits for {Provider}", "OpenAI");
+            throw new AiInsufficientCreditsException("OpenAI");
         }
         catch (ClientResultException ex) when (ex.Status == 429)
         {

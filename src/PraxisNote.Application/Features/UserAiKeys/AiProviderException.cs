@@ -24,6 +24,17 @@ public sealed class AiRateLimitedException : Exception
     }
 }
 
+public sealed class AiInsufficientCreditsException : Exception
+{
+    public string Provider { get; }
+
+    public AiInsufficientCreditsException(string provider)
+        : base($"Insufficient credits on {provider} account.")
+    {
+        Provider = provider;
+    }
+}
+
 public sealed class AiProviderException : Exception
 {
     public string Provider { get; }

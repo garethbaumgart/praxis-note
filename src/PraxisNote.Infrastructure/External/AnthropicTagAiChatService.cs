@@ -126,6 +126,11 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
             _logger.LogError(ex, "Timeout initializing stream with {Provider}", "Anthropic");
             throw new AiProviderException("Anthropic", "Anthropic is not responding. Try again shortly.", ex);
         }
+        catch (HttpRequestException ex) when (ex.Message.Contains("credit balance", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning(ex, "Insufficient credits for {Provider}", "Anthropic");
+            throw new AiInsufficientCreditsException("Anthropic");
+        }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Network error calling {Provider}", "Anthropic");
@@ -161,6 +166,11 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
                 {
                     _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
                     throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+                }
+                catch (HttpRequestException ex) when (ex.Message.Contains("credit balance", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning(ex, "Insufficient credits for {Provider}", "Anthropic");
+                    throw new AiInsufficientCreditsException("Anthropic");
                 }
                 catch (HttpRequestException ex)
                 {
@@ -252,6 +262,11 @@ public sealed class AnthropicTagAiChatService : ITagAiChatService
         {
             _logger.LogError(ex, "Provider error from {Provider}: {StatusCode}", "Anthropic", ex.StatusCode);
             throw new AiProviderException("Anthropic", "Anthropic returned an error. Try again shortly.", ex);
+        }
+        catch (HttpRequestException ex) when (ex.Message.Contains("credit balance", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning(ex, "Insufficient credits for {Provider}", "Anthropic");
+            throw new AiInsufficientCreditsException("Anthropic");
         }
         catch (HttpRequestException ex)
         {

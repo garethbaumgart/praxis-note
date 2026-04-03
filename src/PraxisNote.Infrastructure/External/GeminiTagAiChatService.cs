@@ -78,6 +78,15 @@ public sealed class GeminiTagAiChatService(
             response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
+                var body = await response.Content.ReadAsStringAsync(cts.Token);
+                if (body.Contains("quota", StringComparison.OrdinalIgnoreCase)
+                    || body.Contains("RESOURCE_EXHAUSTED", StringComparison.Ordinal))
+                {
+                    response.Dispose();
+                    logger.LogWarning("Insufficient credits for {Provider}", "Gemini");
+                    throw new AiInsufficientCreditsException("Gemini");
+                }
+
                 var retryAfterSeconds = response.Headers.RetryAfter?.Delta is { } delta
                     ? (int)Math.Ceiling(delta.TotalSeconds)
                     : response.Headers.RetryAfter?.Date is { } date
@@ -205,6 +214,14 @@ public sealed class GeminiTagAiChatService(
             using var response = await httpClient.SendAsync(starterRequest, cts.Token);
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
+                var body = await response.Content.ReadAsStringAsync(cts.Token);
+                if (body.Contains("quota", StringComparison.OrdinalIgnoreCase)
+                    || body.Contains("RESOURCE_EXHAUSTED", StringComparison.Ordinal))
+                {
+                    logger.LogWarning("Insufficient credits for {Provider}", "Gemini");
+                    throw new AiInsufficientCreditsException("Gemini");
+                }
+
                 var retryAfterSeconds = response.Headers.RetryAfter?.Delta is { } delta
                     ? (int)Math.Ceiling(delta.TotalSeconds)
                     : response.Headers.RetryAfter?.Date is { } date

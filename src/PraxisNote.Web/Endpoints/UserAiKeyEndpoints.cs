@@ -91,6 +91,11 @@ public static class UserAiKeyEndpoints
             }
             catch (UserAiKeyNotFoundException) { /* No key stored — nothing to clean up */ }
 
+            if (validation.InsufficientCredits)
+            {
+                return Results.UnprocessableEntity(new { error = "ai_key_insufficient_credits", message = "Your API key is valid but your account has insufficient credits. Please top up your balance." });
+            }
+
             return Results.UnprocessableEntity(new { error = "ai_key_invalid" });
         }
 
