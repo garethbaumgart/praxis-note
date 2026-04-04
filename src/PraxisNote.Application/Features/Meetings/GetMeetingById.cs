@@ -33,11 +33,7 @@ public sealed class GetMeetingById(IMeetingRepository meetingRepository, ITagRep
             meeting.Summary,
             meeting.KeyPoints,
             meeting.Decisions,
-            meeting.BehavioralAnalysis,
             meeting.SuggestedTags,
-            meeting.ReflectionData,
-            meeting.ReflectionSubmittedAt,
-            meeting.ExcludeFromInsights,
             meeting.NoteId,
             meeting.TagIds
                 .Where(id => tagLookup.ContainsKey(id))

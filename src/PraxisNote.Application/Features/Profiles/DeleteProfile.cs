@@ -1,5 +1,4 @@
 using PraxisNote.Application.Common;
-using PraxisNote.Domain.Aggregates.BehavioralGoals;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.Meetings;
 using PraxisNote.Domain.Aggregates.Notes;
@@ -15,7 +14,6 @@ public sealed class DeleteProfile(
     INoteRepository noteRepository,
     IMeetingRepository meetingRepository,
     ITagRepository tagRepository,
-    IBehavioralGoalRepository goalRepository,
     ICalendarConnectionRepository calendarConnectionRepository,
     IUnitOfWork unitOfWork)
 {
@@ -43,7 +41,6 @@ public sealed class DeleteProfile(
             || await noteRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
             || await meetingRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
             || await tagRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
-            || await goalRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken)
             || await calendarConnectionRepository.ExistsByProfileAsync(command.UserId, command.ProfileId, cancellationToken))
         {
             throw new InvalidOperationException(HasDataError);

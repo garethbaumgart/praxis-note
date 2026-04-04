@@ -39,8 +39,6 @@ public sealed class AnalyzeMeeting(
             var meetingAnalyzer = await aiServices.GetMeetingAnalyzerAsync(command.UserId, cancellationToken);
             var result = await meetingAnalyzer.AnalyzeAsync(meeting.TranscriptContent, cancellationToken);
 
-            var camelCaseOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
             // Convert extracted action items to domain ActionItem objects
             // Filter out any items with null/empty descriptions to prevent exceptions
             var actionItems = result.ExtractedActionItems?
@@ -53,9 +51,6 @@ public sealed class AnalyzeMeeting(
                 result.Summary,
                 JsonSerializer.Serialize(result.KeyPoints),
                 JsonSerializer.Serialize(result.Decisions),
-                result.BehavioralAnalysis is not null
-                    ? JsonSerializer.Serialize(result.BehavioralAnalysis, camelCaseOptions)
-                    : null,
                 actionItems,
                 result.SuggestedTitle,
                 result.SuggestedTags.Count > 0

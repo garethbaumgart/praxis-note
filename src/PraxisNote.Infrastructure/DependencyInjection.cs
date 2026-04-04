@@ -14,8 +14,6 @@ using PraxisNote.Application.Features.Tags.Services;
 using PraxisNote.Application.Features.Transcription;
 using PraxisNote.Application.Features.UserAiKeys.Services;
 using PraxisNote.Domain.Aggregates.ApiKeys;
-using PraxisNote.Domain.Aggregates.BehavioralGoals;
-using PraxisNote.Domain.Aggregates.BlindSpotNudges;
 using PraxisNote.Domain.Aggregates.CalendarConnections;
 using PraxisNote.Domain.Aggregates.DriveConnections;
 using PraxisNote.Domain.Aggregates.DriveFileImports;
@@ -65,8 +63,6 @@ public static class DependencyInjection
         services.AddScoped<IJiraConnectionRepository, JiraConnectionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IProfileRepository, ProfileRepository>();
-        services.AddScoped<IBehavioralGoalRepository, BehavioralGoalRepository>();
-        services.AddScoped<IBlindSpotNudgeRepository, BlindSpotNudgeRepository>();
         services.AddScoped<ILinkedIdentityRepository, LinkedIdentityRepository>();
         services.AddScoped<IAccountLinkCodeRepository, AccountLinkCodeRepository>();
         services.AddScoped<IUserAiKeyRepository, UserAiKeyRepository>();

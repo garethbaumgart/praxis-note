@@ -39,53 +39,6 @@ public class MeetingAnalyzerParsingTests
         Assert.Null(result.ExtractedActionItems[1].Assignee);
         Assert.Equal("Q3 Budget Review with Alice & Bob", result.SuggestedTitle);
         Assert.Equal(2, result.SuggestedTags.Count);
-        Assert.Null(result.BehavioralAnalysis);
-    }
-
-    [Fact]
-    public void ParseAnalysisResponse_WithBehavioralAnalysis_ParsesAllFields()
-    {
-        var json = """
-            {
-              "summary": "Sprint planning meeting.",
-              "keyPoints": ["Velocity discussed"],
-              "decisions": [],
-              "extractedAttendees": ["Sarah"],
-              "actionItems": [],
-              "suggestedTitle": "Sprint Planning",
-              "suggestedTags": ["agile"],
-              "behavioralAnalysis": {
-                "speakingDynamics": {
-                  "talkTimeByParticipant": [{"participant": "Sarah", "percentage": 60.0, "duration": "18:00"}],
-                  "interruptionPatterns": [{"interrupter": "Sarah", "interrupted": "Bob", "count": 2}],
-                  "questionVsStatementRatio": {"Sarah": 0.3}
-                },
-                "sentimentTone": {
-                  "participantSentiments": [{"participant": "Sarah", "sentiment": "positive", "score": 0.8}],
-                  "toneShifts": [{"timestamp": "5:00", "description": "Became more engaged", "from": "neutral", "to": "positive"}],
-                  "emotionalIndicators": ["enthusiasm about new features"]
-                },
-                "communicationPatterns": {
-                  "overallClarity": 0.9,
-                  "followUpPatterns": [{"topic": "Sprint backlog", "wasFollowedUp": true, "assignedTo": "Sarah"}],
-                  "engagementLevels": [{"participant": "Sarah", "level": "high", "indicators": ["asked questions"]}]
-                },
-                "redFlags": [
-                  {"type": "hedging", "participant": "Bob", "description": "Avoided timeline", "context": "When asked...", "severity": "low"}
-                ]
-              }
-            }
-            """;
-
-        var result = AnthropicMeetingAnalyzer.ParseAnalysisResponse(json);
-
-        Assert.NotNull(result.BehavioralAnalysis);
-        Assert.Single(result.BehavioralAnalysis.SpeakingDynamics.TalkTimeByParticipant);
-        Assert.Equal(60.0, result.BehavioralAnalysis.SpeakingDynamics.TalkTimeByParticipant[0].Percentage);
-        Assert.Single(result.BehavioralAnalysis.SentimentTone.ParticipantSentiments);
-        Assert.Equal(0.9, result.BehavioralAnalysis.CommunicationPatterns.OverallClarity);
-        Assert.Single(result.BehavioralAnalysis.RedFlags);
-        Assert.Equal("hedging", result.BehavioralAnalysis.RedFlags[0].Type);
     }
 
     [Fact]

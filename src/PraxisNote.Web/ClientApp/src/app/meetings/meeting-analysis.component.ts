@@ -1,13 +1,12 @@
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
-import { Meeting, ActionItemStatus, parseJsonArray, parseBehavioralAnalysis, hasAnalysisResults } from './meeting.model';
-import { MeetingBehavioralAnalysisComponent } from './meeting-behavioral-analysis.component';
+import { Meeting, ActionItemStatus, parseJsonArray, hasAnalysisResults } from './meeting.model';
 import { MeetingActionItemsComponent } from './meeting-action-items.component';
 
 @Component({
   selector: 'app-meeting-analysis',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MeetingBehavioralAnalysisComponent, MeetingActionItemsComponent],
+  imports: [MeetingActionItemsComponent],
   template: `
     <div>
       <!-- Processing state -->
@@ -83,11 +82,6 @@ import { MeetingActionItemsComponent } from './meeting-action-items.component';
             (onNavigateToTask)="onNavigateToTask.emit($event)"
           />
         </div>
-
-        <!-- Behavioral Analysis -->
-        @if (hasBehavioralAnalysis()) {
-          <app-meeting-behavioral-analysis [meeting]="meeting()" />
-        }
       }
 
       <!-- No transcript -->
@@ -117,5 +111,4 @@ export class MeetingAnalysisComponent {
   readonly hasAnalysis = computed(() => hasAnalysisResults(this.meeting()));
   readonly keyPoints = computed(() => parseJsonArray(this.meeting().keyPoints));
   readonly decisions = computed(() => parseJsonArray(this.meeting().decisions));
-  readonly hasBehavioralAnalysis = computed(() => !!parseBehavioralAnalysis(this.meeting().behavioralAnalysis));
 }

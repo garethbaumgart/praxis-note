@@ -4,7 +4,6 @@ import { AuthService } from '../auth';
 import { NoteService } from '../notes/note.service';
 import { HomeDashboardService } from './home-dashboard.service';
 import { GreetingService } from './greeting.service';
-import { InsightsWidgetComponent } from './insights-widget.component';
 import { OutstandingActionItemsComponent } from './outstanding-action-items.component';
 import { PageContentComponent } from '../shared/components/page-content.component';
 import { ContextualHeaderService } from '../shared/services/contextual-header.service';
@@ -13,7 +12,7 @@ import { ProfileService } from '../profiles/profile.service';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [RouterLink, InsightsWidgetComponent, OutstandingActionItemsComponent, PageContentComponent],
+  imports: [RouterLink, OutstandingActionItemsComponent, PageContentComponent],
   template: `
     <app-page-content>
       <h1 class="sr-only">Home</h1>
@@ -235,10 +234,6 @@ import { ProfileService } from '../profiles/profile.service';
         </section>
       }
 
-      <!-- 7. Insights Widget -->
-      <section class="animate-fade-in-delay-5">
-        <app-insights-widget />
-      </section>
     </app-page-content>
   `,
   styles: [`
